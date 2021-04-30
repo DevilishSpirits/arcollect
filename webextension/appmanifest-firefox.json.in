@@ -1,0 +1,7 @@
+{
+	"name": "arcollect_webext_adder",
+	"description": "Arcollect adder program",
+	"path": "@ARCOLLECT_WEBEXT_ADDER_PATH@",
+	"type": "stdio",
+	"allowed_extensions": ["arcollect@d-spirits.me"]
+}

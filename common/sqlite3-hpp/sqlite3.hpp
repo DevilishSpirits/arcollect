@@ -1,0 +1,130 @@
+#pragma once
+#include <sqlite3.h>
+#include <string>
+#include <memory>
+
+namespace SQLite3 {
+	// Error code
+	constexpr const int OK                = SQLITE_OK;
+	// Database opening
+	constexpr const int OPEN_READONLY     = SQLITE_OPEN_READONLY;
+	constexpr const int OPEN_READWRITE    = SQLITE_OPEN_READWRITE;
+	constexpr const int OPEN_CREATE       = SQLITE_OPEN_CREATE;
+	constexpr const int OPEN_URI          = SQLITE_OPEN_URI;
+	constexpr const int OPEN_MEMORY       = SQLITE_OPEN_MEMORY;
+	constexpr const int OPEN_NOMUTEX      = SQLITE_OPEN_NOMUTEX;
+	constexpr const int OPEN_SHAREDCACHE  = SQLITE_OPEN_SHAREDCACHE;
+	constexpr const int OPEN_PRIVATECACHE = SQLITE_OPEN_PRIVATECACHE;
+	constexpr const int OPEN_NOFOLLOW     = SQLITE_OPEN_NOFOLLOW;
+	
+
+	struct stmt {
+		inline int bind(int column, double value) {
+			return sqlite3_bind_double((sqlite3_stmt*)this,column,value);
+		}
+		inline int bind(int column, int value) {
+			return sqlite3_bind_int((sqlite3_stmt*)this,column,value);
+		}
+		inline int bind(int column, sqlite3_int64 value) {
+			return sqlite3_bind_int64((sqlite3_stmt*)this,column,value);
+		}
+		inline int bind(int column, const char* text, int size = -1, void(*dtor)(void*) = NULL) {
+			return sqlite3_bind_text((sqlite3_stmt*)this,column,text,size,dtor);
+		}
+		inline int bind_null(int column) {
+			return sqlite3_bind_null((sqlite3_stmt*)this,column);
+		}
+		/* TODO
+		int sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*));
+		int sqlite3_bind_text16(sqlite3_stmt*, int, const void*, int, void(*)(void*));
+		int sqlite3_bind_text64(sqlite3_stmt*, int, const char*, sqlite3_uint64,
+				                     void(*)(void*), unsigned char encoding);
+		int sqlite3_bind_value(sqlite3_stmt*, int, const sqlite3_value*);
+		
+		int sqlite3_bind_pointer(sqlite3_stmt*, int, void*, const char*,void(*)(void*));
+		int sqlite3_bind_zeroblob(sqlite3_stmt*, int, int n);
+		int sqlite3_bind_zeroblob64(sqlite3_stmt*, int, sqlite3_uint64);
+		*/
+		/* TODO
+		const void *sqlite3_column_blob(sqlite3_stmt*, int iCol);
+		*/
+		inline double column_double(int iCol) {
+			return sqlite3_column_double((sqlite3_stmt*)this,iCol);
+		}
+		inline int column_int(int iCol) {
+			return sqlite3_column_int((sqlite3_stmt*)this,iCol);
+		}
+		inline sqlite3_int64 column_int64(int iCol) {
+			return sqlite3_column_int64((sqlite3_stmt*)this,iCol);
+		}
+		/*
+		const unsigned char *sqlite3_column_text(sqlite3_stmt*, int iCol);
+		const void *sqlite3_column_text16(sqlite3_stmt*, int iCol);
+		sqlite3_value *sqlite3_column_value(sqlite3_stmt*, int iCol);
+		int sqlite3_column_bytes(sqlite3_stmt*, int iCol);
+		int sqlite3_column_bytes16(sqlite3_stmt*, int iCol);
+		int sqlite3_column_type(sqlite3_stmt*, int iCol);
+		*/
+		inline int step(void) {
+			return sqlite3_step((sqlite3_stmt*)this);
+		}
+		inline int reset(void) {
+			return sqlite3_reset((sqlite3_stmt*)this);
+		}
+		
+		void operator delete(void* ptr) noexcept {
+			sqlite3_finalize((sqlite3_stmt*)ptr);
+		}
+	};
+	struct sqlite3 {
+		// Note: v1 interface won't be implemented
+		inline int prepare(const char *zSql, int nByte, SQLite3::stmt *&ppStmt, const char **pzTail = NULL) { return sqlite3_prepare_v2((::sqlite3*)this,zSql,nByte,(sqlite3_stmt**)&ppStmt,pzTail); }
+		inline int prepare(const char *zSql, int nByte, SQLite3::stmt *&ppStmt, const char *&pzTail) { return this->prepare(zSql,nByte,ppStmt,&pzTail); }
+		// std::string versions
+		inline int prepare(const std::string &Sql, SQLite3::stmt *&ppStmt, const char **pzTail = NULL) { return this->prepare(Sql.c_str(),Sql.length(),ppStmt,pzTail); }
+		inline int prepare(const std::string &Sql, SQLite3::stmt *&ppStmt, const char *&pzTail) { return this->prepare(Sql,ppStmt,&pzTail); }
+		// std::unique_ptr helper
+		inline int prepare(const std::string &Sql, std::unique_ptr<SQLite3::stmt> &ppStmt, const char **pzTail = NULL) {
+			SQLite3::stmt *stmt;
+			int code = this->prepare(Sql,stmt,pzTail);
+			if (code == SQLite3::OK)
+				ppStmt.reset(stmt);
+			return code;
+		}
+		
+		int exec(const char *sql, int (*callback)(void*,int,char**,char**) = NULL, void *callback_data = NULL, char **errmsg = NULL) {
+			return sqlite3_exec((::sqlite3*)this,sql,callback,callback_data,errmsg);
+		}
+		
+		int busy_timeout(int ms) {
+			return sqlite3_busy_timeout((::sqlite3*)this,ms);
+		}
+		
+		const char *errmsg(void) {
+			return sqlite3_errmsg((::sqlite3*)this);
+		}
+		
+		void operator delete(void* ptr) noexcept {
+			sqlite3_close_v2((::sqlite3*)ptr);
+		}
+	};
+	
+	
+	inline int open(const char *filename, sqlite3 *&ppDb) { return sqlite3_open(filename,(::sqlite3**)&ppDb); }
+	inline int open(const char *filename, sqlite3 *&ppDb, int flags, const char *zVfs = NULL) { return sqlite3_open_v2(filename,(::sqlite3**)&ppDb,flags,zVfs); }
+	
+	inline int open(const char *filename, std::unique_ptr<sqlite3> &ppDb) {
+		SQLite3::sqlite3 *db;
+		int code = SQLite3::open(filename, db);
+		if (code == SQLite3::OK)
+			ppDb.reset(db);
+		return code;
+	}
+	inline int open(const char *filename, std::unique_ptr<sqlite3> &ppDb, int flags, const char *zVfs = NULL) {
+		SQLite3::sqlite3 *db;
+		int code = SQLite3::open(filename,db,flags,zVfs);
+		if (code == SQLite3::OK)
+			ppDb.reset(db);
+		return code;
+	}
+}

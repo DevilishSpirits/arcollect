@@ -1,0 +1,7 @@
+This is a toy headers to C++-ify SQLite3.
+
+It's a very thin 1-to-1 mapping to the C API, sometime take advantage of C++ features.
+
+Objects are wrapped into dummy structs, you use pointers which you dereference.
+
+Objects support the delete operator and the API also accept std::unique_ptr<> for better memory safety.

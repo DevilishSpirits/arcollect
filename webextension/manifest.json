@@ -1,0 +1,21 @@
+{
+	"manifest_version": 2,
+	"name": "Arcollect",
+	"version": "0.1",
+	"background": {
+		"scripts": ["background.js"]
+	},
+	"content_scripts": [{
+		"matches": ["https://www.furaffinity.net/view/*"],
+		"js": ["content-scripts/common-head.js","content-scripts/furaffinity.net.js","content-scripts/common-foot.js"]
+	}],
+	"permissions": [
+		"https://d.furaffinity.net/art/*",
+		"nativeMessaging"
+	],
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "arcollect@d-spirits.me"
+		}
+	}
+}
