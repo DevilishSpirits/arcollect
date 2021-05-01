@@ -55,7 +55,7 @@ int main(void)
 				// Propagate event to modals
 				auto iter = Arcollect::gui::modal_stack.rbegin();
 				while (iter->get().event(e))
-					--iter;
+					++iter;
 			}
 		}
 		// Check for DB updates
