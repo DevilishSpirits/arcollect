@@ -34,6 +34,7 @@ int main(void)
 	SDL::Event e;
 	bool not_done = true;
 	while (not_done) {
+		Arcollect::update_data_version();
 		if (SDL::WaitEvent(e)) {
 			switch (e.type) {
 				case SDL_QUIT: {
