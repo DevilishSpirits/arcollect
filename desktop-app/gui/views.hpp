@@ -1,11 +1,12 @@
 #pragma once
 #include "artwork-viewport.hpp"
 #include "artwork-collection.hpp"
+#include "modal.hpp"
 namespace Arcollect {
 	namespace gui {
 		// Generic view interface
 		
-		class view {
+		class view: public modal {
 			protected:
 				std::shared_ptr<gui::artwork_collection> collection;
 			public:
@@ -18,12 +19,6 @@ namespace Arcollect {
 				/** Called upon viewport resize
 				 */
 				virtual void resize(SDL::Rect rect) = 0;
-				/** Render now
-				 */
-				virtual void render(void) = 0;
-				/** React to event
-				 */
-				virtual void event(SDL::Event &e) = 0;
 				virtual ~view(void) = default;
 		};
 		class view_slideshow: public view {
@@ -56,7 +51,7 @@ namespace Arcollect {
 				 *
 				 */
 				void render_info_incard(void);
-				void event(SDL::Event &e) override;
+				bool event(SDL::Event &e) override;
 		};
 	}
 }

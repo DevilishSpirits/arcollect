@@ -2,6 +2,7 @@
 #include <arcollect-db-open.hpp>
 #include "db/db.hpp"
 #include "gui/artwork-collections.hpp"
+#include "gui/modal.hpp"
 #include "gui/slideshow.hpp"
 #include "gui/views.hpp"
 #include "gui/font.hpp"
@@ -12,6 +13,7 @@
 SDL_Window    *window;
 extern SDL::Renderer *renderer;
 SDL::Renderer *renderer;
+std::vector<std::reference_wrapper<Arcollect::gui::modal>> Arcollect::gui::modal_stack;
 
 Uint32 time_now;
 Uint32 time_framedelta;
@@ -39,28 +41,21 @@ int main(void)
 	// Bootstrap the background
 	Arcollect::gui::update_background();
 	Arcollect::gui::background_slideshow.resize(window_rect);
+	Arcollect::gui::modal_stack.push_back(Arcollect::gui::background_slideshow);
 	// Main-loop
 	SDL::Event e;
 	bool not_done = true;
 	time_now = SDL_GetTicks();
 	while (not_done) {
+		// Handle event
 		if (SDL::WaitEvent(e)) {
-			switch (e.type) {
-				case SDL_QUIT: {
-					not_done = false;
-				} break;
-				case SDL_WINDOWEVENT: {
-					switch (e.window.event) {
-						case SDL_WINDOWEVENT_SIZE_CHANGED:
-						case SDL_WINDOWEVENT_RESIZED: {
-							Arcollect::gui::background_slideshow.resize({0,0,e.window.data1,e.window.data2});
-						} break;
-						default: {
-						} break;
-					}
-				} break;
-				default: {
-				} break;
+			if (e.type == SDL_QUIT) {
+				not_done = false;
+			} else {
+				// Propagate event to modals
+				auto iter = Arcollect::gui::modal_stack.rbegin();
+				while (iter->get().event(e))
+					--iter;
 			}
 		}
 		// Check for DB updates
@@ -69,10 +64,11 @@ int main(void)
 		Uint32 new_ticks = SDL_GetTicks();
 		time_framedelta = time_now-new_ticks;
 		time_now = new_ticks;
-		// Render the background slideshow
+		// Render frame
 		renderer->SetDrawColor(0,0,0,0);
 		renderer->Clear();
-		Arcollect::gui::background_slideshow.render();
+		for (auto& iter: Arcollect::gui::modal_stack)
+			iter.get().render();
 		renderer->Present();
 	}
 	// Cleanups

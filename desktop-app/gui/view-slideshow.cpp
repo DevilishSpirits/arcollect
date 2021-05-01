@@ -81,7 +81,7 @@ void Arcollect::gui::view_slideshow::render(void)
 	viewport.render({0,0});
 	render_info_incard();
 }
-void Arcollect::gui::view_slideshow::event(SDL::Event &e)
+bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 {
 	// STOP READING CODE!!! You might not understand some weird syntax.
 	// There's a 'README BEFORE READING CODE!!!' in top Arcollect::gui::view_slideshow declaration.
@@ -113,6 +113,18 @@ void Arcollect::gui::view_slideshow::event(SDL::Event &e)
 				} break;
 			}
 		} break;
+		// Only called for Arcollect::gui::background_slideshow
+		case SDL_WINDOWEVENT: {
+			switch (e.window.event) {
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
+				case SDL_WINDOWEVENT_RESIZED: {
+					resize({0,0,e.window.data1,e.window.data2});
+				} break;
+				default: {
+				} break;
+			}
+		} break;
 	}
+	return false;
 }
 
