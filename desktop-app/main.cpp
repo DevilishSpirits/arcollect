@@ -3,6 +3,7 @@
 #include "db/db.hpp"
 #include "gui/artwork-collections.hpp"
 #include "gui/views.hpp"
+#include "gui/font.hpp"
 #include <iostream>
 #include <string>
 
@@ -23,6 +24,9 @@ int main(void)
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
+	// Load font
+	// TODO Use real font management
+	TTF_Init();
 	// Load the db
 	Arcollect::database = Arcollect::db::open();
 	// FIXME Try to display a slideshow

@@ -2,6 +2,7 @@
 deskapp_deps = [
 	dep_sdl2,
 	dep_sdl2_image,
+	dep_sdl2_ttf,
 	dep_sqlite3,
 ]
 deskapp_srcs = [
@@ -9,6 +10,7 @@ deskapp_srcs = [
 	'db/artwork.cpp',
 	'db/db.cpp',
 	'gui/artwork-viewport.cpp',
+	'gui/font.cpp',
 	'gui/view-slideshow.cpp',
 ]
 
