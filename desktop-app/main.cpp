@@ -2,6 +2,7 @@
 #include <arcollect-db-open.hpp>
 #include "db/db.hpp"
 #include "gui/artwork-collections.hpp"
+#include "gui/slideshow.hpp"
 #include "gui/views.hpp"
 #include "gui/font.hpp"
 #include <iostream>
@@ -11,6 +12,9 @@
 SDL_Window    *window;
 extern SDL::Renderer *renderer;
 SDL::Renderer *renderer;
+
+Uint32 time_now;
+Uint32 time_framedelta;
 
 int main(void)
 {
@@ -24,21 +28,22 @@ int main(void)
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
+	// Get window size
+	SDL::Rect window_rect{0,0};
+	renderer->GetOutputSize(window_rect.w,window_rect.h);
 	// Load font
 	// TODO Use real font management
 	TTF_Init();
 	// Load the db
 	Arcollect::database = Arcollect::db::open();
-	// FIXME Try to display a slideshow
-	std::shared_ptr<Arcollect::gui::artwork_collection> collection(new Arcollect::gui::artwork_collection_simply_all());
-	Arcollect::gui::view_slideshow slideshow;
-	slideshow.set_collection(collection);
-	slideshow.resize({0,0,100,100});
+	// Bootstrap the background
+	Arcollect::gui::update_background();
+	Arcollect::gui::background_slideshow.resize(window_rect);
 	// Main-loop
 	SDL::Event e;
 	bool not_done = true;
+	time_now = SDL_GetTicks();
 	while (not_done) {
-		Arcollect::update_data_version();
 		if (SDL::WaitEvent(e)) {
 			switch (e.type) {
 				case SDL_QUIT: {
@@ -48,25 +53,28 @@ int main(void)
 					switch (e.window.event) {
 						case SDL_WINDOWEVENT_SIZE_CHANGED:
 						case SDL_WINDOWEVENT_RESIZED: {
-							slideshow.resize({0,0,e.window.data1,e.window.data2});
+							Arcollect::gui::background_slideshow.resize({0,0,e.window.data1,e.window.data2});
 						} break;
 						default: {
-							slideshow.event(e);
 						} break;
 					}
 				} break;
 				default: {
-					slideshow.event(e);
 				} break;
 			}
 		}
-		// Render
+		// Check for DB updates
+		Arcollect::update_data_version();
+		// Update timing informations
+		Uint32 new_ticks = SDL_GetTicks();
+		time_framedelta = time_now-new_ticks;
+		time_now = new_ticks;
+		// Render the background slideshow
 		renderer->SetDrawColor(0,0,0,0);
 		renderer->Clear();
-		slideshow.render();
+		Arcollect::gui::background_slideshow.render();
 		renderer->Present();
 	}
 	// Cleanups
-	
 	return 0;
 }

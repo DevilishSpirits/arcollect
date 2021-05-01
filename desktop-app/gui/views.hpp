@@ -1,3 +1,4 @@
+#pragma once
 #include "artwork-viewport.hpp"
 #include "artwork-collection.hpp"
 namespace Arcollect {
