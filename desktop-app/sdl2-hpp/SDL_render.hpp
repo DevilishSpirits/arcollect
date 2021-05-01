@@ -23,6 +23,11 @@ namespace SDL {
 			SDL_DestroyTexture((SDL_Texture*)renderer);
 		}
 	};
+	typedef SDL_BlendMode BlendMode;
+	constexpr const auto BLENDMODE_NONE  = SDL_BLENDMODE_NONE;
+	constexpr const auto BLENDMODE_BLEND = SDL_BLENDMODE_BLEND;
+	constexpr const auto BLENDMODE_ADD   = SDL_BLENDMODE_ADD;
+	constexpr const auto BLENDMODE_MOD   = SDL_BLENDMODE_MOD;
 	struct Renderer {
 		typedef SDL_RendererFlip Flip;
 		inline int SetDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
@@ -34,11 +39,19 @@ namespace SDL {
 		inline int DrawLine(const SDL_Point p1, const SDL_Point p2) {
 			return SDL_RenderDrawLine((SDL_Renderer*)this,p1.x,p1.y,p2.x,p2.y);
 		};
+		inline int FillRect(const SDL::Rect rect) {
+			return SDL_RenderFillRect((SDL_Renderer*)this,(const SDL_Rect*)&rect);
+		};
+		
 		inline int Copy(Texture *texture, const Rect *srcrect, const Rect *dstrect) {
 			return SDL_RenderCopy((SDL_Renderer*)this,(SDL_Texture*)texture,(SDL_Rect*)srcrect,(SDL_Rect*)dstrect);
 		}
 		inline int Copy(Texture *texture, const Rect *srcrect, const Rect *dstrect, const double angle, const Point *center, const Flip flip) {
 			return SDL_RenderCopyEx((SDL_Renderer*)this,(SDL_Texture*)texture,(SDL_Rect*)srcrect,(SDL_Rect*)dstrect,angle,(SDL_Point*)center,(SDL_RendererFlip)flip);
+		}
+		
+		inline int SetDrawBlendMode(SDL_BlendMode blendMode) {
+			return SDL_SetRenderDrawBlendMode((SDL_Renderer*)this,(SDL_BlendMode)blendMode);
 		}
 		
 		inline void Present(void) {
@@ -84,7 +97,6 @@ namespace SDL {
     SDL_RenderDrawPoints
     SDL_RenderDrawRect
     SDL_RenderDrawRects
-    SDL_RenderFillRect
     SDL_RenderFillRects
     SDL_RenderGetClipRect
     SDL_RenderGetIntegerScale
@@ -99,7 +111,6 @@ namespace SDL {
     SDL_RenderSetScale
     SDL_RenderSetViewport
     SDL_RenderTargetSupported
-    SDL_SetRenderDrawBlendMode
     SDL_SetRenderTarget
     SDL_SetTextureAlphaMod
     SDL_SetTextureBlendMode
