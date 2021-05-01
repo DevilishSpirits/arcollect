@@ -42,6 +42,12 @@ int main(void)
 	Arcollect::gui::update_background();
 	Arcollect::gui::background_slideshow.resize(window_rect);
 	Arcollect::gui::modal_stack.push_back(Arcollect::gui::background_slideshow);
+	// FIXME Test the grid
+	Arcollect::gui::view_vgrid vgrid;
+	std::shared_ptr<Arcollect::gui::artwork_collection> simply_all_collection(new Arcollect::gui::artwork_collection_simply_all);
+	vgrid.set_collection(simply_all_collection);
+	vgrid.resize(window_rect);
+	Arcollect::gui::modal_stack.push_back(vgrid);
 	// Main-loop
 	SDL::Event e;
 	bool not_done = true;

@@ -13,6 +13,7 @@ deskapp_srcs = [
 	'gui/font.cpp',
 	'gui/slideshow.cpp',
 	'gui/view-slideshow.cpp',
+	'gui/view-grid.cpp',
 ]
 
 executable('arcollect', deskapp_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: common_lib)
