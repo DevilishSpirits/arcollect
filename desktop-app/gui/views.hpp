@@ -43,6 +43,18 @@ namespace Arcollect {
 				void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) override;
 				void resize(SDL::Rect rect) override;
 				void render(void) override;
+				/** Render some info in the bottom of the window
+				 *
+				 * Should be called right after render()
+				 *
+				 * The card is rendered with a flat transparent black panel in the picture
+				 * bottom with white text draw on it.
+				 *
+				 * The box height is 20% of the rect height. Text height is a third of
+				 * this value.
+				 *
+				 */
+				void render_info_incard(void);
 				void event(SDL::Event &e) override;
 		};
 	}

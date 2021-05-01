@@ -1,4 +1,5 @@
 #include "views.hpp"
+#include "font.hpp"
 
 void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
 {
@@ -26,9 +27,59 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 	// Set viewport
 	viewport.set_corners(rect);
 }
+void Arcollect::gui::view_slideshow::render_info_incard(void)
+{
+	Arcollect::db::artwork &artwork = ***collection_iterator;
+	// Adjust rect
+	const auto box_height = rect.h/5;
+	static const auto min_title_font_height = 14;
+	static const auto min_desc_font_height = 7;
+	auto font_height = box_height/3;
+	if (font_height < min_title_font_height)
+		font_height = min_title_font_height;
+	
+	SDL::Rect render_rect{rect.x,rect.h-box_height,rect.w,box_height};
+	
+	// Draw rect
+	renderer->SetDrawColor(0,0,0,192);
+	renderer->SetDrawBlendMode(SDL::BLENDMODE_BLEND);
+	renderer->FillRect(render_rect);
+	// Apply padding
+	const auto box_padding = rect.h/100;
+	render_rect.x += box_padding;
+	render_rect.y += box_padding;
+	render_rect.w -= 2*box_padding;
+	render_rect.h -= 2*box_padding;
+	// Render title text
+	Arcollect::gui::Font font;
+	Arcollect::gui::TextLine title_line(font,artwork.title(),font_height);
+	std::unique_ptr<SDL::Texture> title_line_text(title_line.render());
+	SDL::Point title_line_size;
+	title_line_text->QuerySize(title_line_size);
+	// NOTE The text overload
+	render_rect.w = title_line_size.x;
+	render_rect.h = title_line_size.y;
+	renderer->Copy(title_line_text.get(),NULL,&render_rect);
+	// Render description text
+	font_height /= 4;
+	if (font_height < min_desc_font_height)
+		font_height = min_desc_font_height;
+	Arcollect::gui::TextPar desc_par(font,artwork.desc(),min_title_font_height);
+	std::unique_ptr<SDL::Texture> desc_par_text(desc_par.render(rect.w-2*box_padding));
+	SDL::Point desc_par_size;
+	desc_par_text->QuerySize(desc_par_size);
+	render_rect.y += render_rect.h + 4;
+	render_rect.w += render_rect.h + 4;
+	render_rect.w = desc_par_size.x;
+	render_rect.h = desc_par_size.y;
+	renderer->Copy(desc_par_text.get(),NULL,&render_rect);
+}
+
 void Arcollect::gui::view_slideshow::render(void)
 {
+	renderer->SetDrawBlendMode(SDL::BLENDMODE_NONE);
 	viewport.render({0,0});
+	render_info_incard();
 }
 void Arcollect::gui::view_slideshow::event(SDL::Event &e)
 {
