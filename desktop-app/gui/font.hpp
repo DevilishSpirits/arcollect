@@ -12,7 +12,7 @@ namespace Arcollect {
 					// FIXME This is awful
 					TTF_Font *font = TTF_OpenFont("Roboto/Roboto-Light.ttf",font_height);
 					TTF_SetFontStyle(font,style);
-					std::unique_ptr<SDL::Surface> result(TTF_RenderUTF8_Blended(font,text,font_color));
+					std::unique_ptr<SDL::Surface> result((SDL::Surface*)TTF_RenderUTF8_Blended(font,text,font_color));
 					TTF_CloseFont(font);
 					return result;
 				}
@@ -22,7 +22,7 @@ namespace Arcollect {
 					// FIXME This is awful
 					TTF_Font *font = TTF_OpenFont("Roboto/Roboto-Light.ttf",font_height);
 					TTF_SetFontStyle(font,style);
-					std::unique_ptr<SDL::Surface> result(TTF_RenderUTF8_Blended_Wrapped(font,text,font_color,width));
+					std::unique_ptr<SDL::Surface> result((SDL::Surface*)TTF_RenderUTF8_Blended_Wrapped(font,text,font_color,width));
 					TTF_CloseFont(font);
 					return result;
 				}

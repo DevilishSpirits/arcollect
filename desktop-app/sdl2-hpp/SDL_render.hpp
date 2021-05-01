@@ -5,7 +5,12 @@
 #endif
 namespace SDL {
 	struct Renderer;
-	typedef SDL_Surface Surface; // FIXME
+	struct Surface {
+		SDL_Surface surf;
+		inline void operator delete(void* surface) {
+			SDL_FreeSurface((SDL_Surface*)surface);
+		}
+	};
 	struct Texture {
 		inline static Texture* CreateFromSurface(Renderer* renderer, Surface *surface) {
 			return (Texture*)SDL_CreateTextureFromSurface((SDL_Renderer*)renderer,(SDL_Surface*)surface);

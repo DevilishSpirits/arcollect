@@ -8,9 +8,9 @@ Arcollect::db::artwork::artwork(Arcollect::db::artwork_id art_id) :
 	art_id(art_id)
 {
 	const std::string path = artwork_pool_path+std::to_string(art_id);
-	SDL_Surface *surf = IMG_Load(path.c_str());
+	SDL::Surface *surf = (SDL::Surface*)IMG_Load(path.c_str());
 	text.reset(SDL::Texture::CreateFromSurface(renderer,surf));
-	SDL_FreeSurface(surf);
+	delete surf;
 }
 std::shared_ptr<Arcollect::db::artwork> &Arcollect::db::artwork::query(Arcollect::db::artwork_id art_id)
 {
