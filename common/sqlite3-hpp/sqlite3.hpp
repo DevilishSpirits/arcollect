@@ -57,8 +57,13 @@ namespace SQLite3 {
 		inline sqlite3_int64 column_int64(int iCol) {
 			return sqlite3_column_int64((sqlite3_stmt*)this,iCol);
 		}
+		inline const char *column_text(int iCol) {
+			return reinterpret_cast<const char*>(sqlite3_column_text((sqlite3_stmt*)this,iCol));
+		}
+		inline std::string column_string(int iCol) {
+			return std::string(column_text(iCol));
+		}
 		/*
-		const unsigned char *sqlite3_column_text(sqlite3_stmt*, int iCol);
 		const void *sqlite3_column_text16(sqlite3_stmt*, int iCol);
 		sqlite3_value *sqlite3_column_value(sqlite3_stmt*, int iCol);
 		int sqlite3_column_bytes(sqlite3_stmt*, int iCol);
