@@ -50,6 +50,16 @@ namespace SDL {
 			return SDL_RenderCopyEx((SDL_Renderer*)this,(SDL_Texture*)texture,(SDL_Rect*)srcrect,(SDL_Rect*)dstrect,angle,(SDL_Point*)center,(SDL_RendererFlip)flip);
 		}
 		
+		inline int GetOutputSize(int *w, int *h) {
+			return SDL_GetRendererOutputSize((SDL_Renderer*)this,w,h);
+		}
+		inline int GetOutputSize(int &w, int &h) {
+			return GetOutputSize(&w,&h);
+		}
+		inline int GetOutputSize(SDL::Point &point) {
+			return GetOutputSize(point.x,point.y);
+		}
+		
 		inline int SetDrawBlendMode(SDL_BlendMode blendMode) {
 			return SDL_SetRenderDrawBlendMode((SDL_Renderer*)this,(SDL_BlendMode)blendMode);
 		}
@@ -84,7 +94,6 @@ namespace SDL {
     SDL_GetRenderTarget
     SDL_GetRenderer
     SDL_GetRendererInfo
-    SDL_GetRendererOutputSize
     SDL_GetTextureAlphaMod
     SDL_GetTextureBlendMode
     SDL_GetTextureColorMod
