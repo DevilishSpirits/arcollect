@@ -3,6 +3,7 @@
 #endif
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
 #include <vector>
 #include <arcollect-db-open.hpp>
 #include <arcollect-paths.hpp>
@@ -100,8 +101,8 @@ int main(void)
 			          << "Platform: " << platform << std::endl;
 		}
 		// Parse the DOM
-		std::vector<new_artwork> new_artworks;
-		std::vector<new_account> new_accounts;
+		std::unordered_map<std::string,new_artwork> new_artworks;
+		std::unordered_map<std::string,new_account> new_accounts;
 		
 		if (json_dom.HasMember("artworks")) {
 			auto &json_arts = json_dom["artworks"];
@@ -112,10 +113,10 @@ int main(void)
 			
 			for (rapidjson::Value::ConstValueIterator art_iter = json_arts.Begin(); art_iter != json_arts.End(); ++art_iter) {
 				if (!art_iter->IsObject()) {
-					std::cerr << "\"artworkss\" elements must be objects" << std::endl;
+					std::cerr << "\"artworks\" elements must be objects" << std::endl;
 					return 1;
 				}
-				new_artworks.emplace_back(art_iter);
+				new_artworks.emplace(std::string(art_iter->operator[]("source").GetString()),art_iter);
 			}
 		}
 		if (json_dom.HasMember("accounts")) {
@@ -130,17 +131,19 @@ int main(void)
 					std::cerr << "\"accounts\" elements must be objects" << std::endl;
 					return 1;
 				}
-				new_accounts.emplace_back(acc_iter);
+				auto &id_value = acc_iter->operator[]("id");
+				std::string map_key = id_value.IsInt64() ? std::to_string(id_value.GetInt64()) : id_value.GetString();
+				new_accounts.emplace(map_key,acc_iter);
 			}
 		}
 		// Debug the transaction
 		if (debug) {
 			std::cerr << new_artworks.size() << " artwork(s) :" << std::endl;
 			for (auto& artwork : new_artworks)
-				std::cerr << "\t\"" << artwork.art_title << "\" (" << artwork.art_source << ")\n\t\t" << artwork.art_desc << std::endl << std::endl;
+				std::cerr << "\t\"" << artwork.second.art_title << "\" (" << artwork.second.art_source << ")\n\t\t" << artwork.second.art_desc << std::endl << std::endl;
 			std::cerr << new_accounts.size() << " account(s) :" << std::endl;
 			for (auto& account : new_accounts)
-				std::cerr << "\t\"" << account.acc_title << "\" (" << account.acc_name << ") [" << (account.acc_platid_str ? account.acc_platid_str : std::to_string(account.acc_platid_int).c_str()) << "]" << std::endl << std::endl;
+				std::cerr << "\t\"" << account.second.acc_title << "\" (" << account.second.acc_name << ") [" << (account.second.acc_platid_str ? account.second.acc_platid_str : std::to_string(account.second.acc_platid_int).c_str()) << "]" << std::endl << std::endl;
 		}
 		// Perform transaction
 		std::unique_ptr<SQLite3::stmt> add_artwork_stmt;
@@ -149,16 +152,17 @@ int main(void)
 			return 1;
 		}
 		for (auto& artwork : new_artworks) {
-			add_artwork_stmt->bind(1,artwork.art_title);
+			add_artwork_stmt->bind(1,artwork.second.art_title);
 			add_artwork_stmt->bind(2,platform.c_str());
-			add_artwork_stmt->bind(3,artwork.art_desc);
-			add_artwork_stmt->bind(4,artwork.art_source);
-			add_artwork_stmt->bind(5,artwork.art_title);
+			add_artwork_stmt->bind(3,artwork.second.art_desc);
+			add_artwork_stmt->bind(4,artwork.second.art_source);
+			add_artwork_stmt->bind(5,artwork.second.art_title);
 			switch (add_artwork_stmt->step()) {
 				case SQLITE_ROW: {
-					artwork.art_id = add_artwork_stmt->column_int64(0);
-					std::ofstream artwork_file(Arcollect::db::artwork_pool_path+std::to_string(artwork.art_id));
-					artwork_file << artwork.data;
+					// Save artwork
+					artwork.second.art_id = add_artwork_stmt->column_int64(0);
+					std::ofstream artwork_file(Arcollect::db::artwork_pool_path+std::to_string(artwork.second.art_id));
+					artwork_file << artwork.second.data;
 				} break;
 				case SQLITE_DONE: {
 				} break;
@@ -175,18 +179,19 @@ int main(void)
 			return 1;
 		}
 		for (auto& account : new_accounts) {
-			if (account.acc_platid_str)
-				add_account_stmt->bind(1,account.acc_platid_str);
-			else add_account_stmt->bind(1,account.acc_platid_int);
+			if (account.second.acc_platid_str)
+				add_account_stmt->bind(1,account.second.acc_platid_str);
+			else add_account_stmt->bind(1,account.second.acc_platid_int);
 			add_account_stmt->bind(2,platform.c_str());
-			add_account_stmt->bind(3,account.acc_name);
-			add_account_stmt->bind(4,account.acc_title);
-			add_account_stmt->bind(5,account.acc_url);
+			add_account_stmt->bind(3,account.second.acc_name);
+			add_account_stmt->bind(4,account.second.acc_title);
+			add_account_stmt->bind(5,account.second.acc_url);
 			switch (add_account_stmt->step()) {
 				case SQLITE_ROW: {
-					account.acc_arcoid = add_account_stmt->column_int64(0);
-					std::ofstream account_file(Arcollect::db::account_avatars_path+std::to_string(account.acc_arcoid));
-					account_file << account.icon_data;
+					// Save profile icon
+					account.second.acc_arcoid = add_account_stmt->column_int64(0);
+					std::ofstream account_file(Arcollect::db::account_avatars_path+std::to_string(account.second.acc_arcoid));
+					account_file << account.second.icon_data;
 				} break;
 				case SQLITE_DONE: {
 				} break;
