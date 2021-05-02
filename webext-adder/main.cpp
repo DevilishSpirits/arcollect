@@ -9,6 +9,18 @@
 #include "../subprojects/rapidjson/include/rapidjson/document.h"
 #include "base64.hpp"
 
+/** RapidJSON helper to add strings
+ * \param iter Iterator to the object
+ * \param key  The key to read
+ * \return NULL is the key doesn't exist or it's string value
+ */
+static const char* json_string(rapidjson::Value::ConstValueIterator iter, const char* key)
+{
+	auto& object = *iter;
+	if (object.HasMember(key)) {
+		return object[key].GetString();
+	} else return NULL;
+}
 struct new_artwork {
 	const char* art_title;
 	const char* art_desc;
@@ -17,9 +29,9 @@ struct new_artwork {
 	std::string data;
 	// TODO Artwork datas
 	new_artwork(rapidjson::Value::ConstValueIterator iter) : 
-		art_title(iter->operator[]("title").GetString()),
-		art_desc(iter->operator[]("desc").GetString()),
-		art_source(iter->operator[]("source").GetString()),
+		art_title(json_string(iter,"title")),
+		art_desc(json_string(iter,"desc")),
+		art_source(json_string(iter,"source")),
 		art_id(-1)
 	{
 		macaron::Base64::Decode(std::string(iter->operator[]("data").GetString()),data);
@@ -38,9 +50,9 @@ struct new_account {
 	// TODO Artwork datas
 	new_account(rapidjson::Value::ConstValueIterator iter) : 
 		acc_platid_str(NULL),
-		acc_name(iter->operator[]("name").GetString()),
-		acc_title(iter->operator[]("title").GetString()),
-		acc_url(iter->operator[]("url").GetString()),
+		acc_name(json_string(iter,"name")),
+		acc_title(json_string(iter,"title")),
+		acc_url(json_string(iter,"url")),
 		acc_arcoid(-1)
 	{
 		macaron::Base64::Decode(std::string(iter->operator[]("icon").GetString()),icon_data);
