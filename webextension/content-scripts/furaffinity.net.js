@@ -10,13 +10,30 @@ function do_save_artwork()
 	save_buttondiv.onclick = null;
 	save_buttondiv.text = 'Saving...';
 	// Parse the page
+	// TODO Find "indesc" relations
 	let submissionImg = document.getElementById('submissionImg');
 	let avatarImg = document.getElementsByClassName('submission-user-icon floatleft avatar')[0];
-	let authorName = avatarImg.parentElement.href.split('/')[4]; // Extract from the user avatar URL
+	let accountName = avatarImg.parentElement.href.split('/')[4]; // Extract from the user avatar URL
 	let description = document.getElementsByClassName('submission-description user-submitted-links')[0].innerText;
-	// Asynchronously save
-	arcollect_download_image(submissionImg.src).then(function(image_data) {
+	let accountJSON = [{
+		'id': accountName,
+		'name': accountName,
+		'url': avatarImg.parentElement.href,
+		'icon': arcollect_download_image(avatarImg.src)
+	}];
+		// Download account images
+	Promise.all(accountJSON.map(function(element) {
+		return element['icon'];
+	})).then(function(results){
+		// Set accounts icons
+		accountJSON.forEach(function(element,index) {
+			element['icon'] = results[index];
+		});
+		// Download the main artwork
+		return arcollect_download_image(submissionImg.src);
+	}).then(function(image_data) {
 		// Create a JSON
+		console.log(accountJSON);
 		return {
 			'platform': 'furaffinity.net',
 			'artworks': [{
@@ -24,12 +41,8 @@ function do_save_artwork()
 				'desc': description,
 				'source': window.location.origin+window.location.pathname,
 				'data': image_data
-			}]/*,
-			'author': [{
-				'id': authorName,
-				'name': authorName,
-				'avatar': avatarImg.src,
-			}]*/
+			}],
+			'accounts': accountJSON,
 		};
 	}).then(function(data) {
 		return arcollect_submit(data);
