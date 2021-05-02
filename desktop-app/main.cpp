@@ -44,7 +44,9 @@ int main(void)
 	Arcollect::gui::modal_stack.push_back(Arcollect::gui::background_slideshow);
 	// FIXME Test the grid
 	Arcollect::gui::view_vgrid vgrid;
-	std::shared_ptr<Arcollect::gui::artwork_collection> simply_all_collection(new Arcollect::gui::artwork_collection_simply_all);
+	std::unique_ptr<SQLite3::stmt> grid_stmt;
+	Arcollect::database->prepare("SELECT art_artid FROM artworks ORDER BY art_artid;",grid_stmt);
+	std::shared_ptr<Arcollect::gui::artwork_collection> simply_all_collection(new Arcollect::gui::artwork_collection_sqlite(grid_stmt));
 	vgrid.set_collection(simply_all_collection);
 	vgrid.resize(window_rect);
 	Arcollect::gui::modal_stack.push_back(vgrid);
