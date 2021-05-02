@@ -29,4 +29,39 @@ BEGIN;
 		art_source   TEXT    NOT NULL UNIQUE, /* The artwork source URL  */
 		PRIMARY KEY (art_artid)
 	);
+	
+	/* Artist account database
+	 *
+	 * This is a repository of all known artists accounts.
+	 *
+	 * Note about acc_platid: You should prefer immutable identifiers like numeric
+	 * user ID when available.
+	 */
+	CREATE TABLE accounts (
+		acc_arcoid   INTEGER NOT NULL UNIQUE, /* The account ID within Arcollect */
+		acc_platid   INTEGER NOT NULL       , /* The account ID on the platform  */
+		acc_platform TEXT    NOT NULL       , /* The account platform            */
+		acc_name     TEXT                   , /* The account name                */
+		acc_title    TEXT                   , /* The account title               */
+		acc_url      TEXT    NOT NULL       , /* The account profile URL         */
+		PRIMARY KEY (acc_arcoid)
+	);
+	
+	/* Artwork/account links
+	 *
+	 * These are links between artwork and accounts like who draw the art, using
+	 * character of whom etc.
+	 *
+	 * Valid values for artacc_link are :
+	 * - `account` -- The account that posted the art (author/commisionner).
+	 * - `indesc` -- The account is mentionned in art_desc.
+	 */
+	CREATE TABLE art_acc_links (
+		art_artid    INTEGER NOT NULL       , /* The artwork unique ID   */
+		acc_arcoid   INTEGER NOT NULL       , /* The account ID within Arcollect */
+		artacc_link  TEXT    NOT NULL       , /* The kind of link */
+		FOREIGN KEY (art_artid ) REFERENCES artworks(art_artid ),
+		FOREIGN KEY (acc_arcoid) REFERENCES accounts(acc_arcoid),
+		PRIMARY KEY (acc_arcoid,acc_arcoid,artacc_link)
+	);
 COMMIT;
