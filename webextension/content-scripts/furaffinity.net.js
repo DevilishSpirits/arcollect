@@ -19,7 +19,7 @@ function do_save_artwork()
 		// Create a JSON
 		return {
 			'platform': 'furaffinity.net',
-			'artwork': [{
+			'artworks': [{
 				'title': submissionImg.alt,
 				'desc': description,
 				'source': window.location.origin+window.location.pathname,

@@ -91,31 +91,31 @@ int main(void)
 		std::vector<new_artwork> new_artworks;
 		std::vector<new_account> new_accounts;
 		
-		if (json_dom.HasMember("artwork")) {
-			auto &json_arts = json_dom["artwork"];
+		if (json_dom.HasMember("artworks")) {
+			auto &json_arts = json_dom["artworks"];
 			if (!json_arts.IsArray()) {
-				std::cerr << "\"artwork\" must be an array" << std::endl;
+				std::cerr << "\"artworks\" must be an array" << std::endl;
 				return 1;
 			}
 			
 			for (rapidjson::Value::ConstValueIterator art_iter = json_arts.Begin(); art_iter != json_arts.End(); ++art_iter) {
 				if (!art_iter->IsObject()) {
-					std::cerr << "\"artwork\" elements must be objects" << std::endl;
+					std::cerr << "\"artworkss\" elements must be objects" << std::endl;
 					return 1;
 				}
 				new_artworks.emplace_back(art_iter);
 			}
 		}
-		if (json_dom.HasMember("account")) {
-			auto &json_accs = json_dom["account"];
+		if (json_dom.HasMember("accounts")) {
+			auto &json_accs = json_dom["accounts"];
 			if (!json_accs.IsArray()) {
-				std::cerr << "\"account\" must be an array" << std::endl;
+				std::cerr << "\"accounts\" must be an array" << std::endl;
 				return 1;
 			}
 			
 			for (rapidjson::Value::ConstValueIterator acc_iter = json_accs.Begin(); acc_iter != json_accs.End(); ++acc_iter) {
 				if (!acc_iter->IsObject()) {
-					std::cerr << "\"account\" elements must be objects" << std::endl;
+					std::cerr << "\"accounts\" elements must be objects" << std::endl;
 					return 1;
 				}
 				new_accounts.emplace_back(acc_iter);

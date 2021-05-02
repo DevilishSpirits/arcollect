@@ -9,20 +9,20 @@ When adding artwork, send the plain artwork with this kind of JSON :
 ```json
 {
 	"platform": "example.net",
-	"artwork": [{
+	"artworks": [{
 		"title": "Sample art",
 		"desc": "My sample warmup for the morning.",
 		"source": "https://example.net/art/123456/",
 		"data": "<... base64 data ...>"
 	}],
-	"account": [{
+	"accounts": [{
 		"id": 4213,
 		"name": "@drawauthor",
 		"title": "DrawAuthor make drawings",
 		"url": "https://example.net/user/4213/",
 		"icon": "<... base64 data ...>"
 	}],
-	"art_acc_link": [{
+	"art_acc_links": [{
 		"artwork": "https://example.net/art/123456/",
 		"account": 4213,
 		"link": "account"
