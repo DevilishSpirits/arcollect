@@ -26,6 +26,30 @@ struct new_artwork {
 	};
 };
 
+struct new_account {
+	const char*  acc_platid_str;
+	sqlite_int64 acc_platid_int;
+	const char*  acc_name;
+	const char*  acc_title;
+	const char*  acc_url;
+	
+	sqlite_int64 acc_arcoid;
+	std::string icon_data;
+	// TODO Artwork datas
+	new_account(rapidjson::Value::ConstValueIterator iter) : 
+		acc_platid_str(NULL),
+		acc_name(iter->operator[]("name").GetString()),
+		acc_title(iter->operator[]("title").GetString()),
+		acc_url(iter->operator[]("url").GetString()),
+		acc_arcoid(-1)
+	{
+		macaron::Base64::Decode(std::string(iter->operator[]("icon").GetString()),icon_data);
+		if (iter->operator[]("id").IsInt64())
+			acc_platid_int = iter->operator[]("id").GetInt64();
+		else acc_platid_str = iter->operator[]("id").GetString();
+	};
+};
+
 int main(void)
 {
 	#ifdef __unix__
@@ -65,6 +89,7 @@ int main(void)
 		}
 		// Parse the DOM
 		std::vector<new_artwork> new_artworks;
+		std::vector<new_account> new_accounts;
 		
 		if (json_dom.HasMember("artwork")) {
 			auto &json_arts = json_dom["artwork"];
@@ -81,11 +106,29 @@ int main(void)
 				new_artworks.emplace_back(art_iter);
 			}
 		}
+		if (json_dom.HasMember("account")) {
+			auto &json_accs = json_dom["account"];
+			if (!json_accs.IsArray()) {
+				std::cerr << "\"account\" must be an array" << std::endl;
+				return 1;
+			}
+			
+			for (rapidjson::Value::ConstValueIterator acc_iter = json_accs.Begin(); acc_iter != json_accs.End(); ++acc_iter) {
+				if (!acc_iter->IsObject()) {
+					std::cerr << "\"account\" elements must be objects" << std::endl;
+					return 1;
+				}
+				new_accounts.emplace_back(acc_iter);
+			}
+		}
 		// Debug the transaction
 		if (debug) {
 			std::cerr << new_artworks.size() << " artwork(s) :" << std::endl;
 			for (auto& artwork : new_artworks)
 				std::cerr << "\t\"" << artwork.art_title << "\" (" << artwork.art_source << ")\n\t\t" << artwork.art_desc << std::endl << std::endl;
+			std::cerr << new_accounts.size() << " account(s) :" << std::endl;
+			for (auto& account : new_accounts)
+				std::cerr << "\t\"" << account.acc_title << "\" (" << account.acc_name << ") [" << (account.acc_platid_str ? account.acc_platid_str : std::to_string(account.acc_platid_int).c_str()) << "]" << std::endl << std::endl;
 		}
 		// Perform transaction
 		std::unique_ptr<SQLite3::stmt> add_artwork_stmt;
@@ -112,6 +155,34 @@ int main(void)
 				} break;
 			}
 			add_artwork_stmt->reset();
+		}
+		
+		std::unique_ptr<SQLite3::stmt> add_account_stmt;
+		if (db->prepare("INSERT OR IGNORE INTO accounts (acc_platid,acc_platform,acc_name,acc_title,acc_url) VALUES (?,?,?,?,?) RETURNING acc_arcoid;",add_account_stmt)) {
+			std::cerr << "Failed to prepare the add_account_stmt " << db->errmsg() << std::endl;
+			return 1;
+		}
+		for (auto& account : new_accounts) {
+			if (account.acc_platid_str)
+				add_account_stmt->bind(1,account.acc_platid_str);
+			else add_account_stmt->bind(1,account.acc_platid_int);
+			add_account_stmt->bind(2,platform.c_str());
+			add_account_stmt->bind(3,account.acc_name);
+			add_account_stmt->bind(4,account.acc_title);
+			add_account_stmt->bind(5,account.acc_url);
+			switch (add_account_stmt->step()) {
+				case SQLITE_ROW: {
+					account.acc_arcoid = add_account_stmt->column_int64(0);
+					std::ofstream account_file(Arcollect::db::account_avatars_path+std::to_string(account.acc_arcoid));
+					account_file << account.icon_data;
+				} break;
+				case SQLITE_DONE: {
+				} break;
+				default: {
+					std::cerr << "Error executing the STMT" << db->errmsg() << std::endl;
+				} break;
+			}
+			add_account_stmt->reset();
 		}
 		db->exec("COMMIT;");
 		// Return

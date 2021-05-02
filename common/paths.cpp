@@ -23,3 +23,12 @@ const std::string Arcollect::db::artwork_pool_path = [](){
 	
 	return stringartwork_pool_path;
 }();
+
+const std::string Arcollect::db::account_avatars_path = [](){
+	// Compute the data home
+	std::filesystem::path stringaccount_avatars_path = data_home + "/account-avatars/";
+	// Create the directory if it does not exist
+	std::filesystem::create_directory(stringaccount_avatars_path);
+	
+	return stringaccount_avatars_path;
+}();

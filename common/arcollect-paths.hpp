@@ -11,5 +11,9 @@ namespace Arcollect {
 		/** The artwork pool location ($XDG_DATA_HOME/arcollect/artworks/)
 		 */
 		extern const std::string artwork_pool_path;
+		
+		/** The account avatar pool location ($XDG_DATA_HOME/arcollect/account-avatars/)
+		 */
+		extern const std::string account_avatars_path;
 	}
 }
