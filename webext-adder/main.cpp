@@ -48,7 +48,6 @@ struct new_account {
 	
 	sqlite_int64 acc_arcoid;
 	std::string icon_data;
-	// TODO Artwork datas
 	new_account(rapidjson::Value::ConstValueIterator iter) : 
 		acc_platid_str(NULL),
 		acc_name(json_string(iter,"name")),
@@ -62,6 +61,51 @@ struct new_account {
 		else acc_platid_str = iter->operator[]("id").GetString();
 	};
 };
+
+struct new_art_acc_link {
+	const char*  acc_platid_str;
+	sqlite_int64 acc_platid_int;
+	const char*  art_source;
+	const char*  artacc_link;
+	
+	new_art_acc_link(rapidjson::Value::ConstValueIterator iter) : 
+		acc_platid_str(NULL),
+		art_source(json_string(iter,"artwork")),
+		artacc_link(json_string(iter,"link"))
+	{
+		if (iter->operator[]("account").IsInt64())
+			acc_platid_int = iter->operator[]("account").GetInt64();
+		else acc_platid_str = iter->operator[]("account").GetString();
+	};
+};
+
+sqlite_int64 find_artwork(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<std::string,new_artwork> &new_artworks, const std::string &url)
+{
+	auto iter = new_artworks.find(url);
+	if ((iter == new_artworks.end())||(iter->second.art_id < 0)) {
+		// TODO Error checkings
+		std::unique_ptr<SQLite3::stmt> select_stmt;
+		db->prepare("SELECT art_artid FROM artworks WHERE art_source = ?;",select_stmt);
+		select_stmt->bind(1,url.c_str());
+		select_stmt->step();
+		return select_stmt->column_int64(0);
+	} else return iter->second.art_id;
+}
+sqlite_int64 find_account(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<std::string,new_account> &new_accounts, const char* acc_platid_str, sqlite_int64 acc_platid_int)
+{
+	std::string acc_platid_string = acc_platid_str ? std::string(acc_platid_str) : std::to_string(acc_platid_int);
+	auto iter = new_accounts.find(acc_platid_string);
+	if ((iter == new_accounts.end())||(iter->second.acc_arcoid < 0)) {
+		// TODO Error checkings
+		std::unique_ptr<SQLite3::stmt> select_stmt;
+		db->prepare("SELECT acc_arcoid FROM accounts WHERE acc_platid = ?;",select_stmt);
+		if (acc_platid_str)
+			select_stmt->bind(1,acc_platid_str);
+		else select_stmt->bind(1,acc_platid_int);
+		select_stmt->step();
+		return select_stmt->column_int64(0);
+	} else return iter->second.acc_arcoid;
+}
 
 int main(void)
 {
@@ -103,6 +147,7 @@ int main(void)
 		// Parse the DOM
 		std::unordered_map<std::string,new_artwork> new_artworks;
 		std::unordered_map<std::string,new_account> new_accounts;
+		std::vector<new_art_acc_link>               new_art_acc_links;
 		
 		if (json_dom.HasMember("artworks")) {
 			auto &json_arts = json_dom["artworks"];
@@ -136,6 +181,21 @@ int main(void)
 				new_accounts.emplace(map_key,acc_iter);
 			}
 		}
+		if (json_dom.HasMember("art_acc_links")) {
+			auto &json_links = json_dom["art_acc_links"];
+			if (!json_links.IsArray()) {
+				std::cerr << "\"art_acc_links\" must be an array" << std::endl;
+				return 1;
+			}
+			
+			for (rapidjson::Value::ConstValueIterator link_iter = json_links.Begin(); link_iter != json_links.End(); ++link_iter) {
+				if (!link_iter->IsObject()) {
+					std::cerr << "\"art_acc_links\" elements must be objects" << std::endl;
+					return 1;
+				}
+				new_art_acc_links.emplace_back(link_iter);
+			}
+		}
 		// Debug the transaction
 		if (debug) {
 			std::cerr << new_artworks.size() << " artwork(s) :" << std::endl;
@@ -144,6 +204,11 @@ int main(void)
 			std::cerr << new_accounts.size() << " account(s) :" << std::endl;
 			for (auto& account : new_accounts)
 				std::cerr << "\t\"" << account.second.acc_title << "\" (" << account.second.acc_name << ") [" << (account.second.acc_platid_str ? account.second.acc_platid_str : std::to_string(account.second.acc_platid_int).c_str()) << "]" << std::endl << std::endl;
+			std::cerr << new_art_acc_links.size() << " artwork/account link(s) :" << std::endl;
+			/* TODO
+			for (auto& art_acc_link : new_art_acc_links)
+				std::cerr << "\t\"" << art_acc_link. << "\" (" << account.second.acc_name << ") [" << (account.second.acc_platid_str ? account.second.acc_platid_str : std::to_string(account.second.acc_platid_int).c_str()) << "]" << std::endl << std::endl;
+			*/
 		}
 		// Perform transaction
 		std::unique_ptr<SQLite3::stmt> add_artwork_stmt;
@@ -173,33 +238,76 @@ int main(void)
 			add_artwork_stmt->reset();
 		}
 		
+		
+		std::unique_ptr<SQLite3::stmt> get_account_stmt;
 		std::unique_ptr<SQLite3::stmt> add_account_stmt;
-		if (db->prepare("INSERT OR IGNORE INTO accounts (acc_platid,acc_platform,acc_name,acc_title,acc_url) VALUES (?,?,?,?,?) RETURNING acc_arcoid;",add_account_stmt)) {
+		if (db->prepare("SELECT acc_arcoid FROM accounts WHERE acc_platform = ? AND acc_platid = ?;",get_account_stmt)) {
+			std::cerr << "Failed to prepare the get_account_stmt " << db->errmsg() << std::endl;
+			return 1;
+		}
+		if (db->prepare("INSERT OR FAIL INTO accounts (acc_platid,acc_platform,acc_name,acc_title,acc_url) VALUES (?,?,?,?,?) RETURNING acc_arcoid;",add_account_stmt)) {
 			std::cerr << "Failed to prepare the add_account_stmt " << db->errmsg() << std::endl;
 			return 1;
 		}
 		for (auto& account : new_accounts) {
+			get_account_stmt->bind(1,platform.c_str());
 			if (account.second.acc_platid_str)
-				add_account_stmt->bind(1,account.second.acc_platid_str);
-			else add_account_stmt->bind(1,account.second.acc_platid_int);
-			add_account_stmt->bind(2,platform.c_str());
-			add_account_stmt->bind(3,account.second.acc_name);
-			add_account_stmt->bind(4,account.second.acc_title);
-			add_account_stmt->bind(5,account.second.acc_url);
-			switch (add_account_stmt->step()) {
+				get_account_stmt->bind(2,account.second.acc_platid_str);
+			else get_account_stmt->bind(2,account.second.acc_platid_int);
+			switch (get_account_stmt->step()) {
 				case SQLITE_ROW: {
-					// Save profile icon
-					account.second.acc_arcoid = add_account_stmt->column_int64(0);
-					std::ofstream account_file(Arcollect::db::account_avatars_path+std::to_string(account.second.acc_arcoid));
-					account_file << account.second.icon_data;
+					// User already exist, save acc_arcoid
+					account.second.acc_arcoid = get_account_stmt->column_int64(0);
 				} break;
 				case SQLITE_DONE: {
+					// User does not exist, create it
+					if (account.second.acc_platid_str)
+						add_account_stmt->bind(1,account.second.acc_platid_str);
+					else add_account_stmt->bind(1,account.second.acc_platid_int);
+					add_account_stmt->bind(2,platform.c_str());
+					add_account_stmt->bind(3,account.second.acc_name);
+					add_account_stmt->bind(4,account.second.acc_title);
+					add_account_stmt->bind(5,account.second.acc_url);
+					switch (add_account_stmt->step()) {
+						case SQLITE_ROW: {
+							// Save profile icon
+							account.second.acc_arcoid = add_account_stmt->column_int64(0);
+							std::ofstream account_file(Arcollect::db::account_avatars_path+std::to_string(account.second.acc_arcoid));
+							account_file << account.second.icon_data;
+						} break;
+						case SQLITE_DONE: {
+						} break;
+						default: {
+							std::cerr << "Error executing the STMT" << db->errmsg() << std::endl;
+						} break;
+					}
+					add_account_stmt->reset();
 				} break;
 				default: {
 					std::cerr << "Error executing the STMT" << db->errmsg() << std::endl;
 				} break;
 			}
-			add_account_stmt->reset();
+			get_account_stmt->reset();
+		}
+		std::unique_ptr<SQLite3::stmt> add_art_acc_links_stmt;
+		if (db->prepare("INSERT OR FAIL INTO art_acc_links (acc_arcoid, art_artid, artacc_link) VALUES (?,?,?);",add_art_acc_links_stmt)) {
+			std::cerr << "Failed to prepare the add_art_acc_links_stmt " << db->errmsg() << std::endl;
+			return 1;
+		}
+		for (auto& art_acc_link : new_art_acc_links) {
+			add_art_acc_links_stmt->bind(1,find_account(db,new_accounts,art_acc_link.acc_platid_str,art_acc_link.acc_platid_int));
+			add_art_acc_links_stmt->bind(2,find_artwork(db,new_artworks,art_acc_link.art_source));
+			add_art_acc_links_stmt->bind(3,art_acc_link.artacc_link);
+			switch (add_art_acc_links_stmt->step()) {
+				case SQLITE_ROW: {
+				} break;
+				case SQLITE_DONE: {
+				} break;
+				default: {
+					std::cerr << "INSERT INTO art_acc_links (acc_arcoid, art_artid, artacc_link) VALUES (" << find_account(db,new_accounts,art_acc_link.acc_platid_str,art_acc_link.acc_platid_int) << "," << find_artwork(db,new_artworks,art_acc_link.art_source) << ",\"" << art_acc_link.artacc_link << "\") failed: " << db->errmsg() << std::endl;
+				} break;
+			}
+			add_art_acc_links_stmt->reset();
 		}
 		db->exec("COMMIT;");
 		// Return

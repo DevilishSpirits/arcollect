@@ -62,6 +62,6 @@ BEGIN;
 		artacc_link  TEXT    NOT NULL       , /* The kind of link */
 		FOREIGN KEY (art_artid ) REFERENCES artworks(art_artid ),
 		FOREIGN KEY (acc_arcoid) REFERENCES accounts(acc_arcoid),
-		PRIMARY KEY (acc_arcoid,acc_arcoid,artacc_link)
+		PRIMARY KEY (art_artid,acc_arcoid,artacc_link)
 	);
 COMMIT;

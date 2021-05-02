@@ -21,6 +21,11 @@ function do_save_artwork()
 		'url': avatarImg.parentElement.href,
 		'icon': arcollect_download_image(avatarImg.src)
 	}];
+	let art_acc_links = [{
+		'account': accountName,
+		'artwork': window.location.origin+window.location.pathname,
+		'link': 'account'
+	}];
 		// Download account images
 	Promise.all(accountJSON.map(function(element) {
 		return element['icon'];
@@ -33,7 +38,6 @@ function do_save_artwork()
 		return arcollect_download_image(submissionImg.src);
 	}).then(function(image_data) {
 		// Create a JSON
-		console.log(accountJSON);
 		return {
 			'platform': 'furaffinity.net',
 			'artworks': [{
@@ -43,6 +47,7 @@ function do_save_artwork()
 				'data': image_data
 			}],
 			'accounts': accountJSON,
+			'art_acc_links': art_acc_links,
 		};
 	}).then(function(data) {
 		return arcollect_submit(data);
