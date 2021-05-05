@@ -68,6 +68,11 @@ namespace Arcollect {
 		 */
 		class view_vgrid: public view {
 			private:
+				/** The data version
+				 *
+				 * Used to flush_layout() if the content change
+				 */
+				sqlite_int64 data_version;
 				// The bounding rect
 				SDL::Rect rect;
 				/** Artworks height in pixel

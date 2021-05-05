@@ -1,4 +1,5 @@
 #include "views.hpp"
+#include "../db/db.hpp"
 void Arcollect::gui::view_vgrid::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
 {
 	left_iter = std::make_unique<gui::artwork_collection::iterator>(new_collection->begin());
@@ -25,6 +26,12 @@ void Arcollect::gui::view_vgrid::resize(SDL::Rect rect)
 }
 void Arcollect::gui::view_vgrid::render(void)
 {
+	// Check if we need to rebuild the layout
+	if (data_version != Arcollect::data_version) {
+		data_version = Arcollect::data_version;
+		flush_layout();
+	}
+	// Render
 	SDL::Point displacement{0,scroll_position};
 	for (auto &lines: viewports)
 		for (artwork_viewport &viewport: lines)
