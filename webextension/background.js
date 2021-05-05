@@ -16,14 +16,20 @@ function lookup_platform_from_url(url)
 	return null;
 }
 
-// Etablish connection with the native application
-var webext_adder_port = browser.runtime.connectNative('arcollect_webext_adder');
+// Etablish connection with the native application on demand
+var webext_adder_port_cache = null;
+function webext_adder_port() {
+	if (webext_adder_port_cache === null) {
+		webext_adder_port_cache = browser.runtime.connectNative('arcollect_webext_adder');
+	}
+	return webext_adder_port_cache;
+}
 
 // Setup content-scripts calls
 browser.runtime.onConnect.addListener(function(port) {
 	port.arcollect_platform = lookup_platform_from_url(port.sender.url);
 	console.log(`Content-script connection from ${port.sender.url} (${port.arcollect_platform})`);
 	port.onMessage.addListener(function(msg) {
-		webext_adder_port.postMessage(msg);
+		webext_adder_port().postMessage(msg);
 	});
 });
