@@ -1,3 +1,5 @@
+# Roboto embed
+roboto_proj = subproject('roboto')
 
 deskapp_deps = [
 	dep_sdl2,
@@ -14,6 +16,7 @@ deskapp_srcs = [
 	'gui/slideshow.cpp',
 	'gui/view-slideshow.cpp',
 	'gui/view-grid.cpp',
+	roboto_proj.get_variable('gen_roboto_target'),
 ]
 
 executable('arcollect', deskapp_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: common_lib)

@@ -2,6 +2,7 @@
 #include <SDL_ttf.h>
 #include <memory>
 #include <string>
+#include <arcollect-roboto.hpp>
 namespace Arcollect {
 	namespace gui {
 		class Font {
@@ -10,7 +11,7 @@ namespace Arcollect {
 				 */
 				std::unique_ptr<SDL::Surface> render_line(int font_height, SDL_Color font_color, const char* text, int style = TTF_STYLE_NORMAL) {
 					// FIXME This is awful
-					TTF_Font *font = TTF_OpenFont("Roboto/Roboto-Light.ttf",font_height);
+					TTF_Font *font = TTF_OpenFontRW(SDL_RWFromConstMem(Arcollect::Roboto::Light.data(),Arcollect::Roboto::Light.size()),1,font_height);
 					TTF_SetFontStyle(font,style);
 					std::unique_ptr<SDL::Surface> result((SDL::Surface*)TTF_RenderUTF8_Blended(font,text,font_color));
 					TTF_CloseFont(font);
@@ -20,7 +21,7 @@ namespace Arcollect {
 				 */
 				std::unique_ptr<SDL::Surface> render_paragraph(int font_height, SDL_Color font_color, Uint32 width, const char* text, int style = TTF_STYLE_NORMAL) {
 					// FIXME This is awful
-					TTF_Font *font = TTF_OpenFont("Roboto/Roboto-Light.ttf",font_height);
+					TTF_Font *font = TTF_OpenFontRW(SDL_RWFromConstMem(Arcollect::Roboto::Light.data(),Arcollect::Roboto::Light.size()),1,font_height);
 					TTF_SetFontStyle(font,style);
 					std::unique_ptr<SDL::Surface> result((SDL::Surface*)TTF_RenderUTF8_Blended_Wrapped(font,text,font_color,width));
 					TTF_CloseFont(font);
