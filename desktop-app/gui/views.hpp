@@ -133,6 +133,14 @@ namespace Arcollect {
 			public:
 				void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) override;
 				void resize(SDL::Rect rect) override;
+				/** Flush and rebuild viewports
+				 *
+				 * This function destroy all viewports and reset iterators.
+				 *
+				 * It is called upon some change when cached states in #viewports is no
+				 * longer valid.
+				 */
+				void flush_layout(void);
 				/** Get the pointer artwork viewport
 				 * \param mousepos The mouse position.
 				 */

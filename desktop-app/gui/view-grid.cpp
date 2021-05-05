@@ -6,9 +6,8 @@ void Arcollect::gui::view_vgrid::set_collection(std::shared_ptr<gui::artwork_col
 	collection = new_collection;
 }
 
-void Arcollect::gui::view_vgrid::resize(SDL::Rect rect)
+void Arcollect::gui::view_vgrid::flush_layout(void)
 {
-	this->rect = rect;
 	// Destroy current layout
 	viewports.clear();
 	// Reset scrolling
@@ -18,6 +17,11 @@ void Arcollect::gui::view_vgrid::resize(SDL::Rect rect)
 	right_y = 0;
 	// Force viewport regeneration
 	do_scroll(0);
+}
+void Arcollect::gui::view_vgrid::resize(SDL::Rect rect)
+{
+	this->rect = rect;
+	flush_layout();
 }
 void Arcollect::gui::view_vgrid::render(void)
 {
