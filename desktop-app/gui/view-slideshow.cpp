@@ -111,6 +111,7 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 					viewport.artwork = *--*collection_iterator;
 					resize(rect);
 				} break;
+				default:break;
 			}
 		} break;
 		// Only called for Arcollect::gui::background_slideshow

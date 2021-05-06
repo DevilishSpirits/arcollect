@@ -47,6 +47,7 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
 				case SDL_SCANCODE_HOME: {
 					do_scroll(-scroll_position);
 				} break;
+				default:break;
 			}
 		} return false;
 		case SDL_MOUSEMOTION: {
