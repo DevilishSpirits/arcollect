@@ -19,4 +19,4 @@ deskapp_srcs = [
 	roboto_proj.get_variable('gen_roboto_target'),
 ]
 
-executable('arcollect', deskapp_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: common_lib)
+executable('arcollect', deskapp_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: common_lib, install: true)
