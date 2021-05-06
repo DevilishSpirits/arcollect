@@ -37,8 +37,7 @@ function do_save_artwork()
 		// Download the main artwork
 		return arcollect_download_image(submissionImg.src);
 	}).then(function(image_data) {
-		// Create a JSON
-		return {
+		return arcollect_submit({
 			'platform': 'furaffinity.net',
 			'artworks': [{
 				'title': submissionImg.alt,
@@ -48,9 +47,7 @@ function do_save_artwork()
 			}],
 			'accounts': accountJSON,
 			'art_acc_links': art_acc_links,
-		};
-	}).then(function(data) {
-		return arcollect_submit(data);
+		});
 	}).then(function() {
 		save_buttondiv.text = 'Saved';
 	}).catch(function(reason) {
