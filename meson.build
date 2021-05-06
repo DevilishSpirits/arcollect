@@ -1,4 +1,7 @@
-project('arcollect','cpp', default_options: ['cpp_std=c++17'])
+project('arcollect','cpp', default_options: [
+	'cpp_std=c++17',
+	'cpp_rtti=false',
+])
 
 # Options
 enable_webextension = get_option('enable_webextension')
