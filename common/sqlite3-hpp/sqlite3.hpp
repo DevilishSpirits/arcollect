@@ -16,7 +16,12 @@ namespace SQLite3 {
 	constexpr const int OPEN_SHAREDCACHE  = SQLITE_OPEN_SHAREDCACHE;
 	constexpr const int OPEN_PRIVATECACHE = SQLITE_OPEN_PRIVATECACHE;
 	constexpr const int OPEN_NOFOLLOW     = SQLITE_OPEN_NOFOLLOW;
-	
+	// Datatype
+	constexpr const int INTEGER = SQLITE_INTEGER;
+	constexpr const int FLOAT   = SQLITE_FLOAT;
+	constexpr const int BLOB    = SQLITE_BLOB;
+	//constexpr const int NULL    = SQLITE_NULL;
+	constexpr const int TEXT    = SQLITE_TEXT;
 
 	struct stmt {
 		inline int bind(int column, double value) {
@@ -68,8 +73,10 @@ namespace SQLite3 {
 		sqlite3_value *sqlite3_column_value(sqlite3_stmt*, int iCol);
 		int sqlite3_column_bytes(sqlite3_stmt*, int iCol);
 		int sqlite3_column_bytes16(sqlite3_stmt*, int iCol);
-		int sqlite3_column_type(sqlite3_stmt*, int iCol);
 		*/
+		inline int column_type(int iCol) {
+			return sqlite3_column_type((sqlite3_stmt*)this,iCol);
+		}
 		inline int step(void) {
 			return sqlite3_step((sqlite3_stmt*)this);
 		}
