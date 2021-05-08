@@ -78,8 +78,13 @@ int main(void)
 		// Render frame
 		renderer->SetDrawColor(0,0,0,0);
 		renderer->Clear();
-		for (auto& iter: Arcollect::gui::modal_stack)
+		for (auto& iter: Arcollect::gui::modal_stack) {
+			// Draw a backdrop
+			renderer->SetDrawColor(0,0,0,128);
+			renderer->FillRect();
+			// Render
 			iter.get().render();
+		}
 		Arcollect::gui::window_borders::render();
 		renderer->Present();
 	}
