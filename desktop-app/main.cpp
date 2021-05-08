@@ -28,7 +28,7 @@ int main(void)
 		std::cerr << "SDL initialization failed: " << SDL::GetError() << std::endl;
 		return 1;
 	}
-	if (SDL::CreateWindowAndRenderer(100,100,SDL_WINDOW_RESIZABLE,window,renderer)) {
+	if (SDL::CreateWindowAndRenderer(0,0,SDL_WINDOW_RESIZABLE|SDL_WINDOW_MAXIMIZED,window,renderer)) {
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
@@ -53,7 +53,7 @@ int main(void)
 	std::shared_ptr<Arcollect::gui::artwork_collection> simply_all_collection(new Arcollect::gui::artwork_collection_sqlite(grid_stmt));
 	vgrid.set_collection(simply_all_collection);
 	vgrid.resize(window_rect);
-	Arcollect::gui::modal_stack.push_back(vgrid);
+	//Arcollect::gui::modal_stack.push_back(vgrid);
 	// Main-loop
 	SDL::Event e;
 	bool not_done = true;
