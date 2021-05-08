@@ -102,11 +102,9 @@ void Arcollect::gui::view_vgrid::new_line_left(int y)
 	// Generate viewports
 	while (*left_iter != begin_iter) {
 		std::shared_ptr<db::artwork> artwork = **left_iter;
-		if (!new_line_check_fit(free_space,y,new_viewports,artwork)) {
-			// Rollback and break
-			++*left_iter;
-			break;
-		} else --*left_iter;
+		if (new_line_check_fit(free_space,y,new_viewports,artwork))
+			--*left_iter;
+		else break; // Line is full, break
 	}
 	// Place viewport horizontally
 	if (new_viewports.size()) {
@@ -122,12 +120,9 @@ void Arcollect::gui::view_vgrid::new_line_right(int y)
 	// Generate viewports
 	while (*right_iter != end_iter) {
 		std::shared_ptr<db::artwork> artwork = **right_iter;
-		if (!new_line_check_fit(free_space,y,new_viewports,artwork)) {
-			// Rollback and break
-			--*right_iter;
-			break;
-		} else {++*right_iter;
-		}
+		if (new_line_check_fit(free_space,y,new_viewports,artwork))
+			++*right_iter;
+		else break; // Line is full, break
 	}
 	// Place viewport horizontally
 	if (new_viewports.size()) {
