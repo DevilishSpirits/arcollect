@@ -114,7 +114,8 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 					titlebtn_pressed = titlebtn_hovered;
 			} return true;
 			case SDL_MOUSEBUTTONUP: {
-				if (titlebtn_pressed == titlebtn_hovered)
+				if (titlebtn_pressed == titlebtn_hovered) {
+					auto window_flags = SDL_GetWindowFlags(window);
 					switch (titlebtn_pressed) {
 						case TITLEBTN_CLOSE: {
 							// Generate a quit event
@@ -124,9 +125,13 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 						} break;
 						case TITLEBTN_MAXIMIZE: {
 							// Maximize or restore window
-							if (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED)
+							if (window_flags & SDL_WINDOW_MAXIMIZED)
 								SDL_RestoreWindow(window);
-							else SDL_MaximizeWindow(window);
+							else {
+								if (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+									SDL_SetWindowFullscreen(window,0);
+								SDL_MaximizeWindow(window);
+							}
 						} break;
 						case TITLEBTN_MINIMIZE: {
 							// Minimize window
@@ -134,11 +139,12 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 						} break;
 						case TITLEBTN_FULLSCREEN: {
 							// Toggle fullscreen
-							if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP)
+							if (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
 								SDL_SetWindowFullscreen(window,0);
 							else SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
 						} break;
 					}
+				}
 				titlebtn_pressed = TITLEBTN_NONE;
 			} return true;
 		}
