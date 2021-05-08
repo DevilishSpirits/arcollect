@@ -44,6 +44,9 @@ namespace SDL {
 		inline int DrawLine(const SDL_Point p1, const SDL_Point p2) {
 			return SDL_RenderDrawLine((SDL_Renderer*)this,p1.x,p1.y,p2.x,p2.y);
 		};
+		inline int DrawRect(const SDL::Rect rect) {
+			return SDL_RenderDrawRect((SDL_Renderer*)this,(const SDL_Rect*)&rect);
+		};
 		inline int FillRect(const SDL::Rect rect) {
 			return SDL_RenderFillRect((SDL_Renderer*)this,(const SDL_Rect*)&rect);
 		};
