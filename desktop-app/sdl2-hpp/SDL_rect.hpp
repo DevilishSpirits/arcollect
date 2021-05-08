@@ -16,6 +16,9 @@ namespace SDL {
 		SDL::Point operator-(const SDL::Point& right) const {
 			return {x+right.x,y+right.y};
 		}
+		operator SDL_Point&() {
+			return *((SDL_Point*)this);
+		}
 	};
 	struct FPoint {
 		float x;
