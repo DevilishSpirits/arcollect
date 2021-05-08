@@ -6,6 +6,7 @@
 #include "gui/slideshow.hpp"
 #include "gui/views.hpp"
 #include "gui/font.hpp"
+#include "gui/window-borders.hpp"
 #include <iostream>
 #include <string>
 
@@ -30,6 +31,8 @@ int main(void)
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
+	// Set custom borders
+	Arcollect::gui::window_borders::init(window);
 	// Get window size
 	SDL::Rect window_rect{0,0};
 	renderer->GetOutputSize(window_rect.w,window_rect.h);
@@ -59,7 +62,7 @@ int main(void)
 		if (SDL::WaitEvent(e)) {
 			if (e.type == SDL_QUIT) {
 				not_done = false;
-			} else {
+			} else if (Arcollect::gui::window_borders::event(e)) {
 				// Propagate event to modals
 				auto iter = Arcollect::gui::modal_stack.rbegin();
 				while (iter->get().event(e))
@@ -77,6 +80,7 @@ int main(void)
 		renderer->Clear();
 		for (auto& iter: Arcollect::gui::modal_stack)
 			iter.get().render();
+		Arcollect::gui::window_borders::render();
 		renderer->Present();
 	}
 	// Cleanups

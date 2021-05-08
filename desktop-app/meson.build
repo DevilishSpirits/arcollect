@@ -16,6 +16,7 @@ deskapp_srcs = [
 	'gui/slideshow.cpp',
 	'gui/view-slideshow.cpp',
 	'gui/view-grid.cpp',
+	'gui/window-borders.cpp',
 	roboto_proj.get_variable('gen_roboto_target'),
 ]
 
