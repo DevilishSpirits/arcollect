@@ -1,4 +1,5 @@
 #include "artwork.hpp"
+#include "account.hpp"
 #include "db.hpp"
 #include <arcollect-paths.hpp>
 #include <SDL_image.h>
@@ -34,5 +35,27 @@ void Arcollect::db::artwork::db_sync(void)
 			data_version = Arcollect::data_version;
 		} else {
 		}
+		
+		linked_accounts.clear();
 	}
+}
+
+const std::vector<std::shared_ptr<Arcollect::db::account>> &Arcollect::db::artwork::get_linked_accounts(const std::string &link)
+{
+	db_sync();
+	auto iterbool = linked_accounts.emplace(link,std::vector<std::shared_ptr<account>>());
+	std::vector<std::shared_ptr<account>> &result = iterbool.first->second;
+	if (iterbool.second) {
+		std::unique_ptr<SQLite3::stmt> stmt;
+		database->prepare("SELECT acc_arcoid FROM art_acc_links WHERE art_artid = ? AND artacc_link = ?;",stmt); // TODO Error checking
+		;
+		stmt->bind(1,art_id);
+		stmt->bind(2,link.c_str());
+		while (stmt->step() == SQLITE_ROW) {
+			result.emplace_back(Arcollect::db::account::query(stmt->column_int64(0)));
+			
+			data_version = Arcollect::data_version;
+		}
+	}
+	return result;
 }

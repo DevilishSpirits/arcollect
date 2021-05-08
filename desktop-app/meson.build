@@ -9,6 +9,7 @@ deskapp_deps = [
 ]
 deskapp_srcs = [
 	'main.cpp',
+	'db/account.cpp',
 	'db/artwork.cpp',
 	'db/db.cpp',
 	'gui/artwork-viewport.cpp',
