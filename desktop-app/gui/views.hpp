@@ -41,6 +41,7 @@ namespace Arcollect {
 				void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) override;
 				void resize(SDL::Rect rect) override;
 				void render(void) override;
+				void render_titlebar(SDL::Rect target, int window_width) override;
 				/** Render some info in the bottom of the window
 				 *
 				 * Should be called right after render()
@@ -151,6 +152,7 @@ namespace Arcollect {
 				 */
 				artwork_viewport *get_pointed(SDL::Point mousepos);
 				void render(void) override;
+				void render_titlebar(SDL::Rect target, int window_width) override;
 				bool event(SDL::Event &e) override;
 		};
 	}

@@ -1,4 +1,5 @@
 #include "window-borders.hpp"
+#include "modal.hpp"
 static bool display_bar = false;
 const int Arcollect::gui::window_borders::title_height = 32;
 const int Arcollect::gui::window_borders::resize_width = 4;
@@ -225,5 +226,8 @@ void Arcollect::gui::window_borders::render(void)
 			renderer->SetDrawColor(255,255,255,128);
 			renderer->FillRect(btn_rect);
 		}
+		// Draw modal title
+		title_bar.w -= TITLEBTN_N*title_button_width;
+		modal_stack.back().get().render_titlebar(title_bar,window_size.x);
 	}
 }

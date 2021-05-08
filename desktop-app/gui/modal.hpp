@@ -22,6 +22,13 @@ namespace Arcollect {
 				 * Render the object on the screen
 				 */
 				virtual void render() = 0;
+				/** Render the title bar
+				 * \param target       The rendering rect target
+				 * \param window_width The window width for information
+				 *
+				 * Render the titlebar.
+				 */
+				virtual void render_titlebar(SDL::Rect target, int window_width) = 0;
 				virtual ~modal(void) = default;
 		};
 		

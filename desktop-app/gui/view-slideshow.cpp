@@ -81,6 +81,11 @@ void Arcollect::gui::view_slideshow::render(void)
 	viewport.render({0,0});
 	render_info_incard();
 }
+void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int window_width)
+{
+	// TODO Render artist avatar
+	// TODO Render title name
+}
 bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 {
 	// STOP READING CODE!!! You might not understand some weird syntax.
