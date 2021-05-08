@@ -47,6 +47,9 @@ namespace SDL {
 		inline int FillRect(const SDL::Rect rect) {
 			return SDL_RenderFillRect((SDL_Renderer*)this,(const SDL_Rect*)&rect);
 		};
+		inline int FillRect(void) {
+			return SDL_RenderFillRect((SDL_Renderer*)this,NULL);
+		};
 		
 		inline int Copy(Texture *texture, const Rect *srcrect, const Rect *dstrect) {
 			return SDL_RenderCopy((SDL_Renderer*)this,(SDL_Texture*)texture,(SDL_Rect*)srcrect,(SDL_Rect*)dstrect);
