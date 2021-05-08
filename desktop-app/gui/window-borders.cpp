@@ -61,15 +61,27 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 	// TODO Proper cursor allocations
 	// TODO Use X11 full cursor range
 	SDL::Point cursor_position{e.motion.x,e.motion.y};
-	static SDL_Cursor* cursor_normal = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-	static SDL_Cursor* cursor_nwse   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
-	static SDL_Cursor* cursor_nesw   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
-	static SDL_Cursor* cursor_we     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
-	static SDL_Cursor* cursor_ns     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
-	
 	if (Arcollect::gui::window_borders::borderless) {
 		switch (e.type) {
+			case SDL_WINDOWEVENT: {
+				switch (e.window.event) {
+					case SDL_WINDOWEVENT_SIZE_CHANGED:
+					case SDL_WINDOWEVENT_RESIZED: {
+						// Falltrough SDL_MOUSEMOTION code with updated mouse data
+						SDL_GetMouseState(&cursor_position.x,&cursor_position.y);
+					} break;
+					default: {
+						// Do nothing
+					} return true;
+				}
+			}
 			case SDL_MOUSEMOTION: {
+				
+				static SDL_Cursor* cursor_normal = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+				static SDL_Cursor* cursor_nwse   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+				static SDL_Cursor* cursor_nesw   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
+				static SDL_Cursor* cursor_we     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
+				static SDL_Cursor* cursor_ns     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
 				SDL_HitTestResult test_result = hit_test(NULL,(SDL_Point*)&cursor_position,NULL);
 				// Check if we display the bar
 				display_bar = cursor_position.y <= Arcollect::gui::window_borders::title_height;
