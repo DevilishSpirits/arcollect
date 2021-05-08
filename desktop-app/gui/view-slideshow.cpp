@@ -1,5 +1,6 @@
 #include "views.hpp"
 #include "font.hpp"
+#include "../db/account.hpp"
 
 void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
 {
@@ -79,12 +80,23 @@ void Arcollect::gui::view_slideshow::render(void)
 {
 	renderer->SetDrawBlendMode(SDL::BLENDMODE_NONE);
 	viewport.render({0,0});
-	render_info_incard();
+	//render_info_incard();
 }
 void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int window_width)
 {
-	// TODO Render artist avatar
-	// TODO Render title name
+	auto account = viewport.artwork->get_linked_accounts("account")[0];
+	// Render artist avatar
+	SDL::Rect icon_rect{target.x,target.y,target.h,target.h};
+	renderer->Copy(account->get_icon().get(),NULL,&icon_rect);
+	// Render title
+	const int title_border = target.h/4;
+	Arcollect::gui::Font font;
+	Arcollect::gui::TextLine title_line(font,viewport.artwork->title(),target.h-2*title_border);
+	std::unique_ptr<SDL::Texture> title_line_text(title_line.render());
+	SDL::Point title_line_size;
+	title_line_text->QuerySize(title_line_size);
+	SDL::Rect title_line_dstrect{target.x+title_border+target.h,target.y+title_border,title_line_size.x,title_line_size.y};
+	renderer->Copy(title_line_text.get(),NULL,&title_line_dstrect);
 }
 bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 {
