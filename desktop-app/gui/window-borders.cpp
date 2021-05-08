@@ -159,42 +159,53 @@ void Arcollect::gui::window_borders::render(void)
 		renderer->SetDrawColor(0,0,0,128);
 		renderer->FillRect(title_bar);
 		// Compute buttons rects
-		SDL::Rect titlebtn_rects[] = {
-			{window_size.x-1*title_button_width,0,title_button_width,title_button_height}, // Close button
-			{window_size.x-2*title_button_width,0,title_button_width,title_button_height}, // Maximize button
-			{window_size.x-3*title_button_width,0,title_button_width,title_button_height}, // Fullscreen button
-			{window_size.x-4*title_button_width,0,title_button_width,title_button_height}, // Minimize button
+		SDL::Rect btn_rect = {
+			window_size.x - title_button_width,0,
+			title_button_width,title_button_height
 		};
-		
+		SDL::Rect btn_inner_rect = {
+			btn_rect.x + title_button_padding,
+			btn_rect.y + title_button_padding,
+			btn_rect.w - 2*title_button_padding,
+			btn_rect.h - 2*title_button_padding,
+		};
+		const int btn_inner_ybot = btn_inner_rect.y + btn_inner_rect.h;
 		renderer->SetDrawColor(255,255,255,192);
 		// Draw close button (a cross)
-		SDL::Point close_tl{titlebtn_rects[TITLEBTN_CLOSE].x + title_button_padding,titlebtn_rects[TITLEBTN_CLOSE].y + title_button_padding};
-		SDL::Point close_br{titlebtn_rects[TITLEBTN_CLOSE].x + titlebtn_rects[TITLEBTN_CLOSE].w - title_button_padding,titlebtn_rects[TITLEBTN_CLOSE].y + titlebtn_rects[TITLEBTN_CLOSE].h - title_button_padding};
+		SDL::Point close_tl{btn_inner_rect.x, btn_inner_rect.y};
+		SDL::Point close_br{btn_inner_rect.x + btn_inner_rect.w, btn_inner_rect.y + btn_inner_rect.h};
 		renderer->DrawLine(close_tl,close_br);
 		renderer->DrawLine(close_tl.x,close_br.y,close_br.x,close_tl.y);
+		btn_rect.x       -= title_button_width;
+		btn_inner_rect.x -= title_button_width;
 		// Draw maximize button (a square)
-		SDL::Rect maximize_rect {titlebtn_rects[TITLEBTN_MAXIMIZE].x + title_button_padding,titlebtn_rects[TITLEBTN_MAXIMIZE].y + title_button_padding, titlebtn_rects[TITLEBTN_MAXIMIZE].w - 2*title_button_padding, titlebtn_rects[TITLEBTN_MAXIMIZE].h - 2*title_button_padding};
-		renderer->DrawRect(maximize_rect);
+		renderer->DrawRect(btn_inner_rect);
+		btn_rect.x       -= title_button_width;
+		btn_inner_rect.x -= title_button_width;
 		// Draw fullscreen button (a filled square)
-		SDL::Rect fullscreen_rect {titlebtn_rects[TITLEBTN_FULLSCREEN].x + title_button_padding,titlebtn_rects[TITLEBTN_FULLSCREEN].y + title_button_padding, titlebtn_rects[TITLEBTN_FULLSCREEN].w - 2*title_button_padding, titlebtn_rects[TITLEBTN_FULLSCREEN].h - 2*title_button_padding};
+		SDL::Rect fullscreen_rect = btn_inner_rect;
 		renderer->DrawRect(fullscreen_rect);
 		fullscreen_rect.x += 2;
 		fullscreen_rect.y += 2;
 		fullscreen_rect.w -= 4;
 		fullscreen_rect.h -= 4;
 		renderer->FillRect(fullscreen_rect);
+		btn_rect.x       -= title_button_width;
+		btn_inner_rect.x -= title_button_width;
 		// Draw minimize button (a square)
-		const auto minimize_y = titlebtn_rects[TITLEBTN_MINIMIZE].y + titlebtn_rects[TITLEBTN_MINIMIZE].h-title_button_padding;
-		renderer->DrawLine(titlebtn_rects[TITLEBTN_MINIMIZE].x + title_button_padding,minimize_y,titlebtn_rects[TITLEBTN_MINIMIZE].x + titlebtn_rects[TITLEBTN_MINIMIZE].w - title_button_padding,minimize_y);
+		renderer->DrawLine(btn_inner_rect.x,btn_inner_ybot,btn_inner_rect.x+btn_inner_rect.w,btn_inner_ybot);
+		btn_rect.x       -= title_button_width;
+		btn_inner_rect.x -= title_button_width;
 		// Enlight hovered button
+		btn_rect.x += (TITLEBTN_N-titlebtn_hovered)*title_button_width;
 		if (titlebtn_pressed != TITLEBTN_NONE) {
 			if (titlebtn_pressed == titlebtn_hovered) {
 				renderer->SetDrawColor(16,16,16,128);
-				renderer->FillRect(titlebtn_rects[titlebtn_hovered]);
+				renderer->FillRect(btn_rect);
 			}
 		} else if (titlebtn_hovered != TITLEBTN_NONE) {
 			renderer->SetDrawColor(255,255,255,128);
-			renderer->FillRect(titlebtn_rects[titlebtn_hovered]);
+			renderer->FillRect(btn_rect);
 		}
 	}
 }
