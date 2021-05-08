@@ -11,6 +11,7 @@
 #include <string>
 
 
+extern SDL_Window    *window;
 SDL_Window    *window;
 extern SDL::Renderer *renderer;
 SDL::Renderer *renderer;
