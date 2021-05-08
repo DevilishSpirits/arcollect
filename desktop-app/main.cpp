@@ -28,7 +28,7 @@ int main(void)
 		std::cerr << "SDL initialization failed: " << SDL::GetError() << std::endl;
 		return 1;
 	}
-	if (SDL::CreateWindowAndRenderer(0,0,SDL_WINDOW_RESIZABLE|SDL_WINDOW_MAXIMIZED,window,renderer)) {
+	if (SDL::CreateWindowAndRenderer(600,400,SDL_WINDOW_RESIZABLE|SDL_WINDOW_MAXIMIZED,window,renderer)) {
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
