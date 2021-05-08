@@ -168,6 +168,7 @@ void Arcollect::gui::window_borders::render(void)
 {
 	const int title_button_padding = Arcollect::gui::window_borders::title_height/3;
 	if (display_bar) {
+		renderer->SetDrawBlendMode(SDL::BLENDMODE_BLEND);
 		// Get bar size and cursor position
 		SDL::Point window_size;
 		renderer->GetOutputSize(window_size);
