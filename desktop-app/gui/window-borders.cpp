@@ -3,6 +3,7 @@ static bool display_bar = false;
 const int Arcollect::gui::window_borders::title_height = 32;
 const int Arcollect::gui::window_borders::resize_width = 4;
 bool Arcollect::gui::window_borders::borderless;
+extern SDL_Window    *window;
 extern SDL::Renderer *renderer;
 
 
@@ -10,6 +11,9 @@ static const int title_button_height  = Arcollect::gui::window_borders::title_he
 static const int title_button_width   = Arcollect::gui::window_borders::title_height;
 enum TitleButton: int {
 	TITLEBTN_CLOSE,
+	TITLEBTN_MAXIMIZE,
+	TITLEBTN_FULLSCREEN,
+	TITLEBTN_MINIMIZE,
 	TITLEBTN_N,
 	TITLEBTN_NONE = TITLEBTN_N,
 };
@@ -118,6 +122,22 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 							event.type = SDL_QUIT;
 							SDL_PushEvent(&event);
 						} break;
+						case TITLEBTN_MAXIMIZE: {
+							// Maximize or restore window
+							if (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED)
+								SDL_RestoreWindow(window);
+							else SDL_MaximizeWindow(window);
+						} break;
+						case TITLEBTN_MINIMIZE: {
+							// Minimize window
+							SDL_MinimizeWindow(window);
+						} break;
+						case TITLEBTN_FULLSCREEN: {
+							// Toggle fullscreen
+							if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP)
+								SDL_SetWindowFullscreen(window,0);
+							else SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
+						} break;
 					}
 				titlebtn_pressed = TITLEBTN_NONE;
 			} return true;
@@ -140,7 +160,10 @@ void Arcollect::gui::window_borders::render(void)
 		renderer->FillRect(title_bar);
 		// Compute buttons rects
 		SDL::Rect titlebtn_rects[] = {
-			{window_size.x-title_button_width,0,title_button_width,title_button_height}, // Close button
+			{window_size.x-1*title_button_width,0,title_button_width,title_button_height}, // Close button
+			{window_size.x-2*title_button_width,0,title_button_width,title_button_height}, // Maximize button
+			{window_size.x-3*title_button_width,0,title_button_width,title_button_height}, // Fullscreen button
+			{window_size.x-4*title_button_width,0,title_button_width,title_button_height}, // Minimize button
 		};
 		
 		renderer->SetDrawColor(255,255,255,192);
@@ -149,6 +172,20 @@ void Arcollect::gui::window_borders::render(void)
 		SDL::Point close_br{titlebtn_rects[TITLEBTN_CLOSE].x + titlebtn_rects[TITLEBTN_CLOSE].w - title_button_padding,titlebtn_rects[TITLEBTN_CLOSE].y + titlebtn_rects[TITLEBTN_CLOSE].h - title_button_padding};
 		renderer->DrawLine(close_tl,close_br);
 		renderer->DrawLine(close_tl.x,close_br.y,close_br.x,close_tl.y);
+		// Draw maximize button (a square)
+		SDL::Rect maximize_rect {titlebtn_rects[TITLEBTN_MAXIMIZE].x + title_button_padding,titlebtn_rects[TITLEBTN_MAXIMIZE].y + title_button_padding, titlebtn_rects[TITLEBTN_MAXIMIZE].w - 2*title_button_padding, titlebtn_rects[TITLEBTN_MAXIMIZE].h - 2*title_button_padding};
+		renderer->DrawRect(maximize_rect);
+		// Draw fullscreen button (a filled square)
+		SDL::Rect fullscreen_rect {titlebtn_rects[TITLEBTN_FULLSCREEN].x + title_button_padding,titlebtn_rects[TITLEBTN_FULLSCREEN].y + title_button_padding, titlebtn_rects[TITLEBTN_FULLSCREEN].w - 2*title_button_padding, titlebtn_rects[TITLEBTN_FULLSCREEN].h - 2*title_button_padding};
+		renderer->DrawRect(fullscreen_rect);
+		fullscreen_rect.x += 2;
+		fullscreen_rect.y += 2;
+		fullscreen_rect.w -= 4;
+		fullscreen_rect.h -= 4;
+		renderer->FillRect(fullscreen_rect);
+		// Draw minimize button (a square)
+		const auto minimize_y = titlebtn_rects[TITLEBTN_MINIMIZE].y + titlebtn_rects[TITLEBTN_MINIMIZE].h-title_button_padding;
+		renderer->DrawLine(titlebtn_rects[TITLEBTN_MINIMIZE].x + title_button_padding,minimize_y,titlebtn_rects[TITLEBTN_MINIMIZE].x + titlebtn_rects[TITLEBTN_MINIMIZE].w - title_button_padding,minimize_y);
 		// Enlight hovered button
 		if (titlebtn_pressed != TITLEBTN_NONE) {
 			if (titlebtn_pressed == titlebtn_hovered) {
