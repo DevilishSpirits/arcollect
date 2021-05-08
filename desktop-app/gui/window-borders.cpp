@@ -52,8 +52,10 @@ static SDL_HitTestResult hit_test(SDL_Window *window, const SDL_Point *point, vo
 bool Arcollect::gui::window_borders::init(SDL_Window *window)
 {
 	borderless = SDL_SetWindowHitTest(window,hit_test,NULL) == 0;
-	if (borderless)
+	if (borderless) {
 		SDL_SetWindowBordered(window,SDL_FALSE);
+		SDL_SetWindowMinimumSize(window,title_button_width*TITLEBTN_N,title_button_height);
+	}
 	return borderless;
 }
 
@@ -174,10 +176,16 @@ void Arcollect::gui::window_borders::render(void)
 		renderer->GetOutputSize(window_size);
 		SDL::Point cursor_position;
 		SDL_GetMouseState(&cursor_position.x,&cursor_position.y);
-		// Draw background
 		SDL::Rect title_bar{0,0,window_size.x,Arcollect::gui::window_borders::title_height};
+		// Draw modal title
+		SDL::Rect modal_bar{0,0,window_size.x-TITLEBTN_N*title_button_width,Arcollect::gui::window_borders::title_height};
 		renderer->SetDrawColor(0,0,0,128);
-		renderer->FillRect(title_bar);
+		renderer->FillRect(modal_bar);
+		modal_stack.back().get().render_titlebar(modal_bar,window_size.x);
+		// Draw buttons background over title if it overflow
+		SDL::Rect title_button_area{modal_bar.w,0,TITLEBTN_N*title_button_width,Arcollect::gui::window_borders::title_height};
+		renderer->SetDrawColor(0,0,0,128);
+		renderer->FillRect(title_button_area);
 		// Compute buttons rects
 		SDL::Rect btn_rect = {
 			window_size.x - title_button_width,0,
@@ -227,8 +235,5 @@ void Arcollect::gui::window_borders::render(void)
 			renderer->SetDrawColor(255,255,255,128);
 			renderer->FillRect(btn_rect);
 		}
-		// Draw modal title
-		title_bar.w -= TITLEBTN_N*title_button_width;
-		modal_stack.back().get().render_titlebar(title_bar,window_size.x);
 	}
 }
