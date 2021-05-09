@@ -47,7 +47,7 @@ int main(void)
 	// Load the db
 	Arcollect::database = Arcollect::db::open();
 	// Bootstrap the background
-	Arcollect::gui::update_background();
+	Arcollect::gui::update_background(true);
 	Arcollect::gui::background_slideshow.resize(window_rect);
 	Arcollect::gui::modal_stack.push_back(Arcollect::gui::background_slideshow);
 	// FIXME Test the grid
