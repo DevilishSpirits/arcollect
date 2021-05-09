@@ -226,7 +226,7 @@ int main(void)
 				case SQLITE_ROW: {
 					// Save artwork
 					artwork.second.art_id = add_artwork_stmt->column_int64(0);
-					std::ofstream artwork_file(Arcollect::db::artwork_pool_path+std::to_string(artwork.second.art_id));
+					std::ofstream artwork_file(Arcollect::path::artwork_pool / std::to_string(artwork.second.art_id));
 					artwork_file << artwork.second.data;
 				} break;
 				case SQLITE_DONE: {
@@ -272,7 +272,7 @@ int main(void)
 						case SQLITE_ROW: {
 							// Save profile icon
 							account.second.acc_arcoid = add_account_stmt->column_int64(0);
-							std::ofstream account_file(Arcollect::db::account_avatars_path+std::to_string(account.second.acc_arcoid));
+							std::ofstream account_file(Arcollect::path::account_avatars / std::to_string(account.second.acc_arcoid));
 							account_file << account.second.icon_data;
 						} break;
 						case SQLITE_DONE: {

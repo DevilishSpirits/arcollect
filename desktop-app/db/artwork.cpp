@@ -8,7 +8,7 @@ static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::artwork>> 
 Arcollect::db::artwork::artwork(Arcollect::db::artwork_id art_id) :
 	art_id(art_id)
 {
-	const std::string path = artwork_pool_path+std::to_string(art_id);
+	const std::string path = Arcollect::path::artwork_pool / std::to_string(art_id);
 	SDL::Surface *surf = (SDL::Surface*)IMG_Load(path.c_str());
 	text.reset(SDL::Texture::CreateFromSurface(renderer,surf));
 	delete surf;

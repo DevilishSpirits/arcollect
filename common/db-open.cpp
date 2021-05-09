@@ -5,7 +5,7 @@
 
 std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 {
-	static const std::string db_path = Arcollect::db::data_home + "db.sqlite3";
+	static const std::string db_path = Arcollect::path::arco_data_home / "db.sqlite3";
 	std::unique_ptr<SQLite3::sqlite3> data_db;
 	// TODO Backup the db
 	int sqlite_open_code = SQLite3::open(db_path.c_str(),data_db,flags);
