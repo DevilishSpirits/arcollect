@@ -81,6 +81,7 @@ int main(void)
 		renderer->Clear();
 		for (auto& iter: Arcollect::gui::modal_stack) {
 			// Draw a backdrop
+			renderer->SetDrawBlendMode(SDL::BLENDMODE_BLEND);
 			renderer->SetDrawColor(0,0,0,128);
 			renderer->FillRect();
 			// Render
