@@ -31,7 +31,7 @@ namespace Arcollect {
 			 * 	`--(*collection_iterator)` perform operator-- on the iterator.
 			 * 	`*(--*collection_iterator)` return the pointed std::shared_ptr<artwork>
 			 */
-			private:
+			protected:
 				// The bounding rect
 				SDL::Rect rect;
 				// The main artwork viewport

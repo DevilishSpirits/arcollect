@@ -14,7 +14,7 @@ namespace Arcollect {
 		/** This is the global background slideshow
 		 *
 		 */
-		extern view_slideshow background_slideshow;
+		extern view_slideshow &background_slideshow;
 		/** Update the background image
 		 */
 		void update_background(db::artwork_id artid);
