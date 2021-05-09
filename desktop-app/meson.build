@@ -1,14 +1,19 @@
 # Roboto embed
 roboto_proj = subproject('roboto')
+inith_proj = subproject('inih', default_options: [
+	'with_INIReader=true',
+])
 
 deskapp_deps = [
 	dep_sdl2,
 	dep_sdl2_image,
 	dep_sdl2_ttf,
 	dep_sqlite3,
+	inith_proj.get_variable('INIReader_dep'),
 ]
 deskapp_srcs = [
 	'main.cpp',
+	'config.cpp',
 	'db/account.cpp',
 	'db/artwork.cpp',
 	'db/db.cpp',

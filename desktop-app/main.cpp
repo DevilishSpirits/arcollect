@@ -1,7 +1,9 @@
 #include "sdl2-hpp/SDL.hpp"
 #include <arcollect-db-open.hpp>
+#include "config.hpp"
 #include "db/db.hpp"
 #include "gui/artwork-collections.hpp"
+#include "gui/first-run.hpp"
 #include "gui/modal.hpp"
 #include "gui/slideshow.hpp"
 #include "gui/views.hpp"
@@ -32,6 +34,8 @@ int main(void)
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
+	// Read config
+	Arcollect::config::read_config();
 	// Set custom borders
 	Arcollect::gui::window_borders::init(window);
 	// Get window size
