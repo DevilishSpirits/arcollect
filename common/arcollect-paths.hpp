@@ -2,6 +2,9 @@
 #include "../sqlite3-hpp/sqlite3.hpp"
 namespace Arcollect {
 	namespace db {
+		/** The XDG configuration home ($XDG_CONFIG_HOME)
+		 */
+		extern const std::string xdg_config_home;
 		/** The software data home ($XDG_DATA_HOME/arcollect/)
 		 *
 		 * This is were all datas are stored. Artworks and database included.

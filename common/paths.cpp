@@ -2,6 +2,13 @@
 #include <cstdlib>
 #include <sys/stat.h>
 #include <filesystem>
+const std::string Arcollect::db::xdg_config_home = [](){
+	// Compute the data home
+	if (auto* config_home = std::getenv("XDG_CONFIG_HOME"); config_home && *config_home != '\0')
+		return std::filesystem::path(config_home);
+	else return std::filesystem::path(std::getenv("HOME")) / ".config/";
+}();
+
 const std::string Arcollect::db::data_home = [](){
 	// Compute the data home
 	std::filesystem::path data_home;
