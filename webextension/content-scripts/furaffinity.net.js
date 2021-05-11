@@ -15,6 +15,7 @@ function do_save_artwork()
 	let avatarImg = document.getElementsByClassName('submission-user-icon floatleft avatar')[0];
 	let accountName = avatarImg.parentElement.href.split('/')[4]; // Extract from the user avatar URL
 	let description = document.getElementsByClassName('submission-description user-submitted-links')[0].innerText;
+	let ratingBoxClass = document.getElementsByClassName('rating-box')[0].className;
 	let accountJSON = [{
 		'id': accountName,
 		'name': accountName,
@@ -43,6 +44,7 @@ function do_save_artwork()
 				'title': submissionImg.alt,
 				'desc': description,
 				'source': window.location.origin+window.location.pathname,
+				'rating': ratingBoxClass.includes('adult') ? 18 : ratingBoxClass.includes('mature') ? 16 : 0,
 				'data': image_data
 			}],
 			'accounts': accountJSON,
