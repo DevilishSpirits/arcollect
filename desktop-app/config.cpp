@@ -8,12 +8,21 @@ void Arcollect::config::read_config(void)
 {
 	INIReader reader(Arcollect::path::xdg_config_home/"arcollect.ini");
 	// TODO if (reader.ParseError() < 0)
-	first_run.value = reader.GetInteger("arcollect","first_run",first_run.default_value);
 }
 void Arcollect::config::write_config(void)
 {
 	std::ofstream writer(Arcollect::path::xdg_config_home/"arcollect.ini");
 	writer << "[arcollect]\n"
-	       << "first_run=" << first_run << '\n'
+	       << "; Arcollect configuration file\n"
+	       << "; This file contain Arcollect configuration\n"
+	       << "; Your library is stored at " << Arcollect::path::arco_data_home << "\n"
+	       << "; Note: This file is rewritten upon each start and your comments will be lost\n"
+	       << "\n"
+	       << "; start_window_mode - Window starting mode\n"
+	       << "; " << STARTWINDOW_NORMAL     << ": Normal windowed mode\n"
+	       << "; " << STARTWINDOW_MAXIMIZED  << ": Maximized window\n"
+	       << "; " << STARTWINDOW_FULLSCREEN << ": Full-screen\n"
+	       << "; Default is " << start_window_mode.default_value << "\n"
+	       << "start_window_mode=" << start_window_mode << '\n'
 	;
 }
