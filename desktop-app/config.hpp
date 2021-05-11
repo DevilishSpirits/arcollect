@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <arcollect-paths.hpp>
 namespace Arcollect {
