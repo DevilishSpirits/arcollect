@@ -35,5 +35,17 @@ namespace Arcollect {
 			STARTWINDOW_FULLSCREEN = 2,
 		};
 		extern Param<int> start_window_mode;
+		
+		enum Rating: int {
+			RATING_NONE   = 0,
+			RATING_PG13   = 13,
+			RATING_MATURE = 16,
+			RATING_ADULT  = 18,
+		};
+		/** current_rating - Current artwork rating option
+		 *
+		 * This is a global filter on displayed artworks
+		 */
+		extern Param<int> current_rating;
 	}
 }

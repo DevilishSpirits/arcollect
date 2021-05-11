@@ -3,12 +3,14 @@
 #include <fstream>
 
 Arcollect::config::Param<int> Arcollect::config::start_window_mode(Arcollect::config::STARTWINDOW_MAXIMIZED);
+Arcollect::config::Param<int> Arcollect::config::current_rating(Arcollect::config::RATING_ADULT); // FIXME Adult default is not a sane default for everyone
 
 void Arcollect::config::read_config(void)
 {
 	INIReader reader(Arcollect::path::xdg_config_home/"arcollect.ini");
 	// TODO if (reader.ParseError() < 0)
 	start_window_mode.value = reader.GetInteger("arcollect","start_window_mode",start_window_mode.default_value);
+	current_rating.value = reader.GetInteger("arcollect","current_rating",current_rating.default_value);
 	
 	// Save back updated file
 	write_config();
@@ -28,5 +30,13 @@ void Arcollect::config::write_config(void)
 	       << "; " << STARTWINDOW_FULLSCREEN << ": Full-screen\n"
 	       << "; Default is " << start_window_mode.default_value << "\n"
 	       << "start_window_mode=" << start_window_mode << '\n'
+	       << "\n"
+	       << "; current_rating - Current artwork rating option\n"
+	       << "; " << RATING_NONE   << ": Unrated only\n"
+	       << "; " << RATING_PG13   << ": Not for young child (PG13)\n"
+	       << "; " << RATING_MATURE << ": Mature content\n"
+	       << "; " << RATING_ADULT  << ": Adult content\n"
+	       << "; This option is set when you change current rating\n"
+	       << "current_rating=" << current_rating << '\n'
 	;
 }
