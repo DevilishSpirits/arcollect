@@ -10,6 +10,19 @@
 #include "../subprojects/rapidjson/include/rapidjson/document.h"
 #include "base64.hpp"
 
+/** RapidJSON helper to add integers
+ * \param iter           Iterator to the object
+ * \param key            The key to read
+ * \param default_value  The value if the key does not exist
+ * \return default_value is the key doesn't exist or it's string value
+ */
+static sqlite_int64 json_int64(rapidjson::Value::ConstValueIterator iter, const char* key, sqlite_int64 default_value)
+{
+	auto& object = *iter;
+	if (object.HasMember(key)) {
+		return object[key].GetInt64();
+	} else return default_value;
+}
 /** RapidJSON helper to add strings
  * \param iter Iterator to the object
  * \param key  The key to read
@@ -26,6 +39,7 @@ struct new_artwork {
 	const char* art_title;
 	const char* art_desc;
 	const char* art_source;
+	sqlite_int64 art_rating;
 	sqlite_int64 art_id;
 	std::string data;
 	// TODO Artwork datas
@@ -33,6 +47,7 @@ struct new_artwork {
 		art_title(json_string(iter,"title")),
 		art_desc(json_string(iter,"desc")),
 		art_source(json_string(iter,"source")),
+		art_rating(json_int64(iter,"rating",0)),
 		art_id(-1)
 	{
 		macaron::Base64::Decode(std::string(iter->operator[]("data").GetString()),data);
@@ -212,7 +227,7 @@ int main(void)
 		}
 		// Perform transaction
 		std::unique_ptr<SQLite3::stmt> add_artwork_stmt;
-		if (db->prepare("INSERT OR FAIL INTO artworks (art_title,art_platform,art_desc,art_source) VALUES (?,?,?,?) RETURNING art_artid;",add_artwork_stmt)) {
+		if (db->prepare("INSERT OR FAIL INTO artworks (art_title,art_platform,art_desc,art_source,art_rating) VALUES (?,?,?,?,?) RETURNING art_artid;",add_artwork_stmt)) {
 			std::cerr << "Failed to prepare the add_artwork_stmt " << db->errmsg() << std::endl;
 			return 1;
 		}
@@ -221,7 +236,7 @@ int main(void)
 			add_artwork_stmt->bind(2,platform.c_str());
 			add_artwork_stmt->bind(3,artwork.second.art_desc);
 			add_artwork_stmt->bind(4,artwork.second.art_source);
-			add_artwork_stmt->bind(5,artwork.second.art_title);
+			add_artwork_stmt->bind(5,artwork.second.art_rating);
 			switch (add_artwork_stmt->step()) {
 				case SQLITE_ROW: {
 					// Save artwork

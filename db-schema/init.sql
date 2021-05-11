@@ -20,6 +20,14 @@ BEGIN;
 	 *
 	 * This is a repository of all collected artworks. It contain general metadata
 	 * about the artwork and their unique id.
+	 *
+	 * Note about art_rating: The rating works with a recomended minimal age
+	 * inclusive (16 mean that 15 and less child are not recomended).
+	 * The normalized rating are these :
+	 * 	-  0 for unrated content
+	 * 	- 13 for PG-13 like content
+	 * 	- 16 for Mature content
+	 * 	- 18 for Adult content
 	 */
 	CREATE TABLE artworks (
 		art_artid    INTEGER NOT NULL UNIQUE, /* The artwork unique ID   */
@@ -27,6 +35,7 @@ BEGIN;
 		art_title    TEXT                   , /* The artwork title       */
 		art_desc     TEXT                   , /* The artwork description */
 		art_source   TEXT    NOT NULL UNIQUE, /* The artwork source URL  */
+		art_rating   INTEGER                , /* The artwork rating age  */
 		PRIMARY KEY (art_artid)
 	);
 	

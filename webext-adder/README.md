@@ -13,6 +13,7 @@ When adding artwork, send the plain artwork with this kind of JSON :
 		"title": "Sample art",
 		"desc": "My sample warmup for the morning.",
 		"source": "https://example.net/art/123456/",
+		"rating": 0,
 		"data": "<... base64 data ...>"
 	}],
 	"accounts": [{
@@ -35,6 +36,7 @@ The `artwork` array contain objects you wants to add with some properties :
 * `title` is the artwork title.
 * `desc` is the artwork description.
 * `source` is the artwork URL. Caution ! This is a key in the database, reformat `window.location` in a way that the same artwork always have the same URL.
+* `rating` is the artwork rating. See the schema explanation of `artworks` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/db-schema/init.sql).
 * `data` is the artwork file itself in base64 encoding.
 
 The `account` array contain users you might wants to add with some properties :
