@@ -1,3 +1,4 @@
+#include "../db/filter.hpp"
 #include "slideshow.hpp"
 #include "artwork-collections.hpp"
 
@@ -43,6 +44,6 @@ void Arcollect::gui::update_background(std::unique_ptr<SQLite3::stmt> &stmt, boo
 void Arcollect::gui::update_background(bool collection)
 {
 	std::unique_ptr<SQLite3::stmt> stmt;
-	database->prepare("SELECT art_artid FROM artworks ORDER BY random();",stmt);
+	database->prepare("SELECT art_artid FROM artworks WHERE "+db_filter::get_sql()+" ORDER BY random();",stmt);
 	update_background(stmt,collection);
 }
