@@ -2,6 +2,7 @@
 #include <arcollect-db-open.hpp>
 #include "config.hpp"
 #include "db/db.hpp"
+#include "db/filter.hpp"
 #include "gui/artwork-collections.hpp"
 #include "gui/first-run.hpp"
 #include "gui/modal.hpp"
@@ -58,6 +59,17 @@ int main(void)
 	TTF_Init();
 	// Load the db
 	Arcollect::database = Arcollect::db::open();
+	// FIXME Give a better interface
+	SDL_Delay(400); // FIXME Necessary to be usable but innacceptable
+	SDL_PumpEvents();
+	const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
+	if (keyboard_state[SDL_GetScancodeFromKey(SDLK_w)]) {
+		std::cerr << "SFW mode enabled" << std::endl;
+		Arcollect::db_filter::set_rating(Arcollect::config::RATING_PG13);
+	} else if (keyboard_state[SDL_GetScancodeFromKey(SDLK_x)]) {
+		std::cerr << "NSFW mode enabled" << std::endl;
+		Arcollect::db_filter::set_rating(Arcollect::config::RATING_ADULT);
+	} 
 	// Bootstrap the background
 	Arcollect::gui::update_background(true);
 	Arcollect::gui::background_slideshow.resize(window_rect);
