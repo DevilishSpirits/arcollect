@@ -2,7 +2,6 @@
 #include <INIReader.h>
 #include <fstream>
 
-Arcollect::config::Param<int> Arcollect::config::first_run(0);
 Arcollect::config::Param<int> Arcollect::config::start_window_mode(Arcollect::config::STARTWINDOW_MAXIMIZED);
 
 void Arcollect::config::read_config(void)
