@@ -27,5 +27,13 @@ namespace Arcollect {
 				const T default_value;
 				Param(const T default_value) : value(default_value), default_value(default_value) {};
 		};
+		/** start_fullscreen - Start in fullscreen
+		 */
+		enum StartWindowMode {
+			STARTWINDOW_NORMAL     = 0,
+			STARTWINDOW_MAXIMIZED  = 1,
+			STARTWINDOW_FULLSCREEN = 2,
+		};
+		extern Param<int> start_window_mode;
 	}
 }

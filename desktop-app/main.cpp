@@ -24,18 +24,30 @@ Uint32 time_framedelta;
 
 int main(void)
 {
+	// Read config
+	Arcollect::config::read_config();
 	// Init SDL
 	SDL::Hint::SetRenderScaleQuality(SDL::Hint::RENDER_SCALE_QUALITY_BEST);
 	if (SDL::Init(SDL::INIT_VIDEO)) {
 		std::cerr << "SDL initialization failed: " << SDL::GetError() << std::endl;
 		return 1;
 	}
-	if (SDL::CreateWindowAndRenderer(600,400,SDL_WINDOW_RESIZABLE|SDL_WINDOW_MAXIMIZED,window,renderer)) {
+	int window_create_flags = SDL_WINDOW_RESIZABLE;
+	switch (Arcollect::config::start_window_mode) {
+		case Arcollect::config::STARTWINDOW_NORMAL: {
+			window_create_flags |= 0; // Add no flag
+		} break;
+		case Arcollect::config::STARTWINDOW_MAXIMIZED: {
+			window_create_flags |= SDL_WINDOW_MAXIMIZED;
+		} break;
+		case Arcollect::config::STARTWINDOW_FULLSCREEN: {
+			window_create_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		} break;
+	}
+	if (SDL::CreateWindowAndRenderer(600,400,window_create_flags,window,renderer)) {
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
-	// Read config
-	Arcollect::config::read_config();
 	// Set custom borders
 	Arcollect::gui::window_borders::init(window);
 	// Get window size

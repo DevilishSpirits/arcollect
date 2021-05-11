@@ -3,11 +3,13 @@
 #include <fstream>
 
 Arcollect::config::Param<int> Arcollect::config::first_run(0);
+Arcollect::config::Param<int> Arcollect::config::start_window_mode(Arcollect::config::STARTWINDOW_MAXIMIZED);
 
 void Arcollect::config::read_config(void)
 {
 	INIReader reader(Arcollect::path::xdg_config_home/"arcollect.ini");
 	// TODO if (reader.ParseError() < 0)
+	start_window_mode.value = reader.GetInteger("arcollect","start_window_mode",first_run.default_value);
 }
 void Arcollect::config::write_config(void)
 {
