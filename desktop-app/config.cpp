@@ -9,7 +9,10 @@ void Arcollect::config::read_config(void)
 {
 	INIReader reader(Arcollect::path::xdg_config_home/"arcollect.ini");
 	// TODO if (reader.ParseError() < 0)
-	start_window_mode.value = reader.GetInteger("arcollect","start_window_mode",first_run.default_value);
+	start_window_mode.value = reader.GetInteger("arcollect","start_window_mode",start_window_mode.default_value);
+	
+	// Save back updated file
+	write_config();
 }
 void Arcollect::config::write_config(void)
 {
