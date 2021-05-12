@@ -45,8 +45,6 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
 {
 	switch (e.type) {
 		case SDL_KEYDOWN: {
-		} return false;
-		case SDL_KEYUP: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_HOME: {
 					do_scroll(-scroll_position);
@@ -59,6 +57,8 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
 				} break;
 				default:break;
 			}
+		} return false;
+		case SDL_KEYUP: {
 		} return false;
 		// Only called Arcollect::gui::background_slideshow
 		case SDL_WINDOWEVENT: {
