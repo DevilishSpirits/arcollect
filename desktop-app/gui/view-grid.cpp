@@ -54,10 +54,6 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
 				default:break;
 			}
 		} return false;
-		case SDL_MOUSEMOTION: {
-			Arcollect::gui::artwork_viewport *viewport = Arcollect::gui::view_vgrid::get_pointed({e.motion.x,e.motion.y});
-			//std::cerr << "Hovering " << (viewport ? viewport->artwork->title() : "none") << std::endl; 
-		} return false;
 		// Only called Arcollect::gui::background_slideshow
 		case SDL_WINDOWEVENT: {
 			switch (e.window.event) {
