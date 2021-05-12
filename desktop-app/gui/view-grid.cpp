@@ -60,6 +60,9 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
 		} return false;
 		case SDL_KEYUP: {
 		} return false;
+		case SDL_MOUSEWHEEL: {
+			do_scroll(-e.wheel.y*artwork_height);
+		} return false;
 		// Only called Arcollect::gui::background_slideshow
 		case SDL_WINDOWEVENT: {
 			switch (e.window.event) {
