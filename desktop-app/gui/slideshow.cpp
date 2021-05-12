@@ -3,6 +3,21 @@
 #include "artwork-collections.hpp"
 
 static class background_vgrid: public Arcollect::gui::view_vgrid {
+	Arcollect::gui::artwork_viewport *mousedown_viewport;
+	bool event(SDL::Event &e) override {
+		switch (e.type) {
+			case SDL_MOUSEBUTTONDOWN: {
+				mousedown_viewport = get_pointed({e.button.x,e.button.y});
+			} return false;
+			case SDL_MOUSEBUTTONUP: {
+				if (mousedown_viewport && (mousedown_viewport == get_pointed({e.button.x,e.button.y})))
+					Arcollect::gui::background_slideshow.set_collection_iterator(*(mousedown_viewport->iter));
+				Arcollect::gui::modal_stack.pop_back();
+			} return false;
+			default:break;
+		}
+		return Arcollect::gui::view_vgrid::event(e);
+	}
 } background_vgrid;
 
 static class background_slideshow: public Arcollect::gui::view_slideshow {

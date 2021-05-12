@@ -105,8 +105,7 @@ void Arcollect::gui::view_vgrid::new_line_left(int y)
 	std::vector<artwork_viewport> &new_viewports = viewports.emplace_front();
 	// Generate viewports
 	while (*left_iter != begin_iter) {
-		std::shared_ptr<db::artwork> artwork = **left_iter;
-		if (new_line_check_fit(free_space,y,new_viewports,artwork))
+		if (new_line_check_fit(free_space,y,new_viewports,*left_iter))
 			--*left_iter;
 		else break; // Line is full, break
 	}
@@ -123,8 +122,7 @@ void Arcollect::gui::view_vgrid::new_line_right(int y)
 	std::vector<artwork_viewport> &new_viewports = viewports.emplace_back();
 	// Generate viewports
 	while (*right_iter != end_iter) {
-		std::shared_ptr<db::artwork> artwork = **right_iter;
-		if (new_line_check_fit(free_space,y,new_viewports,artwork))
+		if (new_line_check_fit(free_space,y,new_viewports,*right_iter))
 			++*right_iter;
 		else break; // Line is full, break
 	}
@@ -134,10 +132,11 @@ void Arcollect::gui::view_vgrid::new_line_right(int y)
 		right_y += artwork_height + artwork_margin.y;
 	} else viewports.pop_back(); // Drop the line
 }
-bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std::vector<artwork_viewport> &new_viewports, std::shared_ptr<db::artwork> &artwork)
+bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std::vector<artwork_viewport> &new_viewports, artwork_collection::iterator &iter)
 {
 	// Compute width
 	SDL::Point size;
+	std::shared_ptr<db::artwork> artwork = *iter;
 	artwork->QuerySize(size);
 	size.x *= artwork_height;
 	size.x /= size.y;
@@ -146,6 +145,7 @@ bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std:
 		// It fit !
 		artwork_viewport& viewport = new_viewports.emplace_back();
 		viewport.artwork = artwork;
+		viewport.iter = std::make_unique<artwork_collection::iterator>(iter);
 		viewport.set_corners({artwork_margin.x,y,size.x,artwork_height});
 		free_space -= size.x + artwork_margin.x;
 	} else {
@@ -157,6 +157,7 @@ bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std:
 			// This is an ultra large artwork !
 			artwork_viewport& viewport = new_viewports.emplace_back();
 			viewport.artwork = artwork;
+			viewport.iter = std::make_unique<artwork_collection::iterator>(iter);
 			viewport.set_corners({0,y,free_space,artwork_height});
 			// Remove all free_space
 			free_space = 0;

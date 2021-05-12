@@ -40,6 +40,7 @@ namespace Arcollect {
 			public:
 				void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) override;
 				void resize(SDL::Rect rect) override;
+				void set_collection_iterator(artwork_collection::iterator &iter);
 				void render(void) override;
 				void render_titlebar(SDL::Rect target, int window_width) override;
 				/** Render some info in the bottom of the window
@@ -121,10 +122,11 @@ namespace Arcollect {
 				void new_line_place_horizontal_r(int free_space, std::vector<artwork_viewport> &new_viewports);
 				/** new_line_left()/new_line_right() helper to check if viewport fit
 				 * \param free_space The remaining space.available
+				 * \param iter       The iterator yielding the artwork
 				 *
 				 * This function also append the artwork if it does fit
 				 */
-				bool new_line_check_fit(int &free_space, int y, std::vector<artwork_viewport> &new_viewports, std::shared_ptr<db::artwork> &artwork);
+				bool new_line_check_fit(int &free_space, int y, std::vector<artwork_viewport> &new_viewports, artwork_collection::iterator &iter);
 				
 				/** Create a new line in the top
 				 * \param y Distance from the logical top

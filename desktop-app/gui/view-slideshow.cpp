@@ -28,6 +28,12 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 	// Set viewport
 	viewport.set_corners(rect);
 }
+void Arcollect::gui::view_slideshow::set_collection_iterator(artwork_collection::iterator &iter)
+{
+	collection_iterator = std::make_unique<artwork_collection::iterator>(iter);
+	viewport.artwork = **collection_iterator;
+	resize(rect);
+}
 void Arcollect::gui::view_slideshow::render_info_incard(void)
 {
 	Arcollect::db::artwork &artwork = ***collection_iterator;
