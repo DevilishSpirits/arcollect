@@ -99,6 +99,9 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 		viewports.pop_back();
 		right_y -= artwork_height + artwork_margin.y;
 	}
+	// Stop scrolling if bottom is hit
+	if (scroll_position + rect.h > right_y)
+		scroll_position = right_y - rect.h;
 }
 
 bool Arcollect::gui::view_vgrid::new_line_left(int y)
