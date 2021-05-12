@@ -26,6 +26,7 @@ namespace Arcollect {
 						}
 						virtual bool operator==(const iterator_base& right) const = 0;
 						virtual std::shared_ptr<db::artwork>& operator*(void) = 0;
+						virtual iterator_base* copy(void) = 0;
 						virtual ~iterator_base(void) = default;
 				};
 				virtual iterator_base *new_begin(void) = 0;
@@ -35,7 +36,8 @@ namespace Arcollect {
 						iterator_base* base;
 					public:
 						iterator(iterator_base *base) : base(base) {}
-						iterator(void) {
+						iterator(const iterator &base) : base(base.base->copy()) {}
+						~iterator(void) {
 							delete base;
 						}
 						iterator& operator++(void) {

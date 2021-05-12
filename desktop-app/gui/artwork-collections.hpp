@@ -28,6 +28,9 @@ namespace Arcollect {
 							return db::artwork::query(artid);
 						}
 						iterator(db::artwork_id artid, bool past_the_end) : artid(artid), past_the_end(past_the_end) {};
+						iterator_base* copy(void) override {
+							return new iterator(artid,past_the_end);
+						}
 				};
 				iterator_base *new_begin(void) override {
 					return new iterator(artid,false);
@@ -61,6 +64,9 @@ namespace Arcollect {
 						}
 						std::shared_ptr<db::artwork>& operator*(void) override {
 							return db::artwork::query(*iter);
+						}
+						iterator_base* copy(void) override {
+							return new iterator(this->iter);
 						}
 						iterator(std::vector<db::artwork_id>::iterator iter) : iter(iter) {};
 				};
