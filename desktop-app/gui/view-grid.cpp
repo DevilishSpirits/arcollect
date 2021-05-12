@@ -32,7 +32,7 @@ void Arcollect::gui::view_vgrid::render(void)
 		flush_layout();
 	}
 	// Render
-	SDL::Point displacement{0,scroll_position};
+	SDL::Point displacement{0,-scroll_position};
 	for (auto &lines: viewports)
 		for (artwork_viewport &viewport: lines)
 			viewport.render(displacement);
@@ -50,6 +50,12 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_HOME: {
 					do_scroll(-scroll_position);
+				} break;
+				case SDL_SCANCODE_DOWN: {
+					do_scroll(+artwork_height);
+				} break;
+				case SDL_SCANCODE_UP: {
+					do_scroll(-artwork_height);
 				} break;
 				default:break;
 			}
@@ -76,8 +82,7 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	if (scroll_position < 0)
 		scroll_position = 0;
 	// Create left viewports if needed
-	while (left_y < scroll_position)
-		new_line_left(left_y - artwork_height - artwork_margin.y);
+	while ((left_y < scroll_position) && new_line_left(left_y - artwork_height - artwork_margin.y));
 	// Drop left viewports if too much
 	while (left_y > scroll_position + 2 * artwork_height) {
 		viewports.pop_front();
@@ -85,8 +90,7 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	}
 	// Create right viewports if needed
 	// NOTE! right_y is offset by minus one row
-	while ((right_y < scroll_position + rect.h) && (*right_iter != end_iter))
-		new_line_right(right_y);
+	while ((right_y < scroll_position + rect.h) && (*right_iter != end_iter) && new_line_right(right_y));
 	// Drop right viewports if too much
 	while (right_y > scroll_position + rect.h + 2 * artwork_height) {
 		viewports.pop_back();
@@ -94,7 +98,7 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	}
 }
 
-void Arcollect::gui::view_vgrid::new_line_left(int y)
+bool Arcollect::gui::view_vgrid::new_line_left(int y)
 {
 	const auto begin_iter = collection->begin();
 	int free_space = rect.w-2*artwork_margin.x;
@@ -109,9 +113,13 @@ void Arcollect::gui::view_vgrid::new_line_left(int y)
 	if (new_viewports.size()) {
 		new_line_place_horizontal_r(free_space,new_viewports);
 		left_y -= artwork_height + artwork_margin.x;
-	} else viewports.pop_front(); // Drop the line
+		return true;
+	} else {
+		viewports.pop_front(); // Drop the line
+		return false;
+	}
 }
-void Arcollect::gui::view_vgrid::new_line_right(int y)
+bool Arcollect::gui::view_vgrid::new_line_right(int y)
 {
 	auto end_iter = collection->end();
 	int free_space = rect.w-2*artwork_margin.x;
@@ -126,7 +134,11 @@ void Arcollect::gui::view_vgrid::new_line_right(int y)
 	if (new_viewports.size()) {
 		new_line_place_horizontal_l(free_space,new_viewports);
 		right_y += artwork_height + artwork_margin.y;
-	} else viewports.pop_back(); // Drop the line
+		return true;
+	} else {
+		viewports.pop_back(); // Drop the line
+		return false;
+	}
 }
 bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std::vector<artwork_viewport> &new_viewports, artwork_collection::iterator &iter)
 {

@@ -133,11 +133,11 @@ namespace Arcollect {
 				 *
 				 * This function generate a new line of artworks. It edit left_iter.
 				 */
-				void new_line_left(int y);
+				bool new_line_left(int y);
 				/** Create a new line
 				 * \param y Distance from the logical top
 				 */
-				void new_line_right(int y);
+				bool new_line_right(int y);
 			public:
 				void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) override;
 				void resize(SDL::Rect rect) override;
