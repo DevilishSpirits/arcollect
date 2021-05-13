@@ -32,6 +32,8 @@ BEGIN;
 	CREATE TABLE artworks (
 		art_artid    INTEGER NOT NULL UNIQUE, /* The artwork unique ID   */
 		art_platform TEXT    NOT NULL       , /* The artwork platform    */
+		art_width    INTEGER                , /* Artwork width in pixel  */
+		art_height   INTEGER                , /* Artwork height in pixel */
 		art_title    TEXT                   , /* The artwork title       */
 		art_desc     TEXT                   , /* The artwork description */
 		art_source   TEXT    NOT NULL UNIQUE, /* The artwork source URL  */

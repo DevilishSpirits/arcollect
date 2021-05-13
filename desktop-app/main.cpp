@@ -1,6 +1,7 @@
 #include "sdl2-hpp/SDL.hpp"
 #include <arcollect-db-open.hpp>
 #include "config.hpp"
+#include "db/artwork-loader.hpp"
 #include "db/db.hpp"
 #include "db/filter.hpp"
 #include "gui/artwork-collections.hpp"
@@ -109,7 +110,20 @@ int main(void)
 		}
 		Arcollect::gui::window_borders::render();
 		renderer->Present();
+		// Erase artwork_loader pending list and load artworks into texture
+		{
+			std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
+			// Load artworks
+			for (auto &art: Arcollect::db::artwork_loader::done)
+				art.first->text.reset(SDL::Texture::CreateFromSurface(renderer,art.second.get()));
+			Arcollect::db::artwork_loader::done.clear();
+			// Update pending list
+			Arcollect::db::artwork_loader::pending_thread = std::move(Arcollect::db::artwork_loader::pending_main);
+		}
 	}
 	// Cleanups
+	Arcollect::db::artwork_loader::stop = true;
+	Arcollect::db::artwork_loader::condition_variable.notify_one();
+	Arcollect::db::artwork_loader::thread.join();
 	return 0;
 }
