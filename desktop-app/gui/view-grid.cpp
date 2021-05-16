@@ -18,6 +18,9 @@ void Arcollect::gui::view_vgrid::flush_layout(void)
 	right_y = 0;
 	// Force viewport regeneration
 	do_scroll(0);
+	// Inhibate scroll
+	scroll_position.val_origin = scroll_position.val_target;
+	scroll_position.time_end = 0;
 }
 void Arcollect::gui::view_vgrid::resize(SDL::Rect rect)
 {
@@ -81,27 +84,30 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
 void Arcollect::gui::view_vgrid::do_scroll(int delta)
 {
 	auto end_iter = collection->end();
-	scroll_position += delta;
-	if (scroll_position < 0)
-		scroll_position = 0;
+	const auto &scroll_origin = scroll_position.val_origin;
+	int scroll_target = scroll_position.val_target + delta;
+	if (scroll_target < 0)
+		scroll_target = 0;
 	// Create left viewports if needed
-	while ((left_y < scroll_position) && new_line_left(left_y - artwork_height - artwork_margin.y));
+	while ((left_y < scroll_target) && new_line_left(left_y - artwork_height - artwork_margin.y));
 	// Drop left viewports if too much
-	while (left_y > scroll_position + 2 * artwork_height) {
+	while ((left_y > scroll_origin + 2 * artwork_height)&&(left_y > scroll_target + 2 * artwork_height)) {
 		viewports.pop_front();
 		left_y += artwork_height + artwork_margin.y;
 	}
 	// Create right viewports if needed
 	// NOTE! right_y is offset by minus one row
-	while ((right_y < scroll_position + rect.h) && (*right_iter != end_iter) && new_line_right(right_y));
+	while ((right_y < scroll_target + rect.h + artwork_height) && (*right_iter != end_iter) && new_line_right(right_y));
 	// Drop right viewports if too much
-	while (right_y > scroll_position + rect.h + 2 * artwork_height) {
+	while ((right_y > scroll_origin + rect.h + 2 * artwork_height)&&(right_y > scroll_target + rect.h + 2 * artwork_height)) {
 		viewports.pop_back();
 		right_y -= artwork_height + artwork_margin.y;
 	}
 	// Stop scrolling if bottom is hit
-	if (scroll_position + rect.h > right_y)
-		scroll_position = right_y - rect.h;
+	if (scroll_target + rect.h > right_y)
+		scroll_target = right_y - rect.h;
+	// Do scrolling
+	scroll_position = scroll_target;
 }
 
 bool Arcollect::gui::view_vgrid::new_line_left(int y)

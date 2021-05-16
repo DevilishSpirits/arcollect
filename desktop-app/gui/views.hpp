@@ -1,4 +1,5 @@
 #pragma once
+#include "animation.hpp"
 #include "artwork-viewport.hpp"
 #include "artwork-collection.hpp"
 #include "modal.hpp"
@@ -85,7 +86,7 @@ namespace Arcollect {
 				SDL::Point artwork_margin = {10,10};
 				/* Scroll position from the top
 				 */
-				int scroll_position = 0;
+				animation::scrolling<int> scroll_position = 0;
 				/** Perform scrolling
 				 */
 				void do_scroll(int delta);
