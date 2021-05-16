@@ -4,6 +4,7 @@
 #include "db/artwork-loader.hpp"
 #include "db/db.hpp"
 #include "db/filter.hpp"
+#include "gui/animation.hpp"
 #include "gui/artwork-collections.hpp"
 #include "gui/first-run.hpp"
 #include "gui/modal.hpp"
@@ -21,8 +22,10 @@ extern SDL::Renderer *renderer;
 SDL::Renderer *renderer;
 std::vector<std::reference_wrapper<Arcollect::gui::modal>> Arcollect::gui::modal_stack;
 
-Uint32 time_now;
-Uint32 time_framedelta;
+// animation.hpp variables
+bool   Arcollect::gui::animation_running;
+Uint32 Arcollect::gui::time_now;
+Uint32 Arcollect::gui::time_framedelta;
 
 int main(void)
 {
@@ -78,10 +81,12 @@ int main(void)
 	// Main-loop
 	SDL::Event e;
 	bool not_done = true;
-	time_now = SDL_GetTicks();
+	Arcollect::gui::time_now = SDL_GetTicks();
 	while (not_done) {
 		// Handle event
-		if (SDL::WaitEvent(e)) {
+		bool saved_animation_running = Arcollect::gui::animation_running;
+		Arcollect::gui::animation_running = false;
+		if (saved_animation_running ? SDL::PollEvent(e) : SDL::WaitEvent(e)) {
 			if (e.type == SDL_QUIT) {
 				not_done = false;
 			} else if (Arcollect::gui::window_borders::event(e)) {
@@ -95,8 +100,8 @@ int main(void)
 		Arcollect::update_data_version();
 		// Update timing informations
 		Uint32 new_ticks = SDL_GetTicks();
-		time_framedelta = time_now-new_ticks;
-		time_now = new_ticks;
+		Arcollect::gui::time_framedelta = Arcollect::gui::time_now-new_ticks;
+		Arcollect::gui::time_now = new_ticks;
 		// Render frame
 		renderer->SetDrawColor(0,0,0,0);
 		renderer->Clear();
@@ -110,6 +115,10 @@ int main(void)
 		}
 		Arcollect::gui::window_borders::render();
 		renderer->Present();
+		// Generate a new frame upon 
+		// TODO Generate an asynchronous event in the thread
+		if (Arcollect::db::artwork_loader::pending_main.size())
+			Arcollect::gui::animation_running = true;
 		// Erase artwork_loader pending list and load artworks into texture
 		{
 			std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
