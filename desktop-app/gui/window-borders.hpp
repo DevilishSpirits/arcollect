@@ -9,5 +9,6 @@ namespace Arcollect {
 			bool event(SDL::Event &e);
 			void render(void);
 		}
+		void set_fullscreen(bool fullscreen);
 	}
 }

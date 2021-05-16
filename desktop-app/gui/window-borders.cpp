@@ -146,7 +146,7 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 								SDL_RestoreWindow(window);
 							else {
 								if (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
-									SDL_SetWindowFullscreen(window,0);
+									set_fullscreen(false);
 								SDL_MaximizeWindow(window);
 							}
 						} break;
@@ -157,8 +157,8 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 						case TITLEBTN_FULLSCREEN: {
 							// Toggle fullscreen
 							if (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
-								SDL_SetWindowFullscreen(window,0);
-							else SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
+								set_fullscreen(false);
+							else set_fullscreen(true);
 						} break;
 					}
 				}
@@ -237,5 +237,20 @@ void Arcollect::gui::window_borders::render(void)
 			renderer->SetDrawColor(255,255,255,128);
 			renderer->FillRect(btn_rect);
 		}
+	}
+}
+
+void Arcollect::gui::set_fullscreen(bool fullscreen)
+{
+	if (fullscreen) {
+		SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
+	} else {
+		SDL_SetWindowFullscreen(window,0);
+		// GNOME Shell workaround if the program is started in fullscreen mode
+		// FIXME Check if it happen on Windows
+		// FIXME Check if it happen on macOS
+		if (Arcollect::gui::window_borders::borderless)
+			SDL_SetWindowBordered(window,SDL_FALSE);
+		SDL_SetWindowFullscreen(window,0);
 	}
 }
