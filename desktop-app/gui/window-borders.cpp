@@ -117,17 +117,19 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 					case SDL_HITTEST_RESIZE_RIGHT: {
 						SDL_SetCursor(cursor_we);
 					} break;
-					case SDL_HITTEST_NORMAL:
-					case SDL_HITTEST_DRAGGABLE:
-					default: {
+					case SDL_HITTEST_DRAGGABLE: {
 						SDL_SetCursor(cursor_normal);
 					} break;
+					case SDL_HITTEST_NORMAL:
+					default: {
+						SDL_SetCursor(cursor_normal);
+					} return true;
 				}
-			} return true;
+			} return e.type == SDL_WINDOWEVENT; // Propage window resize events
 			case SDL_MOUSEBUTTONDOWN: {
 				if (titlebtn_hovered != TITLEBTN_NONE)
 					titlebtn_pressed = titlebtn_hovered;
-			} return true;
+			} return cursor_position.y >= Arcollect::gui::window_borders::title_height;
 			case SDL_MOUSEBUTTONUP: {
 				if (titlebtn_pressed == titlebtn_hovered) {
 					auto window_flags = SDL_GetWindowFlags(window);
@@ -161,7 +163,7 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 					}
 				}
 				titlebtn_pressed = TITLEBTN_NONE;
-			} return true;
+			} return cursor_position.y >= Arcollect::gui::window_borders::title_height;
 		}
 	}
 	return true;
