@@ -29,10 +29,12 @@ int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
 	if (text)
 		return renderer->Copy(text.get(),NULL,dstrect);
 	else {
-		// TODO Render a placeholder
+		// Push me on the loader stack
 		Arcollect::db::artwork_loader::pending_main.push_back(query(art_id));
 		Arcollect::db::artwork_loader::condition_variable.notify_one();
-		return 2;
+		// Render a placeholder
+		renderer->SetDrawColor(0,0,0,192);
+		return renderer->FillRect(*dstrect);
 	}
 }
 
