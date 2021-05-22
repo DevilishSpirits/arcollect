@@ -27,10 +27,25 @@ bool   Arcollect::gui::animation_running;
 Uint32 Arcollect::gui::time_now;
 Uint32 Arcollect::gui::time_framedelta;
 
+static bool bool_debug_flag(const char* env_var)
+{
+	const char* value = std::getenv(env_var);
+	return (value != NULL) && (env_var[0] != '\0') && (env_var[0] != '0');
+}
+
+#define WITH_DEBUG // TODO Made this a project option
 int main(void)
 {
 	// Read config
 	Arcollect::config::read_config();
+	#ifdef WITH_DEBUG
+	/** Debug redraws.
+	 *
+	 * Print frame rate and a moving square from left to right at each frame redraw.
+	 */
+	bool debug_redraws = bool_debug_flag("ARCOLLECT_DEBUG_REDRAWS");
+	SDL::Rect debug_redraws_rect{0,0,32,32};
+	#endif
 	// Init SDL
 	SDL::Hint::SetRenderScaleQuality(SDL::Hint::RENDER_SCALE_QUALITY_BEST);
 	if (SDL::Init(SDL::INIT_VIDEO)) {
@@ -114,6 +129,9 @@ int main(void)
 			iter.get().render();
 		}
 		Arcollect::gui::window_borders::render();
+		#ifdef WITH_DEBUG
+		if (!debug_redraws)
+		#endif
 		renderer->Present();
 		// Generate a new frame upon 
 		// TODO Generate an asynchronous event in the thread
@@ -129,6 +147,27 @@ int main(void)
 			// Update pending list
 			Arcollect::db::artwork_loader::pending_thread = std::move(Arcollect::db::artwork_loader::pending_main);
 		}
+		#ifdef WITH_DEBUG
+		// Redraws debugging
+		if (debug_redraws) {
+			static Uint32 last_frame_time_now = 0;
+			debug_redraws_rect.x++;
+			debug_redraws_rect.x %= 500;
+			renderer->SetDrawColor(255,255,255,255);
+			renderer->FillRect(debug_redraws_rect);
+			renderer->SetDrawColor(0,0,0,255);
+			renderer->DrawRect(debug_redraws_rect);
+			Uint32 render_time = SDL_GetTicks() - new_ticks;
+			Uint32 events_time = new_ticks - last_frame_time_now;
+			std::cerr << "Render: " << render_time << "ms/" << 1000.f/render_time << " FPS"
+			          << "\tEvents:" << events_time << "ms" 
+			          << "\tTotal:" << render_time + events_time << "ms/" << 1000.f/(render_time + events_time) << " FPS\t("
+			          <<  "animation_running:" << (saved_animation_running ? "y" : "n")
+			          << ")." << std::endl;
+			last_frame_time_now = new_ticks;
+			renderer->Present();
+		}
+		#endif
 	}
 	// Cleanups
 	Arcollect::db::artwork_loader::stop = true;
