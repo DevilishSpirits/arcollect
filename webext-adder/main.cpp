@@ -134,17 +134,30 @@ int main(void)
 	}
 	// TODO Handle SIGTERM
 	#endif
+	// Check for debug mode
+	const char* arcollect_debug_env = std::getenv("ARCOLLECT_WEBEXT_ADDER_DEBUG");
+	bool debug = false;
+	if (arcollect_debug_env) {
+		// TODO Set a real interface
+		debug = true;
+		std::cerr << "Arcollect web extension adder debugging on" << std::endl;
+	}
+	// Main-loop
 	std::unique_ptr<SQLite3::sqlite3> db = Arcollect::db::open();
 	std::string json_string;
 	while (std::cin.good()) {
 		// Read the JSON
 		uint32_t data_len;
 		std::cin.read(reinterpret_cast<char*>(&data_len),sizeof(data_len));
+		if (debug)
+			std::cerr << "Got a JSON of " << data_len << " chars. Reading..." << std::endl;
 		// Quit on empty message
 		if (data_len == 0)
 			return 0;
 		json_string.resize(data_len);
 		std::cin.read(json_string.data(),data_len);
+		if (debug)
+			std::cerr << "JSON is loaded. Parsing..." << std::endl;
 		// Parse the JSON
 		rapidjson::Document json_dom;
 		if (json_dom.ParseInsitu(json_string.data()).HasParseError()) {
@@ -153,10 +166,9 @@ int main(void)
 			return 1;
 		}
 		// Get some constants platform
-		const bool debug = json_dom.HasMember("debug") && json_dom["debug"].GetBool();
 		const std::string platform = json_dom["platform"].GetString();
 		if (debug) {
-			std::cerr << "Debug mode enabled." << std::endl
+			std::cerr << "JSON parsed. Reading DOM..." << std::endl
 			          << "Platform: " << platform << std::endl;
 		}
 		// Parse the DOM
