@@ -2,6 +2,7 @@
 roboto_proj = subproject('roboto')
 inith_proj = subproject('inih', default_options: [
 	'with_INIReader=true',
+	'distro_install=false',
 ])
 
 deskapp_deps = [
