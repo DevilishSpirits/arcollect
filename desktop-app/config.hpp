@@ -43,6 +43,11 @@ namespace Arcollect {
 				const T default_value;
 				Param(const T default_value) : value(default_value), default_value(default_value) {};
 		};
+		/** first_run - If you did the first run for this version.
+		 * 
+		 * This is an int used to display the first run tutorial.
+		 */
+		extern Param<int> first_run;
 		/** start_fullscreen - Start in fullscreen
 		 */
 		enum StartWindowMode {

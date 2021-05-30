@@ -21,6 +21,7 @@ deskapp_srcs = [
 	'db/db.cpp',
 	'db/filter.cpp',
 	'gui/artwork-viewport.cpp',
+	'gui/first-run.cpp',
 	'gui/font.cpp',
 	'gui/slideshow.cpp',
 	'gui/view-slideshow.cpp',

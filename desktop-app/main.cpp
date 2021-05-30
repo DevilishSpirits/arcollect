@@ -109,6 +109,9 @@ int main(void)
 	Arcollect::gui::update_background(true);
 	Arcollect::gui::background_slideshow.resize(window_rect);
 	Arcollect::gui::modal_stack.push_back(Arcollect::gui::background_slideshow);
+	// Show the first run if not done
+	if (Arcollect::config::first_run == 0)
+		Arcollect::gui::modal_stack.push_back(Arcollect::gui::first_run_modal);
 	// Main-loop
 	SDL::Event e;
 	bool not_done = true;
