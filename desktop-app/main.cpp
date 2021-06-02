@@ -117,10 +117,16 @@ int main(void)
 	bool not_done = true;
 	Arcollect::gui::time_now = SDL_GetTicks();
 	while (not_done) {
-		// Handle event
+		// Wait for event
 		bool saved_animation_running = Arcollect::gui::animation_running;
 		Arcollect::gui::animation_running = false;
-		if (saved_animation_running ? SDL::PollEvent(e) : SDL::WaitEvent(e)) {
+		bool has_event = saved_animation_running ? SDL::PollEvent(e) : SDL::WaitEvent(e);
+		// Update timing informations
+		Uint32 new_ticks = SDL_GetTicks();
+		Arcollect::gui::time_framedelta = Arcollect::gui::time_now-new_ticks;
+		Arcollect::gui::time_now = new_ticks;
+		// Handle event
+		while (has_event) {
 			if (e.type == SDL_QUIT) {
 				not_done = false;
 			} else if (Arcollect::gui::window_borders::event(e)) {
@@ -129,13 +135,11 @@ int main(void)
 				while (iter->get().event(e))
 					++iter;
 			}
+			// Process other events
+			has_event = SDL::PollEvent(e);
 		}
 		// Check for DB updates
 		Arcollect::update_data_version();
-		// Update timing informations
-		Uint32 new_ticks = SDL_GetTicks();
-		Arcollect::gui::time_framedelta = Arcollect::gui::time_now-new_ticks;
-		Arcollect::gui::time_now = new_ticks;
 		// Render frame
 		renderer->SetDrawColor(0,0,0,0);
 		renderer->Clear();
