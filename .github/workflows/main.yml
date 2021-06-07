@@ -39,5 +39,5 @@ jobs:
           path: archive-out.tar
       - uses: actions/upload-artifact@v2
         with:
-          name: arcollect.xpi
-          path: build/webextension/arcollect.xpi
+          name: arcollect-webextension.zip
+          path: build/webextension/arcollect.zip
