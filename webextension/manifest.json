@@ -1,6 +1,8 @@
 {
 	"manifest_version": 2,
 	"name": "Arcollect",
+	"author": "DevilishSpirits",
+	"homepage_url": "https://github.com/DevilishSpirits/arcollect",
 	"version": "0.1",
 	"background": {
 		"scripts": ["background.js"]
