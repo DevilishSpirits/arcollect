@@ -24,6 +24,8 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      - name: Recursive checkout
+        run: git submodule update --init --recursive
       - uses: BSFishy/meson-build@v1.0.3
         with:
           # The action to run
