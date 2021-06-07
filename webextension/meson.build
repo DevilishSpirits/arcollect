@@ -20,4 +20,4 @@ webext_appmanifest_firefox_debug = configure_file(input: 'appmanifest-firefox.js
 # TODO macOS support
 install_data(webext_appmanifest_firefox, rename: 'arcollect_webext_adder.json', install_dir: get_option('libdir') / 'mozilla/native-messaging-hosts')
 
-custom_target('arcollect.xpi', output : 'arcollect.xpi', input : webext_src, command : [files('build.sh'), '@CURRENT_SOURCE_DIR@', prog_zip, '@OUTPUT@', '@INPUT@'], build_by_default: true)
+custom_target('arcollect.zip', output : 'arcollect.zip', input : webext_src, command : [files('build.sh'), '@CURRENT_SOURCE_DIR@', prog_zip, '@OUTPUT@', '@INPUT@'], build_by_default: true)
