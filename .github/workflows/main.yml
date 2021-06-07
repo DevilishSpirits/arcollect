@@ -13,20 +13,31 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: [archlinux]
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: Recursive checkout
         run: git submodule update --init --recursive
       - uses: BSFishy/meson-build@v1.0.3
         with:
-          # The action to run
           action: build
+      - uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: test
+      - uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: install
+        env:
+          DESTDIR: "archive-out"
+      - name: Archiving
+        run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
+      - uses: actions/upload-artifact@v2
+        with:
+          name: install.tar
+          path: archive-out.tar
+      - uses: actions/upload-artifact@v2
+        with:
+          name: arcollect.xpi
+          path: build/webextension/arcollect.xpi
