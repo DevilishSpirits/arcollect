@@ -9,12 +9,14 @@ webext_src = [
 # Application manifest
 webext_conf = configuration_data()
 webext_conf.set('ARCOLLECT_WEBEXT_ADDER_PATH', get_option('prefix') / get_option('libexecdir') / 'arcollect-webext-adder')
-
-webext_conf_debug = configuration_data()
-webext_conf_debug.set('ARCOLLECT_WEBEXT_ADDER_PATH',webext_adder_exe.full_path())
-
 webext_appmanifest_firefox = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox-install.json', configuration: webext_conf)
-webext_appmanifest_firefox_debug = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox.json', configuration: webext_conf_debug)
+
+# FIXME This is dirty
+if enable_native_progs
+	webext_conf_debug = configuration_data()
+	webext_conf_debug.set('ARCOLLECT_WEBEXT_ADDER_PATH',webext_adder_exe.full_path())
+	webext_appmanifest_firefox_debug = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox.json', configuration: webext_conf_debug)
+endif
 
 # TODO Windows support
 # TODO macOS support

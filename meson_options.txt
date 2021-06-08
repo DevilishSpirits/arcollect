@@ -1,1 +1,2 @@
-option('enable_webextension', type: 'boolean', value: true)
+option('enable_webextension', type: 'boolean', value: true, description: 'Build the webextension.')
+option('enable_native_progs', type: 'boolean', value: true, description: 'Build C++ code (desktop-app, webext-adder, ...). It is used and set to false in the webextension CI.')
