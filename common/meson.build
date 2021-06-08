@@ -11,6 +11,7 @@ common_srcs = [
 common_incdirs = [
 	include_directories('.'),
 	include_directories('sqlite3-hpp'),
+	config_h_inc,
 ]
 
 common_lib = static_library('common', common_srcs, include_directories: common_incdirs, dependencies: common_deps)

@@ -3,5 +3,5 @@
 	"description": "Arcollect adder program",
 	"path": "@ARCOLLECT_WEBEXT_ADDER_PATH@",
 	"type": "stdio",
-	"allowed_extensions": ["arcollect@d-spirits.me"]
+	"allowed_extensions": ["@ARCOLLECT_MOZILLA_WEBEXT_ID@"]
 }

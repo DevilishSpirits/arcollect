@@ -48,7 +48,7 @@ void Arcollect::gui::first_run::render()
 	"This is your first Arcollect run !\n\n"
 	"One day. I discovered that I love visual artworks and I made Arcollect to organize my growing collection. It allows you to easily save pictures you find on the internet in a few click and save a bunch metadata like who did that and where you took the picture.\n\n"
 	"With the associated web extension, buttons will appear on FurAffinity artworks pages to save them in your personnal collection.\n\n"
-	"Arcollect is a free and open-source software. It respect your privacy and will never judge you. See https://github.com/DevilishSpirits/arcollect to learn more.\n\n"
+	"Arcollect is a free and open-source software. It respect your privacy and will never judge you. See "ARCOLLECT_WEBSITE_STR" to learn more.\n\n"
 	"Now press and release the right arrow to see what's next..."
 	,16);
 	std::unique_ptr<SDL::Texture> welcome_text_text(welcome_text.render(window_size.x-window_size.x/10));
@@ -69,7 +69,7 @@ void Arcollect::gui::first_run::render_titlebar(SDL::Rect target, int window_wid
 	// Render title
 	const int title_border = target.h/4;
 	Arcollect::gui::Font font;
-	Arcollect::gui::TextLine title_line(font,"Arcollect unstable alpha",target.h-2*title_border);
+	Arcollect::gui::TextLine title_line(font,"Arcollect "ARCOLLECT_VERSION_STR,target.h-2*title_border);
 	std::unique_ptr<SDL::Texture> title_line_text(title_line.render());
 	SDL::Point title_line_size;
 	title_line_text->QuerySize(title_line_size);

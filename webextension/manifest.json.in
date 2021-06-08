@@ -2,8 +2,8 @@
 	"manifest_version": 2,
 	"name": "Arcollect",
 	"author": "DevilishSpirits",
-	"homepage_url": "https://github.com/DevilishSpirits/arcollect",
-	"version": "0.1",
+	"homepage_url": "@ARCOLLECT_WEBSITE@",
+	"version": "@ARCOLLECT_VERSION@",
 	"background": {
 		"scripts": ["background.js"]
 	},
@@ -17,7 +17,7 @@
 	],
 	"browser_specific_settings": {
 		"gecko": {
-			"id": "arcollect@d-spirits.me",
+			"id": "@ARCOLLECT_MOZILLA_WEBEXT_ID@",
 			"strict_min_version": "52.0a1"
 		}
 	}

@@ -17,6 +17,7 @@
 #pragma once
 #include <iostream>
 #include <arcollect-paths.hpp>
+#include <config.h>
 namespace Arcollect {
 	namespace config {
 		void read_config(void);

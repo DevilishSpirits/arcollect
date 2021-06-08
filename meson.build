@@ -24,6 +24,19 @@ dep_sdl2_ttf   = dependency('SDL2_ttf')
 dep_sqlite3 = dependency('sqlite3', version: '>=3.35.0')
 endif
 
+# Configuration
+config_h = configuration_data()
+config_h.set('ARCOLLECT_VERSION',meson.project_version())
+config_h.set('ARCOLLECT_WEBSITE','https://github.com/DevilishSpirits/arcollect')
+config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
+foreach key: config_h.keys()
+	config_h.set_quoted(key+'_STR',config_h.get(key))
+		summary(key,config_h.get(key), section: 'config.h')
+endforeach
+
+configure_file(output: 'config.h', configuration: config_h)
+config_h_inc = include_directories('.')
+
 # Add subdir (include order is important !)
 if enable_native_progs
 	subdir('db-schema')

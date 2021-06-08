@@ -1,5 +1,5 @@
 webext_src = [
-	'manifest.json',
+	configure_file(output: 'manifest.json', input: 'manifest.json.in', configuration: config_h),
 	'background.js',
 	'content-scripts/common-head.js',
 	'content-scripts/common-foot.js',
@@ -8,12 +8,14 @@ webext_src = [
 
 # Application manifest
 webext_conf = configuration_data()
-webext_conf.set('ARCOLLECT_WEBEXT_ADDER_PATH', get_option('prefix') / get_option('libexecdir') / 'arcollect-webext-adder')
+webext_conf.merge_from(config_h)
+webext_conf.set('ARCOLLECT_WEBEXT_ADDER_PATH', get_option('prefix') / webext_adder_install_dir / webext_adder_exe.name())
 webext_appmanifest_firefox = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox-install.json', configuration: webext_conf)
 
 # FIXME This is dirty
 if enable_native_progs
 	webext_conf_debug = configuration_data()
+	webext_conf_debug.merge_from(config_h)
 	webext_conf_debug.set('ARCOLLECT_WEBEXT_ADDER_PATH',webext_adder_exe.full_path())
 	webext_appmanifest_firefox_debug = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox.json', configuration: webext_conf_debug)
 endif
@@ -22,7 +24,7 @@ endif
 # TODO macOS support
 install_data(webext_appmanifest_firefox, rename: 'arcollect_webext_adder.json', install_dir: get_option('libdir') / 'mozilla/native-messaging-hosts')
 
-webextension_target = custom_target('arcollect.zip', output : 'arcollect.zip', input : webext_src, command : [files('build.sh'), '@CURRENT_SOURCE_DIR@', prog_zip, '@OUTPUT@', '@INPUT@'], build_by_default: true)
+webextension_target = custom_target('arcollect.zip', output : 'arcollect.zip', input : webext_src, command : [files('build.sh'), '@CURRENT_SOURCE_DIR@', meson.current_build_dir(), prog_zip, '@OUTPUT@', '@INPUT@'], build_by_default: true)
 
 # Test with web-ext lint
 prog_web_ext = find_program('web-ext', required: false)
