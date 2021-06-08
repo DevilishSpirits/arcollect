@@ -30,7 +30,7 @@ webextension_target = custom_target('arcollect.zip', output : 'arcollect.zip', i
 prog_web_ext = find_program('web-ext', required: false)
 prog_unzip   = find_program('unzip', required: false)
 if prog_web_ext.found() and prog_unzip.found()
-	test('web-ext-lint', files('web-ext-lint.sh'), args: [webextension_target, meson.build_root(), prog_unzip.full_path(), prog_web_ext.full_path()], suite: ['webextension'])
+	test('web-ext-lint', files('web-ext-lint.sh'), args: [webextension_target, meson.project_build_root(), prog_unzip.full_path(), prog_web_ext.full_path()], suite: ['webextension'])
 else
 	warning('"web-ext" or "unzip" missing. Will not check linting.')
 endif

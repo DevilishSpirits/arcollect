@@ -5,6 +5,7 @@ project('arcollect', 'cpp',
 	# |
 	# +---- Minor: Will be incremented one day
 	version: '0.2',
+	meson_version: '>=0.57.1',
 	default_options: [
 		'cpp_std=c++17',
 		'cpp_rtti=false',
