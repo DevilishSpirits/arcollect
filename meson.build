@@ -1,7 +1,14 @@
-project('arcollect','cpp', default_options: [
-	'cpp_std=c++17',
-	'cpp_rtti=false',
-])
+project('arcollect', 'cpp',
+	# x.y Version numbering
+	# | |
+	# | +-- Build: Incremented to rebuild webextension and public packages.
+	# |
+	# +---- Minor: Will be incremented one day
+	version: '0.2',
+	default_options: [
+		'cpp_std=c++17',
+		'cpp_rtti=false',
+	])
 
 # Options
 enable_webextension = get_option('enable_webextension')
