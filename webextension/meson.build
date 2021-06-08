@@ -22,4 +22,13 @@ endif
 # TODO macOS support
 install_data(webext_appmanifest_firefox, rename: 'arcollect_webext_adder.json', install_dir: get_option('libdir') / 'mozilla/native-messaging-hosts')
 
-custom_target('arcollect.zip', output : 'arcollect.zip', input : webext_src, command : [files('build.sh'), '@CURRENT_SOURCE_DIR@', prog_zip, '@OUTPUT@', '@INPUT@'], build_by_default: true)
+webextension_target = custom_target('arcollect.zip', output : 'arcollect.zip', input : webext_src, command : [files('build.sh'), '@CURRENT_SOURCE_DIR@', prog_zip, '@OUTPUT@', '@INPUT@'], build_by_default: true)
+
+# Test with web-ext lint
+prog_web_ext = find_program('web-ext', required: false)
+prog_unzip   = find_program('unzip', required: false)
+if prog_web_ext.found() and prog_unzip.found()
+	test('web-ext-lint', files('web-ext-lint.sh'), args: [webextension_target, meson.build_root(), prog_unzip.full_path(), prog_web_ext.full_path()], suite: ['webextension'])
+else
+	warning('"web-ext" or "unzip" missing. Will not check linting.')
+endif
