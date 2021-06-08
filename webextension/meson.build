@@ -9,7 +9,7 @@ webext_src = [
 # Application manifest
 webext_conf = configuration_data()
 webext_conf.merge_from(config_h)
-webext_conf.set('ARCOLLECT_WEBEXT_ADDER_PATH', get_option('prefix') / webext_adder_install_dir / webext_adder_exe.name())
+webext_conf.set('ARCOLLECT_WEBEXT_ADDER_PATH', get_option('prefix') / get_option('libexecdir') / 'webext_adder_exe')
 webext_appmanifest_firefox = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox-install.json', configuration: webext_conf)
 
 # FIXME This is dirty
