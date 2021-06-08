@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Usage : @CURRENT_SOURCE_DIR@ @CURRENT_BUILD_DIR@ zip-executable output inputs...
 OUTPUT="$PWD/$4" # TODO Works with absolute paths
 OLDPWD="$PWD"
