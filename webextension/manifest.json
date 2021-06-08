@@ -18,7 +18,7 @@
 	"browser_specific_settings": {
 		"gecko": {
 			"id": "arcollect@d-spirits.me",
-			"strict_min_version": "50.0a1"
+			"strict_min_version": "52.0a1"
 		}
 	}
 }
