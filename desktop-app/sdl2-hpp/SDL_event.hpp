@@ -136,6 +136,7 @@ typedef enum
 	typedef SDL_MouseMotionEvent MouseMotionEvent;
 	typedef SDL_MouseButtonEvent MouseButtonEvent;
 	typedef SDL_MouseWheelEvent MouseWheelEvent;
+	#if 0
 	typedef SDL_JoyAxisEvent JoyAxisEvent;
 	typedef SDL_JoyBallEvent JoyBallEvent;
 	typedef SDL_JoyHatEvent JoyHatEvent;
@@ -152,6 +153,7 @@ typedef enum
 	typedef SDL_DollarGestureEvent DollarGestureEvent;
 	typedef SDL_DropEvent DropEvent;
 	typedef SDL_SensorEvent SensorEvent;
+	#endif
 	typedef SDL_QuitEvent QuitEvent;
 	typedef SDL_OSEvent OSEvent;
 	typedef SDL_SysWMmsg SysWMmsg;
