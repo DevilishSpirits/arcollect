@@ -42,7 +42,7 @@ jobs:
       - name: Uploading DESDIR artifact
         uses: actions/upload-artifact@v2
         with:
-          name: install.tar
+          name: install-regular.tar
           path: archive-out.tar
       - name: Uploading arcollect-webextension.zip artifact
         uses: actions/upload-artifact@v2
@@ -78,7 +78,7 @@ jobs:
       - name: Uploading DESDIR artifact
         uses: actions/upload-artifact@v2
         with:
-          name: install.tar
+          name: install-wrapped.tar
           path: archive-out.tar
       - name: Uploading arcollect-webextension.zip artifact
         uses: actions/upload-artifact@v2
@@ -116,7 +116,7 @@ jobs:
       - name: Uploading DESDIR artifact
         uses: actions/upload-artifact@v2
         with:
-          name: install.tar
+          name: install-ubuntu_20.10.tar
           path: archive-out.tar
       - name: Uploading arcollect-webextension.zip artifact
         uses: actions/upload-artifact@v2
