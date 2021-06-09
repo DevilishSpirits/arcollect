@@ -1,5 +1,3 @@
-dep_sqlite3 = dependency('sqlite3')
-
 common_deps = [
 	dep_sqlite3,
 ]
