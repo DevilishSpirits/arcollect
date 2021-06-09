@@ -85,3 +85,41 @@ jobs:
         with:
           name: arcollect-webextension.zip
           path: build/webextension/arcollect.zip
+  build-ubuntu-20_04:
+    runs-on: [ubuntu-20.04]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Recursive checkout
+        run: git submodule update --init --recursive
+      - name: Install SDL2 and his image and ttf modules
+        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
+      - name: Build project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: build
+          setup-options: --force-fallback-for sqlite
+          meson-version: 0.57.1
+      - name: Test project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: test
+          meson-version: 0.57.1
+      - name: Install project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: install
+          meson-version: 0.57.1
+        env:
+          DESTDIR: "archive-out"
+      - name: Archiving
+        run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
+      - name: Uploading DESDIR artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: install.tar
+          path: archive-out.tar
+      - name: Uploading arcollect-webextension.zip artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arcollect-webextension.zip
+          path: build/webextension/arcollect.zip
