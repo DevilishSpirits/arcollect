@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#pragma once
 #include "../sdl2-hpp/SDL.hpp"
 #include <SDL_ttf.h>
 #include <memory>
