@@ -84,14 +84,14 @@ int main(void)
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
+	// Load font
+	// TODO Use real font management
+	TTF_Init();
 	// Set custom borders
 	Arcollect::gui::window_borders::init(window);
 	// Get window size
 	SDL::Rect window_rect{0,0};
 	renderer->GetOutputSize(window_rect.w,window_rect.h);
-	// Load font
-	// TODO Use real font management
-	TTF_Init();
 	// Load the db
 	Arcollect::database = Arcollect::db::open();
 	// FIXME Give a better interface
