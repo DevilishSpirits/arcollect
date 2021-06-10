@@ -127,13 +127,16 @@ int main(void)
 		Arcollect::gui::time_now = new_ticks;
 		// Handle event
 		while (has_event) {
-			if (e.type == SDL_QUIT) {
-				not_done = false;
-			} else if (Arcollect::gui::window_borders::event(e)) {
+			if (Arcollect::gui::window_borders::event(e)) {
 				// Propagate event to modals
 				auto iter = Arcollect::gui::modal_stack.rbegin();
 				while (iter->get().event(e))
 					++iter;
+			}
+			if (e.type == SDL_QUIT) {
+				not_done = false;
+				// Break out of two while loops
+				goto end_of_main_loop;
 			}
 			// Process other events
 			has_event = SDL::PollEvent(e);
@@ -192,6 +195,7 @@ int main(void)
 		}
 		#endif
 	}
+end_of_main_loop:
 	// Cleanups
 	Arcollect::db::artwork_loader::stop = true;
 	Arcollect::db::artwork_loader::condition_variable.notify_one();
