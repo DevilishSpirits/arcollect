@@ -114,9 +114,9 @@ int main(void)
 		Arcollect::gui::modal_stack.push_back(Arcollect::gui::first_run_modal);
 	// Main-loop
 	SDL::Event e;
-	bool not_done = true;
+	bool done = false;
 	Arcollect::gui::time_now = SDL_GetTicks();
-	while (not_done) {
+	while (true/*!done*/) {
 		// Wait for event
 		bool saved_animation_running = Arcollect::gui::animation_running;
 		Arcollect::gui::animation_running = false;
@@ -134,13 +134,14 @@ int main(void)
 					++iter;
 			}
 			if (e.type == SDL_QUIT) {
-				not_done = false;
-				// Break out of two while loops
-				goto end_of_main_loop;
+				done = true;
+				break;
 			}
 			// Process other events
 			has_event = SDL::PollEvent(e);
 		}
+		if (done)
+			break;
 		// Check for DB updates
 		Arcollect::update_data_version();
 		// Render frame
@@ -195,7 +196,6 @@ int main(void)
 		}
 		#endif
 	}
-end_of_main_loop:
 	// Cleanups
 	Arcollect::db::artwork_loader::stop = true;
 	Arcollect::db::artwork_loader::condition_variable.notify_one();
