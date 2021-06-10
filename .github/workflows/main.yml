@@ -93,6 +93,8 @@ jobs:
         run: git submodule update --init --recursive
       - name: Install SDL2 and his image and ttf modules
         run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
+      - name: Install Mozilla's web-ext with npm
+        run: sudo npm install -g web-ext
       - name: Build project
         uses: BSFishy/meson-build@v1.0.3
         with:
