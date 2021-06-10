@@ -139,4 +139,8 @@ namespace SQLite3 {
 			ppDb.reset(db);
 		return code;
 	}
+	
+	inline int initialize(void) {
+		return sqlite3_initialize();
+	}
 }
