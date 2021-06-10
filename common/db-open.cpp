@@ -21,6 +21,7 @@
 
 std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 {
+	SQLite3::initialize();
 	static const std::string db_path = Arcollect::path::arco_data_home / "db.sqlite3";
 	std::unique_ptr<SQLite3::sqlite3> data_db;
 	// TODO Backup the db

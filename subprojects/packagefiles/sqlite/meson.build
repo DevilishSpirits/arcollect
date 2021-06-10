@@ -14,7 +14,7 @@ sqlite_args = [
 	'-DSQLITE_OMIT_PROGRESS_CALLBACK',
 	'-DSQLITE_OMIT_SHARED_CACHE',
 	'-DSQLITE_USE_ALLOCA',
-	# TODO '-DSQLITE_OMIT_AUTOINIT',
+	'-DSQLITE_OMIT_AUTOINIT',
 ]
 sqlite3_incdir = include_directories('.')
 dep_sqlite3 = declare_dependency(link_with:
