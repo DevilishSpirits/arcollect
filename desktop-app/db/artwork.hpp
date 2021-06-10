@@ -80,6 +80,12 @@ namespace Arcollect {
 				
 				const std::vector<std::shared_ptr<account>> &get_linked_accounts(const std::string &link);
 				
+				/** Delete an artwork
+				 *
+				 * This is not an innocent function !
+				 */
+				int db_delete(void);
+				
 				/** Query an artwork
 				 * \param art_id The artwork identifier
 				 * \return The artwork wrapped in a std::shared_ptr

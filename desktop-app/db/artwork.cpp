@@ -19,6 +19,7 @@
 #include "account.hpp"
 #include "db.hpp"
 #include <arcollect-paths.hpp>
+#include <iostream>
 #include <SDL_image.h>
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::artwork>> artworks_pool;
 
@@ -112,4 +113,61 @@ const std::vector<std::shared_ptr<Arcollect::db::account>> &Arcollect::db::artwo
 		}
 	}
 	return result;
+}
+
+int Arcollect::db::artwork::db_delete(void)
+{
+	int code;
+	std::cerr << "Deleting \"" << art_title << "\" (" << art_id << ")" << std::endl;
+	if ((code = database->exec("BEGIN IMMEDIATE;")) != SQLITE_OK) {
+		switch (code) {
+			case SQLITE_BUSY: {
+				std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), \"BEGIN IMMEDIATE;\" failed with SQLITE_BUSY. Another is writing on the database. Abort." << std::endl;
+			} return SQLITE_BUSY;
+			default: {
+				std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), \"BEGIN IMMEDIATE;\" failed: " << database->errmsg() << ". Ignoring..." << std::endl;
+			} break;
+		}
+	}
+	std::unique_ptr<SQLite3::stmt> stmt;
+	// Delete art_acc_links references
+	if (database->prepare("DELETE FROM art_acc_links WHERE art_artid = ?;",stmt) != SQLITE_OK) {
+		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to prepare \"DELETE FROM art_acc_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
+		return SQLITE_ERROR;
+	}
+	if (stmt->bind(1,art_id) != SQLITE_OK) {
+		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to bind art_artid in \"DELETE FROM art_acc_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
+		return SQLITE_ERROR;
+	}
+	if (stmt->step() != SQLITE_DONE) {
+		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to step \"DELETE FROM art_acc_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
+		return SQLITE_ERROR;
+	}
+	
+	// Delete in artworks table
+	if (database->prepare("DELETE FROM artworks WHERE art_artid = ?;",stmt) != SQLITE_OK) {
+		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to prepare \"DELETE FROM artworks WHERE art_artid = ?;\": " << database->errmsg() << ". Rollback." << std::endl;
+		database->exec("ROLLBACK;"); // TODO Error checkings
+		return SQLITE_ERROR;
+	}
+	if (stmt->bind(1,art_id) != SQLITE_OK) {
+		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to bind art_artid in \"DELETE FROM artworks WHERE art_artid = ?;\": " << database->errmsg() << ". Rollback." << std::endl;
+		database->exec("ROLLBACK;"); // TODO Error checkings
+		return SQLITE_ERROR;
+	}
+	if (stmt->step() != SQLITE_DONE) {
+		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to step \"DELETE FROM artworks WHERE art_artid = ?;\": " << database->errmsg() << ". Rollback." << std::endl;
+		database->exec("ROLLBACK;"); // TODO Error checkings
+		return SQLITE_ERROR;
+	}
+	// Commit changes
+	if (database->exec("COMMIT;") != SQLITE_OK) {
+		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to commit changes: " << database->errmsg() << ". Rollback." << std::endl;
+		database->exec("ROLLBACK;"); // TODO Error checkings
+		return SQLITE_ERROR;
+	}
+	// Erase on disk
+	std::filesystem::remove(Arcollect::path::artwork_pool / std::to_string(art_id));
+	std::cerr << "Artwork \"" << art_title << "\" (" << art_id << ") has been deleted" << std::endl;
+	return 0;
 }
