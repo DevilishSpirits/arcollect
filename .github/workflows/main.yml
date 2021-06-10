@@ -97,7 +97,6 @@ jobs:
         uses: BSFishy/meson-build@v1.0.3
         with:
           action: build
-          setup-options: --force-fallback-for sqlite
           meson-version: 0.57.1
       - name: Test project
         uses: BSFishy/meson-build@v1.0.3
