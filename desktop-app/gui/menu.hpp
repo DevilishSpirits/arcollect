@@ -57,6 +57,7 @@ namespace Arcollect {
 				int hovered_cell = -1;
 				
 				static void popup_context(const std::vector<std::shared_ptr<menu_item>> &menu_items, SDL::Point at);
+				static unsigned int popup_context_count;
 		};
 		
 		class menu_item_simple_label: public menu_item {

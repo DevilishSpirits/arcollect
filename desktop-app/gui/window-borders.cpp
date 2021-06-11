@@ -187,11 +187,14 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 							else set_fullscreen(true);
 						} break;
 						case TITLEBTN_MENU: {
-							// Pop menu
-							std::vector<std::shared_ptr<menu_item>> menu = Arcollect::gui::modal_stack.back().get().top_menu();
-							for (auto& item: topbar_menu_items)
-								menu.emplace_back(item);
-							Arcollect::gui::menu::popup_context(menu,{window_size.x-TITLEBTN_MENU*title_button_width-title_button_width,title_height});
+							// Don't pop if there is a context menu
+							if (Arcollect::gui::menu::popup_context_count == 0) {
+								// Pop menu
+								std::vector<std::shared_ptr<menu_item>> menu = Arcollect::gui::modal_stack.back().get().top_menu();
+								for (auto& item: topbar_menu_items)
+									menu.emplace_back(item);
+								Arcollect::gui::menu::popup_context(menu,{window_size.x-TITLEBTN_MENU*title_button_width-title_button_width,title_height});
+							}
 						} break;
 					}
 				}

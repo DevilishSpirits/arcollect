@@ -111,14 +111,19 @@ class popup_menu: public Arcollect::gui::menu {
 				} return false; // This modal grab all events
 			}
 		}
+		~popup_menu(void) {
+			popup_context_count--;
+		}
 };
 
+unsigned int Arcollect::gui::menu::popup_context_count = 0;
 void Arcollect::gui::menu::popup_context(const std::vector<std::shared_ptr<menu_item>> &menu_items, SDL::Point at)
 {
 	popup_menu* new_popup_menu = new popup_menu();
 	new_popup_menu->topleft = at;
 	new_popup_menu->menu_items = menu_items;
 	Arcollect::gui::modal_stack.push_back(*new_popup_menu);
+	popup_context_count++;
 }
 
 Arcollect::gui::menu_item_simple_label::menu_item_simple_label(const char* label, std::function<void()> onclick) :
