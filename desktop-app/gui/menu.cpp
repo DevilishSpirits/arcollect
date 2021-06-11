@@ -51,7 +51,12 @@ void Arcollect::gui::menu::render(void)
 	if (hovered_cell > -1) {
 		renderer->SetDrawColor(255,255,255,128);
 		menu_rects[hovered_cell].w = max_width;
-		renderer->FillRect(menu_rects[hovered_cell]);
+		SDL::Rect full_rect(menu_rects[hovered_cell]);
+		full_rect.x -= padding.x;
+		full_rect.y -= padding.y;
+		full_rect.w  = max_width + 2 * padding.x;
+		full_rect.h += 2 * padding.y;
+		renderer->FillRect(full_rect);
 	}
 	// Render cells
 	for (auto i = 0; i < menu_items_count; i++) {
