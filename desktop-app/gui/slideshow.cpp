@@ -18,6 +18,7 @@
 #include "menu.hpp"
 #include "slideshow.hpp"
 #include "artwork-collections.hpp"
+#include "window-borders.hpp"
 
 static class background_vgrid: public Arcollect::gui::view_vgrid {
 	Arcollect::gui::artwork_viewport *mousedown_viewport;
@@ -47,6 +48,12 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 } background_vgrid;
 
 static void delete_art(void);
+static void confirm_delete_art(void)
+{
+	Arcollect::gui::menu::popup_context({
+		std::make_shared<Arcollect::gui::menu_item_simple_label>("I really want to delete this artwork",::delete_art)
+	},{0,Arcollect::gui::window_borders::title_height});
+}
 
 static class background_slideshow: public Arcollect::gui::view_slideshow {
 	public:
@@ -70,7 +77,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 	}
 	std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override {
 		return {
-			std::make_shared<Arcollect::gui::menu_item_simple_label>("Delete artwork",::delete_art),
+			std::make_shared<Arcollect::gui::menu_item_simple_label>("Delete artwork",confirm_delete_art),
 		};
 	};
 } background_slideshow;

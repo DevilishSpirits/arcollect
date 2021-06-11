@@ -98,13 +98,14 @@ int Arcollect::gui::menu::get_menu_item_at(SDL::Point cursor)
 class popup_menu: public Arcollect::gui::menu {
 	public:
 		bool event(SDL::Event &e) override {
+			if (e.type == SDL_MOUSEBUTTONUP)
+				Arcollect::gui::modal_stack.pop_back();
 			Arcollect::gui::menu::event(e);
 			switch (e.type) {
 				case SDL_QUIT: {
 					delete this;
 				} return true;
 				case SDL_MOUSEBUTTONUP: {
-					Arcollect::gui::modal_stack.pop_back();
 					delete this;
 				} return false;
 				default: {
