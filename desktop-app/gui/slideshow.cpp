@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "../db/filter.hpp"
+#include "menu.hpp"
 #include "slideshow.hpp"
 #include "artwork-collections.hpp"
 
@@ -45,7 +46,13 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 	}
 } background_vgrid;
 
+static void delete_art(void);
+
 static class background_slideshow: public Arcollect::gui::view_slideshow {
+	public:
+	void delete_art(void) {
+		viewport.artwork->db_delete();
+	}
 	bool event(SDL::Event &e) override {
 		switch (e.type) {
 			case SDL_KEYUP: {
@@ -61,7 +68,17 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 		};
 		return Arcollect::gui::view_slideshow::event(e);
 	}
+	std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override {
+		return {
+			std::make_shared<Arcollect::gui::menu_item_simple_label>("Delete artwork",::delete_art),
+		};
+	};
 } background_slideshow;
+
+static void delete_art(void)
+{
+	background_slideshow.delete_art();
+}
 
 Arcollect::gui::view_slideshow &Arcollect::gui::background_slideshow = ::background_slideshow;
 
