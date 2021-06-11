@@ -17,6 +17,7 @@
 #include "window-borders.hpp"
 #include "menu.hpp"
 #include "modal.hpp"
+#include "rating-selector.hpp"
 static bool display_bar = false;
 const int Arcollect::gui::window_borders::title_height = 32;
 const int Arcollect::gui::window_borders::resize_width = 4;
@@ -73,6 +74,7 @@ static SDL_HitTestResult hit_test(SDL_Window *window, const SDL_Point *point, vo
 bool Arcollect::gui::window_borders::init(SDL_Window *window)
 {
 	// Init menus
+	topbar_menu_items.emplace_back(std::make_shared<Arcollect::gui::rating_selector_menu>());
 	// Init borders
 	borderless = SDL_SetWindowHitTest(window,hit_test,NULL) == 0;
 	if (borderless) {
