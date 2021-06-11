@@ -106,10 +106,12 @@ void Arcollect::gui::view_slideshow::render(void)
 }
 void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int window_width)
 {
-	auto account = viewport.artwork->get_linked_accounts("account")[0];
 	// Render artist avatar
-	SDL::Rect icon_rect{target.x,target.y,target.h,target.h};
-	renderer->Copy(account->get_icon().get(),NULL,&icon_rect);
+	auto accounts = viewport.artwork->get_linked_accounts("account");
+	if (accounts.size() > 0) {
+		SDL::Rect icon_rect{target.x,target.y,target.h,target.h};
+		renderer->Copy(accounts[0]->get_icon().get(),NULL,&icon_rect);
+	}
 	// Render title
 	const int title_border = target.h/4;
 	Arcollect::gui::Font font;
