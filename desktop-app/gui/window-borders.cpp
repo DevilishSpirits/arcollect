@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "window-borders.hpp"
+#include "menu.hpp"
 #include "modal.hpp"
 static bool display_bar = false;
 const int Arcollect::gui::window_borders::title_height = 32;
@@ -31,11 +32,14 @@ enum TitleButton: int {
 	TITLEBTN_MAXIMIZE,
 	TITLEBTN_FULLSCREEN,
 	TITLEBTN_MINIMIZE,
+	TITLEBTN_MENU,
 	TITLEBTN_N,
 	TITLEBTN_NONE = TITLEBTN_N,
 };
 static TitleButton titlebtn_hovered = TITLEBTN_NONE;
 static TitleButton titlebtn_pressed = TITLEBTN_NONE;
+
+static std::vector<std::shared_ptr<Arcollect::gui::menu_item>> topbar_menu_items;
 
 static SDL_HitTestResult hit_test(SDL_Window *window, const SDL_Point *point, void* data)
 {
@@ -65,8 +69,11 @@ static SDL_HitTestResult hit_test(SDL_Window *window, const SDL_Point *point, vo
 	// No match
 	return SDL_HITTEST_NORMAL;
 }
+
 bool Arcollect::gui::window_borders::init(SDL_Window *window)
 {
+	// Init menus
+	// Init borders
 	borderless = SDL_SetWindowHitTest(window,hit_test,NULL) == 0;
 	if (borderless) {
 		SDL_SetWindowBordered(window,SDL_FALSE);
@@ -80,8 +87,15 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 	// TODO Proper cursor allocations
 	// TODO Use X11 full cursor range
 	SDL::Point cursor_position{e.motion.x,e.motion.y};
+	// Get window size
+	SDL::Point window_size;
+	renderer->GetOutputSize(window_size);
 	if (Arcollect::gui::window_borders::borderless) {
 		switch (e.type) {
+			case SDL_QUIT: {
+				// Destroy menus GUI resources
+				topbar_menu_items.clear();
+			} return true;
 			case SDL_WINDOWEVENT: {
 				switch (e.window.event) {
 					case SDL_WINDOWEVENT_SIZE_CHANGED:
@@ -95,7 +109,6 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 				}
 			}
 			case SDL_MOUSEMOTION: {
-				
 				static SDL_Cursor* cursor_normal = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 				static SDL_Cursor* cursor_nwse   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
 				static SDL_Cursor* cursor_nesw   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
@@ -106,9 +119,6 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 				display_bar = cursor_position.y <= Arcollect::gui::window_borders::title_height;
 				// Check which title button is hovered
 				if (display_bar) {
-					// Get window size
-					SDL::Point window_size;
-					renderer->GetOutputSize(window_size);
 					// Compute position
 					int titlebtn_position = (window_size.x - cursor_position.x)/title_button_width;
 					if (titlebtn_position < TITLEBTN_N)
@@ -176,6 +186,13 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 								set_fullscreen(false);
 							else set_fullscreen(true);
 						} break;
+						case TITLEBTN_MENU: {
+							// Pop menu
+							std::vector<std::shared_ptr<menu_item>> menu = Arcollect::gui::modal_stack.back().get().top_menu();
+							for (auto& item: topbar_menu_items)
+								menu.emplace_back(item);
+							Arcollect::gui::menu::popup_context(menu,{window_size.x-TITLEBTN_MENU*title_button_width-title_button_width,title_height});
+						} break;
 					}
 				}
 				titlebtn_pressed = TITLEBTN_NONE;
@@ -215,6 +232,7 @@ void Arcollect::gui::window_borders::render(void)
 			btn_rect.w - 2*title_button_padding,
 			btn_rect.h - 2*title_button_padding,
 		};
+		const int btn_ymid = btn_rect.y + (btn_rect.h)/2;
 		const int btn_inner_ybot = btn_inner_rect.y + btn_inner_rect.h;
 		renderer->SetDrawColor(255,255,255,192);
 		// Draw close button (a cross)
@@ -240,6 +258,12 @@ void Arcollect::gui::window_borders::render(void)
 		btn_inner_rect.x -= title_button_width;
 		// Draw minimize button (a square)
 		renderer->DrawLine(btn_inner_rect.x,btn_inner_ybot,btn_inner_rect.x+btn_inner_rect.w,btn_inner_ybot);
+		btn_rect.x       -= title_button_width;
+		btn_inner_rect.x -= title_button_width;
+		// Draw menu button (triangle)
+		renderer->DrawLine(btn_inner_rect.x,btn_ymid,btn_inner_rect.x+btn_inner_rect.w,btn_ymid);
+		renderer->DrawLine(btn_inner_rect.x,btn_ymid,btn_inner_rect.x+(btn_inner_rect.w)/2,btn_inner_ybot);
+		renderer->DrawLine(btn_inner_rect.x+btn_inner_rect.w,btn_ymid,btn_inner_rect.x+(btn_inner_rect.w)/2,btn_inner_ybot);
 		btn_rect.x       -= title_button_width;
 		btn_inner_rect.x -= title_button_width;
 		// Enlight hovered button

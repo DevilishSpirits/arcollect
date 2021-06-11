@@ -17,9 +17,11 @@
 #pragma once
 #include "sdl2-hpp/SDL.hpp"
 #include <functional>
+#include <memory>
 #include <vector>
 namespace Arcollect {
 	namespace gui {
+		class menu_item;
 		/** Something that can be modal
 		 *
 		 * Arcollect UI use a stack of #Arcollect::gui::modal objects to deliver
@@ -45,6 +47,13 @@ namespace Arcollect {
 				 * Render the titlebar.
 				 */
 				virtual void render_titlebar(SDL::Rect target, int window_width) = 0;
+				/** Get menu items for topbar context menu
+				 * \return The list of modal dependant menus to add.
+				 *
+				 * This callback is invoked when the user click on the triangle menu on
+				 * the top. Menus returned here are prepended to the menu shown.
+				 */
+				virtual std::vector<std::shared_ptr<menu_item>> top_menu(void) { return {}; };
 				virtual ~modal(void) = default;
 		};
 		
