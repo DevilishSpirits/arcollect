@@ -177,3 +177,41 @@ void Arcollect::gui::rating_selector::event(SDL::Event &e, SDL::Rect target)
 		default: break;
 	}
 }
+
+static void set_rating(Arcollect::config::Rating new_rating)
+{
+	Arcollect::config::current_rating = new_rating;
+}
+Arcollect::gui::rating_selector_menu::rating_selector_menu(void) :
+	text_line(font,"Rating",14),
+	text(text_line.render())
+{
+	selector.has_kid = false;
+	selector.has_pg13 = true;
+	selector.has_mature = true;
+	selector.has_adult = true;
+	selector.onratingset = set_rating;
+}
+SDL::Point Arcollect::gui::rating_selector_menu::size(void)
+{
+	SDL::Point size;
+	text->QuerySize(size);
+	size.x += (1+selector.has_kid+selector.has_pg13+selector.has_mature+selector.has_adult)*size.y;
+	return size;
+}
+void Arcollect::gui::rating_selector_menu::event(SDL::Event &e, SDL::Rect location)
+{
+	selector.event(e,location);
+}
+void Arcollect::gui::rating_selector_menu::render(SDL::Rect target)
+{
+	// Update rating
+	selector.rating = static_cast<Arcollect::config::Rating>(static_cast<int>(Arcollect::config::current_rating));
+	// Render label
+	SDL::Point label_size;
+	text->QuerySize(label_size);
+	SDL::Rect label_rect{target.x,target.y+(target.h-label_size.y)/2,label_size.x,label_size.y};
+	renderer->Copy(text.get(),NULL,&label_rect);
+	//Render selector
+	selector.render(target);
+}

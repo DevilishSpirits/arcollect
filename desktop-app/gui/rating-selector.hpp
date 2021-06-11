@@ -40,5 +40,16 @@ namespace Arcollect {
 				void render(SDL::Rect target);
 				void event(SDL::Event &e, SDL::Rect target);
 		};
+		class rating_selector_menu: public menu_item {
+			private:
+				Arcollect::gui::TextLine text_line;
+				std::unique_ptr<SDL::Texture> text;
+			public:
+				rating_selector selector;
+				SDL::Point size(void) override;
+				void event(SDL::Event &e, SDL::Rect location) override;
+				void render(SDL::Rect target) override;
+				rating_selector_menu(void);
+		};
 	}
 }
