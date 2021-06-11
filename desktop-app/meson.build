@@ -24,6 +24,7 @@ deskapp_srcs = [
 	'gui/first-run.cpp',
 	'gui/font.cpp',
 	'gui/menu.cpp',
+	'gui/rating-selector.cpp',
 	'gui/slideshow.cpp',
 	'gui/view-slideshow.cpp',
 	'gui/view-grid.cpp',

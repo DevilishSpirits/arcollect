@@ -24,6 +24,7 @@
 #include "gui/artwork-collections.hpp"
 #include "gui/first-run.hpp"
 #include "gui/modal.hpp"
+#include "gui/rating-selector.hpp"
 #include "gui/slideshow.hpp"
 #include "gui/views.hpp"
 #include "gui/font.hpp"
