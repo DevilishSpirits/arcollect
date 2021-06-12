@@ -19,6 +19,7 @@
 #endif
 #include <iostream>
 #include <fstream>
+#include <functional>
 #include <unordered_map>
 #include <vector>
 #include <arcollect-db-open.hpp>
@@ -138,6 +139,29 @@ sqlite_int64 find_account(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_
 	} else return iter->second.acc_arcoid;
 }
 
+
+template <typename map_type>
+map_type json_parse_objects(rapidjson::Document &json_dom, const char* json_key, std::function<void(map_type&,rapidjson::Value::ConstValueIterator)> do_emplace)
+{
+	map_type new_objects;
+	if (json_dom.HasMember(json_key)) {
+		auto &json_array = json_dom[json_key];
+		if (!json_array.IsArray()) {
+			std::cerr << "\"" << json_key << "\" must be an array" << std::endl;
+			std::exit(1);
+		}
+		
+		for (rapidjson::Value::ConstValueIterator iter = json_array.Begin(); iter != json_array.End(); ++iter) {
+			if (!iter->IsObject()) {
+				std::cerr << "\"" << json_key << "\" elements must be objects" << std::endl;
+				std::exit(1);
+			}
+			do_emplace(new_objects,iter);
+		}
+	}
+	return new_objects;
+}
+
 int main(void)
 {
 	#ifdef __unix__
@@ -188,57 +212,22 @@ int main(void)
 			          << "Platform: " << platform << std::endl;
 		}
 		// Parse the DOM
-		std::unordered_map<std::string,new_artwork> new_artworks;
-		std::unordered_map<std::string,new_account> new_accounts;
-		std::vector<new_art_acc_link>               new_art_acc_links;
-		
-		if (json_dom.HasMember("artworks")) {
-			auto &json_arts = json_dom["artworks"];
-			if (!json_arts.IsArray()) {
-				std::cerr << "\"artworks\" must be an array" << std::endl;
-				return 1;
-			}
-			
-			for (rapidjson::Value::ConstValueIterator art_iter = json_arts.Begin(); art_iter != json_arts.End(); ++art_iter) {
-				if (!art_iter->IsObject()) {
-					std::cerr << "\"artworks\" elements must be objects" << std::endl;
-					return 1;
-				}
+		std::unordered_map<std::string,new_artwork> new_artworks = json_parse_objects<decltype(new_artworks)>(json_dom,"artworks",
+			[](decltype(new_artworks)& new_artworks, rapidjson::Value::ConstValueIterator art_iter) {
 				new_artworks.emplace(std::string(art_iter->operator[]("source").GetString()),art_iter);
-			}
-		}
-		if (json_dom.HasMember("accounts")) {
-			auto &json_accs = json_dom["accounts"];
-			if (!json_accs.IsArray()) {
-				std::cerr << "\"accounts\" must be an array" << std::endl;
-				return 1;
-			}
-			
-			for (rapidjson::Value::ConstValueIterator acc_iter = json_accs.Begin(); acc_iter != json_accs.End(); ++acc_iter) {
-				if (!acc_iter->IsObject()) {
-					std::cerr << "\"accounts\" elements must be objects" << std::endl;
-					return 1;
-				}
+		});
+		
+		std::unordered_map<std::string,new_account> new_accounts = json_parse_objects<decltype(new_accounts)>(json_dom,"accounts",
+			[](decltype(new_accounts)& new_accounts, rapidjson::Value::ConstValueIterator acc_iter) {
 				auto &id_value = acc_iter->operator[]("id");
 				std::string map_key = id_value.IsInt64() ? std::to_string(id_value.GetInt64()) : id_value.GetString();
 				new_accounts.emplace(map_key,acc_iter);
-			}
-		}
-		if (json_dom.HasMember("art_acc_links")) {
-			auto &json_links = json_dom["art_acc_links"];
-			if (!json_links.IsArray()) {
-				std::cerr << "\"art_acc_links\" must be an array" << std::endl;
-				return 1;
-			}
-			
-			for (rapidjson::Value::ConstValueIterator link_iter = json_links.Begin(); link_iter != json_links.End(); ++link_iter) {
-				if (!link_iter->IsObject()) {
-					std::cerr << "\"art_acc_links\" elements must be objects" << std::endl;
-					return 1;
-				}
+		});
+		
+		std::vector<new_art_acc_link> new_art_acc_links = json_parse_objects<decltype(new_art_acc_links)>(json_dom,"art_acc_links",
+			[](decltype(new_art_acc_links)& new_art_acc_links, rapidjson::Value::ConstValueIterator link_iter) {
 				new_art_acc_links.emplace_back(link_iter);
-			}
-		}
+		});
 		// Debug the transaction
 		if (debug) {
 			std::cerr << new_artworks.size() << " artwork(s) :" << std::endl;
