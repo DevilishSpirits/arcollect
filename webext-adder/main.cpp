@@ -243,6 +243,9 @@ int main(void)
 			*/
 		}
 		// Perform transaction
+		db->exec("BEGIN IMMEDIATE;");
+		
+		// INSERT INTO artworks
 		std::unique_ptr<SQLite3::stmt> insert_stmt;
 		if (db->prepare("INSERT OR FAIL INTO artworks (art_title,art_platform,art_desc,art_source,art_rating) VALUES (?,?,?,?,?) RETURNING art_artid;",insert_stmt)) {
 			std::cerr << "Failed to prepare the add_artwork_stmt " << db->errmsg() << std::endl;
