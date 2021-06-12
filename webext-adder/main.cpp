@@ -24,7 +24,7 @@
 #include <vector>
 #include <arcollect-db-open.hpp>
 #include <arcollect-paths.hpp>
-#include "../subprojects/rapidjson/include/rapidjson/document.h"
+#include <rapidjson/document.h>
 #include "base64.hpp"
 
 /** RapidJSON helper to add integers

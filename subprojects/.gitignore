@@ -1,4 +1,5 @@
 inih-r53
 packagecache
-sqlite-amalgamation-*
+rapidjson-*
 SDL2_ttf-*
+sqlite-amalgamation-*

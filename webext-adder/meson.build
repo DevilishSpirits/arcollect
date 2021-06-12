@@ -1,6 +1,7 @@
 
 webext_adder_deps = [
 	dep_sqlite3,
+	dep_rapidjson,
 ]
 webext_adder_srcs = [
 	'main.cpp'
