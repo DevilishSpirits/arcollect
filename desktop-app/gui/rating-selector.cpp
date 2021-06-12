@@ -16,7 +16,7 @@
  */
 #include "rating-selector.hpp"
 
-extern std::unique_ptr<SDL::Renderer> renderer;
+extern SDL::Renderer* renderer;
 
 SDL::Rect Arcollect::gui::rating_selector::rect_tool(SDL::Rect &rect)
 {
