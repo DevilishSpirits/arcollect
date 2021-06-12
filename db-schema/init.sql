@@ -94,4 +94,33 @@ BEGIN;
 		FOREIGN KEY (acc_arcoid) REFERENCES accounts(acc_arcoid),
 		PRIMARY KEY (art_artid,acc_arcoid,artacc_link)
 	);
+	
+	/* Tags list
+	 *
+	 * This is a repository of all known tags and their meaning.
+	 *
+	 * Valid values for tag_kind are :
+	 * - `species` -- The tag is related to a species
+	 * - `character` -- The tag is related to a specific character
+	 */
+	CREATE TABLE tags (
+		tag_arcoid   INTEGER NOT NULL UNIQUE, /* The tag ID within Arcollect */
+		tag_platid   INTEGER NOT NULL       , /* The tag ID on the platform  */
+		tag_platform TEXT    NOT NULL       , /* The tag platform            */
+		tag_title    TEXT                   , /* The tag title to display    */
+		tag_kind     TEXT                   , /* The kind of tag             */
+		PRIMARY KEY (tag_arcoid)
+	);
+	
+	/* Artwork/tag links
+	 *
+	 * These are tags list on artworks.
+	 */
+	CREATE TABLE art_tag_links (
+		art_artid    INTEGER NOT NULL       , /* The artwork unique ID   */
+		tag_arcoid   INTEGER NOT NULL       , /* The account ID within Arcollect */
+		FOREIGN KEY (art_artid ) REFERENCES artworks(art_artid ),
+		FOREIGN KEY (tag_arcoid) REFERENCES tags(tag_arcoid),
+		PRIMARY KEY (art_artid,tag_arcoid)
+	);
 COMMIT;
