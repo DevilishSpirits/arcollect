@@ -159,9 +159,11 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 					titlebtn_pressed = titlebtn_hovered;
 			} return cursor_position.y >= Arcollect::gui::window_borders::title_height;
 			case SDL_MOUSEBUTTONUP: {
-				if (titlebtn_pressed == titlebtn_hovered) {
+				bool button_clicked = titlebtn_pressed == titlebtn_hovered;
+				titlebtn_pressed = TITLEBTN_NONE;
+				if (button_clicked) {
 					auto window_flags = SDL_GetWindowFlags(window);
-					switch (titlebtn_pressed) {
+					switch (titlebtn_hovered) {
 						case TITLEBTN_CLOSE: {
 							// Generate a quit event
 							SDL_Event event;
@@ -196,11 +198,18 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 								for (auto& item: topbar_menu_items)
 									menu.emplace_back(item);
 								Arcollect::gui::menu::popup_context(menu,{window_size.x-TITLEBTN_MENU*title_button_width-title_button_width,title_height});
+							} else {
+								/* Hide the menu
+								 *
+								 * Context menu popdown upon SDL_MOUSEBUTTONUP. By default we
+								 * don't propagate this event for clicks on the menu bar. But to
+								 * hide the menu, we make a special exception
+								 */
+								return true;
 							}
 						} break;
 					}
 				}
-				titlebtn_pressed = TITLEBTN_NONE;
 			} return cursor_position.y >= Arcollect::gui::window_borders::title_height;
 		}
 	}
