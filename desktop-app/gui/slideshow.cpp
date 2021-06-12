@@ -76,9 +76,11 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 		return Arcollect::gui::view_slideshow::event(e);
 	}
 	std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override {
-		return {
-			std::make_shared<Arcollect::gui::menu_item_simple_label>("Delete artwork",confirm_delete_art),
-		};
+		if (viewport.artwork) {
+			return {
+				std::make_shared<Arcollect::gui::menu_item_simple_label>("Delete artwork",confirm_delete_art),
+			};
+		} else return {};
 	};
 } background_slideshow;
 

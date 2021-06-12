@@ -22,27 +22,30 @@ void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<gui::artwork
 {
 	collection_iterator = std::make_unique<gui::artwork_collection::iterator>(new_collection->begin());
 	collection = new_collection;
-	viewport.artwork = **collection_iterator;
+	if (*collection_iterator != new_collection->end())
+		viewport.artwork = **collection_iterator;
 }
 void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 {
 	this->rect = rect;
-	// Preserve aspect ratio
-	SDL::Point art_size;
-	viewport.artwork->QuerySize(art_size);
-	int height_for_width = art_size.y*rect.w/art_size.x;
-	if (height_for_width > rect.h) {
-		// Perform width for height size
-		int width_for_height = art_size.x*rect.h/art_size.y;
-		rect.x += (rect.w-width_for_height)/2;
-		rect.w = width_for_height;
-	} else {
-		// Perform height for width size
-		rect.y += (rect.h-height_for_width)/2;
-		rect.h = height_for_width;
+	if (viewport.artwork) {
+		// Preserve aspect ratio
+		SDL::Point art_size;
+		viewport.artwork->QuerySize(art_size);
+		int height_for_width = art_size.y*rect.w/art_size.x;
+		if (height_for_width > rect.h) {
+			// Perform width for height size
+			int width_for_height = art_size.x*rect.h/art_size.y;
+			rect.x += (rect.w-width_for_height)/2;
+			rect.w = width_for_height;
+		} else {
+			// Perform height for width size
+			rect.y += (rect.h-height_for_width)/2;
+			rect.h = height_for_width;
+		}
+		// Set viewport
+		viewport.set_corners(rect);
 	}
-	// Set viewport
-	viewport.set_corners(rect);
 }
 void Arcollect::gui::view_slideshow::set_collection_iterator(artwork_collection::iterator &iter)
 {
@@ -101,26 +104,39 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 void Arcollect::gui::view_slideshow::render(void)
 {
 	renderer->SetDrawBlendMode(SDL::BLENDMODE_NONE);
-	viewport.render({0,0});
+	if (viewport.artwork)
+		viewport.render({0,0});
+	else {
+		// FIXME 
+		Arcollect::gui::Font font;
+		Arcollect::gui::TextLine title_line(font,"There is no artwork to show",22);
+		std::unique_ptr<SDL::Texture> title_line_text(title_line.render());
+		SDL::Point title_line_size;
+		title_line_text->QuerySize(title_line_size);
+		SDL::Rect render_rect{rect.x+(rect.w-title_line_size.x)/2,rect.y+(rect.h-title_line_size.y)/2,title_line_size.x,title_line_size.y};
+		renderer->Copy(title_line_text.get(),NULL,&render_rect);
+	}
 	//render_info_incard();
 }
 void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int window_width)
 {
-	// Render artist avatar
-	auto accounts = viewport.artwork->get_linked_accounts("account");
-	if (accounts.size() > 0) {
-		SDL::Rect icon_rect{target.x,target.y,target.h,target.h};
-		renderer->Copy(accounts[0]->get_icon().get(),NULL,&icon_rect);
+	if (viewport.artwork) {
+		// Render artist avatar
+		auto accounts = viewport.artwork->get_linked_accounts("account");
+		if (accounts.size() > 0) {
+			SDL::Rect icon_rect{target.x,target.y,target.h,target.h};
+			renderer->Copy(accounts[0]->get_icon().get(),NULL,&icon_rect);
+		}
+		// Render title
+		const int title_border = target.h/4;
+		Arcollect::gui::Font font;
+		Arcollect::gui::TextLine title_line(font,viewport.artwork->title(),target.h-2*title_border);
+		std::unique_ptr<SDL::Texture> title_line_text(title_line.render());
+		SDL::Point title_line_size;
+		title_line_text->QuerySize(title_line_size);
+		SDL::Rect title_line_dstrect{target.x+title_border+target.h,target.y+title_border,title_line_size.x,title_line_size.y};
+		renderer->Copy(title_line_text.get(),NULL,&title_line_dstrect);
 	}
-	// Render title
-	const int title_border = target.h/4;
-	Arcollect::gui::Font font;
-	Arcollect::gui::TextLine title_line(font,viewport.artwork->title(),target.h-2*title_border);
-	std::unique_ptr<SDL::Texture> title_line_text(title_line.render());
-	SDL::Point title_line_size;
-	title_line_text->QuerySize(title_line_size);
-	SDL::Rect title_line_dstrect{target.x+title_border+target.h,target.y+title_border,title_line_size.x,title_line_size.y};
-	renderer->Copy(title_line_text.get(),NULL,&title_line_dstrect);
 }
 bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 {
@@ -130,27 +146,35 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 		case SDL_KEYUP: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_RIGHT: {
-					++*collection_iterator;
-					if (*collection_iterator != collection->end()) {
-						viewport.artwork = **collection_iterator;
-						resize(rect);
-					} else --*collection_iterator; // Rewind
+					if (viewport.artwork) {
+						++*collection_iterator;
+						if (*collection_iterator != collection->end()) {
+							viewport.artwork = **collection_iterator;
+							resize(rect);
+						} else --*collection_iterator; // Rewind
+					}
 				} break;
 				case SDL_SCANCODE_LEFT: {
-					if (*collection_iterator != collection->begin()) {
-						viewport.artwork = *--*collection_iterator;
-						resize(rect);
+					if (viewport.artwork) {
+						if (*collection_iterator != collection->begin()) {
+							viewport.artwork = *--*collection_iterator;
+							resize(rect);
+						}
 					}
 				} break;
 				case SDL_SCANCODE_HOME: {
-					collection_iterator = std::make_unique<gui::artwork_collection::iterator>(collection->begin());
-					viewport.artwork = **collection_iterator;
-					resize(rect);
+					if (viewport.artwork) {
+						collection_iterator = std::make_unique<gui::artwork_collection::iterator>(collection->begin());
+						viewport.artwork = **collection_iterator;
+						resize(rect);
+					}
 				} break;
 				case SDL_SCANCODE_END: {
-					collection_iterator = std::make_unique<gui::artwork_collection::iterator>(collection->end());
-					viewport.artwork = *--*collection_iterator;
-					resize(rect);
+					if (viewport.artwork) {
+						collection_iterator = std::make_unique<gui::artwork_collection::iterator>(collection->end());
+						viewport.artwork = *--*collection_iterator;
+						resize(rect);
+					}
 				} break;
 				default:break;
 			}
