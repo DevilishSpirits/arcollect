@@ -30,8 +30,8 @@ static std::fstream hpp;
 
 static void write_sql_file(const char* sql_file_path, const std::string &var_name)
 {
-	//std::cerr << "Including \"" << sql_file_path << "\" as Arcollect::db::schema::" << var_name << "\n" << std::endl;
-	char sql_file[4096];
+	std::cerr << "Including \"" << sql_file_path << "\" as Arcollect::db::schema::" << var_name << "\n" << std::endl;
+	char sql_file[8192];
 	std::ifstream sql(sql_file_path);
 	//sql.exceptions(sql.failbit|sql.badbit);
 	sql.read(sql_file,sizeof(sql_file));
