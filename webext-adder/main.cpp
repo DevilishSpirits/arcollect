@@ -243,21 +243,21 @@ int main(void)
 			*/
 		}
 		// Perform transaction
-		std::unique_ptr<SQLite3::stmt> add_artwork_stmt;
-		if (db->prepare("INSERT OR FAIL INTO artworks (art_title,art_platform,art_desc,art_source,art_rating) VALUES (?,?,?,?,?) RETURNING art_artid;",add_artwork_stmt)) {
+		std::unique_ptr<SQLite3::stmt> insert_stmt;
+		if (db->prepare("INSERT OR FAIL INTO artworks (art_title,art_platform,art_desc,art_source,art_rating) VALUES (?,?,?,?,?) RETURNING art_artid;",insert_stmt)) {
 			std::cerr << "Failed to prepare the add_artwork_stmt " << db->errmsg() << std::endl;
 			return 1;
 		}
 		for (auto& artwork : new_artworks) {
-			add_artwork_stmt->bind(1,artwork.second.art_title);
-			add_artwork_stmt->bind(2,platform.c_str());
-			add_artwork_stmt->bind(3,artwork.second.art_desc);
-			add_artwork_stmt->bind(4,artwork.second.art_source);
-			add_artwork_stmt->bind(5,artwork.second.art_rating);
-			switch (add_artwork_stmt->step()) {
+			insert_stmt->bind(1,artwork.second.art_title);
+			insert_stmt->bind(2,platform.c_str());
+			insert_stmt->bind(3,artwork.second.art_desc);
+			insert_stmt->bind(4,artwork.second.art_source);
+			insert_stmt->bind(5,artwork.second.art_rating);
+			switch (insert_stmt->step()) {
 				case SQLITE_ROW: {
 					// Save artwork
-					artwork.second.art_id = add_artwork_stmt->column_int64(0);
+					artwork.second.art_id = insert_stmt->column_int64(0);
 					std::ofstream artwork_file(Arcollect::path::artwork_pool / std::to_string(artwork.second.art_id));
 					artwork_file << artwork.second.data;
 				} break;
@@ -267,17 +267,16 @@ int main(void)
 					std::cerr << "Error executing the STMT" << db->errmsg() << std::endl;
 				} break;
 			}
-			add_artwork_stmt->reset();
+			insert_stmt->reset();
 		}
 		
-		
+		// INSERT INTO accounts
 		std::unique_ptr<SQLite3::stmt> get_account_stmt;
-		std::unique_ptr<SQLite3::stmt> add_account_stmt;
 		if (db->prepare("SELECT acc_arcoid FROM accounts WHERE acc_platform = ? AND acc_platid = ?;",get_account_stmt)) {
 			std::cerr << "Failed to prepare the get_account_stmt " << db->errmsg() << std::endl;
 			return 1;
 		}
-		if (db->prepare("INSERT OR FAIL INTO accounts (acc_platid,acc_platform,acc_name,acc_title,acc_url) VALUES (?,?,?,?,?) RETURNING acc_arcoid;",add_account_stmt)) {
+		if (db->prepare("INSERT OR FAIL INTO accounts (acc_platid,acc_platform,acc_name,acc_title,acc_url) VALUES (?,?,?,?,?) RETURNING acc_arcoid;",insert_stmt)) {
 			std::cerr << "Failed to prepare the add_account_stmt " << db->errmsg() << std::endl;
 			return 1;
 		}
@@ -294,16 +293,16 @@ int main(void)
 				case SQLITE_DONE: {
 					// User does not exist, create it
 					if (account.second.acc_platid_str)
-						add_account_stmt->bind(1,account.second.acc_platid_str);
-					else add_account_stmt->bind(1,account.second.acc_platid_int);
-					add_account_stmt->bind(2,platform.c_str());
-					add_account_stmt->bind(3,account.second.acc_name);
-					add_account_stmt->bind(4,account.second.acc_title);
-					add_account_stmt->bind(5,account.second.acc_url);
-					switch (add_account_stmt->step()) {
+						insert_stmt->bind(1,account.second.acc_platid_str);
+					else insert_stmt->bind(1,account.second.acc_platid_int);
+					insert_stmt->bind(2,platform.c_str());
+					insert_stmt->bind(3,account.second.acc_name);
+					insert_stmt->bind(4,account.second.acc_title);
+					insert_stmt->bind(5,account.second.acc_url);
+					switch (insert_stmt->step()) {
 						case SQLITE_ROW: {
 							// Save profile icon
-							account.second.acc_arcoid = add_account_stmt->column_int64(0);
+							account.second.acc_arcoid = insert_stmt->column_int64(0);
 							std::ofstream account_file(Arcollect::path::account_avatars / std::to_string(account.second.acc_arcoid));
 							account_file << account.second.icon_data;
 						} break;
@@ -313,7 +312,7 @@ int main(void)
 							std::cerr << "Error executing the STMT" << db->errmsg() << std::endl;
 						} break;
 					}
-					add_account_stmt->reset();
+					insert_stmt->reset();
 				} break;
 				default: {
 					std::cerr << "Error executing the STMT" << db->errmsg() << std::endl;
@@ -321,16 +320,17 @@ int main(void)
 			}
 			get_account_stmt->reset();
 		}
-		std::unique_ptr<SQLite3::stmt> add_art_acc_links_stmt;
-		if (db->prepare("INSERT OR FAIL INTO art_acc_links (acc_arcoid, art_artid, artacc_link) VALUES (?,?,?);",add_art_acc_links_stmt)) {
+		
+		// INSERT INTO art_acc_links
+		if (db->prepare("INSERT OR FAIL INTO art_acc_links (acc_arcoid, art_artid, artacc_link) VALUES (?,?,?);",insert_stmt)) {
 			std::cerr << "Failed to prepare the add_art_acc_links_stmt " << db->errmsg() << std::endl;
 			return 1;
 		}
 		for (auto& art_acc_link : new_art_acc_links) {
-			add_art_acc_links_stmt->bind(1,find_account(db,new_accounts,art_acc_link.acc_platid_str,art_acc_link.acc_platid_int));
-			add_art_acc_links_stmt->bind(2,find_artwork(db,new_artworks,art_acc_link.art_source));
-			add_art_acc_links_stmt->bind(3,art_acc_link.artacc_link);
-			switch (add_art_acc_links_stmt->step()) {
+			insert_stmt->bind(1,find_account(db,new_accounts,art_acc_link.acc_platid_str,art_acc_link.acc_platid_int));
+			insert_stmt->bind(2,find_artwork(db,new_artworks,art_acc_link.art_source));
+			insert_stmt->bind(3,art_acc_link.artacc_link);
+			switch (insert_stmt->step()) {
 				case SQLITE_ROW: {
 				} break;
 				case SQLITE_DONE: {
@@ -339,7 +339,7 @@ int main(void)
 					std::cerr << "INSERT INTO art_acc_links (acc_arcoid, art_artid, artacc_link) VALUES (" << find_account(db,new_accounts,art_acc_link.acc_platid_str,art_acc_link.acc_platid_int) << "," << find_artwork(db,new_artworks,art_acc_link.art_source) << ",\"" << art_acc_link.artacc_link << "\") failed: " << db->errmsg() << std::endl;
 				} break;
 			}
-			add_art_acc_links_stmt->reset();
+			insert_stmt->reset();
 		}
 		db->exec("COMMIT;");
 		// Return
