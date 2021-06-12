@@ -5,10 +5,8 @@ name: Create a new release
 # Controls when the action will run. 
 on:
   push:
-    branches: [ master ]
     tags:
-      - v*
-  workflow_dispatch:
+      - 'v*'
   
 jobs:
   test:
@@ -83,6 +81,10 @@ jobs:
           DESTDIR: "archive-out"
   build-webextension:
     # Simply build the webextension (only)
+<<<<<<< HEAD
+=======
+    #needs: [test, test-wrapped, test-ubuntu-20_04]
+>>>>>>> 0548a4e (Made release workflow)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -91,6 +93,10 @@ jobs:
           action: build
           setup-options: -Denable_native_progs=false # Disable C++ code
           meson-version: 0.57.1
+<<<<<<< HEAD
+=======
+          
+>>>>>>> 0548a4e (Made release workflow)
       - uses: actions/upload-artifact@v2
         with:
           name: arcollect-webextension.zip
@@ -104,10 +110,13 @@ jobs:
         uses: actions/download-artifact@v2.0.9
         with:
           name: arcollect-webextension.zip
+<<<<<<< HEAD
       - name: Unzip arcollect-webextension.zip
         run: unzip arcollect.zip -d webextension
       - name: npm install web-ext
         run: npm install web-ext
+=======
+>>>>>>> 0548a4e (Made release workflow)
       - name: Fake signing 
         run: mkdir web-ext-artifacts && cp arcollect.zip web-ext-artifacts
       - uses: actions/upload-artifact@v2
@@ -116,6 +125,10 @@ jobs:
           path: web-ext-artifacts
   release:
     # Create a new draft release
+<<<<<<< HEAD
+=======
+    runs-on: ubuntu-latest
+>>>>>>> 0548a4e (Made release workflow)
     needs: [sign-amo]
     steps:
       - name: Download AMO signed webextension
