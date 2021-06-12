@@ -135,6 +135,22 @@ struct new_account {
 	};
 };
 
+struct new_tag {
+	platform_id  tag_platid;
+	const char*  tag_title;
+	const char*  tag_kind;
+	
+	sqlite_int64 tag_arcoid;
+	
+	new_tag(rapidjson::Value::ConstValueIterator iter) : 
+		tag_platid(iter->operator[]("id")),
+		tag_title(json_string(iter,"title")),
+		tag_kind(json_string(iter,"kind")),
+		tag_arcoid(-1)
+	{
+	};
+};
+
 struct new_art_acc_link {
 	platform_id  acc_platid;
 	const char*  art_source;
@@ -144,6 +160,17 @@ struct new_art_acc_link {
 		acc_platid(iter->operator[]("account")),
 		art_source(json_string(iter,"artwork")),
 		artacc_link(json_string(iter,"link"))
+	{
+	};
+};
+
+struct new_art_tag_link {
+	platform_id  tag_platid;
+	const char*  art_source;
+	
+	new_art_tag_link(rapidjson::Value::ConstValueIterator iter) : 
+		tag_platid(iter->operator[]("tag")),
+		art_source(json_string(iter,"artwork"))
 	{
 	};
 };
@@ -171,6 +198,18 @@ sqlite_int64 find_account(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_
 		select_stmt->step();
 		return select_stmt->column_int64(0);
 	} else return iter->second.acc_arcoid;
+}
+sqlite_int64 find_tag(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<std::string,new_tag> &new_tags, const platform_id& tag_platid)
+{
+	auto iter = new_tags.find(tag_platid);
+	if ((iter == new_tags.end())||(iter->second.tag_arcoid < 0)) {
+		// TODO Error checkings
+		std::unique_ptr<SQLite3::stmt> select_stmt;
+		db->prepare("SELECT tag_arcoid FROM tags WHERE tag_platid = ?;",select_stmt);
+		tag_platid.bind(select_stmt,1);
+		select_stmt->step();
+		return select_stmt->column_int64(0);
+	} else return iter->second.tag_arcoid;
 }
 
 
@@ -258,9 +297,21 @@ int main(void)
 				new_accounts.emplace(map_key,acc_iter);
 		});
 		
+		std::unordered_map<std::string,new_tag> new_tags = json_parse_objects<decltype(new_tags)>(json_dom,"tags",
+			[](decltype(new_tags)& new_tags, rapidjson::Value::ConstValueIterator tag_iter) {
+				auto &id_value = tag_iter->operator[]("id");
+				std::string map_key = id_value.IsInt64() ? std::to_string(id_value.GetInt64()) : id_value.GetString();
+				new_tags.emplace(map_key,tag_iter);
+		});
+		
 		std::vector<new_art_acc_link> new_art_acc_links = json_parse_objects<decltype(new_art_acc_links)>(json_dom,"art_acc_links",
 			[](decltype(new_art_acc_links)& new_art_acc_links, rapidjson::Value::ConstValueIterator link_iter) {
 				new_art_acc_links.emplace_back(link_iter);
+		});
+		
+		std::vector<new_art_tag_link> new_art_tag_links = json_parse_objects<decltype(new_art_tag_links)>(json_dom,"art_tag_links",
+			[](decltype(new_art_tag_links)& new_art_tag_links, rapidjson::Value::ConstValueIterator link_iter) {
+				new_art_tag_links.emplace_back(link_iter);
 		});
 		// Debug the transaction
 		if (debug) {
@@ -354,6 +405,48 @@ int main(void)
 			get_account_stmt->reset();
 		}
 		
+		// INSERT INTO tags
+		std::unique_ptr<SQLite3::stmt> get_tag_stmt;
+		if (db->prepare("SELECT tag_arcoid FROM tags WHERE tag_platform = ? AND tag_platid = ?;",get_tag_stmt)) {
+			std::cerr << "Failed to prepare the get_tag_stmt " << db->errmsg() << std::endl;
+			return 1;
+		}
+		if (db->prepare("INSERT OR FAIL INTO tags (tag_platid,tag_platform,tag_title,tag_kind) VALUES (?,?,?,?) RETURNING tag_arcoid;",insert_stmt)) {
+			std::cerr << "Failed to prepare the add_tag_stmt " << db->errmsg() << std::endl;
+			return 1;
+		}
+		for (auto& tag : new_tags) {
+			get_tag_stmt->bind(1,platform.c_str());
+			tag.second.tag_platid.bind(get_tag_stmt,2);
+			switch (get_tag_stmt->step()) {
+				case SQLITE_ROW: {
+					// User already exist, save tag_arcoid
+					tag.second.tag_arcoid = get_tag_stmt->column_int64(0);
+				} break;
+				case SQLITE_DONE: {
+					// User does not exist, create it
+					tag.second.tag_platid.bind(insert_stmt,1);
+					insert_stmt->bind(2,platform.c_str());
+					insert_stmt->bind(3,tag.second.tag_title);
+					insert_stmt->bind(4,tag.second.tag_kind);
+					switch (insert_stmt->step()) {
+						case SQLITE_ROW: {
+						} break;
+						case SQLITE_DONE: {
+						} break;
+						default: {
+							std::cerr << "Error executing the STMT" << db->errmsg() << std::endl;
+						} break;
+					}
+					insert_stmt->reset();
+				} break;
+				default: {
+					std::cerr << "Error executing the STMT" << db->errmsg() << std::endl;
+				} break;
+			}
+			get_tag_stmt->reset();
+		}
+		
 		// INSERT INTO art_acc_links
 		if (db->prepare("INSERT OR FAIL INTO art_acc_links (acc_arcoid, art_artid, artacc_link) VALUES (?,?,?);",insert_stmt)) {
 			std::cerr << "Failed to prepare the add_art_acc_links_stmt " << db->errmsg() << std::endl;
@@ -374,6 +467,27 @@ int main(void)
 			}
 			insert_stmt->reset();
 		}
+		
+		// INSERT INTO art_tag_links
+		if (db->prepare("INSERT OR FAIL INTO art_tag_links (tag_arcoid, art_artid) VALUES (?,?);",insert_stmt)) {
+			std::cerr << "Failed to prepare the add_art_tag_links_stmt " << db->errmsg() << std::endl;
+			return 1;
+		}
+		for (auto& art_tag_link : new_art_tag_links) {
+			insert_stmt->bind(1,find_tag(db,new_tags,art_tag_link.tag_platid));
+			insert_stmt->bind(2,find_artwork(db,new_artworks,art_tag_link.art_source));
+			switch (insert_stmt->step()) {
+				case SQLITE_ROW: {
+				} break;
+				case SQLITE_DONE: {
+				} break;
+				default: {
+					std::cerr << "INSERT INTO art_tag_links (tag_arcoid, art_artid) VALUES (" << find_tag(db,new_tags,art_tag_link.tag_platid) << "," << find_artwork(db,new_artworks,art_tag_link.art_source) << "\") failed: " << db->errmsg() << std::endl;
+				} break;
+			}
+			insert_stmt->reset();
+		}
+		
 		db->exec("COMMIT;");
 		// Return
 		std::string result_js = "{}";

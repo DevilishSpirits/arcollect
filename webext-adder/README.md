@@ -23,10 +23,19 @@ When adding artwork, send the plain artwork with this kind of JSON :
 		"url": "https://example.net/user/4213/",
 		"icon": "<... base64 data ...>"
 	}],
+	"tags": [{
+		"id": 2134,
+		"title": "Dragon",
+		"kind": "species"
+	}],
 	"art_acc_links": [{
 		"artwork": "https://example.net/art/123456/",
 		"account": 4213,
 		"link": "account"
+	}],
+	"art_tag_links": [{
+		"artwork": "https://example.net/art/123456/",
+		"tag": 2134,
 	}]
 }
 ```
@@ -46,10 +55,19 @@ The `account` array contain users you might wants to add with some properties :
 * `url` is the account URL.
 * `icon` is the account avatar in base64 encoding.
 
+The `tags` array contain tags you might wants to add with some properties :
+* `id` is the tag internal id on the platform. It should be immutable. This is a key in the database. It can be a string or an integer
+* `title` is the pretty tag title, if different from `id`.
+* `kind` is the tag kind. See the schema explanation of `tags` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/db-schema/init.sql).
+
 The `art_acc_link` array contain links with artworks and profiles :
 * `artwork` is the artwork `"source"` to link.
 * `account` is the account `"id"`.
 * `link` describre the type of link. Here `"account"` mean that this is the account which posted the artwork. Valid values are listed in the explanation of `art_acc_links` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/db-schema/init.sql).
+
+The `art_tag_link` array contain links with artworks and tags :
+* `artwork` is the artwork `"source"` to link.
+* `tag` is the tag `"id"`.
 
 This JSON is fully parsed before performing a transaction on the database. Item order in the JSON is not important.
 
