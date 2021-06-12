@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+/* FIXME Rewrite with extensive commenting */
 /* Arcollect content script for FurAffinity
  */
 /** Save the artwork
@@ -43,6 +44,18 @@ function do_save_artwork()
 		'artwork': window.location.origin+window.location.pathname,
 		'link': 'account'
 	}];
+	let tags = []
+	let art_tag_links = []
+	tags_rows = document.getElementsByClassName('tags-row')[0].getElementsByTagName('a');
+	for (let i = 0; i < tags_rows.length; i++) {
+		tags.push({
+			'id': tags_rows[i].text
+		});
+		art_tag_links.push({
+			'artwork': window.location.origin+window.location.pathname,
+			'tag': tags_rows[i].text
+		});
+	}
 		// Download account images
 	Promise.all(accountJSON.map(function(element) {
 		return element['icon'];
@@ -64,7 +77,9 @@ function do_save_artwork()
 				'data': image_data
 			}],
 			'accounts': accountJSON,
+			'tags': tags,
 			'art_acc_links': art_acc_links,
+			'art_tag_links': art_tag_links,
 		});
 	}).then(function() {
 		save_buttondiv.text = 'Saved';
