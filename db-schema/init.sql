@@ -37,6 +37,9 @@ BEGIN;
 	 * This is a repository of all collected artworks. It contain general metadata
 	 * about the artwork and their unique id.
 	 *
+	 * Note about art_width/art_height: Upon insertion, these values are set to
+	 * NULL. The desktop-app will set these when loading the artwork.
+	 *
 	 * Note about art_rating: The rating works with a recomended minimal age
 	 * inclusive (16 mean that 15 and less child are not recomended).
 	 * The normalized rating are these :
