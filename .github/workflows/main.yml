@@ -42,12 +42,12 @@ jobs:
       - name: Uploading DESDIR artifact
         uses: actions/upload-artifact@v2
         with:
-          name: install-regular.tar
+          name: build_DESTDIR.tar
           path: archive-out.tar
       - name: Uploading arcollect-webextension.zip artifact
         uses: actions/upload-artifact@v2
         with:
-          name: arcollect-webextension.zip
+          name: build_webextension.zip
           path: build/webextension/arcollect.zip
   build-wrapped:
     runs-on: [archlinux]
@@ -78,12 +78,12 @@ jobs:
       - name: Uploading DESDIR artifact
         uses: actions/upload-artifact@v2
         with:
-          name: install-wrapped.tar
+          name: build-wrapped_DESTDIR.tar
           path: archive-out.tar
       - name: Uploading arcollect-webextension.zip artifact
         uses: actions/upload-artifact@v2
         with:
-          name: arcollect-webextension.zip
+          name: build-wrapped_webextension.zip
           path: build/webextension/arcollect.zip
   build-ubuntu-20_04:
     runs-on: [ubuntu-20.04]
@@ -117,10 +117,10 @@ jobs:
       - name: Uploading DESDIR artifact
         uses: actions/upload-artifact@v2
         with:
-          name: install-ubuntu_20.10.tar
+          name: build-ubuntu-20_04_DESTDIR.tar
           path: archive-out.tar
       - name: Uploading arcollect-webextension.zip artifact
         uses: actions/upload-artifact@v2
         with:
-          name: arcollect-webextension.zip
+          name: build-ubuntu-20_04_webextension.zip
           path: build/webextension/arcollect.zip
