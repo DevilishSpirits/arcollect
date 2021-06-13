@@ -14,39 +14,64 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-/* FIXME Rewrite with extensive commenting */
-/* Arcollect content script for FurAffinity
+/** \file furaffinity.net.js
+ *  \brief Content script for FurAffinity (https://www.furaffinity.net/)
+ *
+ * This platform is easy to parse.
+ *
+ * \todo Extensive error checkings
+ *
+ * \todo Don't download artwork types we don't support
  */
-/** Save the artwork
+
+/** Save button <div> element
+ *
+ * It is changed by save_artwork() to reflect saving progression
  */
 var save_buttondiv = null;
-function do_save_artwork()
+
+/** Save the artwork
+ */
+function save_artwork()
 {
 	// Show that we are saving the artwork
-	// TODO Set opacity to halfway
 	save_buttondiv.onclick = null;
 	save_buttondiv.text = 'Saving...';
-	// Parse the page
-	// TODO Find "indesc" relations
-	let submissionImg = document.getElementById('submissionImg');
+	
+	/** Extract the account
+	 *
+	 * The avatar is directly available as an <img class="submission-user-icon floatleft avatar">.
+	 *
+	 * To get the account name, it is the first (and unique) link under the .submission-id-sub-container element.
+	 *
+	 * \todo Extract "indesc" accounts
+	 */
 	let avatarImg = document.getElementsByClassName('submission-user-icon floatleft avatar')[0];
-	let accountName = avatarImg.parentElement.href.split('/')[4]; // Extract from the user avatar URL
-	let description = document.getElementsByClassName('submission-description user-submitted-links')[0].innerText;
-	let ratingBoxClass = document.getElementsByClassName('rating-box')[0].className;
-	let accountJSON = [{
-		'id': accountName,
+	let accountElement = document.getElementsByClassName('submission-id-sub-container')[0].getElementsByTagName("a")[0];
+	let accountName = accountElement.text;
+	let accountId = accountName.toLowerCase();
+	let accountLink = accountElement.href;
+	let accountJson = [{
+		'id': accountId,
 		'name': accountName,
-		'url': avatarImg.parentElement.href,
+		'url': accountLink,
 		'icon': avatarImg.src
 	}];
 	let art_acc_links = [{
-		'account': accountName,
+		'account': accountId,
 		'artwork': window.location.origin+window.location.pathname,
 		'link': 'account'
 	}];
+	
+	/** Extracts tags
+	 *
+	 * Tags are stored in <a> elements under the .tags-row element.
+	 *
+	 * FurAffinity doesn't have tag kind and fancy title
+	 */
 	let tags = []
 	let art_tag_links = []
-	tags_rows = document.getElementsByClassName('tags-row')[0].getElementsByTagName('a');
+	let tags_rows = document.getElementsByClassName('tags-row')[0].getElementsByTagName('a');
 	for (let i = 0; i < tags_rows.length; i++) {
 		tags.push({
 			'id': tags_rows[i].text
@@ -56,20 +81,71 @@ function do_save_artwork()
 			'tag': tags_rows[i].text
 		});
 	}
-	arcollect_submit({
-			'platform': 'furaffinity.net',
-			'artworks': [{
-				'title': submissionImg.alt,
-				'desc': description,
-				'source': window.location.origin+window.location.pathname,
-				'rating': ratingBoxClass.includes('adult') ? 18 : ratingBoxClass.includes('mature') ? 16 : 0,
-				'data': submissionImg.src
-			}],
-			'accounts': accountJSON,
-			'tags': tags,
-			'art_acc_links': art_acc_links,
-			'art_tag_links': art_tag_links,
-	}).then(function() {
+	
+	/** Extract rating
+	 *
+	 * FurAffinity use a .rating-box with custom class to change text CSS.
+	 */
+	let ratingBoxClass = document.getElementsByClassName('rating-box')[0].className;
+	let rating = ratingBoxClass.includes('adult') ? 18 : ratingBoxClass.includes('mature') ? 16 : 0;
+	
+	/** Extract description
+	 *
+	 * It's simply the ".submission-description .user-submitted-links" element.
+	 * \todo it may have fancy things with don't support right-now
+	 */
+	let description = document.getElementsByClassName('submission-description user-submitted-links')[0].textContent;
+	
+	/** Normalize source URL
+	 *
+	 * FurAffinity ignore the trailing '/' in the url. Add it if missing.
+	 */
+	let source = window.location.origin+window.location.pathname;
+	if (source[source.length-1] != '/')
+		source += '/';
+	
+	/** Get the #submissionImg
+	 *
+	 * This element allow me to get the title (the "alt") and a fallback artwork
+	 * link.
+	 */
+	let submissionImg = document.getElementById('submissionImg');
+	
+	/** Extract artwork
+	 *
+	 * To ensure maximum resolution, we search for the <a>Download</a> button that
+	 * link to the highest available artwork.
+	 */
+	let artworkLink = submissionImg.src;
+	let downloadButtons = document.getElementsByClassName("button standard mobile-fix")
+	for (i = 0; i < downloadButtons.length; i++)
+		if (downloadButtons[i].text == 'Download') {
+			let maybeArtworkLink = downloadButtons[i].href;
+			if (maybeArtworkLink.endsWith('jpg') || maybeArtworkLink.endsWith('png') || maybeArtworkLink.endsWith('gif')) {
+				artworkLink = downloadButtons[i].href;
+				break;
+			}
+		}
+	
+	// Build the JSON
+	submit_json = {
+		'platform': 'furaffinity.net',
+		'artworks': [{
+			'title': submissionImg.alt,
+			'desc': description,
+			'source': source,
+			'rating': rating,
+			'data': artworkLink
+		}],
+		'accounts': accountJson,
+		'tags': tags,
+		'art_acc_links': art_acc_links,
+		'art_tag_links': art_tag_links,
+	};
+	console.log('arcollect_submit('+JSON.stringify(submit_json)+')')
+	
+	// Submit
+	arcollect_submit(submit_json).then(function() {
 		save_buttondiv.text = 'Saved';
 	}).catch(function(reason) {
 		save_buttondiv.onclick = do_save_artwork;
@@ -79,6 +155,8 @@ function do_save_artwork()
 	});
 }
 
+/** Make the "Save in Arcollect" button
+ */
 function make_save_ui() {
 	let button_nav = document.getElementsByClassName('aligncenter auto_link hideonfull1 favorite-nav');
 	if (button_nav.length == 1) {
@@ -87,11 +165,11 @@ function make_save_ui() {
 		save_buttondiv = document.createElement("a");
 		save_buttondiv.text = "Save in Arcollect";
 		save_buttondiv.className = "button standard mobile-fix";
-		save_buttondiv.onclick = do_save_artwork;
+		save_buttondiv.onclick = save_artwork;
 		// Append our button in the <div>
-		// TODO Try to add it next to the download button
 		button_nav.append(save_buttondiv);
 	} else console.log('Arcollect error ! Found '+button_nav.length+' element(s) with class "aligncenter auto_link hideonfull1 favorite-nav".');
 }
 
+// TODO Check if we support this kind of button
 make_save_ui();
