@@ -20,6 +20,11 @@
 #include "artwork-collections.hpp"
 #include "window-borders.hpp"
 
+static std::function<std::unique_ptr<SQLite3::stmt>(void)> dynamic_update_background_func;
+static bool dynamic_update_background_collection;
+static sqlite_int64 slideshow_data_version;
+static unsigned int slideshow_filter_version;
+
 static class background_vgrid: public Arcollect::gui::view_vgrid {
 	Arcollect::gui::artwork_viewport *mousedown_viewport;
 	bool event(SDL::Event &e) override {
@@ -83,6 +88,18 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			};
 		} else return {};
 	};
+	void render(void) override {
+		// Regenerate collection on-demand
+		if (dynamic_update_background_func && ((slideshow_data_version != Arcollect::data_version)||(slideshow_filter_version != Arcollect::db_filter::version))) {
+			// Update version
+			slideshow_data_version = Arcollect::data_version;
+			slideshow_filter_version = Arcollect::db_filter::version;
+			// Regenerate the stmt
+			std::unique_ptr<SQLite3::stmt> stmt = dynamic_update_background_func();
+			Arcollect::gui::update_background(stmt,dynamic_update_background_collection);
+		}
+		Arcollect::gui::view_slideshow::render();
+	}
 } background_slideshow;
 
 static void delete_art(void)
@@ -108,9 +125,22 @@ void Arcollect::gui::update_background(std::unique_ptr<SQLite3::stmt> &stmt, boo
 		update_background(stmt->column_int64(0));
 }
 
+void Arcollect::gui::update_background(std::function<std::unique_ptr<SQLite3::stmt>(void)> &stmt_gen, bool collection)
+{
+	dynamic_update_background_func = stmt_gen;
+	dynamic_update_background_collection = collection;
+	// Force set_collection on next render()
+	slideshow_data_version = -1;
+	slideshow_filter_version = -1;
+}
+
+static std::function<std::unique_ptr<SQLite3::stmt>(void)> default_update_background_generator = [](void) -> std::unique_ptr<SQLite3::stmt> {
+	std::unique_ptr<SQLite3::stmt> stmt;
+	Arcollect::database->prepare("SELECT art_artid FROM artworks WHERE "+Arcollect::db_filter::get_sql()+" ORDER BY random();",stmt);
+	return stmt;
+};
+
 void Arcollect::gui::update_background(bool collection)
 {
-	std::unique_ptr<SQLite3::stmt> stmt;
-	database->prepare("SELECT art_artid FROM artworks WHERE "+db_filter::get_sql()+" ORDER BY random();",stmt);
-	update_background(stmt,collection);
+	update_background(default_update_background_generator,collection);
 }

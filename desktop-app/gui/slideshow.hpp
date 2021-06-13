@@ -49,6 +49,15 @@ namespace Arcollect {
 		 */
 		void update_background(std::unique_ptr<SQLite3::stmt> &stmt, bool collection);
 		/** Update the background image
+		 * \param stmt_gen   An stmt generator
+		 *
+		 * This function is called when collections are invalidated. The resulting
+		 * stmt will be passed to update_background(db::artwork_id artid).
+		 *
+		 * It is used to make the background responsive to the context and changes.
+		 */
+		void update_background(std::function<std::unique_ptr<SQLite3::stmt>(void)> &stmt, bool collection);
+		/** Update the background image
 		 */
 		void update_background(bool collection);
 	}
