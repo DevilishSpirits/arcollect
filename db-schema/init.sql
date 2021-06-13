@@ -118,9 +118,9 @@ BEGIN;
 	 */
 	CREATE TABLE art_tag_links (
 		art_artid    INTEGER NOT NULL       , /* The artwork unique ID   */
-		tag_arcoid   INTEGER NOT NULL       , /* The account ID within Arcollect */
+		tag_arcoid   INTEGER NOT NULL       , /* The tag ID within Arcollect */
 		FOREIGN KEY (art_artid ) REFERENCES artworks(art_artid ),
-		FOREIGN KEY (tag_arcoid) REFERENCES tags(tag_arcoid),
+		FOREIGN KEY (tag_arcoid) REFERENCES tags    (tag_arcoid),
 		PRIMARY KEY (art_artid,tag_arcoid)
 	);
 COMMIT;
