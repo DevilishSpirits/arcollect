@@ -21,7 +21,7 @@ prog_zip = find_program('zip', native: true, required: enable_webextension)
 if enable_native_progs
 	dep_sdl2 = dependency('sdl2')
 	dep_sdl2_image = dependency('SDL2_image')
-	dep_sdl2_ttf   = dependency('SDL2_ttf')
+	dep_sdl2_ttf   = dependency('SDL2_ttf', version: '>=2.0.12')
 	dep_sqlite3 = dependency('sqlite3', version: '>=3.35.0')
 	dep_rapidjson = dependency('rapidjson')
 endif
