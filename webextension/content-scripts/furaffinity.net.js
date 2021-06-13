@@ -37,7 +37,7 @@ function do_save_artwork()
 		'id': accountName,
 		'name': accountName,
 		'url': avatarImg.parentElement.href,
-		'icon': arcollect_download_image(avatarImg.src)
+		'icon': avatarImg.src
 	}];
 	let art_acc_links = [{
 		'account': accountName,
@@ -56,31 +56,19 @@ function do_save_artwork()
 			'tag': tags_rows[i].text
 		});
 	}
-		// Download account images
-	Promise.all(accountJSON.map(function(element) {
-		return element['icon'];
-	})).then(function(results){
-		// Set accounts icons
-		accountJSON.forEach(function(element,index) {
-			element['icon'] = results[index];
-		});
-		// Download the main artwork
-		return arcollect_download_image(submissionImg.src);
-	}).then(function(image_data) {
-		return arcollect_submit({
+	arcollect_submit({
 			'platform': 'furaffinity.net',
 			'artworks': [{
 				'title': submissionImg.alt,
 				'desc': description,
 				'source': window.location.origin+window.location.pathname,
 				'rating': ratingBoxClass.includes('adult') ? 18 : ratingBoxClass.includes('mature') ? 16 : 0,
-				'data': image_data
+				'data': submissionImg.src
 			}],
 			'accounts': accountJSON,
 			'tags': tags,
 			'art_acc_links': art_acc_links,
 			'art_tag_links': art_tag_links,
-		});
 	}).then(function() {
 		save_buttondiv.text = 'Saved';
 	}).catch(function(reason) {
@@ -106,10 +94,4 @@ function make_save_ui() {
 	} else console.log('Arcollect error ! Found '+button_nav.length+' element(s) with class "aligncenter auto_link hideonfull1 favorite-nav".');
 }
 
-arcollect_has_artwork(window.location.origin+window.location.pathname).then(function(result) {
-	if (result) {
-		// Do nothing
-	} else {
-		make_save_ui();
-	}
-})
+make_save_ui();

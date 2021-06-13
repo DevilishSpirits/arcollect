@@ -12,7 +12,6 @@
 		"js": ["content-scripts/common-head.js","content-scripts/furaffinity.net.js","content-scripts/common-foot.js"]
 	}],
 	"permissions": [
-		"https://*.furaffinity.net/*",
 		"nativeMessaging"
 	],
 	"browser_specific_settings": {
