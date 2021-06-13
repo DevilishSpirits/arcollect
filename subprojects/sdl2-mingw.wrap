@@ -1,0 +1,6 @@
+[wrap-file]
+directory = SDL2-2.0.14
+source_url = https://www.libsdl.org/release/SDL2-devel-2.0.14-mingw.tar.gz
+source_filename = SDL2-devel-2.0.14-mingw.tar.gz
+source_hash = 405eaff3eb18f2e08fe669ef9e63bc9a8710b7d343756f238619761e9b60407d
+patch_directory = sdl2-mingw
