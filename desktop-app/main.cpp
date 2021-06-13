@@ -122,6 +122,9 @@ int main(void)
 		bool saved_animation_running = Arcollect::gui::animation_running;
 		Arcollect::gui::animation_running = false;
 		bool has_event = saved_animation_running ? SDL::PollEvent(e) : SDL::WaitEvent(e);
+		// Check for emergency SFW shortcut (Ctrl+Maj+X)
+		if ((SDL_GetModState()&(KMOD_CTRL|KMOD_SHIFT)) && keyboard_state[SDL_GetScancodeFromKey(SDLK_x)])
+			Arcollect::db_filter::set_rating(Arcollect::config::RATING_NONE);
 		// Update timing informations
 		Uint32 new_ticks = SDL_GetTicks();
 		Arcollect::gui::time_framedelta = Arcollect::gui::time_now-new_ticks;
