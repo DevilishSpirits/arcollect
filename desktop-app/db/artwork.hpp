@@ -53,6 +53,7 @@ namespace Arcollect {
 				SDL::Surface *load_surface(void);
 				// Private but public in int main(void)
 				std::unique_ptr<SDL::Texture> text;
+				std::unique_ptr<SDL::Texture> &query_texture(void);
 				// Delete copy constructor
 				artwork(const artwork&) = delete;
 				artwork& operator=(artwork&) = delete;
@@ -63,6 +64,7 @@ namespace Arcollect {
 				/** The database artwork id
 				 */
 				const Arcollect::db::artwork_id art_id;
+				
 				int render(const SDL::Rect *dstrect);
 				
 				inline const std::string &title(void) {

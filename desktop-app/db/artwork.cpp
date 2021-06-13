@@ -41,14 +41,21 @@ SDL::Surface *Arcollect::db::artwork::load_surface(void)
 	const std::string path = Arcollect::path::artwork_pool / std::to_string(art_id);
 	return (SDL::Surface*)IMG_Load(path.c_str());
 }
-int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
+std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 {
-	if (text)
-		return renderer->Copy(text.get(),NULL,dstrect);
-	else {
+	if (!text) {
 		// Push me on the loader stack
 		Arcollect::db::artwork_loader::pending_main.push_back(query(art_id));
 		Arcollect::db::artwork_loader::condition_variable.notify_one();
+	}
+	return text;
+}
+int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
+{
+	query_texture();
+	if (text)
+		return renderer->Copy(text.get(),NULL,dstrect);
+	else {
 		// Render a placeholder
 		renderer->SetDrawColor(0,0,0,192);
 		return renderer->FillRect(*dstrect);
