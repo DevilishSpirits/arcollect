@@ -17,6 +17,8 @@
 #ifdef __unix__
 #include <unistd.h>
 #endif
+#include <curl/curl.h>
+#include <config.h>
 #include <iostream>
 #include <fstream>
 #include <functional>
@@ -27,6 +29,7 @@
 #include <rapidjson/document.h>
 #include "base64.hpp"
 
+static const std::string user_agent = "Arcollect/" ARCOLLECT_VERSION_STR " curl/" + std::string(curl_version_info(CURLVERSION_NOW)->version);
 /** RapidJSON helper to add integers
  * \param iter           Iterator to the object
  * \param key            The key to read
@@ -51,6 +54,32 @@ static const char* json_string(rapidjson::Value::ConstValueIterator iter, const 
 	if (object.HasMember(key)) {
 		return object[key].GetString();
 	} else return NULL;
+}
+
+static void data_saveto(const char* data_string, std::string target, const char* referer)
+{
+	// Check for "https://" schema (and it take 8 bytes exactly...)
+	// TODO FIXME Check data_string length !!!
+	if (*reinterpret_cast<const uint64_t*>(data_string) == *reinterpret_cast<const uint64_t*>("https://")) {
+		// TODO Error handling
+		FILE* file = fopen(target.c_str(),"wb");
+		auto easyhandle = curl_easy_init(); 
+		curl_easy_setopt(easyhandle,CURLOPT_URL,data_string);
+		curl_easy_setopt(easyhandle,CURLOPT_WRITEDATA,file);
+		curl_easy_setopt(easyhandle,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS); // FIXME Should I be HTTPS-only ?
+		curl_easy_setopt(easyhandle,CURLOPT_REFERER,referer);
+		curl_easy_setopt(easyhandle,CURLOPT_USERAGENT,user_agent.c_str());
+		
+		curl_easy_perform(easyhandle); // TODO Error checkings
+		curl_easy_cleanup(easyhandle);
+		fclose(file);
+	} else {
+		// Assume base64 encoding
+		// TODO Decode in-place
+		std::string binary;
+		macaron::Base64::Decode(data_string,binary);
+		std::ofstream(target) << binary;
+	}
 }
 
 /** Helper struct storing either a sqlite_int64 or a std::string
@@ -103,16 +132,16 @@ struct new_artwork {
 	const char* art_source;
 	sqlite_int64 art_rating;
 	sqlite_int64 art_id;
-	std::string data;
+	const char* data;
 	// TODO Artwork datas
 	new_artwork(rapidjson::Value::ConstValueIterator iter) : 
 		art_title(json_string(iter,"title")),
 		art_desc(json_string(iter,"desc")),
 		art_source(json_string(iter,"source")),
 		art_rating(json_int64(iter,"rating",0)),
-		art_id(-1)
+		art_id(-1),
+		data(iter->operator[]("data").GetString())
 	{
-		macaron::Base64::Decode(std::string(iter->operator[]("data").GetString()),data);
 	};
 };
 
@@ -123,15 +152,15 @@ struct new_account {
 	const char*  acc_url;
 	
 	sqlite_int64 acc_arcoid;
-	std::string icon_data;
+	const char* icon_data;
 	new_account(rapidjson::Value::ConstValueIterator iter) : 
 		acc_platid(iter->operator[]("id")),
 		acc_name(json_string(iter,"name")),
 		acc_title(json_string(iter,"title")),
 		acc_url(json_string(iter,"url")),
-		acc_arcoid(-1)
+		acc_arcoid(-1),
+		icon_data(iter->operator[]("icon").GetString())
 	{
-		macaron::Base64::Decode(std::string(iter->operator[]("icon").GetString()),icon_data);
 	};
 };
 
@@ -240,7 +269,7 @@ int main(void)
 	#ifdef __unix__
 	if (isatty(0) == 1) {
 		std::cerr <<
-			"Arcollect web extension adder\n\n"
+			"Arcollect web extension adder (" << user_agent << ")\n\n"
 			"This program is used by web extensions to add new artworks.\n"
 			"It works with JSON and is not intended to be used by biological entities.\n"
 		<< std::endl;
@@ -346,8 +375,7 @@ int main(void)
 				case SQLITE_ROW: {
 					// Save artwork
 					artwork.second.art_id = insert_stmt->column_int64(0);
-					std::ofstream artwork_file(Arcollect::path::artwork_pool / std::to_string(artwork.second.art_id));
-					artwork_file << artwork.second.data;
+					data_saveto(artwork.second.data,Arcollect::path::artwork_pool / std::to_string(artwork.second.art_id),artwork.second.art_source);
 				} break;
 				case SQLITE_DONE: {
 				} break;
@@ -388,7 +416,7 @@ int main(void)
 							// Save profile icon
 							account.second.acc_arcoid = insert_stmt->column_int64(0);
 							std::ofstream account_file(Arcollect::path::account_avatars / std::to_string(account.second.acc_arcoid));
-							account_file << account.second.icon_data;
+							data_saveto(account.second.icon_data,Arcollect::path::account_avatars / std::to_string(account.second.acc_arcoid),account.second.acc_url);
 						} break;
 						case SQLITE_DONE: {
 						} break;

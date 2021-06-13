@@ -19,6 +19,7 @@ enable_native_progs = get_option('enable_native_progs')
 prog_zip = find_program('zip', native: true, required: enable_webextension)
 # Dependencies
 if enable_native_progs
+	dep_curl = dependency('libcurl')
 	dep_sdl2 = dependency('sdl2')
 	dep_sdl2_image = dependency('SDL2_image')
 	dep_sdl2_ttf   = dependency('SDL2_ttf', version: '>=2.0.12')
