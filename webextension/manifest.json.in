@@ -9,7 +9,7 @@
 	},
 	"content_scripts": [{
 		"matches": ["https://www.furaffinity.net/view/*"],
-		"js": ["content-scripts/common-head.js","content-scripts/furaffinity.net.js","content-scripts/common-foot.js"]
+		"js": ["content-scripts/common.js","content-scripts/furaffinity.net.js"]
 	}],
 	"permissions": [
 		"nativeMessaging"

@@ -14,14 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-/* \file content-head.js
- * \brief Common functions for content-scripts
+/** \file common.js
+ *  \brief Common header for content-scripts
+ *
+ * This file is effectively a JavaScript "header" that declare some useful
+ * functions like arcollect_submit().
  */
 
-// Connect to the background script
+/** Background script connection
+ *
+ * At startup, the script automatically connect to the background script
+ */
 var arcollect__port = browser.runtime.connect()
 
-/** Download an image artwork and encode to base64
+/** Download an image artwork and encode it to base64
+ *
  * \param url The image URL
  * \return A promise with the Base64 string
  * \todo Use a data URL
@@ -44,6 +51,7 @@ function arcollect_download_to_base64(url)
 		xhr.send();
 	});
 }
+
 /** Submit new data into the database
  *
  * \param json_object Objects to send.
