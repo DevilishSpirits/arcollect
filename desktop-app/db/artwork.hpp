@@ -17,6 +17,7 @@
 #pragma once
 #include <sqlite3.hpp>
 #include "../sdl2-hpp/SDL.hpp"
+#include "../config.hpp"
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -44,6 +45,7 @@ namespace Arcollect {
 				std::string art_desc;
 				std::string art_source;
 				SDL::Point  art_size;
+				Arcollect::config::Rating art_rating;
 				std::unordered_map<std::string,std::vector<std::shared_ptr<account>>> linked_accounts;
 			public:
 				/** Load the image in a SDL::Surface

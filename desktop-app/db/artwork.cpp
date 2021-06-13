@@ -43,6 +43,11 @@ SDL::Surface *Arcollect::db::artwork::load_surface(void)
 }
 std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 {
+	static std::unique_ptr<SDL::Texture> null_text;
+	// Enforce rating
+	if (art_rating > Arcollect::config::current_rating)
+		return null_text;
+	
 	if (!text) {
 		// Push me on the loader stack
 		Arcollect::db::artwork_loader::pending_main.push_back(query(art_id));
@@ -52,7 +57,7 @@ std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 }
 int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
 {
-	query_texture();
+	std::unique_ptr<SDL::Texture> &text = query_texture();
 	if (text)
 		return renderer->Copy(text.get(),NULL,dstrect);
 	else {
@@ -66,7 +71,7 @@ void Arcollect::db::artwork::db_sync(void)
 {
 	if (data_version != Arcollect::data_version) {
 		std::unique_ptr<SQLite3::stmt> stmt;
-		database->prepare("SELECT art_title, art_desc, art_source, art_width, art_height FROM artworks WHERE art_artid = ?;",stmt); // TODO Error checking
+		database->prepare("SELECT art_title, art_desc, art_source, art_width, art_height, art_rating FROM artworks WHERE art_artid = ?;",stmt); // TODO Error checking
 		stmt->bind(1,art_id);
 		if (auto code = stmt->step() == SQLITE_ROW) {
 			art_title  = stmt->column_string(0);
@@ -94,6 +99,7 @@ void Arcollect::db::artwork::db_sync(void)
 				art_size.y = stmt->column_int64(4);
 			}
 			
+			art_rating = static_cast<Arcollect::config::Rating>(stmt->column_int64(5));
 			data_version = Arcollect::data_version;
 		} else {
 		}
