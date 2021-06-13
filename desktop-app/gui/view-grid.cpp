@@ -21,6 +21,7 @@ void Arcollect::gui::view_vgrid::set_collection(std::shared_ptr<gui::artwork_col
 	left_iter = std::make_unique<gui::artwork_collection::iterator>(new_collection->begin());
 	right_iter = std::make_unique<gui::artwork_collection::iterator>(new_collection->begin());
 	collection = new_collection;
+	flush_layout();
 }
 
 void Arcollect::gui::view_vgrid::flush_layout(void)

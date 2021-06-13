@@ -20,7 +20,8 @@
 
 void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
 {
-	collection_iterator = std::make_unique<gui::artwork_collection::iterator>(new_collection->begin());
+	auto new_collection_iterator = new_collection->begin();
+	set_collection_iterator(new_collection_iterator);
 	collection = new_collection;
 	if (*collection_iterator != new_collection->end())
 		viewport.artwork = **collection_iterator;
