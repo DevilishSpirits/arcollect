@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "rating-selector.hpp"
+#include "../db/filter.hpp"
 
 extern SDL::Renderer* renderer;
 
@@ -180,7 +181,7 @@ void Arcollect::gui::rating_selector::event(SDL::Event &e, SDL::Rect target)
 
 static void set_rating(Arcollect::config::Rating new_rating)
 {
-	Arcollect::config::current_rating = new_rating;
+	Arcollect::db_filter::set_rating(new_rating);
 }
 Arcollect::gui::rating_selector_menu::rating_selector_menu(void) :
 	text_line(font,"Rating",14)
