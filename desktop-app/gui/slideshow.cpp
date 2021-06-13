@@ -38,7 +38,8 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 				case SDL_SCANCODE_ESCAPE: {
 					Arcollect::gui::modal_stack.pop_back();
 				} break;
-			 return false;
+				default: {
+				} break;
 			}
 		} break;
 			default:break;
