@@ -43,7 +43,6 @@ namespace Arcollect {
 		class rating_selector_menu: public menu_item {
 			private:
 				Arcollect::gui::TextLine text_line;
-				std::unique_ptr<SDL::Texture> text;
 			public:
 				rating_selector selector;
 				SDL::Point size(void) override;

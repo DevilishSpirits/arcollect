@@ -51,7 +51,7 @@ void Arcollect::gui::first_run::render()
 	"Arcollect is a free and open-source software. It respect your privacy and will never judge you. See "ARCOLLECT_WEBSITE_STR" to learn more.\n\n"
 	"Now press and release the right arrow to see what's next..."
 	,16);
-	std::unique_ptr<SDL::Texture> welcome_text_text(welcome_text.render(window_size.x-window_size.x/10));
+	SDL::Texture* welcome_text_text(welcome_text.render(window_size.x-window_size.x/10));
 	SDL::Point welcome_text_size;
 	welcome_text_text->QuerySize(welcome_text_size);
 	SDL::Rect welcome_text_dstrect{window_size.x/20,(window_size.y-welcome_text_size.y)/2,welcome_text_size.x,welcome_text_size.y};
@@ -59,7 +59,7 @@ void Arcollect::gui::first_run::render()
 	SDL::Rect welcome_text_boxrect{welcome_text_dstrect.x-welcome_text_boxrect_padding,welcome_text_dstrect.y-welcome_text_boxrect_padding,welcome_text_dstrect.w+2*welcome_text_boxrect_padding,welcome_text_dstrect.h+2*welcome_text_boxrect_padding};
 	renderer->SetDrawColor(0,0,0,224);
 	renderer->FillRect(welcome_text_boxrect);
-	renderer->Copy(welcome_text_text.get(),NULL,&welcome_text_dstrect);
+	renderer->Copy(welcome_text_text,NULL,&welcome_text_dstrect);
 }
 void Arcollect::gui::first_run::render_titlebar(SDL::Rect target, int window_width)
 {
@@ -70,9 +70,9 @@ void Arcollect::gui::first_run::render_titlebar(SDL::Rect target, int window_wid
 	const int title_border = target.h/4;
 	Arcollect::gui::Font font;
 	Arcollect::gui::TextLine title_line(font,"Arcollect "ARCOLLECT_VERSION_STR,target.h-2*title_border);
-	std::unique_ptr<SDL::Texture> title_line_text(title_line.render());
+	SDL::Texture* title_line_text(title_line.render());
 	SDL::Point title_line_size;
 	title_line_text->QuerySize(title_line_size);
 	SDL::Rect title_line_dstrect{target.x+title_border+target.h,target.y+title_border,title_line_size.x,title_line_size.y};
-	renderer->Copy(title_line_text.get(),NULL,&title_line_dstrect);
+	renderer->Copy(title_line_text,NULL,&title_line_dstrect);
 }

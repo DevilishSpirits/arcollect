@@ -79,26 +79,26 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	// Render title text
 	Arcollect::gui::Font font;
 	Arcollect::gui::TextLine title_line(font,artwork.title(),font_height);
-	std::unique_ptr<SDL::Texture> title_line_text(title_line.render());
+	SDL::Texture* title_line_text(title_line.render());
 	SDL::Point title_line_size;
 	title_line_text->QuerySize(title_line_size);
 	// NOTE The text overload
 	render_rect.w = title_line_size.x;
 	render_rect.h = title_line_size.y;
-	renderer->Copy(title_line_text.get(),NULL,&render_rect);
+	renderer->Copy(title_line_text,NULL,&render_rect);
 	// Render description text
 	font_height /= 4;
 	if (font_height < min_desc_font_height)
 		font_height = min_desc_font_height;
 	Arcollect::gui::TextPar desc_par(font,artwork.desc(),min_title_font_height);
-	std::unique_ptr<SDL::Texture> desc_par_text(desc_par.render(rect.w-2*box_padding));
+	SDL::Texture* desc_par_text(desc_par.render(rect.w-2*box_padding));
 	SDL::Point desc_par_size;
 	desc_par_text->QuerySize(desc_par_size);
 	render_rect.y += render_rect.h + 4;
 	render_rect.w += render_rect.h + 4;
 	render_rect.w = desc_par_size.x;
 	render_rect.h = desc_par_size.y;
-	renderer->Copy(desc_par_text.get(),NULL,&render_rect);
+	renderer->Copy(desc_par_text,NULL,&render_rect);
 }
 
 void Arcollect::gui::view_slideshow::render(void)
@@ -121,11 +121,11 @@ void Arcollect::gui::view_slideshow::render(void)
 		// FIXME 
 		Arcollect::gui::Font font;
 		Arcollect::gui::TextLine title_line(font,"There is no artwork to show",22);
-		std::unique_ptr<SDL::Texture> title_line_text(title_line.render());
+		SDL::Texture* title_line_text(title_line.render());
 		SDL::Point title_line_size;
 		title_line_text->QuerySize(title_line_size);
 		SDL::Rect render_rect{rect.x+(rect.w-title_line_size.x)/2,rect.y+(rect.h-title_line_size.y)/2,title_line_size.x,title_line_size.y};
-		renderer->Copy(title_line_text.get(),NULL,&render_rect);
+		renderer->Copy(title_line_text,NULL,&render_rect);
 	}
 	//render_info_incard();
 }
@@ -142,11 +142,11 @@ void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int windo
 		const int title_border = target.h/4;
 		Arcollect::gui::Font font;
 		Arcollect::gui::TextLine title_line(font,viewport.artwork->title(),target.h-2*title_border);
-		std::unique_ptr<SDL::Texture> title_line_text(title_line.render());
+		SDL::Texture* title_line_text(title_line.render());
 		SDL::Point title_line_size;
 		title_line_text->QuerySize(title_line_size);
 		SDL::Rect title_line_dstrect{target.x+title_border+target.h,target.y+title_border,title_line_size.x,title_line_size.y};
-		renderer->Copy(title_line_text.get(),NULL,&title_line_dstrect);
+		renderer->Copy(title_line_text,NULL,&title_line_dstrect);
 	}
 }
 bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
