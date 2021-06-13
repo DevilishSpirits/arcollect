@@ -104,9 +104,20 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 void Arcollect::gui::view_slideshow::render(void)
 {
 	renderer->SetDrawBlendMode(SDL::BLENDMODE_NONE);
-	if (viewport.artwork)
+	if (viewport.artwork) {
+		// Preload previous artwork
+		if (*collection_iterator != collection->begin()) {
+			(**--*collection_iterator).query_texture();
+			++*collection_iterator;
+		}
+		// Preload next artwork
+		++*collection_iterator;
+		if (*collection_iterator != collection->end())
+			(***collection_iterator).query_texture();
+		--*collection_iterator;
+		// Render artwork
 		viewport.render({0,0});
-	else {
+	} else {
 		// FIXME 
 		Arcollect::gui::Font font;
 		Arcollect::gui::TextLine title_line(font,"There is no artwork to show",22);
