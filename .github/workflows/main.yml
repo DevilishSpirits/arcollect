@@ -83,8 +83,8 @@ jobs:
     runs-on: [ubuntu-20.04]
     steps:
       - uses: actions/checkout@v2
-      - name: Install SDL2 and his image and ttf modules
-        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
+      - name: Install SDL2, his image and ttf modules and curl
+        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl-dev
       - name: Install Mozilla's web-ext with npm
         run: sudo npm install -g web-ext
       - name: Build project
