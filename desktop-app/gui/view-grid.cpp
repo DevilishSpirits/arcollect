@@ -243,7 +243,7 @@ Arcollect::gui::artwork_viewport *Arcollect::gui::view_vgrid::get_pointed(SDL::P
 	if (mousepos.y % row_height > artwork_height)
 		return NULL;
 	// Check if we are on a row
-	if ((pointed_row < 0)||(pointed_row >= viewports.size()))
+	if ((pointed_row < 0)||(static_cast<decltype(viewports)::size_type>(pointed_row) >= viewports.size()))
 		return NULL;
 	// Check viewports
 	auto rows_iter = viewports.begin();

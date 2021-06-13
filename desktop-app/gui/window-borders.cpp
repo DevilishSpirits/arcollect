@@ -208,6 +208,8 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 								return true;
 							}
 						} break;
+						// Suppress warnings about missing TITLEBTN_NONE
+						case TITLEBTN_NONE: break;
 					}
 				}
 			} return cursor_position.y >= Arcollect::gui::window_borders::title_height;
@@ -225,7 +227,6 @@ void Arcollect::gui::window_borders::render(void)
 		renderer->GetOutputSize(window_size);
 		SDL::Point cursor_position;
 		SDL_GetMouseState(&cursor_position.x,&cursor_position.y);
-		SDL::Rect title_bar{0,0,window_size.x,Arcollect::gui::window_borders::title_height};
 		// Draw modal title
 		SDL::Rect modal_bar{0,0,window_size.x-TITLEBTN_N*title_button_width,Arcollect::gui::window_borders::title_height};
 		renderer->SetDrawColor(0,0,0,128);
