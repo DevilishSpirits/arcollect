@@ -51,7 +51,7 @@ static sqlite_int64 json_int64(rapidjson::Value::ConstValueIterator iter, const 
 static const char* json_string(rapidjson::Value::ConstValueIterator iter, const char* key)
 {
 	auto& object = *iter;
-	if (object.HasMember(key)) {
+	if (object.HasMember(key) && object[key].IsString()) {
 		return object[key].GetString();
 	} else return NULL;
 }
