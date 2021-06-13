@@ -1,0 +1,7 @@
+[wrap-file]
+directory = roboto-unhinted
+lead_directory_missing = true
+source_url = https://github.com/googlefonts/roboto/releases/download/v2.138/roboto-unhinted.zip
+source_filename = roboto-unhinted.zip
+source_hash = 70f64c718510a601fbcf752aafe644314dacaeb85474dc689c89787c4a72a728
+patch_directory = roboto

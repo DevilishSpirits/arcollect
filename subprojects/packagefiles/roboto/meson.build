@@ -1,5 +1,5 @@
 # Simple roboto wrapper
-project('roboto')
+project('roboto', 'cpp', version: '2.138')
 roboto_src = [
 	'Roboto-Light.ttf',
 ]
