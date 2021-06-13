@@ -31,7 +31,7 @@ namespace Arcollect {
 			 *
 			 * This template implement a scrolling animation. Not fancy but it works.
 			 */
-			template <typename T, Uint32 default_time_delta = 1000>
+			template <typename T, Uint32 default_time_delta = 200>
 			struct scrolling {
 				Uint32 time_start = 0;
 				Uint32 time_end   = 0;
