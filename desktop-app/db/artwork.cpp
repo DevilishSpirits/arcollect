@@ -157,6 +157,20 @@ int Arcollect::db::artwork::db_delete(void)
 		return SQLITE_ERROR;
 	}
 	
+	// Delete art_tag_links references
+	if (database->prepare("DELETE FROM art_tag_links WHERE art_artid = ?;",stmt) != SQLITE_OK) {
+		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to prepare \"DELETE FROM art_tag_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
+		return SQLITE_ERROR;
+	}
+	if (stmt->bind(1,art_id) != SQLITE_OK) {
+		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to bind art_artid in \"DELETE FROM art_tag_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
+		return SQLITE_ERROR;
+	}
+	if (stmt->step() != SQLITE_DONE) {
+		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to step \"DELETE FROM art_tag_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
+		return SQLITE_ERROR;
+	}
+	
 	// Delete in artworks table
 	if (database->prepare("DELETE FROM artworks WHERE art_artid = ?;",stmt) != SQLITE_OK) {
 		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to prepare \"DELETE FROM artworks WHERE art_artid = ?;\": " << database->errmsg() << ". Rollback." << std::endl;
