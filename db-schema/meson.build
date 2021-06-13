@@ -1,4 +1,5 @@
 db_schema_src = [
+	'boot.sql',
 	'init.sql',
 ]
 db_schema_sources_exe = executable('gen-schema-sources', 'gen-schema-sources.cpp', install: false)

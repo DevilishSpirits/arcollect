@@ -31,6 +31,9 @@ std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 		std::abort();
 	}
 	// TODO Error checking
+	if (data_db->exec(Arcollect::db::schema::boot.c_str())) {
+		std::cerr << "Failed to run SQL boot script: " << data_db->errmsg() << std::endl;
+	}
 	// Check schema version and update the DB if required
 	sqlite_int64 schema_version = 0;
 	std::unique_ptr<SQLite3::stmt> schema_version_stmt;
