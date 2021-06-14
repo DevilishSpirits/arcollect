@@ -39,7 +39,7 @@ jobs:
         uses: BSFishy/meson-build@v1.0.3
         with:
           action: build
-          setup-options: -Dbuildtype=release -Dunity=on -Db_lto=true -Dstrip=true -Denable_webextension=false --force-fallback-for sqlite,libcurl,sdl2,sdl2_image,sdl2_ttf
+          setup-options: -Dbuildtype=release -Dunity=on -Db_lto=true -Dstrip=true -Denable_webextension=false --force-fallback-for sqlite,sdl2,sdl2_image,sdl2_ttf
           meson-version: 0.57.1
       - name: Test project
         uses: BSFishy/meson-build@v1.0.3

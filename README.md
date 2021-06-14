@@ -36,13 +36,14 @@ Only recent Linux distributions with Firefox are supported right-now.
 
 I recommend you to build the source code from the [latest release](https://github.com/DevilishSpirits/arcollect/releases) (be sure to pick the *Latest release*, not a *Pre-release*).
 
-After getting the source code, install Meson, SDL2. You should also install SQLite and SDL2 image and ttf modules.
+After getting the source code, install Meson. You should also install SQLite, SDL2, his image and ttf modules and libcurl.
 
 To build and install Arcollect on a Linux machine, open a shell in source root and then :
 
 ```sh
 	# Configure the project with release configuration
-	meson build -Dbuildtype=release -Dunity=on -Db_lto=true -Dstrip=true -Denable_webextension=false
+	# You should add '-Dunity=on' if not using curl "wrap" (https://mesonbuild.com/Unity-builds.html)
+	meson build -Dbuildtype=release -Db_lto=true -Dstrip=true -Denable_webextension=false
 	# Install the program in /usr/local prefix (require root privileges)
 	ninja install -C build
 ```
