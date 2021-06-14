@@ -19,7 +19,21 @@ enable_native_progs = get_option('enable_native_progs')
 prog_zip = find_program('zip', native: true, required: enable_webextension)
 # Dependencies
 if enable_native_progs
-	dep_curl = dependency('libcurl')
+	# Hack to have --force-fallback-for libcurl works
+	dep_curl = dependency('libcurl', required: false, fallback: ['not-buildable','dummy'])
+	if not dep_curl.found()
+		cmake = import('cmake')
+		subproj_opts_curl = cmake.subproject_options()
+		# FIXME Disable libssh2 from build
+		subproj_opts_curl.add_cmake_defines({
+			'BUILD_SHARED_LIBS': false,
+			'SSL_ENABLED': true,
+			'HTTP_ONLY': true,
+		})
+		subproj_opts_curl.set_install(false)
+		subproj_curl = cmake.subproject('libcurl', options: subproj_opts_curl)
+		dep_curl = subproj_curl.dependency('libcurl')
+	endif
 	dep_sdl2 = dependency('sdl2')
 	dep_sdl2_image = dependency('SDL2_image')
 	dep_sdl2_ttf   = dependency('SDL2_ttf', version: '>=2.0.12')
