@@ -67,6 +67,13 @@ int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
 	}
 }
 
+static std::string column_string_default(std::unique_ptr<SQLite3::stmt> &stmt, int col)
+{
+	if (stmt->column_type(col) == SQLITE_NULL)
+		return "";
+	else return stmt->column_string(0);
+}
+
 void Arcollect::db::artwork::db_sync(void)
 {
 	if (data_version != Arcollect::data_version) {
@@ -74,8 +81,8 @@ void Arcollect::db::artwork::db_sync(void)
 		database->prepare("SELECT art_title, art_desc, art_source, art_width, art_height, art_rating FROM artworks WHERE art_artid = ?;",stmt); // TODO Error checking
 		stmt->bind(1,art_id);
 		if (auto code = stmt->step() == SQLITE_ROW) {
-			art_title  = stmt->column_string(0);
-			art_desc   = stmt->column_string(1);
+			art_title  = column_string_default(stmt,0);
+			art_desc   = column_string_default(stmt,1);
 			art_source = stmt->column_string(2);
 			// Check if picture size is stored
 			if ((stmt->column_type(3) == SQLITE_NULL)||(stmt->column_type(4) == SQLITE_NULL)) {
