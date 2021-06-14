@@ -15,6 +15,7 @@ This application respect your privacy and will never judge you.
 ## Supported platforms
 Currently these platforms are supported :
 
+* **[e621](https://e621.net/)**/**[e926](https://e926.net)** - You have a `Save in Arcollect` button below the artwork.
 * **[FurAffinity](https://www.furaffinity.net/)** - You have a `Save in Arcollect` button below the artwork.
 
 ## Contributing

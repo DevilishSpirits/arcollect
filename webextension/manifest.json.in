@@ -10,6 +10,9 @@
 	"content_scripts": [{
 		"matches": ["https://www.furaffinity.net/view/*"],
 		"js": ["content-scripts/common.js","content-scripts/furaffinity.net.js"]
+	},{
+		"matches": ["https://e621.net/posts/*","https://e926.net/posts/*"],
+		"js": ["content-scripts/common.js","content-scripts/e621.net.js"]
 	}],
 	"permissions": [
 		"nativeMessaging"
