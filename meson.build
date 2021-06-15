@@ -26,9 +26,18 @@ if enable_native_progs
 		subproj_opts_curl = cmake.subproject_options()
 		# FIXME Disable libssh2 from build
 		subproj_opts_curl.add_cmake_defines({
+			'BUILD_CURL_EXE': false,
 			'BUILD_SHARED_LIBS': false,
-			'SSL_ENABLED': true,
+			'BUILD_TESTING': false,
+			'CMAKE_USE_LIBSSH': false,
+			'CMAKE_USE_LIBSSH2': false,
+			'CURL_DISABLE_COOKIES': true,
+			'CURL_DISABLE_CRYPTO_AUTH': true,
+			'ENABLE_IPV6': true,
+			'ENABLE_MANUAL': false,
+			'ENABLE_UNIX_SOCKETS': false,
 			'HTTP_ONLY': true,
+			'SSL_ENABLED': true,
 		})
 		subproj_opts_curl.set_install(false)
 		subproj_curl = cmake.subproject('libcurl', options: subproj_opts_curl)
