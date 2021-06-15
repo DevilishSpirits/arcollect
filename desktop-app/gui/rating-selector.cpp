@@ -159,7 +159,7 @@ void Arcollect::gui::rating_selector::render(SDL::Rect target)
 		selected_cell.x -= 2;
 		selected_cell.y -= 2;
 		selected_cell.w += 4;
-		selected_cell.h += 4;
+		selected_cell.h += 5;
 		renderer->SetDrawColor(255,255,255,192);
 		renderer->DrawRect(selected_cell);
 	}
