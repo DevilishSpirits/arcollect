@@ -203,7 +203,7 @@ static void set_rating(Arcollect::config::Rating new_rating)
 Arcollect::gui::rating_selector_menu::rating_selector_menu(void) :
 	text_line(font,"Rating",14)
 {
-	selector.has_kid = false;
+	selector.has_kid = true;
 	selector.has_pg13 = true;
 	selector.has_mature = true;
 	selector.has_adult = true;
