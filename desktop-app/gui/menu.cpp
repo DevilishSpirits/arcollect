@@ -132,6 +132,9 @@ class popup_menu: public Arcollect::gui::menu {
 				Arcollect::gui::modal_stack.pop_back();
 			Arcollect::gui::menu::event(e);
 			switch (e.type) {
+				case SDL_WINDOWEVENT: {
+					// Propagate window events
+				} return true;
 				case SDL_QUIT: {
 					delete this;
 				} return true;
