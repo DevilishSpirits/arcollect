@@ -45,8 +45,27 @@ namespace Arcollect {
 		class menu: public modal {
 			protected:
 				std::vector<SDL::Rect> menu_rects;
+				/** Anchor distance
+				 *
+				 * Each direction have a special meaning depending on which anchor is 
+				 * enabled.
+				 *
+				 * If  anchor_top &&  anchor_bot, anchor_distance is the distance to
+				 * both top and bottom borders.
+				 * If  anchor_top && !anchor_bot, anchor_distance is the distance to
+				 * the top border.
+				 * If !anchor_top &&  anchor_bot, anchor_distance is the distance to
+				 * the bottom border.
+				 * If !anchor_top && anchor_bot, anchor_distance is ignored and the menu
+				 * is centered
+				 */
+				SDL::Point anchor_distance;
 			public:
-				SDL::Point topleft;
+				bool anchor_top;
+				bool anchor_left;
+				bool anchor_bot;
+				bool anchor_right;
+				
 				SDL::Point padding{8,4};
 				std::vector<std::shared_ptr<menu_item>> menu_items;
 				
@@ -56,7 +75,7 @@ namespace Arcollect {
 				int get_menu_item_at(SDL::Point cursor);
 				int hovered_cell = -1;
 				
-				static void popup_context(const std::vector<std::shared_ptr<menu_item>> &menu_items, SDL::Point at);
+				static void popup_context(const std::vector<std::shared_ptr<menu_item>> &menu_items, SDL::Point at, bool anchor_top = true, bool anchor_left = true, bool anchor_bot = false,  bool anchor_right = false);
 				static unsigned int popup_context_count;
 		};
 		

@@ -19,49 +19,74 @@ extern SDL::Renderer *renderer;
 
 void Arcollect::gui::menu::render(void)
 {
-	// Compute cells
-	SDL::Point current_position(topleft);
-	current_position.x += padding.x;
-	current_position.y += padding.y;
-	int max_width = 0;
+	SDL::Point screen_size;
+	renderer->GetOutputSize(screen_size);
+	// Compute menu_size
+	SDL::Rect menu_rect{0,0,0,0};
 	const int menu_items_count = static_cast<int>(menu_items.size());
 	menu_rects.resize(menu_items_count);
 	for (auto i = 0; i < menu_items_count; i++) {
 		SDL::Point size = menu_items[i]->size();
-		menu_rects[i] = {current_position.x,current_position.y,max_width,size.y};
-		max_width = std::max(max_width,size.x);
-		current_position.y += size.y + 1 + 2*padding.y;
+		menu_rects[i].h = size.y;
+		menu_rect.h += size.y + 1 + 2*padding.y;
+		menu_rect.w  = std::max(menu_rect.w,size.x);
 	}
+	menu_rect.w += 2*padding.y;
+	
+	// Compute real menu_rect
+	if (anchor_bot && anchor_top) {
+		menu_rect.y =                  anchor_distance.y;
+		menu_rect.h =  screen_size.y - anchor_distance.y;
+	} else if (anchor_bot && !anchor_top)
+		menu_rect.y =  screen_size.y - anchor_distance.y - menu_rect.h;
+	 else if (!anchor_bot &&  anchor_top)
+		menu_rect.y =                  anchor_distance.y;
+	else// if (!anchor_bot && !anchor_top) {
+		menu_rect.y = (screen_size.y - menu_rect.h)/2;
+		
+	if (anchor_right && anchor_left) {
+		menu_rect.x =                  anchor_distance.x;
+		menu_rect.w =  screen_size.x - anchor_distance.x;
+	} else if (anchor_right && !anchor_left)
+		menu_rect.x =  screen_size.x - anchor_distance.x - menu_rect.w;
+	 else if (!anchor_right &&  anchor_left)
+		menu_rect.x =                  anchor_distance.x;
+	else// if (!anchor_right && !anchor_left) {
+		menu_rect.x = (screen_size.x - menu_rect.w)/2;
+	
 	// Render background
-	current_position.x -= padding.x;
-	current_position.y -= padding.y;
-	SDL::Rect menu_rect{topleft.x,topleft.y,max_width+2*padding.x,current_position.y-topleft.y};
 	renderer->SetDrawColor(0,0,0,192);
 	renderer->FillRect(menu_rect);
 	renderer->SetDrawColor(255,255,255,255);
 	renderer->DrawRect(menu_rect);
-	// TODO Render hovering effect
+	
+	// Render cells
+	SDL::Rect current_rect{menu_rect.x+padding.x,menu_rect.y+padding.y,menu_rect.w-2*padding.x,0};
+	for (auto i = 0; i < menu_items_count; i++) {
+		// Compute rect and render
+		current_rect.h = menu_rects[i].h;
+		menu_rects[i] = current_rect;
+		menu_items[i]->render(current_rect);
+		// Enlarge rect
+		menu_rects[i].x -= padding.x;
+		menu_rects[i].y -= padding.y;
+		menu_rects[i].w += padding.x*2;
+		menu_rects[i].h += padding.y*2;
+		// Move current_rect
+		current_rect.y += menu_rects[i].h + 1;
+	}
+	
 	// Render separators
 	renderer->SetDrawColor(128,128,128,255);
 	for (auto i = 1; i < menu_items_count; i++) {
 		const SDL::Rect &rect = menu_rects[i];
-		renderer->DrawLine(rect.x + padding.x, rect.y - padding.y - 1, rect.x + max_width - padding.x, rect.y - padding.y - 1);
+		renderer->DrawLine(rect.x + padding.x, rect.y - 1, rect.x + rect.w - padding.x, rect.y - 1);
 	}
+	
 	// Render hovered cell
 	if (hovered_cell > -1) {
 		renderer->SetDrawColor(255,255,255,128);
-		menu_rects[hovered_cell].w = max_width;
-		SDL::Rect full_rect(menu_rects[hovered_cell]);
-		full_rect.x -= padding.x;
-		full_rect.y -= padding.y;
-		full_rect.w  = max_width + 2 * padding.x;
-		full_rect.h += 2 * padding.y;
-		renderer->FillRect(full_rect);
-	}
-	// Render cells
-	for (auto i = 0; i < menu_items_count; i++) {
-		menu_rects[i].w = max_width;
-		menu_items[i]->render(menu_rects[i]);
+		renderer->FillRect(menu_rects[hovered_cell]);
 	}
 }
 
@@ -123,10 +148,14 @@ class popup_menu: public Arcollect::gui::menu {
 };
 
 unsigned int Arcollect::gui::menu::popup_context_count = 0;
-void Arcollect::gui::menu::popup_context(const std::vector<std::shared_ptr<menu_item>> &menu_items, SDL::Point at)
+void Arcollect::gui::menu::popup_context(const std::vector<std::shared_ptr<menu_item>> &menu_items, SDL::Point at, bool anchor_top, bool anchor_left, bool anchor_bot, bool anchor_right)
 {
 	popup_menu* new_popup_menu = new popup_menu();
-	new_popup_menu->topleft = at;
+	new_popup_menu->anchor_distance = at;
+	new_popup_menu->anchor_top = anchor_top;
+	new_popup_menu->anchor_left = anchor_left;
+	new_popup_menu->anchor_bot = anchor_bot;
+	new_popup_menu->anchor_right = anchor_right;
 	new_popup_menu->menu_items = menu_items;
 	Arcollect::gui::modal_stack.push_back(*new_popup_menu);
 	popup_context_count++;
