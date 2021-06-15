@@ -13,6 +13,9 @@
 	},{
 		"matches": ["https://e621.net/posts/*","https://e926.net/posts/*"],
 		"js": ["content-scripts/common.js","content-scripts/e621.net.js"]
+	},{
+		"matches": ["https://www.deviantart.com/*/art/*"],
+		"js": ["content-scripts/common.js","content-scripts/deviantart.com.js"]
 	}],
 	"permissions": [
 		"nativeMessaging"

@@ -15,6 +15,7 @@ This application respect your privacy and will never judge you.
 ## Supported platforms
 Currently these platforms are supported :
 
+* **[DeviantArt](https://www.deviantart.com/)** - You have a `Save in Arcollect` button below the artwork. [Support is limited.](https://github.com/DevilishSpirits/arcollect/blob/deviant-art/webextension/content-scripts/deviantart.com.js#L22)
 * **[e621](https://e621.net/)**/**[e926](https://e926.net)** - You have a `Save in Arcollect` button below the artwork.
 * **[FurAffinity](https://www.furaffinity.net/)** - You have a `Save in Arcollect` button below the artwork.
 
@@ -24,8 +25,6 @@ Currently these platforms are supported :
 *Currently Arcollect is limited to what I use and my abilities. But it is built with extensibility and platform agnostism in mind.*
 
 *Your favorite platform may be missing. Read `NEW-PLATFORM.md` (this is important !) to learn how to integrate your platform then feel free to code the extension and share your work.*
-
-*Currently only furry oriented platforms are supported (and a very few amount). Arcollect is not furry oriented and you are really welcome to add more platforms !*
 
 *Chromiums, Windows and macOS support are also welcome. Please, keep things simple and cross-patform, you have C++ and the SDL, use them. However, I am not against platform specific integration.*
 
