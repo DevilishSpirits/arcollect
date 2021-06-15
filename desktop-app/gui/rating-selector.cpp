@@ -67,6 +67,7 @@ void Arcollect::gui::rating_selector::render(SDL::Rect target)
 	SDL::Rect cell = rect_tool(target);
 	int inner_border = cell.h/4;
 	SDL::Rect selected_cell{0,0,0,0};
+	SDL::Rect hover_cell{0,0,0,0};
 	// Draw cells
 	bool draw_left_border = true;
 	if (has_kid) {
@@ -85,6 +86,8 @@ void Arcollect::gui::rating_selector::render(SDL::Rect target)
 		
 		if (rating == Arcollect::config::Rating::RATING_NONE)
 			selected_cell = cell;
+		if (hover_rating == Arcollect::config::Rating::RATING_NONE)
+			hover_cell = cell;
 		
 		cell.x += cell.w;
 	}
@@ -103,6 +106,8 @@ void Arcollect::gui::rating_selector::render(SDL::Rect target)
 		
 		if (rating == Arcollect::config::Rating::RATING_PG13)
 			selected_cell = cell;
+		if (hover_rating == Arcollect::config::Rating::RATING_PG13)
+			hover_cell = cell;
 		
 		cell.x += cell.w;
 	}
@@ -126,6 +131,8 @@ void Arcollect::gui::rating_selector::render(SDL::Rect target)
 		
 		if (rating == Arcollect::config::Rating::RATING_MATURE)
 			selected_cell = cell;
+		if (hover_rating == Arcollect::config::Rating::RATING_MATURE)
+			hover_cell = cell;
 		
 		cell.x += cell.w;
 	}
@@ -147,6 +154,8 @@ void Arcollect::gui::rating_selector::render(SDL::Rect target)
 		
 		if (rating == Arcollect::config::Rating::RATING_ADULT)
 			selected_cell = cell;
+		if (hover_rating == Arcollect::config::Rating::RATING_ADULT)
+			hover_cell = cell;
 		
 		cell.x += cell.w;
 	}
@@ -154,6 +163,11 @@ void Arcollect::gui::rating_selector::render(SDL::Rect target)
 	// Note that the draw color is already set to the right cell since this is the last drawn
 	renderer->DrawLine(cell.x,cell.y,cell.x,cell.y+cell.h);
 	
+	// Draw the hover cell
+	if (hover_cell.w) {
+		renderer->SetDrawColor(255,255,255,64);
+		renderer->FillRect(hover_cell);
+	}
 	// Draw the selected_cell
 	if (selected_cell.w) {
 		selected_cell.x -= 2;
@@ -168,6 +182,9 @@ void Arcollect::gui::rating_selector::event(SDL::Event &e, SDL::Rect target)
 {
 	switch (e.type) {
 		// FIXME Change should happen after releasing
+		case SDL_MOUSEMOTION: {
+			hover_rating = pointed_rating(target,{e.motion.x,e.motion.y});
+		} break;
 		case SDL_MOUSEBUTTONDOWN: {
 			auto new_rating = pointed_rating(target,{e.button.x,e.button.y});
 			if (new_rating != static_cast<Arcollect::config::Rating>(-1)) {

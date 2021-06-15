@@ -26,6 +26,7 @@ namespace Arcollect {
 				 * \return A rect suitable to 
 				 */
 				SDL::Rect rect_tool(SDL::Rect &rect);
+				Arcollect::config::Rating hover_rating;
 			public:
 				bool has_kid;
 				bool has_pg13;
