@@ -42,7 +42,6 @@ To build and install Arcollect on a Linux machine, open a shell in source root a
 
 ```sh
 	# Configure the project with release configuration
-	# You should add '-Dunity=on' if not using curl "wrap" (https://mesonbuild.com/Unity-builds.html)
 	meson build -Dbuildtype=release -Db_lto=true -Dstrip=true -Denable_webextension=false
 	# Install the program in /usr/local prefix (require root privileges)
 	ninja install -C build
