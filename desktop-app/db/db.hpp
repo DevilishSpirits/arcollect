@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <sqlite3.hpp>
+#include <string>
+
 namespace Arcollect {
 	extern std::unique_ptr<SQLite3::sqlite3> database;
 	/** Database data_version
@@ -33,4 +35,21 @@ namespace Arcollect {
 	 * This function is regulary called.
 	 */
 	sqlite_int64 update_data_version(void);
+	
+	namespace db {
+		/** SQL select column statement for stable artwork order randomization
+		 *
+		 * To avoid complete reorganization of the slideshow grid with random sort
+		 * when rerunning an SQL statement.
+		 *
+		 * This algo is inspired from the Knuth's multiplicative method hash with
+		 * the addition of a well-know "random" quantity `time(NULL)` to simulate
+		 * randomness.
+		 *
+		 * This generate a value to "ORDER BY" against that is computed by
+		 * '((art_artid+time(NULL))*2654435761) % 4294967296' and should works for
+		 * most collections.
+		 */
+		extern const std::string artid_randomizer;
+	}
 }

@@ -136,7 +136,7 @@ void Arcollect::gui::update_background(std::function<std::unique_ptr<SQLite3::st
 
 static std::function<std::unique_ptr<SQLite3::stmt>(void)> default_update_background_generator = [](void) -> std::unique_ptr<SQLite3::stmt> {
 	std::unique_ptr<SQLite3::stmt> stmt;
-	Arcollect::database->prepare("SELECT art_artid FROM artworks WHERE "+Arcollect::db_filter::get_sql()+" ORDER BY random();",stmt);
+	Arcollect::database->prepare("SELECT art_artid,"+Arcollect::db::artid_randomizer+" AS art_order FROM artworks WHERE "+Arcollect::db_filter::get_sql()+" ORDER BY art_order;",stmt);
 	return stmt;
 };
 
