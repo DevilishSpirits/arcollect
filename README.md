@@ -34,13 +34,17 @@ Currently these platforms are supported :
 ## Installation
 Only recent Linux distributions with Firefox are supported right-now.
 
-I recommend you to build the source code from the [latest release](https://github.com/DevilishSpirits/arcollect/releases) (be sure to pick the *Latest release*, not a *Pre-release*).
+I recommend you to build the source code from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.3). Checkout also the [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.3#readme) of this version.
+
+You must also install/update the webextension in your web-browser to use Arcollect.
 
 After getting the source code, install Meson. You should also install SQLite, SDL2, his image and ttf modules and libcurl.
 
 To build and install Arcollect on a Linux machine, open a shell in source root and then :
 
 ```sh
+	# Ensure that you have a working version of Meson
+	pip3 install meson>=0.57.1
 	# Configure the project with release configuration
 	meson build -Dbuildtype=release -Db_lto=true -Dstrip=true -Denable_webextension=false
 	# Install the program in /usr/local prefix (require root privileges)
