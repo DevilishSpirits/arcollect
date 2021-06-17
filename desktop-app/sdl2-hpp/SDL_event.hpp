@@ -126,7 +126,7 @@ typedef enum
 } SDL_EventType;
 #endif
 	typedef SDL_CommonEvent  CommonEvent;
-	typedef SDL_DisplayEvent DisplayEvent;
+	//typedef SDL_DisplayEvent DisplayEvent;
 	typedef SDL_WindowEvent  WindowEvent;
 	typedef SDL_KeyboardEvent KeyboardEvent;
 	constexpr const auto TEXTEDITINGEVENT_TEXT_SIZE = SDL_TEXTEDITINGEVENT_TEXT_SIZE;
