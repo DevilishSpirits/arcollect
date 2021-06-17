@@ -22,7 +22,7 @@ extern SDL::Renderer* renderer;
 SDL::Rect Arcollect::gui::rating_selector::rect_tool(SDL::Rect &rect)
 {
 	// C++ guarantee that these bool are 1 is set and zero if not set
-	auto real_width = (has_kid+has_pg13+has_mature+has_adult)*rect.h;
+	auto real_width = (has_kid+has_mature+has_adult)*rect.h;
 	rect.x += rect.w - real_width;
 	rect.w  = real_width;
 	return {rect.x,rect.y,rect.h,rect.h};
@@ -41,11 +41,6 @@ Arcollect::config::Rating Arcollect::gui::rating_selector::pointed_rating(SDL::R
 	if (has_kid) {
 		if (cursor.x < target.x)
 			return Arcollect::config::Rating::RATING_NONE;
-		cursor.x -= target.h;
-	}
-	if (has_pg13) {
-		if (cursor.x < target.x)
-			return Arcollect::config::Rating::RATING_PG13;
 		cursor.x -= target.h;
 	}
 	if (has_mature) {
@@ -72,27 +67,6 @@ void Arcollect::gui::rating_selector::render(SDL::Rect target)
 	bool draw_left_border = true;
 	if (has_kid) {
 		// Draw background
-		renderer->SetDrawColor(128,128,0,128);
-		renderer->FillRect(cell);
-		
-		renderer->SetDrawColor(255,255,0,255);
-		// Draw borders
-		renderer->DrawLine(cell.x,cell.y,cell.x+cell.w,cell.y);
-		renderer->DrawLine(cell.x,cell.y+cell.h,cell.x+cell.w,cell.y+cell.h);
-		if (draw_left_border) {
-			renderer->DrawLine(cell.x,cell.y,cell.x,cell.y+cell.h);
-			draw_left_border = false;
-		}
-		
-		if (rating == Arcollect::config::Rating::RATING_NONE)
-			selected_cell = cell;
-		if (hover_rating == Arcollect::config::Rating::RATING_NONE)
-			hover_cell = cell;
-		
-		cell.x += cell.w;
-	}
-	if (has_pg13) {
-		// Draw background
 		renderer->SetDrawColor(0,128,0,128);
 		renderer->FillRect(cell);
 		renderer->SetDrawColor(0,255,0,255);
@@ -104,9 +78,9 @@ void Arcollect::gui::rating_selector::render(SDL::Rect target)
 			draw_left_border = false;
 		}
 		
-		if (rating == Arcollect::config::Rating::RATING_PG13)
+		if (rating == Arcollect::config::Rating::RATING_NONE)
 			selected_cell = cell;
-		if (hover_rating == Arcollect::config::Rating::RATING_PG13)
+		if (hover_rating == Arcollect::config::Rating::RATING_NONE)
 			hover_cell = cell;
 		
 		cell.x += cell.w;
@@ -204,7 +178,6 @@ Arcollect::gui::rating_selector_menu::rating_selector_menu(void) :
 	text_line(font,"Rating",14)
 {
 	selector.has_kid = true;
-	selector.has_pg13 = true;
 	selector.has_mature = true;
 	selector.has_adult = true;
 	selector.onratingset = set_rating;
@@ -213,7 +186,7 @@ SDL::Point Arcollect::gui::rating_selector_menu::size(void)
 {
 	SDL::Point size;
 	text_line.render()->QuerySize(size);
-	size.x += (1+selector.has_kid+selector.has_pg13+selector.has_mature+selector.has_adult)*size.y;
+	size.x += (1+selector.has_kid+selector.has_mature+selector.has_adult)*size.y;
 	return size;
 }
 void Arcollect::gui::rating_selector_menu::event(SDL::Event &e, SDL::Rect location)

@@ -29,7 +29,6 @@ namespace Arcollect {
 				Arcollect::config::Rating hover_rating;
 			public:
 				bool has_kid;
-				bool has_pg13;
 				bool has_mature;
 				bool has_adult;
 				

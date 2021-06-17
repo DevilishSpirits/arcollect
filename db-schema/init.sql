@@ -44,7 +44,6 @@ BEGIN;
 	 * inclusive (16 mean that 15 and less child are not recomended).
 	 * The normalized rating are these :
 	 * 	-  0 for unrated content
-	 * 	- 13 for PG-13 like content
 	 * 	- 16 for Mature content
 	 * 	- 18 for Adult content
 	 */

@@ -53,7 +53,6 @@ void Arcollect::config::write_config(void)
 	       << "\n"
 	       << "; current_rating - Current artwork rating option\n"
 	       << "; " << RATING_NONE   << ": Unrated only\n"
-	       << "; " << RATING_PG13   << ": Not for young child (PG13)\n"
 	       << "; " << RATING_MATURE << ": Mature content\n"
 	       << "; " << RATING_ADULT  << ": Adult content\n"
 	       << "; This option is set when you change current rating\n"

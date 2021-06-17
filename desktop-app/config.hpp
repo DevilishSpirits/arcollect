@@ -60,7 +60,6 @@ namespace Arcollect {
 		
 		enum Rating: int {
 			RATING_NONE   = 0,
-			RATING_PG13   = 13,
 			RATING_MATURE = 16,
 			RATING_ADULT  = 18,
 		};
