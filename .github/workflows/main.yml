@@ -185,7 +185,7 @@ jobs:
           name: build-ubuntu-18_04_webextension.zip
           path: build-ubuntu-18_04_webextension
       - name: Make unpack dirs
-        run: mkdir build build-wrapped build-ubuntu-20_04
+        run: mkdir build build-wrapped build-ubuntu-20_04 build-ubuntu-18_04
       - name: Unpack build_webextension.zip
         run: unzip ../build_webextension/arcollect.zip
         working-directory: build
