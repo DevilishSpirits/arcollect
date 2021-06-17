@@ -53,6 +53,36 @@ jobs:
           meson-version: 0.57.1
         env:
           DESTDIR: "archive-out"
+  test-ubuntu-18_04:
+    runs-on: [ubuntu-18.04]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update apt cache
+        run: sudo apt update
+      - name: Install SDL2, his image and ttf modules, curl and Python3 setuptools
+        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev python3-setuptools
+      - name: Install Meson using pip3
+        run: sudo pip3 install meson==0.57.1
+      - name: Install Mozilla's web-ext with npm
+        run: sudo npm install -g web-ext
+      - name: Build project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: build
+          setup-options: -Dbuildtype=release -Dunity=on -Db_lto=true -Dstrip=true -Denable_webextension=false
+          meson-version: 0.57.1
+      - name: Test project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: test
+          meson-version: 0.57.1
+      - name: Install project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: install
+          meson-version: 0.57.1
+        env:
+          DESTDIR: "archive-out"
   test-ubuntu-20_04:
     runs-on: [ubuntu-20.04]
     steps:
@@ -81,7 +111,7 @@ jobs:
           DESTDIR: "archive-out"
   build-webextension:
     # Simply build the webextension (only)
-    needs: [test, test-wrapped, test-ubuntu-20_04]
+    needs: [test, test-wrapped, test-ubuntu-20_04, test-ubuntu-18_04]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

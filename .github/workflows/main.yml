@@ -79,6 +79,50 @@ jobs:
         with:
           name: build-wrapped_webextension.zip
           path: build/webextension/arcollect.zip
+  build-ubuntu-18_04:
+    runs-on: [ubuntu-18.04]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update apt cache
+        run: sudo apt update
+      - name: Install SDL2, his image and ttf modules, curl and Python3 setuptools
+        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev python3-setuptools
+      - name: Install Meson using pip3
+        run: sudo pip3 install meson==0.57.1
+      - name: Install Mozilla's web-ext with npm
+        run: sudo npm install -g web-ext
+      - name: Build project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: build
+          meson-version: 0.57.1
+        env:
+          CC:  clang
+          CXX: clang++
+      - name: Test project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: test
+          meson-version: 0.57.1
+      - name: Install project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: install
+          meson-version: 0.57.1
+        env:
+          DESTDIR: "archive-out"
+      - name: Archiving
+        run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
+      - name: Uploading DESDIR artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-ubuntu-18_04_DESTDIR.tar
+          path: archive-out.tar
+      - name: Uploading arcollect-webextension.zip artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-ubuntu-18_04_webextension.zip
+          path: build/webextension/arcollect.zip
   build-ubuntu-20_04:
     runs-on: [ubuntu-20.04]
     steps:
@@ -117,7 +161,7 @@ jobs:
           name: build-ubuntu-20_04_webextension.zip
           path: build/webextension/arcollect.zip
   check-webextensions-same:
-    needs: [build, build-wrapped, build-ubuntu-20_04]
+    needs: [build, build-wrapped, build-ubuntu-18_04, build-ubuntu-20_04]
     runs-on: [ubuntu-latest]
     steps:
       - name: Download build_webextension.zip
@@ -135,6 +179,11 @@ jobs:
         with:
           name: build-ubuntu-20_04_webextension.zip
           path: build-ubuntu-20_04_webextension
+      - name: Download build-ubuntu-18_04_webextension.zip
+        uses: actions/download-artifact@v2
+        with:
+          name: build-ubuntu-18_04_webextension.zip
+          path: build-ubuntu-18_04_webextension
       - name: Make unpack dirs
         run: mkdir build build-wrapped build-ubuntu-20_04
       - name: Unpack build_webextension.zip
@@ -143,10 +192,15 @@ jobs:
       - name: Unpack build-wrapped_webextension.zip
         run: unzip ../build-wrapped_webextension/arcollect.zip
         working-directory: build-wrapped
+      - name: Unpack build-ubuntu-18_04_webextension.zip
+        run: unzip ../build-ubuntu-18_04_webextension/arcollect.zip
+        working-directory: build-ubuntu-18_04
       - name: Unpack build-ubuntu-20_04_webextension.zip
         run: unzip ../build-ubuntu-20_04_webextension/arcollect.zip
         working-directory: build-ubuntu-20_04
       - name: Compare build and build-wrapped results
         run: diff -ry build build-wrapped
+      - name: Compare build and build-ubuntu-18_04 results
+        run: diff -ry build build-ubuntu-18_04
       - name: Compare build and build-ubuntu-20_04 results
         run: diff -ry build build-ubuntu-20_04
