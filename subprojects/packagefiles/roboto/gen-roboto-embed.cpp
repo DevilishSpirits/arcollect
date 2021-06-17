@@ -13,7 +13,7 @@ static std::fstream hpp;
 
 static void write_ttf_file(const char* ttf_file_path, const std::string &var_name)
 {
-	std::cerr << "Including \"" << ttf_file_path << "\" as Arcollect::Roboto::" << var_name << "\n" << std::endl;
+	std::cerr << "Including \"" << ttf_file_path << "\" as Arcollect::Roboto::" << var_name << std::endl;
 	char ttf_file[524288];
 	std::ifstream ttf(ttf_file_path);
 	//ttf.exceptions(ttf.failbit|ttf.badbit);
