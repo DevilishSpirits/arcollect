@@ -28,6 +28,15 @@ namespace Arcollect {
 	 */
 	extern sqlite_int64 data_version;
 	
+	/** Signal a local change in the database
+	 * 
+	 * This function update #data_version for changes within the database.
+	 *
+	 * SQLite doesn't update `PRAGMA data_version;` upon local change, so we do it
+	 * in a private variable added to this value.
+	 */
+	void local_data_version_changed(void);
+	
 	/** Update #data_version
 	 * 
 	 * `PRAGMA data_version;`, return and store the result in #data_version.

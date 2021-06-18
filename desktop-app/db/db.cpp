@@ -17,6 +17,7 @@
 #include "db.hpp"
 std::unique_ptr<SQLite3::sqlite3> Arcollect::database;
 sqlite_int64 Arcollect::data_version = -1;
+static sqlite_int64 private_data_version = 0;
 const std::string Arcollect::db::artid_randomizer = "((art_artid+"+std::to_string(time(NULL))+")*2654435761) % 4294967296";
 
 sqlite_int64 Arcollect::update_data_version(void)
@@ -24,5 +25,9 @@ sqlite_int64 Arcollect::update_data_version(void)
 	std::unique_ptr<SQLite3::stmt> stmt;
 	database->prepare("PRAGMA data_version;",stmt); // TODO Error checking
 	stmt->step(); // TODO Error checking
-	return data_version = stmt->column_int64(0);
+	return data_version = stmt->column_int64(0) + private_data_version;
+}
+void Arcollect::local_data_version_changed(void)
+{
+	private_data_version++;
 }
