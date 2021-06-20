@@ -37,7 +37,12 @@ namespace Arcollect {
 				 */
 				static const int standard_height;
 				virtual SDL::Point size(void) = 0;
-				virtual void event(SDL::Event &e, SDL::Rect location) = 0;
+				/** Process events
+				 * \param e The event
+				 * \param event_location   The rect that is sensitive to event (with padding)
+				 * \param render_location  The rect where rendering occured (without padding)
+				 */
+				virtual void event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location) = 0;
 				virtual void render(SDL::Rect target) = 0;
 				virtual ~menu_item(void) = default;
 		};
@@ -87,7 +92,7 @@ namespace Arcollect {
 				std::unique_ptr<SDL::Texture> text;
 			public:
 				SDL::Point size(void) override;
-				void event(SDL::Event &e, SDL::Rect location) override;
+				void event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location) override;
 				void render(SDL::Rect target) override;
 				std::function<void()> onclick;
 				menu_item_simple_label(const char* label, std::function<void()> onclick);

@@ -46,7 +46,7 @@ namespace Arcollect {
 			public:
 				rating_selector selector;
 				SDL::Point size(void) override;
-				void event(SDL::Event &e, SDL::Rect location) override;
+				void event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location) override;
 				void render(SDL::Rect target) override;
 				rating_selector_menu(void);
 		};

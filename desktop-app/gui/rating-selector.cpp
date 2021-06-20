@@ -189,9 +189,9 @@ SDL::Point Arcollect::gui::rating_selector_menu::size(void)
 	size.x += (1+selector.has_kid+selector.has_mature+selector.has_adult)*size.y;
 	return size;
 }
-void Arcollect::gui::rating_selector_menu::event(SDL::Event &e, SDL::Rect location)
+void Arcollect::gui::rating_selector_menu::event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location)
 {
-	selector.event(e,location);
+	selector.event(e,render_location);
 }
 void Arcollect::gui::rating_selector_menu::render(SDL::Rect target)
 {

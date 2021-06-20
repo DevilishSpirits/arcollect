@@ -106,13 +106,23 @@ bool Arcollect::gui::menu::event(SDL::Event &e)
 		default: propagate = true;
 	}
 	
-	if (broadcast)
+	if (broadcast) {
 		// Pass event to all cells
-		for (decltype(menu_items)::size_type i = 0; i < menu_items.size(); i++)
-			menu_items[i]->event(e,menu_rects[i]);
-	else if (hovered_cell > -1)
+		// Note: menu_rects[i].x and menu_rects[i].w are the same everywhere
+		SDL::Rect render_location{menu_rects[0].x + padding.x,menu_rects[0].y,menu_rects[0].w - 2*padding.x,0};
+		for (decltype(menu_items)::size_type i = 0; i < menu_items.size(); i++) {
+			render_location.h = menu_rects[i].h - 2*padding.x;
+			menu_items[i]->event(e,menu_rects[i],render_location);
+			render_location.y += menu_rects[i].h;
+		}
+	} else if (hovered_cell > -1)
 		// Pass event to the hovered_cell
-		menu_items[hovered_cell]->event(e,menu_rects[hovered_cell]);
+		menu_items[hovered_cell]->event(e,menu_rects[hovered_cell],{
+			menu_rects[hovered_cell].x + padding.x,
+			menu_rects[hovered_cell].y + padding.y,
+			menu_rects[hovered_cell].w - 2*padding.x,
+			menu_rects[hovered_cell].h - 2*padding.y,
+		});
 	
 	return propagate;
 }
@@ -189,16 +199,16 @@ void Arcollect::gui::menu_item_simple_label::render(SDL::Rect target)
 	// Render
 	renderer->Copy(text.get(),NULL,&target);
 }
-void Arcollect::gui::menu_item_simple_label::event(SDL::Event &e, SDL::Rect location)
+void Arcollect::gui::menu_item_simple_label::event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location)
 {
 	switch (e.type) {
 		case SDL_MOUSEBUTTONDOWN: {
 			SDL::Point mouse_pos{e.button.x,e.button.y};
-			pressed = mouse_pos.InRect(location);
+			pressed = mouse_pos.InRect(event_location);
 		} break;
 		case SDL_MOUSEBUTTONUP: {
 			SDL::Point mouse_pos{e.button.x,e.button.y};
-			if (pressed && mouse_pos.InRect(location))
+			if (pressed && mouse_pos.InRect(event_location))
 				onclick();
 		} break;
 		default: break;
