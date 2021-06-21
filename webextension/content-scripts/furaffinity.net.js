@@ -148,9 +148,9 @@ function save_artwork()
 	arcollect_submit(submit_json).then(function() {
 		save_buttondiv.text = 'Saved';
 	}).catch(function(reason) {
-		save_buttondiv.onclick = do_save_artwork;
+		save_buttondiv.onclick = save_artwork;
 		save_buttondiv.text = 'Retry to save in Arcollect';
-		console.log('Failed to save in Arcollect ! '+reason);
+		console.error('Failed to save in Arcollect ! '+reason);
 		alert('Failed to save in Arcollect ! '+reason);
 	});
 }
