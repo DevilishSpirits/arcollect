@@ -307,6 +307,15 @@ int main(void)
 			std::cerr << "JSON parse error." << std::endl;
 			return 1;
 		}
+		// Get the transaction_id
+		const char* transaction_id = NULL;
+		if (json_dom.HasMember("transaction_id") && json_dom["transaction_id"].IsString()) {
+			transaction_id = json_dom["transaction_id"].GetString();
+			if (debug)
+				std::cerr << "transaction_id set to \"" << transaction_id << "\"" << std::endl;
+		}
+		// Prepare success_js
+		std::string success_js = "{\"success\": true" + (transaction_id ? (", \"transaction_id\": \"" + std::string(transaction_id) + "\"") : "" ) + "}";
 		// Get some constants platform
 		const std::string platform = json_dom["platform"].GetString();
 		if (debug) {
@@ -517,10 +526,11 @@ int main(void)
 		}
 		
 		db->exec("COMMIT;");
-		// Return
-		std::string result_js = "{}";
-		data_len = result_js.size();
+		// Send success_js
+		if (debug)
+			std::cerr << success_js << std::endl;
+		data_len = success_js.size();
 		std::cout.write(reinterpret_cast<char*>(&data_len),sizeof(data_len));
-		std::cout << result_js;
+		std::cout << success_js;
 	}
 }

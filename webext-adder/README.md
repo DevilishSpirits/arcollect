@@ -2,13 +2,15 @@
 
 The  `arcollect-webext-adder` is the program that handle WebExtension native host messaging. It communicate using JSON strings and add new artworks into the database.
 
-# I/O format
-Here is an example showing all possible cases (unless I forgot something 🤔️).
+# Query format
+Here is an example showing all possible cases (unless I forgot something 🤔️) of a query to add something in the database.
 
 When adding artwork, send the plain artwork with this kind of JSON :
+
 ```json
 {
 	"platform": "example.net",
+	"transaction_id": "123456",
 	"artworks": [{
 		"title": "Sample art",
 		"desc": "My sample warmup for the morning.",
@@ -41,6 +43,8 @@ When adding artwork, send the plain artwork with this kind of JSON :
 ```
 The `platform` is the platform identifier, the root URL of the platform like `twitter.com`. 
 
+The `transaction_id` is a  string that is returned verbatim in the response to help the extension identify the tab destination. **Caution!** JSON escapes are not supported in this value, I still have to find how to espace or serialize JSON with RapidJSON.
+
 The `artwork` array contain objects you wants to add with some properties :
 * `title` is the artwork title.
 * `desc` is the artwork description.
@@ -69,9 +73,31 @@ The `art_tag_link` array contain links with artworks and tags :
 * `artwork` is the artwork `"source"` to link.
 * `tag` is the tag `"id"`.
 
-This JSON is fully parsed before performing a transaction on the database. Item order in the JSON is not important.
+This JSON is fully parsed before performing a transaction on the database. Items order in the JSON is not important.
 
-The program add artworks into the database and return an empty object on this is done :
+## Result format
+
+The program add artworks into the database and return an object when this is done :
+
 ```json
-{}
+{
+	"success": true,
+	"transaction_id": "123456"
+}
 ```
+
+Or this failed :
+
+```json
+{
+	"success": false,
+	"reason": "A message describing what's wrong.",
+	"transaction_id": "123456"
+}
+```
+
+The `success` is self-explanatory.
+
+The `reason` is a string describing what goes wrong that you should display to the user.
+
+The `transaction_id` is the same JSON string that was sent in the corresponding request.
