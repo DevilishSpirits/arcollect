@@ -21,7 +21,6 @@ namespace Arcollect {
 		class first_run: public modal {
 			bool event(SDL::Event &e) override;
 			void render() override;
-			void render_titlebar(SDL::Rect target, int window_width) override;
 		};
 		extern first_run first_run_modal;
 	}

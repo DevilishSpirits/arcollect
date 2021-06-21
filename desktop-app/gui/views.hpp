@@ -171,7 +171,6 @@ namespace Arcollect {
 				 */
 				artwork_viewport *get_pointed(SDL::Point mousepos);
 				void render(void) override;
-				void render_titlebar(SDL::Rect target, int window_width) override;
 				bool event(SDL::Event &e) override;
 		};
 	}

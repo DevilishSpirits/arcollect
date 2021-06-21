@@ -57,10 +57,6 @@ void Arcollect::gui::view_vgrid::render(void)
 		for (artwork_viewport &viewport: lines)
 			viewport.render(displacement);
 }
-void Arcollect::gui::view_vgrid::render_titlebar(SDL::Rect target, int window_width)
-{
-	// TODO
-}
 bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
 {
 	switch (e.type) {

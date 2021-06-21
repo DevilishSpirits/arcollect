@@ -76,7 +76,6 @@ namespace Arcollect {
 				
 				bool event(SDL::Event &e) override;
 				void render(void) override;
-				void render_titlebar(SDL::Rect target, int window_width) override {};
 				int get_menu_item_at(SDL::Point cursor);
 				int hovered_cell = -1;
 				
