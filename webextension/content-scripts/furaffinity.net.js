@@ -30,6 +30,14 @@
  */
 var save_buttondiv = null;
 
+function findElementByText(collection, text)
+{
+	for (let i = 0; i < collection.length; i++)
+		if (collection[i].textContent == text)
+			return collection[i]
+	return null;
+}
+
 /** Save the artwork
  */
 function save_artwork()
@@ -38,6 +46,7 @@ function save_artwork()
 	save_buttondiv.onclick = null;
 	save_buttondiv.text = 'Saving...';
 	
+	let highlights = document.getElementsByClassName('highlight');
 	/** Extract the account
 	 *
 	 * The avatar is directly available as an <img class="submission-user-icon floatleft avatar">.
@@ -67,7 +76,7 @@ function save_artwork()
 	 *
 	 * Tags are stored in <a> elements under the .tags-row element.
 	 *
-	 * FurAffinity doesn't have tag kind and fancy title
+	 * Some tags are generated from *Category* and *Species* field.
 	 */
 	let tags = []
 	let art_tag_links = []
@@ -79,6 +88,37 @@ function save_artwork()
 		art_tag_links.push({
 			'artwork': window.location.origin+window.location.pathname,
 			'tag': tags_rows[i].text
+		});
+	}
+	
+	// Extract species
+	// Also strip "(Other or general or ...)"
+	let speciesTitle = findElementByText(highlights,'Species').nextElementSibling.innerText.split(' (')[0];
+	// Don't save species tag for 'Unspecified / Any' species
+	if (speciesTitle.split(' ')[0] != 'Unspecified') {
+		let speciesTag = speciesTitle.toLowerCase().replaceAll(/(\W|\(|\))/gi, '-');
+		tags.push({
+			'id': speciesTag,
+			'title': speciesTitle,
+			'kind': "species"
+		});
+		art_tag_links.push({
+			'artwork': window.location.origin+window.location.pathname,
+			'tag': speciesTag
+		});
+	}
+	
+	// Extract gender
+	let genderTitle = findElementByText(highlights,'Gender').nextElementSibling.innerText.split(' (')[0];
+	if ((genderTitle.split(' ')[0] != 'Any')&&(genderTitle.split(' ')[0] != 'Multiple')&&(genderTitle.split(' ')[0] != 'Other')) {
+		let genderTag = genderTitle.toLowerCase().replaceAll(/(\W|\(|\))/gi, '-')
+		tags.push({
+			'id': genderTag,
+			'title': genderTitle
+		});
+		art_tag_links.push({
+			'artwork': window.location.origin+window.location.pathname,
+			'tag': genderTag
 		});
 	}
 	
