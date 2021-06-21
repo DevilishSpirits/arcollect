@@ -46,7 +46,7 @@ namespace Arcollect {
 				 *
 				 * Render the titlebar.
 				 */
-				virtual void render_titlebar(SDL::Rect target, int window_width) = 0;
+				virtual void render_titlebar(SDL::Rect target, int window_width);
 				/** Get menu items for topbar context menu
 				 * \return The list of modal dependant menus to add.
 				 *
