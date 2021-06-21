@@ -25,7 +25,21 @@
  *
  * At startup, the script automatically connect to the background script
  */
-var arcollect__port = browser.runtime.connect()
+var arcollect__port = browser.runtime.connect();
+
+/** List of running transactions
+ *
+ * This list track of transactions to the native webext-adder made by
+ * arcollect_submit().
+ */
+var arcollect__transactions = {};
+/** Next transactions
+ *
+ * This integer is used to generate unique transactions id to distinguish
+ * between differents transactions. It is used to generate keys for 
+ * #arcollect__transactions.
+ */
+var arcollect__next_transaction_id = 0;
 
 /** Download an image artwork and encode it to base64
  *
@@ -52,6 +66,17 @@ function arcollect_download_to_base64(url)
 	});
 }
 
+// Answer the associated Promise
+arcollect__port.onMessage.addListener(function(msg) {
+	// Get the transaction id
+	// Note: The background add it's own transaction_id after our one, strip it
+	let transaction_id = msg['transaction_id'].split(' ')[0];
+	if (msg['success'])
+		arcollect__transactions[transaction_id].resolve();
+	else arcollect__transactions[transaction_id].reject(msg['reason']);
+	delete arcollect__transactions[transaction_id];
+});
+
 /** Submit new data into the database
  *
  * \param json_object Objects to send.
@@ -62,8 +87,15 @@ function arcollect_submit(json_object)
 {
 	return new Promise(
 		function(resolve, reject) {
+			// Generate a transaction id
+			let transaction_id = (arcollect__next_transaction_id++).toString();
+			json_object['transaction_id'] = transaction_id;
+			arcollect__transactions[transaction_id] = {
+				'resolve': resolve,
+				'reject': reject,
+			};
+			// Send message
 			arcollect__port.postMessage(json_object);
-			resolve(null);
 		}
 	);
 }
