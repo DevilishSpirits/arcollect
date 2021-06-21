@@ -47,6 +47,14 @@ function save_artwork()
 	save_buttondiv.text = 'Saving...';
 	
 	let highlights = document.getElementsByClassName('highlight');
+	/** Normalize source URL
+	 *
+	 * FurAffinity ignore the trailing '/' in the url. Add it if missing.
+	 */
+	let source = window.location.origin+window.location.pathname;
+	if (source[source.length-1] != '/')
+		source += '/';
+	
 	/** Extract the account
 	 *
 	 * The avatar is directly available as an <img class="submission-user-icon floatleft avatar">.
@@ -68,7 +76,7 @@ function save_artwork()
 	}];
 	let art_acc_links = [{
 		'account': accountId,
-		'artwork': window.location.origin+window.location.pathname,
+		'artwork': source,
 		'link': 'account'
 	}];
 	
@@ -86,7 +94,7 @@ function save_artwork()
 			'id': tags_rows[i].text
 		});
 		art_tag_links.push({
-			'artwork': window.location.origin+window.location.pathname,
+			'artwork': source,
 			'tag': tags_rows[i].text
 		});
 	}
@@ -103,7 +111,7 @@ function save_artwork()
 			'kind': "species"
 		});
 		art_tag_links.push({
-			'artwork': window.location.origin+window.location.pathname,
+			'artwork': source,
 			'tag': speciesTag
 		});
 	}
@@ -117,7 +125,7 @@ function save_artwork()
 			'title': genderTitle
 		});
 		art_tag_links.push({
-			'artwork': window.location.origin+window.location.pathname,
+			'artwork': source,
 			'tag': genderTag
 		});
 	}
@@ -135,14 +143,6 @@ function save_artwork()
 	 * \todo it may have fancy things with don't support right-now
 	 */
 	let description = document.getElementsByClassName('submission-description user-submitted-links')[0].textContent;
-	
-	/** Normalize source URL
-	 *
-	 * FurAffinity ignore the trailing '/' in the url. Add it if missing.
-	 */
-	let source = window.location.origin+window.location.pathname;
-	if (source[source.length-1] != '/')
-		source += '/';
 	
 	/** Get the #submissionImg
 	 *
