@@ -355,10 +355,10 @@ int main(void)
 		if (debug) {
 			std::cerr << new_artworks.size() << " artwork(s) :" << std::endl;
 			for (auto& artwork : new_artworks)
-				std::cerr << "\t\"" << artwork.second.art_title << "\" (" << artwork.second.art_source << ")\n\t\t" << artwork.second.art_desc << std::endl << std::endl;
+				std::cerr << "\t\"" << artwork.second.art_title << "\" (" << artwork.second.art_source << ")\n" << std::endl;
 			std::cerr << new_accounts.size() << " account(s) :" << std::endl;
 			for (auto& account : new_accounts)
-				std::cerr << "\t\"" << account.second.acc_title << "\" (" << account.second.acc_name << ") [" << account.second.acc_platid << "]" << std::endl << std::endl;
+				std::cerr << "\t\"" << account.second.acc_title << "\" (" << account.second.acc_name << ") [" << account.second.acc_platid << "]\n" << std::endl;
 			std::cerr << new_art_acc_links.size() << " artwork/account link(s) :" << std::endl;
 			/* TODO
 			for (auto& art_acc_link : new_art_acc_links)
