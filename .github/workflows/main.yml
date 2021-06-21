@@ -127,6 +127,8 @@ jobs:
     runs-on: [ubuntu-20.04]
     steps:
       - uses: actions/checkout@v2
+      - name: Update apt cache
+        run: sudo apt update
       - name: Install SDL2, his image and ttf modules and curl
         run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev
       - name: Install Mozilla's web-ext with npm
