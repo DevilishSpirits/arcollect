@@ -47,6 +47,12 @@ static void main_thread(void)
 		// Queue the surface
 		{
 			std::lock_guard<std::mutex> lock_guard(lock);
+			if (done.size() == 0) {
+				// No art done, wake-up the main thread ONLY once (hence the if)
+				SDL_Event e;
+				e.type = SDL_USEREVENT;
+				SDL_PushEvent(&e);
+			}
 			done.emplace(artwork,surf);
 		}
 	}

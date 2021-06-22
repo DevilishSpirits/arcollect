@@ -158,10 +158,6 @@ int main(void)
 		if (!debug_redraws)
 		#endif
 		renderer->Present();
-		// Generate a new frame upon 
-		// TODO Generate an asynchronous event in the thread
-		if (Arcollect::db::artwork_loader::pending_main.size())
-			Arcollect::gui::animation_running = true;
 		// Erase artwork_loader pending list and load artworks into texture
 		{
 			std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);

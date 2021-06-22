@@ -126,7 +126,6 @@ void Arcollect::gui::view_slideshow::render(void)
 		// Render artwork
 		if (size_know)
 			viewport.render({0,0});
-		else animation_running = true;
 	} else {
 		// FIXME 
 		Arcollect::gui::Font font;
