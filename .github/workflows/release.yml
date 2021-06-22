@@ -158,10 +158,13 @@ jobs:
         with:
           name: web-ext-artifacts
           path: web-ext-artifacts
+      - name: Draft release body # TODO Also autogenerate title
+        run: git log --format=%B -n 1 "${{ github.ref }}" | tail -n +3 | cut -f 2- > release.body
       - name: Release on GitHub
         uses: softprops/action-gh-release@v1
         with:
           draft: true
+          body_path: release.body
           files: |
             web-ext-artifacts/*
         env:
