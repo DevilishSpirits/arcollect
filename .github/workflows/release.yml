@@ -69,8 +69,11 @@ jobs:
         uses: BSFishy/meson-build@v1.0.3
         with:
           action: build
-          setup-options: -Dbuildtype=release -Dunity=on -Db_lto=true -Dstrip=true -Denable_webextension=false
+          setup-options: -Dbuildtype=release -Dunity=on -Dstrip=true -Denable_webextension=false
           meson-version: 0.57.1
+        env:
+          CC:  clang
+          CXX: clang++
       - name: Test project
         uses: BSFishy/meson-build@v1.0.3
         with:
