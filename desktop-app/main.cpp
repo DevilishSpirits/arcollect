@@ -162,11 +162,16 @@ int main(void)
 		{
 			std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
 			// Load artworks
-			for (auto &art: Arcollect::db::artwork_loader::done) {
-				std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,art.second.get()));
-				art.first->texture_loaded(text);
+			if (Arcollect::db::artwork_loader::done.size()) {
+				// Generate a redraw
+				Arcollect::gui::animation_running = true;
+				// Load arts
+				for (auto &art: Arcollect::db::artwork_loader::done) {
+					std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,art.second.get()));
+					art.first->texture_loaded(text);
+				}
+				Arcollect::db::artwork_loader::done.clear();
 			}
-			Arcollect::db::artwork_loader::done.clear();
 			// Update pending list
 			Arcollect::db::artwork_loader::pending_thread = std::move(Arcollect::db::artwork_loader::pending_main);
 		}
