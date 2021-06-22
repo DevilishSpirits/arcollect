@@ -47,7 +47,7 @@ void Arcollect::gui::view_vgrid::resize(SDL::Rect rect)
 void Arcollect::gui::view_vgrid::render(void)
 {
 	// Check if we need to rebuild the layout
-	if (data_version != Arcollect::data_version) {
+	if ((data_version != Arcollect::data_version)|| layout_invalid) {
 		data_version = Arcollect::data_version;
 		flush_layout();
 	}
@@ -99,10 +99,10 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	auto end_iter = collection->end();
 	const auto &scroll_origin = scroll_position.val_origin;
 	int scroll_target = scroll_position.val_target + delta;
-	if (scroll_target < 0)
-		scroll_target = 0;
+	
+	layout_invalid = false;
 	// Create left viewports if needed
-	while ((left_y < scroll_target) && new_line_left(left_y - artwork_height - artwork_margin.y));
+	while ((left_y < scroll_target) && !layout_invalid && new_line_left(left_y - artwork_height - artwork_margin.y));
 	// Drop left viewports if too much
 	while ((left_y > scroll_origin + 2 * artwork_height)&&(left_y > scroll_target + 2 * artwork_height)) {
 		*left_iter -= viewports.front().size();
@@ -111,7 +111,7 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	}
 	// Create right viewports if needed
 	// NOTE! right_y is offset by minus one row
-	while ((right_y < scroll_target + rect.h + artwork_height) && (*right_iter != end_iter) && new_line_right(right_y));
+	while ((right_y < scroll_target + rect.h + artwork_height) && !layout_invalid && (*right_iter != end_iter) && new_line_right(right_y));
 	// Drop right viewports if too much
 	while ((right_y > scroll_origin + rect.h + 2 * artwork_height)&&(right_y > scroll_target + rect.h + 2 * artwork_height)) {
 		*right_iter -= viewports.back().size();
@@ -121,6 +121,9 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	// Stop scrolling if bottom is hit
 	if (scroll_target + rect.h > right_y)
 		scroll_target = right_y - rect.h;
+	// Stop scrolling if top is hit
+	if (scroll_target < 0)
+		scroll_target = 0;
 	// Do scrolling
 	scroll_position = scroll_target;
 }
@@ -172,7 +175,11 @@ bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std:
 	// Compute width
 	SDL::Point size;
 	std::shared_ptr<db::artwork> artwork = *iter;
-	artwork->QuerySize(size);
+	if (!artwork->QuerySize(size)) {
+		// Size is unknow, stop for now. Will flush_layout() on next redraw.
+		layout_invalid = true;
+		return false;
+	}
 	size.x *= artwork_height;
 	size.x /= size.y;
 	// Check for overflow

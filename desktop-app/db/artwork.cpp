@@ -36,10 +36,33 @@ std::shared_ptr<Arcollect::db::artwork> &Arcollect::db::artwork::query(Arcollect
 	return pointer;
 }
 
-SDL::Surface *Arcollect::db::artwork::load_surface(void)
+void Arcollect::db::artwork::queue_for_load(void)
+{
+	Arcollect::db::artwork_loader::pending_main.push_back(query(art_id));
+	Arcollect::db::artwork_loader::condition_variable.notify_one();
+}
+SDL::Surface *Arcollect::db::artwork::load_surface(void) const
 {
 	const std::string path = Arcollect::path::artwork_pool / std::to_string(art_id);
 	return (SDL::Surface*)IMG_Load(path.c_str());
+}
+void Arcollect::db::artwork::texture_loaded(std::unique_ptr<SDL::Texture> &texture)
+{
+	// Set texture
+	text = std::move(texture);
+	// Set size if missing in the DB
+	if (!art_size.x || !art_size.y) {
+		// Read size
+		text->QuerySize(art_size);
+		// Set size in the database
+		std::unique_ptr<SQLite3::stmt> set_size_stmt;
+		database->prepare("UPDATE artworks SET art_width=?, art_height=? WHERE art_artid = ?;",set_size_stmt); // TODO Error checking
+		set_size_stmt->bind(1,art_size.x);
+		set_size_stmt->bind(2,art_size.y);
+		set_size_stmt->bind(3,art_id);
+		set_size_stmt->step();
+		database->exec("COMMIT;");
+	}
 }
 std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 {
@@ -48,11 +71,9 @@ std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 	if (art_rating > Arcollect::config::current_rating)
 		return null_text;
 	
-	if (!text) {
-		// Push me on the loader stack
-		Arcollect::db::artwork_loader::pending_main.push_back(query(art_id));
-		Arcollect::db::artwork_loader::condition_variable.notify_one();
-	}
+	if (!text)
+		queue_for_load();
+	
 	return text;
 }
 int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
@@ -84,24 +105,8 @@ void Arcollect::db::artwork::db_sync(void)
 			art_title  = column_string_default(stmt,0);
 			art_desc   = column_string_default(stmt,1);
 			art_source = stmt->column_string(2);
-			// Check if picture size is stored
-			if ((stmt->column_type(3) == SQLITE_NULL)||(stmt->column_type(4) == SQLITE_NULL)) {
-				// Load picture
-				SDL::Surface *surf = load_surface();
-				text.reset(SDL::Texture::CreateFromSurface(renderer,surf));
-				delete surf;
-				// Read size
-				text->QuerySize(art_size);
-				// Set size in the database
-				std::unique_ptr<SQLite3::stmt> set_size_stmt;
-				database->prepare("UPDATE artworks SET art_width=?, art_height=? WHERE art_artid = ?;",set_size_stmt); // TODO Error checking
-				set_size_stmt->bind(1,art_size.x);
-				set_size_stmt->bind(2,art_size.y);
-				set_size_stmt->bind(3,art_id);
-				set_size_stmt->step();
-				database->exec("COMMIT;");
-			} else {
-				// Size is stored
+			// Load picture size if unknow
+			if (!art_size.x || !art_size.y) {
 				art_size.x = stmt->column_int64(3);
 				art_size.y = stmt->column_int64(4);
 			}

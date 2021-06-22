@@ -29,10 +29,14 @@ void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<gui::artwork
 void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 {
 	this->rect = rect;
+	size_know = false;
 	if (viewport.artwork) {
 		// Preserve aspect ratio
 		SDL::Point art_size;
-		viewport.artwork->QuerySize(art_size);
+		if (!viewport.artwork->QuerySize(art_size))
+			return; // Art is queued for load, wait a little bit.
+		size_know = true;
+		
 		int height_for_width = art_size.y*rect.w/art_size.x;
 		if (height_for_width > rect.h) {
 			// Perform width for height size
@@ -116,8 +120,13 @@ void Arcollect::gui::view_slideshow::render(void)
 		if (*collection_iterator != collection->end())
 			(***collection_iterator).query_texture();
 		--*collection_iterator;
+		// Resize is size is unknow
+		if (!size_know)
+			resize(rect);
 		// Render artwork
-		viewport.render({0,0});
+		if (size_know)
+			viewport.render({0,0});
+		else animation_running = true;
 	} else {
 		// FIXME 
 		Arcollect::gui::Font font;

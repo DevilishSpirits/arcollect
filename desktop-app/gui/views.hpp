@@ -53,6 +53,7 @@ namespace Arcollect {
 				SDL::Rect rect;
 				// The main artwork viewport
 				artwork_viewport viewport;
+				bool size_know = false;
 				std::unique_ptr<artwork_collection::iterator> collection_iterator;
 			public:
 				void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) override;
@@ -94,6 +95,11 @@ namespace Arcollect {
 				sqlite_int64 data_version;
 				// The bounding rect
 				SDL::Rect rect;
+				/** Layout invalid flag
+				 *
+				 * If set, this mean that the layout must be recomputed upon next draw.
+				 */
+				bool layout_invalid;
 				/** Artworks height in pixel
 				 */
 				int artwork_height = 200;

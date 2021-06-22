@@ -44,24 +44,49 @@ namespace Arcollect {
 				std::string art_title;
 				std::string art_desc;
 				std::string art_source;
-				SDL::Point  art_size;
+				SDL::Point  art_size{0,0};
 				Arcollect::config::Rating art_rating;
 				std::unordered_map<std::string,std::vector<std::shared_ptr<account>>> linked_accounts;
-			public:
-				/** Load the image in a SDL::Surface
-				 *
-				 * This is a convenience function.
-				 */
-				SDL::Surface *load_surface(void);
-				// Private but public in int main(void)
 				std::unique_ptr<SDL::Texture> text;
+			public:
+				/** Query artwork loading
+				 *
+				 * The artwork is pushed onto the artwork loader stack.
+				 */
+				void queue_for_load(void);
+				/** Load the image in a SDL::Surface
+				 * \return A surface containing the artwork
+				 * 
+				 * This is a convenience blocking function that is called in a dedicated
+				 * thread.
+				 */
+				SDL::Surface *load_surface(void) const;
+				/** Set the loaded texture
+				 * \param texture The loaded texture. This function steal it.
+				 *
+				 * This function is called by the main thread after load_surface() end
+				 * in the loader thread.
+				 */
+				void texture_loaded(std::unique_ptr<SDL::Texture> &texture);
+				/** Query the texture
+				 * \return The texture or NULL if it is not loaded right-now.
+				 * 
+				 * This function queue the artwork for loading if it is not loaded yet.
+				 */
 				std::unique_ptr<SDL::Texture> &query_texture(void);
 				// Delete copy constructor
 				artwork(const artwork&) = delete;
 				artwork& operator=(artwork&) = delete;
-				inline void QuerySize(SDL::Point &size) {
+				inline bool QuerySize(SDL::Point &size) {
 					db_sync();
 					size = art_size;
+					
+					// Queue for load if size is unknow
+					bool loaded = art_size.x && art_size.y;
+					if (!loaded)
+						queue_for_load();
+					
+					return loaded;
 				}
 				/** The database artwork id
 				 */
