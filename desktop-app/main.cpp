@@ -16,6 +16,7 @@
  */
 #include "sdl2-hpp/SDL.hpp"
 #include <arcollect-db-open.hpp>
+#include <arcollect-db-schema.hpp>
 #include "config.hpp"
 #include "db/artwork-loader.hpp"
 #include "db/db.hpp"
@@ -96,6 +97,9 @@ int main(void)
 	renderer->GetOutputSize(window_rect.w,window_rect.h);
 	// Load the db
 	Arcollect::database = Arcollect::db::open();
+	std::unique_ptr<SQLite3::stmt> preload_artworks_stmt;
+	if (Arcollect::database->prepare(Arcollect::db::schema::preload_artworks,preload_artworks_stmt) != SQLITE_OK)
+		std::cerr << "Failed to prepare preload_artworks SQL stmt: " << Arcollect::database->errmsg() << std::endl;
 	// Bootstrap the background
 	Arcollect::gui::update_background(true);
 	Arcollect::gui::background_slideshow.resize(window_rect);
@@ -170,6 +174,12 @@ int main(void)
 			// Update pending list
 			Arcollect::db::artwork_loader::pending_thread = std::move(Arcollect::db::artwork_loader::pending_main);
 		}
+		// Query artworks to preload
+		if (preload_artworks_stmt) {
+			preload_artworks_stmt->reset();
+			while (preload_artworks_stmt->step() == SQLITE_ROW)
+				Arcollect::db::artwork::query(preload_artworks_stmt->column_int64(0))->queue_for_load();
+		}
 		#ifdef WITH_DEBUG
 		// Redraws debugging
 		if (debug_redraws) {
@@ -193,6 +203,11 @@ int main(void)
 		#endif
 	}
 	// Cleanups
+	// Erase artwork_loader pending list
+	{
+		std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
+		Arcollect::db::artwork_loader::pending_thread.clear();
+	}
 	Arcollect::db::artwork_loader::stop = true;
 	Arcollect::db::artwork_loader::condition_variable.notify_one();
 	Arcollect::db::artwork_loader::thread.join();

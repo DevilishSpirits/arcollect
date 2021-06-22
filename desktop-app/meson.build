@@ -31,6 +31,7 @@ deskapp_srcs = [
 	'gui/view-grid.cpp',
 	'gui/window-borders.cpp',
 	roboto_proj.get_variable('gen_roboto_target'),
+	db_schema_sources_target[1], # for <arcollect-db-schema.hpp>
 ]
 
 executable('arcollect', deskapp_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: common_lib, install: true)
