@@ -74,3 +74,4 @@ endif
 if enable_webextension
 	subdir('webextension')
 endif
+subdir('packaging')

@@ -1,0 +1,25 @@
+# Maintainer: DevilishSpirits (aka D-Spirits or Luc B.) <devilishspirits@gmail.com>
+pkgname=arcollect
+pkgver=@ARCOLLECT_VERSION@
+pkgrel=1
+pkgdesc="Your personnal visual artwork library"
+arch=('x86_64')
+url="@ARCOLLECT_WEBSITE@"
+license=('GPL')
+depends=('curl' 'sdl2_image' 'sdl2_ttf>=2.0.12' 'sqlite>=3.35.0')
+makedepends=(meson)
+source=(@PKGBUILD_SOURCE@)
+md5sums=(@PKGBUILD_MD5SUMS@)
+
+build() {
+	meson --prefix=/usr --buildtype=release -Db_lto=true -Db_pie=true -Dunity=on --libexecdir lib @PKGBUILD_SRCDIR@ '@PKGBUILD_BUILDDIR@' 
+	meson compile -C '@PKGBUILD_BUILDDIR@'
+}
+
+check() {
+	meson test -C '@PKGBUILD_BUILDDIR@'
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install -C '@PKGBUILD_BUILDDIR@'
+}
