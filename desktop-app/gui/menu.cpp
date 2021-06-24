@@ -128,7 +128,7 @@ bool Arcollect::gui::menu::event(SDL::Event &e)
 }
 int Arcollect::gui::menu::get_menu_item_at(SDL::Point cursor)
 {
-	for (auto i = 0; i < static_cast<int>(menu_items.size()); i++)
+	for (auto i = 0; i < static_cast<int>(menu_rects.size()); i++)
 		if (cursor.InRect(menu_rects[i]))
 			return i;
 	// No match found
