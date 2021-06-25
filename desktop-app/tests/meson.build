@@ -3,4 +3,11 @@ desktop_app_test_env = environment({
 	'XDG_DATA_HOME': meson.current_build_dir(),
 })
 
-test('test-config', executable('test-config', 'test-config.cpp', dependencies: desktop_app_dep), env: desktop_app_test_env)
+tap_tests = [
+	'test-config',
+	'test-search-tokenizer',
+]
+
+foreach test: tap_tests
+	test(test, executable(test, test+'.cpp', dependencies: desktop_app_dep), protocol: 'tap', env: desktop_app_test_env)
+endforeach

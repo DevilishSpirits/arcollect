@@ -19,6 +19,7 @@ deskapp_srcs = files(
 	'db/artwork-loader.cpp',
 	'db/db.cpp',
 	'db/filter.cpp',
+	'db/search.cpp',
 	'gui/artwork-viewport.cpp',
 	'gui/first-run.cpp',
 	'gui/font.cpp',
