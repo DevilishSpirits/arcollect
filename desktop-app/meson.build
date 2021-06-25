@@ -40,3 +40,5 @@ desktop_app_staticlib = static_library('desktop-app-staticlib', deskapp_srcs, de
 desktop_app_dep = declare_dependency(sources: deskapp_additional_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: desktop_app_staticlib)
 
 executable('arcollect', 'main.cpp', dependencies: desktop_app_dep, install: true)
+
+subdir('tests')
