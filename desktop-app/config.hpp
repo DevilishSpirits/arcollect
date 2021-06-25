@@ -14,15 +14,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+/** \file config.hpp
+ *  \brief Arcollect user preferences utilities
+ *
+ * This header define the Arcollect::config namespace that contain user
+ * preferences of Arcollect (`arcollect.ini`). It is separate from the database.
+ */
 #pragma once
 #include <iostream>
 #include <arcollect-paths.hpp>
 #include <config.h>
 namespace Arcollect {
+	/** `arcollect.ini` file configuration namespace
+	 *
+	 * Arcollect store it's configuration within `$XDG_CONFIG_HOME/arcollect.ini`
+	 */
 	namespace config {
+		/** Read arcollect.ini
+		 *
+		 * This function is called at startup
+		 */
 		void read_config(void);
+		/** Write arcollect.ini
+		 *
+		 * This function is called when a #Param is set
+		 */
 		void write_config(void);
 		
+		/** High-level encapsulation of a user preference setting
+		 *
+		 * It come with a default value and setting it automatically update the
+		 * configuration file.
+		 */
 		template<typename T>
 		class Param {
 			private:
@@ -35,6 +58,9 @@ namespace Arcollect {
 					return value;
 				}
 				/** Write the param
+				 *
+				 * This operator overload automatically call write_config(). The change
+				 * is persistent.
 				 */
 				inline Param& operator=(const T& new_value) {
 					value = new_value;
@@ -49,13 +75,13 @@ namespace Arcollect {
 		 * This is an int used to display the first run tutorial.
 		 */
 		extern Param<int> first_run;
-		/** start_fullscreen - Start in fullscreen
-		 */
 		enum StartWindowMode {
 			STARTWINDOW_NORMAL     = 0,
 			STARTWINDOW_MAXIMIZED  = 1,
 			STARTWINDOW_FULLSCREEN = 2,
 		};
+		/** start_window_mode - The window mode to use at startup
+		 */
 		extern Param<int> start_window_mode;
 		
 		enum Rating: int {
