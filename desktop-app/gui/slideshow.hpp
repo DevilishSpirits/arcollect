@@ -58,7 +58,15 @@ namespace Arcollect {
 		 */
 		void update_background(std::function<std::unique_ptr<SQLite3::stmt>(void)> &stmt, bool collection);
 		/** Update the background image
+		 * \param search Search expression
+		 */
+		void update_background(const std::string &search, bool collection);
+		/** Update the background image
 		 */
 		void update_background(bool collection);
+		/** Get current search filter
+		 * \return The last search param of update_background() call.
+		 */
+		const std::string get_current_search(void);
 	}
 }

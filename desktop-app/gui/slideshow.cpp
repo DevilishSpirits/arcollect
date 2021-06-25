@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "../db/filter.hpp"
+#include "../db/search.hpp"
 #include "menu.hpp"
 #include "slideshow.hpp"
 #include "artwork-collections.hpp"
@@ -134,13 +135,24 @@ void Arcollect::gui::update_background(std::function<std::unique_ptr<SQLite3::st
 	slideshow_filter_version = -1;
 }
 
+static std::string current_background_search;
 static std::function<std::unique_ptr<SQLite3::stmt>(void)> default_update_background_generator = [](void) -> std::unique_ptr<SQLite3::stmt> {
 	std::unique_ptr<SQLite3::stmt> stmt;
-	Arcollect::database->prepare("SELECT art_artid,"+Arcollect::db::artid_randomizer+" AS art_order FROM artworks WHERE "+Arcollect::db_filter::get_sql()+" ORDER BY art_order;",stmt);
+	Arcollect::db::search::build_stmt(current_background_search.c_str(),stmt);
 	return stmt;
 };
+void Arcollect::gui::update_background(const std::string &search, bool collection)
+{
+	current_background_search = search;
+	update_background(default_update_background_generator,collection);
+}
 
 void Arcollect::gui::update_background(bool collection)
 {
-	update_background(default_update_background_generator,collection);
+	update_background("",collection);
+}
+
+const std::string Arcollect::gui::get_current_search(void)
+{
+	return current_background_search;
 }
