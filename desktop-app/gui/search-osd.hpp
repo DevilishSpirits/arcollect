@@ -23,6 +23,12 @@ namespace Arcollect {
 			private:
 				std::string text;
 				std::string saved_text;
+				/** Flag to check if we should ls poop the vgrid
+				 *
+				 * Upon push(), #Arcollect::gui::background_vgrid is also pushed is not.
+				 * This flag is set to remember weather the grid was shown or not.
+				 */
+				bool also_pop_grid_after;
 			public:
 				bool event(SDL::Event &e) override;
 				void render(void) override;

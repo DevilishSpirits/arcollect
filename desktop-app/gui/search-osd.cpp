@@ -45,6 +45,8 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e)
 				case SDL_SCANCODE_RETURN: {
 					SDL_StopTextInput();
 					modal_stack.pop_back();
+					if (also_pop_grid_after)
+						modal_stack.pop_back();
 				} break;
 				default: {
 				} break;
@@ -83,7 +85,8 @@ void Arcollect::gui::search_osd::push(void)
 {
 	text = saved_text = Arcollect::gui::get_current_search();
 	SDL_StartTextInput();
-	if (&modal_stack.back().get() != &Arcollect::gui::background_vgrid)
+	also_pop_grid_after = &modal_stack.back().get() != &Arcollect::gui::background_vgrid;
+	if (also_pop_grid_after)
 		modal_stack.push_back(Arcollect::gui::background_vgrid); // Force display of background_vgrid
 	modal_stack.push_back(*this);
 }
