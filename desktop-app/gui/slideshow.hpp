@@ -31,6 +31,7 @@ namespace Arcollect {
 		 *
 		 */
 		extern view_slideshow &background_slideshow;
+		extern view_vgrid     &background_vgrid;
 		/** Update the background image
 		 */
 		void update_background(db::artwork_id artid);

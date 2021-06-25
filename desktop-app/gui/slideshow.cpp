@@ -54,6 +54,8 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 	}
 } background_vgrid;
 
+Arcollect::gui::view_vgrid &Arcollect::gui::background_vgrid = ::background_vgrid;
+
 static void delete_art(void);
 static void confirm_delete_art(void)
 {
