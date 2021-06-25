@@ -41,6 +41,7 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 			} return false;
 		case SDL_KEYUP: {
 			switch (e.key.keysym.scancode) {
+				case SDL_SCANCODE_RETURN:
 				case SDL_SCANCODE_ESCAPE: {
 					Arcollect::gui::modal_stack.pop_back();
 				} break;
@@ -73,6 +74,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 		switch (e.type) {
 			case SDL_KEYUP: {
 				switch (e.key.keysym.scancode) {
+					case SDL_SCANCODE_RETURN:
 					case SDL_SCANCODE_ESCAPE: {
 						background_vgrid.resize(rect);
 						Arcollect::gui::modal_stack.push_back(background_vgrid);
