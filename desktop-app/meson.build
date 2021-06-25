@@ -12,7 +12,7 @@ deskapp_deps = [
 	dep_sqlite3,
 	inith_proj.get_variable('INIReader_dep'),
 ]
-deskapp_srcs = files(
+deskapp_srcs = [
 	'config.cpp',
 	'db/account.cpp',
 	'db/artwork.cpp',
@@ -31,10 +31,11 @@ deskapp_srcs = files(
 	'gui/view-slideshow.cpp',
 	'gui/view-grid.cpp',
 	'gui/window-borders.cpp',
-)
+	roboto_proj.get_variable('gen_roboto_target')[0],
+]
 deskapp_additional_srcs = [
 	db_schema_sources_target[1], # for <arcollect-db-schema.hpp>
-	roboto_proj.get_variable('gen_roboto_target'),
+	roboto_proj.get_variable('gen_roboto_target')[1],
 ]
 
 desktop_app_staticlib = static_library('desktop-app-staticlib', deskapp_srcs, deskapp_additional_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: common_lib)

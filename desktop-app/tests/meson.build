@@ -9,5 +9,5 @@ tap_tests = [
 ]
 
 foreach test: tap_tests
-	test(test, executable(test, test+'.cpp', dependencies: desktop_app_dep), protocol: 'tap', env: desktop_app_test_env)
+	test(test, executable(test, test+'.cpp', dependencies: desktop_app_dep), protocol: 'tap', env: desktop_app_test_env, is_parallel: false)
 endforeach

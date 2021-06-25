@@ -65,13 +65,16 @@ configure_file(output: 'config.h', configuration: config_h)
 config_h_inc = include_directories('.')
 
 # Add subdir (include order is important !)
-if enable_native_progs
-	subdir('db-schema')
-	subdir('common')
-	subdir('desktop-app')
-	subdir('webext-adder')
-endif
-if enable_webextension
-	subdir('webextension')
-endif
 subdir('packaging')
+if make_packaging_for.length() == 0
+	# Disable normal building for packaging builds
+	if enable_native_progs
+		subdir('db-schema')
+		subdir('common')
+		subdir('desktop-app')
+		subdir('webext-adder')
+	endif
+	if enable_webextension
+		subdir('webextension')
+	endif
+endif

@@ -1,3 +1,4 @@
+#include "../db/artwork-loader.hpp"
 #include "../db/search.hpp"
 #include <iostream>
 #include <sstream>
@@ -57,5 +58,9 @@ int main(void)
 		std::cout << "ok " << (test_i++) << " - Tokenize \"" << test.test_string << "\" #" << token_debug.str() << std::endl;
 		token_debug.str("");
 	}
+	// Stop background thread
+	Arcollect::db::artwork_loader::stop = true;
+	Arcollect::db::artwork_loader::condition_variable.notify_one();
+	Arcollect::db::artwork_loader::thread.join();
 	return 0;
 }
