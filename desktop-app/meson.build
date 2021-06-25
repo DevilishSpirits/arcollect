@@ -26,6 +26,7 @@ deskapp_srcs = files(
 	'gui/menu.cpp',
 	'gui/modal.cpp',
 	'gui/rating-selector.cpp',
+	'gui/search-osd.cpp',
 	'gui/slideshow.cpp',
 	'gui/view-slideshow.cpp',
 	'gui/view-grid.cpp',
