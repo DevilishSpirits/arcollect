@@ -16,9 +16,10 @@
  */
 #include "../db/filter.hpp"
 #include "../db/search.hpp"
-#include "menu.hpp"
-#include "slideshow.hpp"
 #include "artwork-collections.hpp"
+#include "menu.hpp"
+#include "search-osd.hpp"
+#include "slideshow.hpp"
 #include "window-borders.hpp"
 
 static std::function<std::unique_ptr<SQLite3::stmt>(void)> dynamic_update_background_func;
@@ -44,6 +45,9 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 				case SDL_SCANCODE_RETURN:
 				case SDL_SCANCODE_ESCAPE: {
 					Arcollect::gui::modal_stack.pop_back();
+				} break;
+				case SDL_SCANCODE_SPACE: {
+					Arcollect::gui::search_osd_modal.push();
 				} break;
 				default: {
 				} break;
@@ -78,6 +82,9 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 					case SDL_SCANCODE_ESCAPE: {
 						background_vgrid.resize(rect);
 						Arcollect::gui::modal_stack.push_back(background_vgrid);
+					} break;
+					case SDL_SCANCODE_SPACE: {
+						Arcollect::gui::search_osd_modal.push();
 					} break;
 					default:break;
 				}
