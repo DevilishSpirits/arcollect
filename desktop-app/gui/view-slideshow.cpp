@@ -21,10 +21,11 @@
 void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
 {
 	auto new_collection_iterator = new_collection->begin();
-	set_collection_iterator(new_collection_iterator);
 	collection = new_collection;
-	if (*collection_iterator != new_collection->end())
+	if (new_collection_iterator != new_collection->end()) {
+		set_collection_iterator(new_collection_iterator);
 		viewport.artwork = **collection_iterator;
+	} else viewport.artwork = NULL;
 }
 void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 {

@@ -26,6 +26,8 @@ void Arcollect::gui::view_vgrid::set_collection(std::shared_ptr<gui::artwork_col
 
 void Arcollect::gui::view_vgrid::flush_layout(void)
 {
+	if (!collection)
+		return;
 	// Destroy current layout
 	viewports.clear();
 	// Reset scrolling
