@@ -156,6 +156,14 @@ void Arcollect::gui::update_background(const std::string &search, bool collectio
 {
 	current_background_search = search;
 	update_background(default_update_background_generator,collection);
+	if (std::getenv("ARCOLLECT_DEBUG_SEARCH")) {
+		std::vector<std::string_view> query_params;
+		Arcollect::db::search::build_stmt(current_background_search.c_str(),std::cerr,query_params);
+		std::cerr << std::endl;
+		for (std::string_view &param: query_params)
+			std::cerr << param << std::endl;
+		std::cerr << std::endl;
+	}
 }
 
 void Arcollect::gui::update_background(bool collection)
