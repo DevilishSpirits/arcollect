@@ -95,6 +95,7 @@ jobs:
         uses: BSFishy/meson-build@v1.0.3
         with:
           action: build
+          setup-options: --prefix=/usr -Dstrip=true
           meson-version: 0.57.1
         env:
           CC:  clang
@@ -104,20 +105,14 @@ jobs:
         with:
           action: test
           meson-version: 0.57.1
-      - name: Install project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: install
-          meson-version: 0.57.1
-        env:
-          DESTDIR: "archive-out"
-      - name: Archiving
-        run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
-      - name: Uploading DESDIR artifact
+      - name: Generate Debian package
+        run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+        shell: bash
+      - name: Uploading Debian package artifact
         uses: actions/upload-artifact@v2
         with:
-          name: build-ubuntu-18_04_DESTDIR.tar
-          path: archive-out.tar
+          name: build-ubuntu-18_04-packaging
+          path: build/packaging
       - name: Uploading arcollect-webextension.zip artifact
         uses: actions/upload-artifact@v2
         with:
@@ -137,26 +132,21 @@ jobs:
         uses: BSFishy/meson-build@v1.0.3
         with:
           action: build
+          setup-options: --prefix=/usr -Dstrip=true
           meson-version: 0.57.1
       - name: Test project
         uses: BSFishy/meson-build@v1.0.3
         with:
           action: test
           meson-version: 0.57.1
-      - name: Install project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: install
-          meson-version: 0.57.1
-        env:
-          DESTDIR: "archive-out"
-      - name: Archiving
-        run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
-      - name: Uploading DESDIR artifact
+      - name: Generate Debian package
+        run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+        shell: bash
+      - name: Uploading Debian package artifact
         uses: actions/upload-artifact@v2
         with:
-          name: build-ubuntu-20_04_DESTDIR.tar
-          path: archive-out.tar
+          name: build-ubuntu-20_04-packaging
+          path: build/packaging
       - name: Uploading arcollect-webextension.zip artifact
         uses: actions/upload-artifact@v2
         with:
