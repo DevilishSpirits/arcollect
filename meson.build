@@ -65,8 +65,6 @@ configure_file(output: 'config.h', configuration: config_h)
 config_h_inc = include_directories('.')
 
 # Add subdir (include order is important !)
-subdir('packaging')
-	# Disable normal building for packaging builds
 if enable_native_progs
 	subdir('db-schema')
 	subdir('common')
@@ -76,3 +74,4 @@ endif
 if enable_webextension
 	subdir('webextension')
 endif
+subdir('packaging')

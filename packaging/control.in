@@ -1,0 +1,8 @@
+Package: arcollect
+Version: @ARCOLLECT_VERSION@-1
+Architecture: @DEB_HOST_ARCH@
+Maintainer: DevilishSpirits (aka D-Spirits or Luc B.) <devilishspirits@gmail.com>
+Priority: optional
+Homepage: @ARCOLLECT_WEBSITE@
+Description: Artwork manager
+ An artwork manager.
