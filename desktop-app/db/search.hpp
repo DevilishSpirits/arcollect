@@ -26,6 +26,7 @@ namespace Arcollect {
 		namespace search {
 			enum Token {
 				TOK_IDENTIFIER,
+				TOK_NEGATE,
 				TOK_BLANK,
 				TOK_EOL,
 				TOK_INVALID,

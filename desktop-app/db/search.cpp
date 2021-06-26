@@ -28,9 +28,9 @@ static Arcollect::db::search::Token classify_char(char chr)
 	else if (std::isalnum(chr) || (chr == '_'))
 		return Arcollect::db::search::TOK_IDENTIFIER;
 	/*else if (chr == ':')
-		return Arcollect::db::search::TOK_COLON;
+		return Arcollect::db::search::TOK_COLON;*/
 	else if (chr == '-')
-		return Arcollect::db::search::TOK_NEGATE;*/
+		return Arcollect::db::search::TOK_NEGATE;
 	else if (std::isblank(chr))
 		return Arcollect::db::search::TOK_BLANK;
 	else return Arcollect::db::search::TOK_INVALID;
@@ -57,17 +57,24 @@ const char* Arcollect::db::search::tokenize(const char* search, std::function<bo
 struct Arcollect_db_search_do_search_struct {
 	Arcollect::db::search::Token last_token = Arcollect::db::search::TOK_BLANK;
 	std::vector<std::string_view> tags;
+	std::vector<std::string_view> negated_tags;
 };
 
 static bool arcollect_db_search_do_search_callback(Arcollect::db::search::Token token, std::string_view value, void* data)
 {
 	struct Arcollect_db_search_do_search_struct &search = *reinterpret_cast<struct Arcollect_db_search_do_search_struct*>(data);
+	auto last_token = search.last_token;
+	search.last_token = token;
 	switch (token) {
 		case Arcollect::db::search::TOK_IDENTIFIER: {
-			switch (search.last_token) {
+			switch (last_token) {
 				case Arcollect::db::search::TOK_IDENTIFIER: {
 					// Impossible
 				} return true;
+				case Arcollect::db::search::TOK_NEGATE: {
+					// Append a negated_tag
+					search.negated_tags.emplace_back(value);
+				} return false;
 				case Arcollect::db::search::TOK_BLANK:
 				case Arcollect::db::search::TOK_EOL: {
 					// Append a tag
@@ -103,6 +110,23 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 			query_bindings.emplace_back(src.tags[i]);
 		}
 		query << ") LIMIT " << (src.tags.size()-1) << ",1)";
+	}
+	if (src.negated_tags.size()) {
+		/** Add tag exclusion logic
+		 *
+		 * It's the same thing as above but negated and without the LIMIT because a
+		 * match inivalidate the whole tag
+		 */
+		query << " AND NOT EXISTS ("
+			"SELECT 1 FROM art_tag_links"
+			" NATURAL JOIN tags WHERE art_tag_links.art_artid = artworks.art_artid"
+			" AND tags.tag_platid in (?";
+		query_bindings.emplace_back(src.negated_tags[0]);
+		for (decltype(src.negated_tags)::size_type i = 1; i < src.negated_tags.size(); i++) {
+			query << ",?";
+			query_bindings.emplace_back(src.negated_tags[i]);
+		}
+		query << "))";
 	}
 	query << " ORDER BY art_order;";
 	return NULL;

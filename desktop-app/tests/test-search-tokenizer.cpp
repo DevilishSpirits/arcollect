@@ -10,6 +10,7 @@ SDL::Renderer *renderer;
 using namespace Arcollect::db::search; // To avoid very long namespace writes...
 
 #define BLANK(blank)           {TOK_BLANK     ,blank}
+#define NEGATE(negate)         {TOK_NEGATE    ,negate}
 #define IDENTIFIER(identifier) {TOK_IDENTIFIER,identifier}
 
 static struct test_case {
@@ -17,6 +18,7 @@ static struct test_case {
 	std::vector<std::pair<Token,std::string>> tokens;
 } test_cases[] = {
 	{"dragon",{BLANK(""),IDENTIFIER("dragon")}},
+	{"-dragon",{BLANK(""),NEGATE("-"),IDENTIFIER("dragon")}},
 };
 
 constexpr const auto test_case_count = sizeof(test_cases)/sizeof(test_cases[0]);
@@ -30,6 +32,9 @@ static bool tokenizer_test_new_token_callback(Arcollect::db::search::Token token
 	switch (token) {
 		case TOK_IDENTIFIER: {
 			token_debug << " TOK_IDENTIFIER";
+		} break;
+		case TOK_NEGATE: {
+			token_debug << " TOK_NEGATE";
 		} break;
 		case TOK_BLANK: {
 			token_debug << " TOK_BLANK";
