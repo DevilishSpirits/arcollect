@@ -55,13 +55,13 @@ static const char* json_string(rapidjson::Value::ConstValueIterator iter, const 
 	} else return NULL;
 }
 
-static void data_saveto(const char* data_string, std::string target, const char* referer)
+static void data_saveto(const char* data_string, std::filesystem::path target, const char* referer)
 {
 	// Check for "https://" schema (and it take 8 bytes exactly...)
 	// TODO FIXME Check data_string length !!!
 	if (*reinterpret_cast<const uint64_t*>(data_string) == *reinterpret_cast<const uint64_t*>("https://")) {
 		// TODO Error handling
-		FILE* file = fopen(target.c_str(),"wb");
+		FILE* file = fopen(target.string().c_str(),"wb");
 		auto easyhandle = curl_easy_init(); 
 		curl_easy_setopt(easyhandle,CURLOPT_URL,data_string);
 		curl_easy_setopt(easyhandle,CURLOPT_WRITEDATA,file);
