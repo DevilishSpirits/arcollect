@@ -47,7 +47,7 @@ void Arcollect::gui::first_run::render()
 	Arcollect::gui::TextPar welcome_text(font,
 	"This is your first Arcollect run !\n\n"
 	"One day. I discovered that I love visual artworks and I made Arcollect to organize my growing collection. It allows you to easily save pictures you find on the internet in a few click and save a bunch metadata like who did that and where you took the picture.\n\n"
-	"With the associated web extension, buttons will appear on DeviantArt, e621 and FurAffinity artworks pages to save them in your personnal collection.\n\n"
+	"With the associated web extension, buttons will appear on DeviantArt, e621 and FurAffinity artworks pages to save them in your personal collection.\n\n"
 	"Arcollect is a free and open-source software. It respect your privacy and will never judge you. See " ARCOLLECT_WEBSITE_STR " to learn more.\n\n"
 	"Now press and release the right arrow to see what's next..."
 	,16);

@@ -42,7 +42,7 @@ void Arcollect::config::write_config(void)
 	       << "; Your library is stored at " << Arcollect::path::arco_data_home << "\n"
 	       << "; Note: This file is rewritten upon each start and your comments will be lost\n"
 	       << "\n"
-	       << "; first_run - Wheather you did the first run for this version\n"
+	       << "; first_run - Whether you did the first run for this version\n"
 	       << "first_run=" << first_run << '\n'
 	       << "; start_window_mode - Window starting mode\n"
 	       << "; " << STARTWINDOW_NORMAL     << ": Normal windowed mode\n"
