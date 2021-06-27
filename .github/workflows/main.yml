@@ -201,7 +201,7 @@ jobs:
       - name: Compare build and build-ubuntu-20_04 results
         run: diff -ry build build-ubuntu-20_04
   merge-to-master:
-    #needs: [check-webextensions-same]
+    needs: [check-webextensions-same]
     runs-on: [ubuntu-latest]
     if: ${{ (github.event_name == 'push') && (github.ref == 'refs/heads/master-staging') }}
     steps:
