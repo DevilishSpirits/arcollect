@@ -48,6 +48,10 @@ if enable_native_progs
 	dep_sdl2_image = dependency('SDL2_image')
 	dep_sdl2_ttf   = dependency('SDL2_ttf', version: '>=2.0.12')
 	dep_sqlite3 = dependency('sqlite3', version: '>=3.35.0')
+	dep_inih = dependency('INIReader', required: false, fallback: ['inih', 'INIReader_dep'], default_options: [
+		'with_INIReader=true',
+		'distro_install=false',
+	])
 	dep_rapidjson = dependency('rapidjson')
 endif
 
