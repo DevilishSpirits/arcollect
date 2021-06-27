@@ -22,10 +22,10 @@
 std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 {
 	SQLite3::initialize();
-	static const std::string db_path = Arcollect::path::arco_data_home / "db.sqlite3";
+	static const std::filesystem::path db_path = Arcollect::path::arco_data_home / "db.sqlite3";
 	std::unique_ptr<SQLite3::sqlite3> data_db;
 	// TODO Backup the db
-	int sqlite_open_code = SQLite3::open(db_path.c_str(),data_db,flags);
+	int sqlite_open_code = SQLite3::open(db_path.u8string().c_str(),data_db,flags);
 	if (sqlite_open_code) {
 		std::cerr << "Failed to open \"" << db_path << "\": " << sqlite3_errstr(sqlite_open_code) << std::endl;
 		std::abort();
