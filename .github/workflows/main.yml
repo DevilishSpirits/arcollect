@@ -206,11 +206,11 @@ jobs:
     if: ${{ (github.event_name == 'push') && (github.ref == 'refs/heads/master-staging') }}
     steps:
       - uses: actions/checkout@v2
-      - name: Blabla
-        run: echo ${{ github.ref }}
-      - name: Checkout to master
+        with:
+          fetch-depth: 0
+      - name: Checkout to master branch
         run: git checkout master
-      - name: Merge
-        run: git merge master-staging
-      #- name: Push
-      #  run: git push
+      - name: Merge master-staging in master
+        run: git merge master-staging --ff-only
+      - name: Push
+        run: git push -u origin master
