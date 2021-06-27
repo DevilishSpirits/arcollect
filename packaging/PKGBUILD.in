@@ -6,7 +6,7 @@ pkgdesc="Your personnal visual artwork library"
 arch=('x86_64')
 url="@ARCOLLECT_WEBSITE@"
 license=('GPL')
-depends=('curl' 'sdl2_image' 'sdl2_ttf>=2.0.12' 'sqlite>=3.35.0' 'libINIReader.so')
+depends=(@PKGBUILD_DEPENDS@)
 makedepends=(meson)
 source=(@PKGBUILD_SOURCE@)
 md5sums=(@PKGBUILD_MD5SUMS@)

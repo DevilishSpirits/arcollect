@@ -16,6 +16,25 @@ project('arcollect', 'cpp',
 enable_webextension = get_option('enable_webextension')
 enable_native_progs = get_option('enable_native_progs')
 
+# Basic configuration
+config_h = configuration_data()
+config_h.set('ARCOLLECT_VERSION',meson.project_version())
+config_h.set('ARCOLLECT_WEBSITE','https://github.com/DevilishSpirits/arcollect')
+config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
+
+# Version requirements
+# These are centralized here. Update README.md if you change things there.
+config_h.set('ARCOLLECT_VERREQ_SDL2_ttf','>=2.0.12')
+config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
+
+foreach key: config_h.keys()
+	config_h.set_quoted(key+'_STR',config_h.get(key))
+	summary(key,config_h.get(key), section: 'config.h')
+endforeach
+
+configure_file(output: 'config.h', configuration: config_h)
+config_h_inc = include_directories('.')
+
 # Programs
 prog_zip = find_program('zip', native: true, required: enable_webextension)
 # Dependencies
@@ -54,19 +73,6 @@ if enable_native_progs
 	])
 	dep_rapidjson = dependency('rapidjson')
 endif
-
-# Configuration
-config_h = configuration_data()
-config_h.set('ARCOLLECT_VERSION',meson.project_version())
-config_h.set('ARCOLLECT_WEBSITE','https://github.com/DevilishSpirits/arcollect')
-config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
-foreach key: config_h.keys()
-	config_h.set_quoted(key+'_STR',config_h.get(key))
-		summary(key,config_h.get(key), section: 'config.h')
-endforeach
-
-configure_file(output: 'config.h', configuration: config_h)
-config_h_inc = include_directories('.')
 
 # Add subdir (include order is important !)
 if enable_native_progs

@@ -38,13 +38,53 @@ md5sum_target = custom_target('destdir_md5sum',
 	build_by_default: false,
 )
 
+# Check what have been statically linked
+if enable_native_progs
+	dep_curl_static = dep_curl.type_name() == 'internal'
+	dep_sdl2_static = dep_sdl2.type_name() == 'internal'
+	dep_sdl2_image_static = dep_sdl2_image.type_name() == 'internal'
+	dep_sdl2_ttf_static = dep_sdl2_ttf.type_name() == 'internal'
+	dep_sqlite3_static = dep_sqlite3.type_name() == 'internal'
+	dep_inih_static = dep_inih.type_name() == 'internal'
+	summary({
+		'curl': not dep_curl_static,
+		'sdl2': not dep_sdl2_static,
+		'sdl2_image': not dep_sdl2_image_static,
+		'sdl2_ttf': not dep_sdl2_ttf_static,
+		'SQLite3': not dep_sqlite3_static,
+		'INIReader': not dep_inih_static,
+	}, section: 'Using system dependency (NO if embeded)', bool_yn: true)
+endif
+
 # ArchLinux PKGBUILD
 # Two favlors are generated:
 # 	PKGBUILD usable by anybody
 # 	PKGBUILD.local that use local directory as source directory
+pkgbuild_depends = ''
+if not dep_curl_static
+	pkgbuild_depends += '\'curl'+config_h.get('ARCOLLECT_VERREQ_sdl2_curl','')+'\' '
+endif
+# namcap report warning upon redundant dependencies and sdl2 might be one
+if (not dep_sdl2_static) and dep_sdl2_static and dep_sdl2_ttf_static and (not config_h.has('ARCOLLECT_VERREQ_sdl2'))
+	pkgbuild_depends += '\'sdl2'+config_h.get('ARCOLLECT_VERREQ_sdl2','')+'\' '
+endif
+if not dep_sdl2_image_static
+	pkgbuild_depends += '\'sdl2_image'+config_h.get('ARCOLLECT_VERREQ_sdl2_image','')+'\' '
+endif
+if not dep_sdl2_ttf_static
+	pkgbuild_depends += '\'sdl2_ttf'+config_h.get('ARCOLLECT_VERREQ_SDL2_ttf','')+'\' '
+endif
+if not dep_sqlite3_static
+	pkgbuild_depends += '\'sdl2_ttf'+config_h.get('ARCOLLECT_VERREQ_sqlite3','')+'\' '
+endif
+if not dep_inih_static
+	pkgbuild_depends += '\'libINIReader.so'+config_h.get('ARCOLLECT_VERREQ_inih','')+'\' '
+endif
+
 pkgbuild_conf = configuration_data()
 pkgbuild_conf.merge_from(config_h)
 pkgbuild_conf.set_quoted('PKGBUILD_SOURCE', 'https://github.com/DevilishSpirits/arcollect/archive/refs/tags/v$pkgver.tar.gz')
+pkgbuild_conf.set('PKGBUILD_DEPENDS', pkgbuild_depends)
 pkgbuild_conf.set_quoted('PKGBUILD_MD5SUMS', 'SKIP')
 pkgbuild_conf.set('PKGBUILD_BUILDDIR', 'PKGBUILD.build')
 pkgbuild_conf.set_quoted('PKGBUILD_SRCDIR', '$srcdir/arcollect-$pkgver')
@@ -53,6 +93,7 @@ configure_file(input: 'PKGBUILD.in', output: 'PKGBUILD', configuration: pkgbuild
 pkgbuild_local_conf = configuration_data()
 pkgbuild_local_conf.merge_from(config_h)
 pkgbuild_local_conf.set('PKGBUILD_SOURCE', '')
+pkgbuild_local_conf.set('PKGBUILD_DEPENDS', pkgbuild_depends)
 pkgbuild_local_conf.set('PKGBUILD_MD5SUMS', '')
 pkgbuild_local_conf.set('PKGBUILD_BUILDDIR', 'PKGBUILD.local-build')
 pkgbuild_local_conf.set('PKGBUILD_SRCDIR', meson.project_source_root())
