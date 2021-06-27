@@ -6,7 +6,7 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master, gh-action-test ]
+    branches: [ master-staging, gh-action-test ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -200,3 +200,17 @@ jobs:
         run: diff -ry build build-ubuntu-18_04
       - name: Compare build and build-ubuntu-20_04 results
         run: diff -ry build build-ubuntu-20_04
+  merge-to-master:
+    #needs: [check-webextensions-same]
+    runs-on: [ubuntu-latest]
+    if: ${{ (github.event_name == 'push') && (github.ref == 'refs/heads/master-staging') }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Blabla
+        run: echo ${{ github.ref }}
+      - name: Checkout to master
+        run: git checkout master
+      - name: Merge
+        run: git merge master-staging
+      #- name: Push
+      #  run: git push
