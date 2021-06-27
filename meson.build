@@ -63,8 +63,14 @@ if enable_native_progs
 		subproj_curl = cmake.subproject('libcurl', options: subproj_opts_curl)
 		dep_curl = subproj_curl.dependency('libcurl')
 	endif
-	dep_sdl2 = dependency('sdl2')
-	dep_sdl2_image = dependency('SDL2_image')
+	if (host_machine.system() == 'windows') and (meson.get_compiler('c').get_id() == 'gcc')
+		# Use MinGW prebuilt SDL2 on Windows platform (fix wrap build on GitHub Actions Windows 2019)
+		dep_sdl2 = dependency('sdl2', fallback: ['sdl2-mingw', 'sdl2_dep'])
+		dep_sdl2_image = dependency('sdl2', fallback: ['sdl2_image-mingw', 'sdl2_image_dep'])
+	else # Normal behavior
+		dep_sdl2 = dependency('sdl2')
+		dep_sdl2_image = dependency('SDL2_image')
+	endif
 	dep_sdl2_ttf   = dependency('SDL2_ttf', version: '>=2.0.12')
 	dep_sqlite3 = dependency('sqlite3', version: '>=3.35.0')
 	dep_inih = dependency('INIReader', required: false, fallback: ['inih', 'INIReader_dep'], default_options: [
