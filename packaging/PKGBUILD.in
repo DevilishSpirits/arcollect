@@ -2,7 +2,7 @@
 pkgname=arcollect
 pkgver=@ARCOLLECT_VERSION@
 pkgrel=1
-pkgdesc="Your personnal visual artwork library"
+pkgdesc="Your personal visual artwork library"
 arch=('x86_64')
 url="@ARCOLLECT_WEBSITE@"
 license=('GPL')

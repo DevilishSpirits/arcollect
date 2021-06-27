@@ -60,31 +60,32 @@ endif
 # Two favlors are generated:
 # 	PKGBUILD usable by anybody
 # 	PKGBUILD.local that use local directory as source directory
-pkgbuild_depends = ''
-if not dep_curl_static
-	pkgbuild_depends += '\'curl'+config_h.get('ARCOLLECT_VERREQ_sdl2_curl','')+'\' '
-endif
-# namcap report warning upon redundant dependencies and sdl2 might be one
-if (not dep_sdl2_static) and dep_sdl2_static and dep_sdl2_ttf_static and (not config_h.has('ARCOLLECT_VERREQ_sdl2'))
-	pkgbuild_depends += '\'sdl2'+config_h.get('ARCOLLECT_VERREQ_sdl2','')+'\' '
-endif
-if not dep_sdl2_image_static
-	pkgbuild_depends += '\'sdl2_image'+config_h.get('ARCOLLECT_VERREQ_sdl2_image','')+'\' '
-endif
-if not dep_sdl2_ttf_static
-	pkgbuild_depends += '\'sdl2_ttf'+config_h.get('ARCOLLECT_VERREQ_SDL2_ttf','')+'\' '
-endif
-if not dep_sqlite3_static
-	pkgbuild_depends += '\'sdl2_ttf'+config_h.get('ARCOLLECT_VERREQ_sqlite3','')+'\' '
-endif
-if not dep_inih_static
-	pkgbuild_depends += '\'libINIReader.so'+config_h.get('ARCOLLECT_VERREQ_inih','')+'\' '
+pkgbuild_depends = []
+pkgbuild_depends_list = {
+	# 'dependency_name': 'ArchLinux package name'
+	'curl'             : 'curl',
+	#'sdl2' has special handling
+	'sdl2_image'       : 'sdl2_image',
+	'sdl2_ttf'         : 'sdl2_ttf',
+	'sqlite3'          : 'sqlite',
+	'inih'             : 'libINIReader.so',
+}
+if enable_native_progs
+	foreach dep_name, package_name: pkgbuild_depends_list
+		if not get_variable('dep_'+dep_name+'_static')
+			pkgbuild_depends += '\''+package_name+config_h.get('ARCOLLECT_VERREQ_'+dep_name,'')+'\''
+		endif
+	endforeach
+	# namcap report warning upon redundant dependencies and sdl2 might be one
+	if (not dep_sdl2_static) and dep_sdl2_static and dep_sdl2_ttf_static and (not config_h.has('ARCOLLECT_VERREQ_sdl2'))
+		pkgbuild_depends += '\'sdl2'+config_h.get('ARCOLLECT_VERREQ_sdl2','')+'\''
+	endif
 endif
 
 pkgbuild_conf = configuration_data()
 pkgbuild_conf.merge_from(config_h)
 pkgbuild_conf.set_quoted('PKGBUILD_SOURCE', 'https://github.com/DevilishSpirits/arcollect/archive/refs/tags/v$pkgver.tar.gz')
-pkgbuild_conf.set('PKGBUILD_DEPENDS', pkgbuild_depends)
+pkgbuild_conf.set('PKGBUILD_DEPENDS', ' '.join(pkgbuild_depends))
 pkgbuild_conf.set_quoted('PKGBUILD_MD5SUMS', 'SKIP')
 pkgbuild_conf.set('PKGBUILD_BUILDDIR', 'PKGBUILD.build')
 pkgbuild_conf.set_quoted('PKGBUILD_SRCDIR', '$srcdir/arcollect-$pkgver')
@@ -93,7 +94,7 @@ configure_file(input: 'PKGBUILD.in', output: 'PKGBUILD', configuration: pkgbuild
 pkgbuild_local_conf = configuration_data()
 pkgbuild_local_conf.merge_from(config_h)
 pkgbuild_local_conf.set('PKGBUILD_SOURCE', '')
-pkgbuild_local_conf.set('PKGBUILD_DEPENDS', pkgbuild_depends)
+pkgbuild_local_conf.set('PKGBUILD_DEPENDS', ' '.join(pkgbuild_depends))
 pkgbuild_local_conf.set('PKGBUILD_MD5SUMS', '')
 pkgbuild_local_conf.set('PKGBUILD_BUILDDIR', 'PKGBUILD.local-build')
 pkgbuild_local_conf.set('PKGBUILD_SRCDIR', meson.project_source_root())
@@ -114,9 +115,32 @@ if dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found()
 	# Get the "Architecture:" field using dpkg-achitecture
 	dpkg_architecture_run = run_command(dpkg_architecture_prog,'-q','DEB_HOST_ARCH', check: true)
 	
+	debian_depends = ['libc6', 'libstdc++6']
+	debian_depends_list = {
+		# 'dependency_name': 'Debian package name'
+		'curl'             : 'libcurl4',
+		'sdl2'             : 'libsdl2-2.0-0',
+		'sdl2_image'       : 'libsdl2-image-2.0-0',
+		'sdl2_ttf'         : 'libsdl2-ttf-2.0-0',
+		'sqlite3'          : 'libsqlite3-0',
+		'inih'             : 'libinireader0',
+	}
+	if enable_native_progs
+		foreach dep_name, package_name: debian_depends_list
+			if not get_variable('dep_'+dep_name+'_static')
+				if config_h.has('ARCOLLECT_VERREQ_'+dep_name)
+					debian_depends += package_name+' ('+config_h.get('ARCOLLECT_VERREQ_'+dep_name,'')+')'
+				else
+					debian_depends += package_name
+				endif
+			endif
+		endforeach
+	endif
+	
 	debian_conf = configuration_data()
 	debian_conf.merge_from(config_h)
 	debian_conf.set('DEB_HOST_ARCH', dpkg_architecture_run.stdout().strip())
+	debian_conf.set('DEB_CONTROL_DEPENDS', ', '.join(debian_depends))
 	
 	debian_control = configure_file(input: 'control.in', output: 'control', configuration: debian_conf)
 	debian_binary  = configure_file(input: 'debian-binary', output: 'debian-binary', copy: true)
