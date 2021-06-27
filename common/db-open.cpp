@@ -52,7 +52,7 @@ std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 	}
 	switch (schema_version) {
 		default: {
-			std::cerr << "Unknow schema_version " << schema_version << ". Continue but might expect bugs..." << std::endl;
+			std::cerr << "Unknown schema_version " << schema_version << ". Continue but might expect bugs..." << std::endl;
 		} break;
 		case 1: {
 			// Up-to-date database. Do nothing
