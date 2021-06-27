@@ -1,10 +1,8 @@
 # Arcollect - Your personal visual artwork library
 
-(**This personnal project is firstly for my needs.** But I think it's something good to share. I planned to make it public with more feature but I published it sooner that initially intended. Currently I removed the issues tab and will reject *Pull Requests* for now. **I will accept contributions only once I feel ready.**)
+If you like visual arts like me, you may want to save some artworks you find on the net. Right-click and save picture works but is not very convenient, forget the artwork source and classification is complicated. I made it for my needs, but I think it's something good to share.
 
-If you like visual arts like me, you may want to save some artworks you find on the net. Right-click and save picture works but is not very convenient, forget the artwork source and classification is complicated.
-
-This personal project aim to fulfill my needs of artwork collection management and to ease it's creation, browsing and growth that I do in a few clicks thanks to the web-extension which put a save button on artwork pages. Metadata are also saved like the source, account, tags and the rating.
+This personal project aim to fulfill my needs of artwork collection management and to ease it's creation, browsing and growth that I do in a few clicks thanks to the web-extension which put a *Save in Arcollect* button on artwork pages. Metadata like the source, account, tags and the rating are also saved.
 
 Note that it's goal is to provide an easy way to browse your saved artworks. It will not help you to discover new artworks or make any recommendations, it's outside his scope. In fact, there is no mention of any platforms excluding if you use it or checkout the list of supported platforms and (trust me) it's better this way.
 
@@ -20,7 +18,7 @@ Currently these platforms are supported :
 * **[FurAffinity](https://www.furaffinity.net/)** - You have a `Save in Arcollect` button below the artwork.
 
 ## Contributing
-**This is a preview and I currently don't accept any contribution.** When I'll accept contribution, you might read something like this draft that imply that I made and published more work that I intend to do :
+**I am not in the mood of accepting contributions.** When I'll accept contribution, you might read something like this draft that imply that I made and published more work that I intend to do :
 
 *Currently Arcollect is limited to what I use and my abilities. But it is built with extensibility and platform agnostism in mind.*
 
