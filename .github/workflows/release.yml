@@ -47,7 +47,7 @@ jobs:
           meson-version: 0.57.1
         env:
           DESTDIR: "archive-out"
-  test-ubuntu-18_04:
+  ubuntu-18_04-package:
     runs-on: [ubuntu-18.04]
     steps:
       - uses: actions/checkout@v2
@@ -55,32 +55,36 @@ jobs:
         run: sudo apt update
       - name: Install SDL2, his image and ttf modules, curl and Python3 setuptools
         run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev python3-setuptools
-      - name: Install Meson using pip3
-        run: sudo pip3 install meson==0.57.1
+      - name: Install Meson and Ninja using pip3
+        run: sudo pip3 install meson==0.57.1 ninja
       - name: Install Mozilla's web-ext with npm
         run: sudo npm install -g web-ext
+      - name: Setup project
+        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dbuildtype=release -Dunity=on -Denable_webextension=false -Dcpp_link_args='-z now' # Find out why to make works -Dlto=true
+        env:
+          CC:  clang
+          CXX: clang++
       - name: Build project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: build
-          setup-options: -Dbuildtype=release -Dunity=on -Dstrip=true -Denable_webextension=false # Find out why to make works -Dlto=true
-          meson-version: 0.57.1
+        run: ninja -C build
         env:
           CC:  clang
           CXX: clang++
       - name: Test project
-        uses: BSFishy/meson-build@v1.0.3
+        run: ninja -C build test
+      - name: Generate Debian package
+        run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+        shell: bash
+      - name: Lintian Debian package
+        run: lintian --no-tag-display-limit --dont-check-part debian/changelog,debian/copyright -I -E --verbose -- "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+      - name: Move Debian package
+        run: mkdir debian-package && mv "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)" "debian-package /$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja | sed 's/-1/-ubuntu18.04/')"
+        shell: bash
+      - name: Uploading Debian package artifact
+        uses: actions/upload-artifact@v2
         with:
-          action: test
-          meson-version: 0.57.1
-      - name: Install project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: install
-          meson-version: 0.57.1
-        env:
-          DESTDIR: "archive-out"
-  test-ubuntu-20_04:
+          name: build-ubuntu-18_04-packaging
+          path: debian-package
+  ubuntu-20_04-package:
     runs-on: [ubuntu-20.04]
     steps:
       - uses: actions/checkout@v2
@@ -88,29 +92,32 @@ jobs:
         run: sudo apt update
       - name: Install SDL2, his image and ttf modules and curl
         run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev
+      - name: Install Meson and Ninja using pip3
+        run: sudo pip3 install meson==0.57.1 ninja
       - name: Install Mozilla's web-ext with npm
         run: sudo npm install -g web-ext
+      - name: Setup project
+        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dbuildtype=release -Dunity=on -Denable_webextension=false -Dlto=true
       - name: Build project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: build
-          setup-options: -Dbuildtype=release -Dunity=on -Db_lto=true -Dstrip=true -Denable_webextension=false
-          meson-version: 0.57.1
+        run: ninja -C build
       - name: Test project
-        uses: BSFishy/meson-build@v1.0.3
+        run: ninja -C build test
+      - name: Generate Debian package
+        run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+        shell: bash
+      - name: Lintian Debian package
+        run: lintian --no-tag-display-limit --dont-check-part debian/changelog,debian/copyright -I -E --verbose -- "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+      - name: Move Debian package
+        run: mkdir debian-package && mv "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)" "debian-package /$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja | sed 's/-1/-ubuntu20.04/')"
+        shell: bash
+      - name: Uploading Debian package artifact
+        uses: actions/upload-artifact@v2
         with:
-          action: test
-          meson-version: 0.57.1
-      - name: Install project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: install
-          meson-version: 0.57.1
-        env:
-          DESTDIR: "archive-out"
+          name: build-ubuntu-20_04-packaging
+          path: debian-package 
   build-webextension:
     # Simply build the webextension (only)
-    needs: [archlinux-package, test-wrapped, test-ubuntu-20_04, test-ubuntu-18_04]
+    needs: [archlinux-package, test-wrapped, ubuntu-20_04-package, ubuntu-18_04-package]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -161,6 +168,14 @@ jobs:
         with:
           name: archlinux-package
           path: archlinux-package
+      - name: Download Ubuntu 18.04 package
+        uses: actions/download-artifact@v2.0.9
+        with:
+          name: build-ubuntu-18_04-packaging
+      - name: Download Ubuntu 20.04 package
+        uses: actions/download-artifact@v2.0.9
+        with:
+          name: build-ubuntu-20_04-packaging
       - name: Draft release body # TODO Also autogenerate title
         run: git log --format=%B -n 1 | tail -n +3 | cut -f 2- > release.body
         shell: bash
@@ -173,5 +188,6 @@ jobs:
             web-ext-artifacts/*
             archlinux-package/PKGBUILD
             archlinux-package/arcollect-*
+            *.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
