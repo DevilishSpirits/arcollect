@@ -23,8 +23,8 @@ static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::account>> 
 Arcollect::db::account::account(Arcollect::db::account_id arcoid) :
 	arcoid(arcoid)
 {
-	const std::string path = Arcollect::path::account_avatars / std::to_string(arcoid);
-	SDL::Surface *surf = (SDL::Surface*)IMG_Load(path.c_str());
+	const std::filesystem::path path = Arcollect::path::account_avatars / std::to_string(arcoid);
+	SDL::Surface *surf = (SDL::Surface*)IMG_Load(path.string().c_str());
 	icon.reset(SDL::Texture::CreateFromSurface(renderer,surf));
 	delete surf;
 }

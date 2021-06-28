@@ -43,8 +43,8 @@ void Arcollect::db::artwork::queue_for_load(void)
 }
 SDL::Surface *Arcollect::db::artwork::load_surface(void) const
 {
-	const std::string path = Arcollect::path::artwork_pool / std::to_string(art_id);
-	return (SDL::Surface*)IMG_Load(path.c_str());
+	const std::filesystem::path path = Arcollect::path::artwork_pool / std::to_string(art_id);
+	return (SDL::Surface*)IMG_Load(path.string().c_str());
 }
 void Arcollect::db::artwork::texture_loaded(std::unique_ptr<SDL::Texture> &texture)
 {
