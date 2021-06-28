@@ -2,6 +2,8 @@ curl-*
 freetype-*
 inih-r53
 libjpeg-*
+libpng-*
+tiff-*
 packagecache
 rapidjson-*
 roboto-*

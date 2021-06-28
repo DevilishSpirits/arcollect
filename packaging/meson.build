@@ -56,6 +56,8 @@ if enable_native_progs
 		
 		'freetype2': dep_freetype2.type_name() != 'internal',
 		'libjpeg': dep_libjpeg.type_name() != 'internal',
+		'libpng': dep_libpng.type_name() != 'internal',
+		'libtiff-4': dep_libtiff.type_name() != 'internal',
 	}, section: 'Using system dependency (NO if embeded)', bool_yn: true)
 endif
 
