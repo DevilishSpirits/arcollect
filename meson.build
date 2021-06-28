@@ -39,6 +39,7 @@ config_h_inc = include_directories('.')
 prog_zip = find_program('zip', native: true, required: enable_webextension)
 # Dependencies
 if enable_native_progs
+	dep_zlib = dependency('zlib', required: true)
 	# Hack to have --force-fallback-for libcurl works
 	dep_curl = dependency('libcurl', required: false, fallback: ['not-buildable','dummy'])
 	if not dep_curl.found()
