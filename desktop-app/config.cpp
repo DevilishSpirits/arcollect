@@ -24,7 +24,7 @@ Arcollect::config::Param<int> Arcollect::config::current_rating(Arcollect::confi
 
 void Arcollect::config::read_config(void)
 {
-	INIReader reader(Arcollect::path::xdg_config_home/"arcollect.ini");
+	INIReader reader((Arcollect::path::xdg_config_home/"arcollect.ini").string().c_str());
 	// TODO if (reader.ParseError() < 0)
 	first_run.value = reader.GetInteger("arcollect","first_run",first_run.default_value);
 	start_window_mode.value = reader.GetInteger("arcollect","start_window_mode",start_window_mode.default_value);
