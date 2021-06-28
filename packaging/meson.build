@@ -53,6 +53,9 @@ if enable_native_progs
 		'sdl2_ttf': not dep_sdl2_ttf_static,
 		'SQLite3': not dep_sqlite3_static,
 		'INIReader': not dep_inih_static,
+		
+		'freetype2': dep_freetype2.type_name() != 'internal',
+		'libjpeg': dep_libjpeg.type_name() != 'internal',
 	}, section: 'Using system dependency (NO if embeded)', bool_yn: true)
 endif
 
