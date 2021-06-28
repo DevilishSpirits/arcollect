@@ -1,6 +1,6 @@
 [wrap-file]
 directory = SDL2_image-2.0.5
 source_url = https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.5-mingw.tar.gz
-source_filename = SDL2-devel-2.0.14-mingw.tar.gz
+source_filename = SDL2_image-devel-2.0.5-mingw.tar.gz
 source_hash = 41d9e5ff98aa84cf66e6c63c78e7c346746982fa53d3f36633423cc9177f986c
 patch_directory = sdl2_image-mingw

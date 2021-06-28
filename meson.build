@@ -68,7 +68,7 @@ if enable_native_progs
 	if (host_machine.system() == 'windows') and (meson.get_compiler('c').get_id() == 'gcc')
 		# Use MinGW prebuilt SDL2 on Windows platform (fix wrap build on GitHub Actions Windows 2019)
 		dep_sdl2 = dependency('sdl2', fallback: ['sdl2-mingw', 'sdl2_dep'])
-		dep_sdl2_image = dependency('sdl2', fallback: ['sdl2_image-mingw', 'sdl2_image_dep'])
+		dep_sdl2_image = dependency('SDL2_image', fallback: ['sdl2_image-mingw', 'sdl2_image_dep'])
 	else # Normal behavior
 		dep_sdl2 = dependency('sdl2')
 		dep_sdl2_image = dependency('SDL2_image')
