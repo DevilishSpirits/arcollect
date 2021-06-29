@@ -14,10 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Configure project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: setup
-          meson-version: 0.57.1
+        run: meson build
       - name: Generate package (makepkg -p PKGBUILD.local)
         run: makepkg -p PKGBUILD.local -c CFLAGS= CXXFLAGS= LDFLAGS= PKGEXT=".pkg.tar.zst"
         working-directory: build/packaging
@@ -53,8 +50,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Update apt cache
         run: sudo apt update
-      - name: Install SDL2, his image and ttf modules, curl and Python3 setuptools
-        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev python3-setuptools
+      - name: Install SDL2, his image and ttf modules, libcurl, Python3 setuptools and lintian
+        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev python3-setuptools lintian
       - name: Install Meson and Ninja using pip3
         run: sudo pip3 install meson==0.57.1 ninja
       - name: Install Mozilla's web-ext with npm
@@ -74,10 +71,10 @@ jobs:
       - name: Generate Debian package
         run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
         shell: bash
-      - name: Lintian Debian package
-        run: lintian --no-tag-display-limit --dont-check-part debian/changelog,debian/copyright -I -E --verbose -- "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+      # TODO - name: Lintian Debian package
+      #  run: lintian --no-tag-display-limit --dont-check-part debian/copyright -I -E --verbose -- "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
       - name: Move Debian package
-        run: mkdir debian-package && mv "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)" "debian-package /$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja | sed 's/-1/-ubuntu18.04/')"
+        run: mkdir debian-package && mv "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)" "debian-package/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja | sed 's/-1/-ubuntu18.04/')"
         shell: bash
       - name: Uploading Debian package artifact
         uses: actions/upload-artifact@v2
@@ -90,8 +87,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Update apt cache
         run: sudo apt update
-      - name: Install SDL2, his image and ttf modules and curl
-        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev
+      - name: Install SDL2, his image and ttf modules, libcurl and lintian
+        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev lintian
       - name: Install Meson and Ninja using pip3
         run: sudo pip3 install meson==0.57.1 ninja
       - name: Install Mozilla's web-ext with npm
@@ -108,7 +105,7 @@ jobs:
       - name: Lintian Debian package
         run: lintian --no-tag-display-limit --dont-check-part debian/changelog,debian/copyright -I -E --verbose -- "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
       - name: Move Debian package
-        run: mkdir debian-package && mv "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)" "debian-package /$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja | sed 's/-1/-ubuntu20.04/')"
+        run: mkdir debian-package && mv "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)" "debian-package/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja | sed 's/-1/-ubuntu20.04/')"
         shell: bash
       - name: Uploading Debian package artifact
         uses: actions/upload-artifact@v2
