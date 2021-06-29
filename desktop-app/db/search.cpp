@@ -56,6 +56,14 @@ const char* Arcollect::db::search::tokenize(const char* search, std::function<bo
 
 struct Arcollect_db_search_do_search_struct {
 	Arcollect::db::search::Token last_token = Arcollect::db::search::TOK_BLANK;
+	/** Current tag
+	 *
+	 * This is normally an empty string_view. But in some cases like with
+	 * 'black-dragon' tags. Intermediate tokens are parts of the tag.
+	 * In such case, 
+	 */
+	std::string_view current_tag;
+	bool current_tag_is_negated = false;
 	std::vector<std::string_view> tags;
 	std::vector<std::string_view> negated_tags;
 };
@@ -66,20 +74,49 @@ static bool arcollect_db_search_do_search_callback(Arcollect::db::search::Token 
 	auto last_token = search.last_token;
 	search.last_token = token;
 	switch (token) {
-		case Arcollect::db::search::TOK_IDENTIFIER: {
+		case Arcollect::db::search::TOK_NEGATE: {
 			switch (last_token) {
 				case Arcollect::db::search::TOK_IDENTIFIER: {
-					// Impossible
-				} return true;
+					/** We are having a 'black-dragon' like construct and handling the
+					 * middle '-'.
+					 *
+					 * Fake a TOK_IDENTIFIER token for that one.
+					 */
+					search.last_token = Arcollect::db::search::TOK_IDENTIFIER;
+				} return false;
+				default: {
+					// Skip other tokens
+				} return false;
+			}
+		} return false;
+		case Arcollect::db::search::TOK_IDENTIFIER: {
+			// Update current_tag
+			if (search.current_tag.empty())
+				search.current_tag = value;
+			else search.current_tag = std::string_view(search.current_tag.data(),search.current_tag.begin()-value.end());
+			// last_token dependent handling
+			switch (last_token) {
 				case Arcollect::db::search::TOK_NEGATE: {
-					// Append a negated_tag
-					search.negated_tags.emplace_back(value);
+					// '-dragon' like construct -> Raise current_tag_is_negated flag
+					search.current_tag_is_negated = true;
 				} return false;
-				case Arcollect::db::search::TOK_BLANK:
-				case Arcollect::db::search::TOK_EOL: {
-					// Append a tag
-					search.tags.emplace_back(value);
+				default: {
 				} return false;
+			}
+		} return false;
+		case Arcollect::db::search::TOK_BLANK:
+		case Arcollect::db::search::TOK_EOL: {
+			switch (last_token) {
+				case Arcollect::db::search::TOK_IDENTIFIER: {
+					// Append the tag
+					if (search.current_tag_is_negated)
+						search.negated_tags.emplace_back(search.current_tag);
+					else search.tags.emplace_back(search.current_tag);
+					// Reset current_tag_is_negated flag and current_tag
+					search.current_tag_is_negated = false;
+					search.current_tag = std::string_view();
+				} return false;
+				default: return false;
 			}
 		} return false;
 		default: {
@@ -92,6 +129,12 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 {
 	Arcollect_db_search_do_search_struct src;
 	const char* where_its_wrong = Arcollect::db::search::tokenize(search,arcollect_db_search_do_search_callback,&src);
+	if (where_its_wrong)
+		return where_its_wrong;
+	// Manually generate a TOK_EOL
+	if (arcollect_db_search_do_search_callback(TOK_EOL,{},&src))
+		; // TODO Error reporting
+	
 	query << "SELECT art_artid,"+Arcollect::db::artid_randomizer+" AS art_order FROM artworks WHERE " << Arcollect::db_filter::get_sql();
 	if (src.tags.size()) {
 		/** Add tag checking logic
