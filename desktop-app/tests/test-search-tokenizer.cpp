@@ -19,6 +19,8 @@ static struct test_case {
 } test_cases[] = {
 	{"dragon",{BLANK(""),IDENTIFIER("dragon")}},
 	{"-dragon",{BLANK(""),NEGATE("-"),IDENTIFIER("dragon")}},
+	{"-black-dragon",{BLANK(""),NEGATE("-"),IDENTIFIER("black"),NEGATE("-"),IDENTIFIER("dragon")}},
+	{"bat digital-2d",{BLANK(""),IDENTIFIER("bat"),BLANK(" "),IDENTIFIER("digital"),NEGATE("-"),IDENTIFIER("2d")}},
 };
 
 constexpr const auto test_case_count = sizeof(test_cases)/sizeof(test_cases[0]);
