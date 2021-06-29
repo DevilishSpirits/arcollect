@@ -104,7 +104,7 @@ function save_artwork()
 	let speciesTitle = findElementByText(highlights,'Species').nextElementSibling.innerText.split(' (')[0];
 	// Don't save species tag for 'Unspecified / Any' species
 	if (speciesTitle.split(' ')[0] != 'Unspecified') {
-		let speciesTag = speciesTitle.toLowerCase().replaceAll(/(\W|\(|\))/gi, '-');
+		let speciesTag = speciesTitle.arcollect_tag();
 		tags.push({
 			'id': speciesTag,
 			'title': speciesTitle,
