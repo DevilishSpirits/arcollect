@@ -2,6 +2,7 @@ webext_src = [
 	configure_file(output: 'manifest.json', input: 'manifest.json.in', configuration: config_h),
 	'background.js',
 	'content-scripts/common.js',
+	'content-scripts/artstation.com.js',
 	'content-scripts/deviantart.com.js',
 	'content-scripts/e621.net.js',
 	'content-scripts/furaffinity.net.js',

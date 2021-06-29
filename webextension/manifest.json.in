@@ -8,6 +8,9 @@
 		"scripts": ["background.js"]
 	},
 	"content_scripts": [{
+		"matches": ["https://www.artstation.com/artwork/*"],
+		"js": ["content-scripts/common.js","content-scripts/artstation.com.js"]
+	},{
 		"matches": ["https://www.furaffinity.net/view/*"],
 		"js": ["content-scripts/common.js","content-scripts/furaffinity.net.js"]
 	},{
