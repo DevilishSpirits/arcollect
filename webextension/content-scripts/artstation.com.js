@@ -31,11 +31,21 @@ function artstation_save_artwork(saveButtonA)
 	saveButtonA.onclick = null;
 	saveButtonA.text = 'Saving...';
 	
+	/** Get download URL
+	 *
+	 * It's simple like that really !
+	 */
+	let artworkLink = saveButtonA.nextElementSibling.href;
+	
 	/** Get source URL
 	 *
 	 * ArtStation enforce this format : https://www.artstation.com/artwork/XXXXXX
+	 *
+	 * There is multiple artworks per page. To discriminate them we add a fragment
+	 * derived from the real artwork URL.
 	 */
-	let source = window.location.origin+window.location.pathname;
+	let source = window.location.origin+window.location.pathname+
+		'#'+artworkLink.split('/').slice(-1)[0].split('?')[0]+artworkLink.split('/').slice(-1)[0].replaceAll('?','_');
 	
 	/** Extract account
 	 *
@@ -102,7 +112,7 @@ function artstation_save_artwork(saveButtonA)
 			'desc': description,
 			'source': source,
 			'rating': rating,
-			'data': saveButtonA.nextElementSibling.href
+			'data': artworkLink
 		}],
 		'accounts': account,
 		'tags': tags,
