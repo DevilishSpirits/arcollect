@@ -135,7 +135,14 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 	if (arcollect_db_search_do_search_callback(TOK_EOL,{},&src))
 		; // TODO Error reporting
 	
-	query << "SELECT art_artid,"+Arcollect::db::artid_randomizer+" AS art_order FROM artworks WHERE " << Arcollect::db_filter::get_sql();
+	query << "SELECT art_artid,"+Arcollect::db::artid_randomizer+" AS art_order FROM artworks WHERE " << Arcollect::db_filter::get_sql() << " AND (0";
+	// Title OR match
+	if (src.tags.size() || src.negated_tags.size()) {
+		// Note: will be followed by a tag matching
+		query << " OR (INSTR(lower(art_title),lower(?)) > 0) OR (1";
+		query_bindings.emplace_back(search);
+	} else query << " OR 1";// No token: Force a full match
+	// Tags OR matching
 	if (src.tags.size()) {
 		/** Add tag checking logic
 		 *
@@ -171,7 +178,9 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 		}
 		query << "))";
 	}
-	query << " ORDER BY art_order;";
+	if (src.tags.size() || src.negated_tags.size())
+		query << ")";
+	query << ") ORDER BY art_order;";
 	return NULL;
 }
 bool Arcollect::db::search::build_stmt(const char* search, std::unique_ptr<SQLite3::stmt> &stmt)
