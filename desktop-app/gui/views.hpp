@@ -53,12 +53,13 @@ namespace Arcollect {
 				SDL::Rect rect;
 				// The main artwork viewport
 				artwork_viewport viewport;
+				std::shared_ptr<db::artwork> last_artwork;
 				bool size_know = false;
 				std::unique_ptr<artwork_collection::iterator> collection_iterator;
 			public:
 				void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) override;
 				void resize(SDL::Rect rect) override;
-				void set_collection_iterator(artwork_collection::iterator &iter);
+				void set_collection_iterator(const artwork_collection::iterator &iter);
 				void render(void) override;
 				void render_titlebar(SDL::Rect target, int window_width) override;
 				/** Render some info in the bottom of the window
