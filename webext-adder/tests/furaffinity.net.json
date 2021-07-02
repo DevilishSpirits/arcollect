@@ -1,0 +1,25 @@
+{
+	"platform":"furaffinity.net",
+	"artworks":[{
+		"title":"Varghus",
+		"desc":"\n                    Commision for Varghus\n                                    ",
+		"source":"https://www.furaffinity.net/view/40982428/",
+		"rating":0,
+		"data":"https://d.furaffinity.net/art/coyrin/1615345964/1615345964.coyrin_varghus3.png"
+	}],
+	"accounts":[{
+		"id":"coyrin",
+		"name":"Coyrin",
+		"url":"https://www.furaffinity.net/user/coyrin/",
+		"icon":"https://a.furaffinity.net/1609223132/coyrin.gif"
+	}],
+	"tags":[
+	],
+	"art_acc_links":[{
+		"account":"coyrin",
+		"artwork":"https://www.furaffinity.net/view/40982428/",
+		"link":"account"
+	}],
+	"art_tag_links":[
+	]
+}

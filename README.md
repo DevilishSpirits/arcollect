@@ -61,3 +61,12 @@ Here is a matrix of versions requirements to help troubleshooting. The *Wrap* co
 | curl       |      Unknow | 7.77.0 | ![](https://repology.org/badge/version-for-repo/arch/curl.svg?header=) | ![](https://repology.org/badge/version-for-repo/ubuntu_18_04/curl.svg?header=) | ![](https://repology.org/badge/version-for-repo/ubuntu_20_04/curl.svg?header=) | ![](https://repology.org/badge/version-for-repo/fedora_34/curl.svg?header=) |
 | INIReader  |      Unknow |   r53  | ![](https://repology.org/badge/version-for-repo/arch/inih.svg?header=) | ![](https://repology.org/badge/version-for-repo/ubuntu_18_04/inih.svg?header=) | ![](https://repology.org/badge/version-for-repo/ubuntu_20_04/inih.svg?header=) | ![](https://repology.org/badge/version-for-repo/fedora_34/inih.svg?header=) |
 | Meson      |     <0.57.1 |   N/A  | ![](https://repology.org/badge/version-for-repo/arch/meson.svg?header=&minversion=0.57.1) | ![](https://repology.org/badge/version-for-repo/ubuntu_18_04/meson.svg?header=&minversion=0.57.1) | ![](https://repology.org/badge/version-for-repo/ubuntu_20_04/meson.svg?header=&minversion=0.57.1) | ![](https://repology.org/badge/version-for-repo/fedora_34/meson.svg?header=&minversion=0.57.1) |
+
+## Tests
+Arcollect have many tests and most notably fully automated "real-life" tests that start a program controlled web-browser. Tests requiring network access are not enabled by default. You can enable them with this set of `meson` options :
+
+* `-Dtests_online=true` To enable off-browser online tests.
+* `-Dtests_browser=true` To enable in-browser online tests.
+* `-Dtests_nsfw=true` To enable NSFW online tests with mature and adult content.
+
+**🔞️ Warning!** In order to test the rating extraction system on real data, tests can access mature and adult oriented content if told to so with the `-Dtests_nsfw=true` option. Also files with `-nsfw` suffix link to and contain adult content. Using `-Dtests_nsfw=true` will download adult content on your system and for browser automated test will show you this content. **By using `-Dtests_nsfw=true` you agree that you can legally download, view and are not offended by adult oriented content.** Generally you must be 18 years old at least. *Such content is carefully selected to avoid shocking general adult public. But this still is real NSFW.*
