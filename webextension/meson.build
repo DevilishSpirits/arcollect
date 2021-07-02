@@ -14,12 +14,11 @@ webext_conf.merge_from(config_h)
 webext_conf.set('ARCOLLECT_WEBEXT_ADDER_PATH', get_option('prefix') / get_option('libexecdir') / 'webext_adder_exe')
 webext_appmanifest_firefox = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox-install.json', configuration: webext_conf)
 
-# FIXME This is dirty
 if enable_native_progs
-	webext_conf_debug = configuration_data()
-	webext_conf_debug.merge_from(config_h)
-	webext_conf_debug.set('ARCOLLECT_WEBEXT_ADDER_PATH',webext_adder_exe.full_path())
-	webext_appmanifest_firefox_debug = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox.json', configuration: webext_conf_debug)
+	webext_conf_inbuild = configuration_data()
+	webext_conf_inbuild.merge_from(config_h)
+	webext_conf_inbuild.set('ARCOLLECT_WEBEXT_ADDER_PATH',webext_adder_exe.full_path())
+	webext_appmanifest_firefox_debug = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox.json', configuration: webext_conf_inbuild)
 endif
 
 # TODO Windows support
@@ -35,4 +34,7 @@ if prog_web_ext.found() and prog_unzip.found()
 	test('web-ext-lint', files('web-ext-lint.sh'), args: [webextension_target, meson.project_build_root(), prog_unzip.full_path(), prog_web_ext.full_path()], suite: ['webextension'])
 else
 	warning('"web-ext" or "unzip" missing. Will not check linting.')
+endif
+if enable_native_progs and get_option('tests_browser')
+	subdir('tests')
 endif
