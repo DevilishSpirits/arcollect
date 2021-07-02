@@ -13,7 +13,7 @@ This application respect your privacy and will never judge you.
 ## Supported platforms
 Currently these platforms are supported :
 
-* **[ArtStation](https://www.artstation.com/)** - You have `Save in Arcollect` buttons on top of artworks on artworks pages.
+* **[ArtStation](https://www.artstation.com/)** - You have `Save in Arcollect` buttons on top of artworks on artworks pages. Support is buggy.
 * **[DeviantArt](https://www.deviantart.com/)** - You have a `Save in Arcollect` button below the artwork. [Support is limited.](https://github.com/DevilishSpirits/arcollect/blob/deviant-art/webextension/content-scripts/deviantart.com.js#L22)
 * **[e621](https://e621.net/)**/**[e926](https://e926.net)** - You have a `Save in Arcollect` button below the artwork.
 * **[FurAffinity](https://www.furaffinity.net/)** - You have a `Save in Arcollect` button below the artwork.
