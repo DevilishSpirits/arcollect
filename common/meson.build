@@ -2,8 +2,9 @@ common_deps = [
 	dep_sqlite3,
 ]
 common_srcs = [
-	'paths.cpp',
 	'db-open.cpp',
+	'debug.cpp',
+	'paths.cpp',
 	db_schema_sources_target,
 ]
 common_incdirs = [
