@@ -174,7 +174,8 @@ int main(void)
 				Arcollect::db::artwork_loader::done.clear();
 			}
 			// Update pending list
-			Arcollect::db::artwork_loader::pending_thread = std::move(Arcollect::db::artwork_loader::pending_main);
+			if (Arcollect::db::artwork_loader::pending_main.size())
+				Arcollect::db::artwork_loader::pending_thread = std::move(Arcollect::db::artwork_loader::pending_main);
 		}
 		// Query artworks to preload
 		if (preload_artworks_stmt) {
