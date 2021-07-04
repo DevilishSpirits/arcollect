@@ -7,7 +7,7 @@ import requests
 
 class Browser:
 	def test_num():
-		return 3
+		return 4
 	def __init__(self):
 		# Install manifest
 		print('not ok 1 - Install native-messaging manifest # TODO Install manifest logic')
@@ -27,6 +27,11 @@ class Browser:
 		self.webdriver = WebDriver.WebDriver(2,'http://127.0.0.1:4444/',session_start_data)
 		# Install addon
 		WebDriver.assert_request_or_bailout(self.webdriver.post('moz/addon/install', {'path': WebDriver.extension_path,'temporary': True}),3,'Install Arcollect addon','Failed to install Arcollect addon!')
+		# Install uBlock Origin
+		if 'UBLOCK_ORIGIN_XPI_PATH' in os.environ:
+			WebDriver.assert_request_or_bailout(self.webdriver.post('moz/addon/install', {'path': os.environ['UBLOCK_ORIGIN_XPI_PATH']}),4,'Install uBlock Origin','Failed to install uBlock Origin addon!')
+		else:
+			print('ok 4 - Install uBlock Origin # SKIP $UBLOCK_ORIGIN_XPI_PATH is not set')
 	
 	def __del__(self):
 		self.webdriver = None # Force WebDriver destruction
