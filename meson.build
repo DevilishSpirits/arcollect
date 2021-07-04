@@ -52,6 +52,7 @@ config_h.set('WITH_XDG',with_xdg ? '1' : '0')
 
 # Version requirements
 # These are centralized here. Update README.md if you change things there.
+config_h.set('ARCOLLECT_VERREQ_sdl2','>=2.0.8')
 config_h.set('ARCOLLECT_VERREQ_SDL2_ttf','>=2.0.12')
 config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
 
@@ -102,7 +103,7 @@ if enable_native_progs
 		dep_sdl2 = dependency('sdl2', fallback: ['sdl2-mingw', 'sdl2_dep'])
 		dep_sdl2_image = dependency('SDL2_image', fallback: ['sdl2_image-mingw', 'sdl2_image_dep'])
 	else # Normal behavior
-		dep_sdl2 = dependency('sdl2')
+		dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
 		dep_sdl2_image = dependency('SDL2_image')
 	endif
 	
