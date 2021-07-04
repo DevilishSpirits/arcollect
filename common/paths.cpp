@@ -1,6 +1,5 @@
 #include <arcollect-paths.hpp>
 #include <cstdlib>
-#include <sys/stat.h>
 const std::filesystem::path Arcollect::path::xdg_config_home = [](){
 	// Compute the data home
 	if (auto* config_home = std::getenv("XDG_CONFIG_HOME"); config_home && *config_home != '\0')
