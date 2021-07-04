@@ -53,7 +53,7 @@ config_h.set('WITH_XDG',with_xdg ? '1' : '0')
 # Version requirements
 # These are centralized here. Update README.md if you change things there.
 config_h.set('ARCOLLECT_VERREQ_sdl2','>=2.0.8')
-config_h.set('ARCOLLECT_VERREQ_SDL2_ttf','>=2.0.12')
+config_h.set('ARCOLLECT_VERREQ_sdl2_ttf','>=2.0.12')
 config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
 
 foreach key: config_h.keys()
@@ -108,7 +108,7 @@ if enable_native_progs
 	endif
 	
 	dep_freetype2  = dependency('freetype2')
-	dep_sdl2_ttf   = dependency('SDL2_ttf', version: config_h.get('ARCOLLECT_VERREQ_SDL2_ttf'))
+	dep_sdl2_ttf   = dependency('SDL2_ttf', version: config_h.get('ARCOLLECT_VERREQ_sdl2_ttf'))
 	dep_sqlite3 = dependency('sqlite3', version: config_h.get('ARCOLLECT_VERREQ_sqlite3'))
 	dep_inih = dependency('INIReader', fallback: ['inih', 'INIReader_dep'], default_options: [
 		'with_INIReader=true',
