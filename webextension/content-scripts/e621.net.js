@@ -88,9 +88,6 @@ function save_artwork()
 			case 'category-5': { // Species
 				category = 'species';
 			} break;
-			case 'category-7': { // Meta
-				// We don't save meta tags
-			} continue;
 		};
 		tags.push({
 			'id': tagList[i].text,
