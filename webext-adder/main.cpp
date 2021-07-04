@@ -19,11 +19,12 @@
 #endif
 #include <iostream>
 #include <arcollect-db-open.hpp>
+#include <arcollect-debug.hpp>
 #include <rapidjson/document.h>
 
 std::string handle_json_dom(rapidjson::Document &json_dom);
 extern const std::string user_agent;
-bool debug = false;
+bool debug;
 std::unique_ptr<SQLite3::sqlite3> db;
 
 int main(void)
@@ -39,10 +40,8 @@ int main(void)
 	// TODO Handle SIGTERM
 	#endif
 	// Check for debug mode
-	const char* arcollect_debug_env = std::getenv("ARCOLLECT_WEBEXT_ADDER_DEBUG");
-	if (arcollect_debug_env) {
-		// TODO Set a real interface
-		debug = true;
+	debug = Arcollect::debug::is_on("webext-adder");
+	if (debug) {
 		std::cerr << "Arcollect web extension adder debugging on" << std::endl;
 	}
 	// Main-loop
