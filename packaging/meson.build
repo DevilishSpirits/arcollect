@@ -82,7 +82,7 @@ if enable_native_progs
 		endif
 	endforeach
 	# namcap report warning upon redundant dependencies and sdl2 might be one
-	if (not dep_sdl2_static) and dep_sdl2_static and dep_sdl2_ttf_static and (not config_h.has('ARCOLLECT_VERREQ_sdl2'))
+	if (not dep_sdl2_static) and ((dep_sdl2_image_static and dep_sdl2_ttf_static))
 		pkgbuild_depends += '\'sdl2'+config_h.get('ARCOLLECT_VERREQ_sdl2','')+'\''
 	endif
 endif
