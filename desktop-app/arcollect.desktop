@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=Arcollect
+Encoding=UTF-8
+Comment=Your personal visual artwork library.
+Exec=arcollect
+Terminal=false
+Categories=2DGraphics;Amusement;RasterGraphics:Viewer
