@@ -32,7 +32,7 @@ Currently these platforms are supported :
 ## Installation
 Only recent Linux distributions with Firefox are supported right-now.
 
-I recommend you to build the source code from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.7), there is also some prebuilt packages. Checkout also the [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.7#readme) of this version.
+I recommend you to build the source code from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.8), there is also some prebuilt packages. Checkout also the [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.8#readme) of this version.
 
 You must also install/update the webextension in your web-browser to use Arcollect.
 
