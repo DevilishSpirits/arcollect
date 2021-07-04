@@ -107,8 +107,8 @@ if enable_native_progs
 	endif
 	
 	dep_freetype2  = dependency('freetype2')
-	dep_sdl2_ttf   = dependency('SDL2_ttf', version: '>=2.0.12')
-	dep_sqlite3 = dependency('sqlite3', version: '>=3.35.0')
+	dep_sdl2_ttf   = dependency('SDL2_ttf', version: config_h.get('ARCOLLECT_VERREQ_SDL2_ttf'))
+	dep_sqlite3 = dependency('sqlite3', version: config_h.get('ARCOLLECT_VERREQ_sqlite3'))
 	dep_inih = dependency('INIReader', fallback: ['inih', 'INIReader_dep'], default_options: [
 		'with_INIReader=true',
 		'distro_install=false',
