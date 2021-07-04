@@ -45,9 +45,10 @@ function save_artwork()
 	
 	/** Normalize source URL
 	 *
-	 * FurAffinity ignore the trailing '/' in the url. Remove it if present.
+	 * e621 ignore the trailing '/' in the url. Remove it if present.
+	 * Also force origin to e621.
 	 */
-	let source = window.location.origin+window.location.pathname;
+	let source = 'https://e621.net'+window.location.pathname;
 	if (source[source.length-1] == '/')
 		source = source.slice(0,-1);
 	
