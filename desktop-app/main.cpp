@@ -17,6 +17,7 @@
 #include "sdl2-hpp/SDL.hpp"
 #include <arcollect-db-open.hpp>
 #include <arcollect-db-schema.hpp>
+#include <arcollect-debug.hpp>
 #include "config.hpp"
 #include "db/artwork-loader.hpp"
 #include "db/db.hpp"
@@ -61,7 +62,7 @@ int main(void)
 	 *
 	 * Print frame rate and a moving square from left to right at each frame redraw.
 	 */
-	bool debug_redraws = bool_debug_flag("ARCOLLECT_DEBUG_REDRAWS");
+	bool debug_redraws = Arcollect::debug::is_on("redraws");
 	SDL::Rect debug_redraws_rect{0,0,32,32};
 	#endif
 	// Init SDL

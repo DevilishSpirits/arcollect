@@ -21,6 +21,7 @@
 #include "search-osd.hpp"
 #include "slideshow.hpp"
 #include "window-borders.hpp"
+#include <arcollect-debug.hpp>
 
 static std::function<std::unique_ptr<SQLite3::stmt>(void)> dynamic_update_background_func;
 static bool dynamic_update_background_collection;
@@ -156,7 +157,7 @@ void Arcollect::gui::update_background(const std::string &search, bool collectio
 {
 	current_background_search = search;
 	update_background(default_update_background_generator,collection);
-	if (std::getenv("ARCOLLECT_DEBUG_SEARCH")) {
+	if (Arcollect::debug::is_on("search")) {
 		std::vector<std::string_view> query_params;
 		Arcollect::db::search::build_stmt(current_background_search.c_str(),std::cerr,query_params);
 		std::cerr << std::endl;
