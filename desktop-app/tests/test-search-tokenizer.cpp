@@ -12,6 +12,7 @@ using namespace Arcollect::db::search; // To avoid very long namespace writes...
 #define BLANK(blank)           {TOK_BLANK     ,blank}
 #define NEGATE(negate)         {TOK_NEGATE    ,negate}
 #define IDENTIFIER(identifier) {TOK_IDENTIFIER,identifier}
+#define COLON(colon)           {TOK_COLON     ,colon}
 
 static struct test_case {
 	const char* test_string;
@@ -21,6 +22,7 @@ static struct test_case {
 	{"-dragon",{BLANK(""),NEGATE("-"),IDENTIFIER("dragon")}},
 	{"-black-dragon",{BLANK(""),NEGATE("-"),IDENTIFIER("black"),NEGATE("-"),IDENTIFIER("dragon")}},
 	{"bat digital-2d",{BLANK(""),IDENTIFIER("bat"),BLANK(" "),IDENTIFIER("digital"),NEGATE("-"),IDENTIFIER("2d")}},
+	{"dragon site:artstation.com",{BLANK(""),IDENTIFIER("dragon"),BLANK(" "),IDENTIFIER("site"),COLON(":"),IDENTIFIER("artstation.com")}},
 };
 
 constexpr const auto test_case_count = sizeof(test_cases)/sizeof(test_cases[0]);
@@ -37,6 +39,9 @@ static bool tokenizer_test_new_token_callback(Arcollect::db::search::Token token
 		} break;
 		case TOK_NEGATE: {
 			token_debug << " TOK_NEGATE";
+		} break;
+		case TOK_COLON: {
+			token_debug << " TOK_COLON";
 		} break;
 		case TOK_BLANK: {
 			token_debug << " TOK_BLANK";
