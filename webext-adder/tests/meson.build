@@ -8,6 +8,7 @@ online_nsfw_tests = files(
 )
 
 tests_env = environment({
+	'ARCOLLECT_DEBUG': 'all',
 	'ARCOLLECT_WEBEXT_ADDER_PATH': webext_adder_exe.full_path(),
 })
 tests_deps = [
