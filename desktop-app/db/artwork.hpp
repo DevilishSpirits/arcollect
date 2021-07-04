@@ -21,6 +21,11 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+
+#if WITH_XDG
+	#define ARTWORK_HAS_OPEN_URL
+#endif
+
 extern SDL::Renderer *renderer;
 int main(void);
 namespace Arcollect {
@@ -108,6 +113,12 @@ namespace Arcollect {
 				}
 				
 				const std::vector<std::shared_ptr<account>> &get_linked_accounts(const std::string &link);
+				
+				#ifdef ARTWORK_HAS_OPEN_URL
+				/** Open the artwork URL
+				 */
+				void open_url(void);
+				#endif
 				
 				/** Delete an artwork
 				 *

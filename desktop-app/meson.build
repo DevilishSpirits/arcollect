@@ -34,6 +34,10 @@ deskapp_additional_srcs = [
 	roboto_proj.get_variable('gen_roboto_target')[1],
 ]
 
+if with_xdg
+	install_data('arcollect.desktop', install_dir: get_option('datadir')/'applications')
+endif
+
 desktop_app_staticlib = static_library('desktop-app-staticlib', deskapp_srcs, deskapp_additional_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: common_lib)
 
 desktop_app_dep = declare_dependency(sources: deskapp_additional_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: desktop_app_staticlib)

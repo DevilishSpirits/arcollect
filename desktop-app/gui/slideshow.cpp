@@ -69,12 +69,20 @@ static void confirm_delete_art(void)
 		std::make_shared<Arcollect::gui::menu_item_simple_label>("I really want to delete this artwork",::delete_art)
 	},{0,Arcollect::gui::window_borders::title_height});
 }
+#ifdef ARTWORK_HAS_OPEN_URL
+static void open_in_browser(void);
+#endif
 
 static class background_slideshow: public Arcollect::gui::view_slideshow {
 	public:
 	void delete_art(void) {
 		viewport.artwork->db_delete();
 	}
+	#ifdef ARTWORK_HAS_OPEN_URL
+	void open_in_browser(void) {
+		viewport.artwork->open_url();
+	}
+	#endif
 	bool event(SDL::Event &e) override {
 		switch (e.type) {
 			case SDL_KEYUP: {
@@ -97,6 +105,9 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 	std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override {
 		if (viewport.artwork) {
 			return {
+				#ifdef ARTWORK_HAS_OPEN_URL
+				std::make_shared<Arcollect::gui::menu_item_simple_label>("Browse...",::open_in_browser),
+				#endif
 				std::make_shared<Arcollect::gui::menu_item_simple_label>("Delete artwork",confirm_delete_art),
 			};
 		} else return {};
@@ -119,6 +130,12 @@ static void delete_art(void)
 {
 	background_slideshow.delete_art();
 }
+#ifdef ARTWORK_HAS_OPEN_URL
+static void open_in_browser(void)
+{
+	background_slideshow.open_in_browser();
+}
+#endif
 
 Arcollect::gui::view_slideshow &Arcollect::gui::background_slideshow = ::background_slideshow;
 

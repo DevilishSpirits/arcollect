@@ -212,3 +212,13 @@ int Arcollect::db::artwork::db_delete(void)
 	Arcollect::local_data_version_changed();
 	return 0;
 }
+#if WITH_XDG
+#include <spawn.h>
+extern char** environ;
+void Arcollect::db::artwork::open_url(void)
+{
+	// Use plain `xdg-open` for now
+	char* argv[] = {(char*)"xdg-open",(char*)source().c_str(),NULL};
+	posix_spawnp(NULL,argv[0],NULL,NULL,argv,environ);
+}
+#endif

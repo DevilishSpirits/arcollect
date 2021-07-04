@@ -12,15 +12,43 @@ project('arcollect', 'cpp',
 		'default_library=static', # For subprojects
 	])
 
+cpp = meson.get_compiler('cpp')
+
 # Options
 enable_webextension = get_option('enable_webextension')
 enable_native_progs = get_option('enable_native_progs')
+with_xdg = get_option('with_xdg')
+
+# Detect environment
+if with_xdg.auto()
+	with_xdg = false
+	if host_machine.system() in [
+		'android',
+		'cygwin',
+		'darwin',
+		'emscripten',
+		'windows',
+	]
+		# With are not on a XDG platform
+	elif not cpp.has_header('spawn.h')
+		warning('XDG integration disabled due to missing <spawn.h>')
+	elif not cpp.has_function('posix_spawnp', prefix:'#include <spawn.h>')
+		warning('XDG integration disabled due to missing posix_spawnp')
+	elif not cpp.links('extern char** environ;int main(void){return environ != nullptr;}')
+		warning('XDG integration disabled due to missing "extern char** environ;"')
+	else # XDG test passed
+		with_xdg = true
+	endif
+elif
+	with_xdg = with_xdg.enabled()
+endif
 
 # Basic configuration
 config_h = configuration_data()
 config_h.set('ARCOLLECT_VERSION',meson.project_version())
 config_h.set('ARCOLLECT_WEBSITE','https://github.com/DevilishSpirits/arcollect')
 config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
+config_h.set('WITH_XDG',with_xdg ? '1' : '0')
 
 # Version requirements
 # These are centralized here. Update README.md if you change things there.
