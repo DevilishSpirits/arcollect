@@ -123,18 +123,17 @@ if enable_native_progs
 		dep_curl = subproj_curl.dependency('libcurl')
 	endif
 	
+	if (host_machine.system() == 'windows') and (meson.get_compiler('c').get_id() == 'gcc')
+		# Use MinGW prebuilt SDL2 on Windows platform (fix wrap build on GitHub Actions Windows 2019)
+		dep_sdl2 = dependency('sdl2', fallback: ['sdl2-mingw', 'sdl2_dep'])
+	else # Normal behavior
+		dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
+	endif
 	# For SDL2_image
 	dep_libjpeg  = dependency('libjpeg', required: true)
 	dep_libpng  = dependency('libpng', required: true)
 	dep_libtiff  = dependency('libtiff-4', required: true)
-	if (host_machine.system() == 'windows') and (meson.get_compiler('c').get_id() == 'gcc')
-		# Use MinGW prebuilt SDL2 on Windows platform (fix wrap build on GitHub Actions Windows 2019)
-		dep_sdl2 = dependency('sdl2', fallback: ['sdl2-mingw', 'sdl2_dep'])
-		dep_sdl2_image = dependency('SDL2_image', fallback: ['sdl2_image-mingw', 'sdl2_image_dep'])
-	else # Normal behavior
-		dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
-		dep_sdl2_image = dependency('SDL2_image')
-	endif
+	dep_sdl2_image = dependency('SDL2_image')
 	
 	dep_freetype2  = dependency('freetype2')
 	dep_sdl2_ttf   = dependency('SDL2_ttf', version: config_h.get('ARCOLLECT_VERREQ_sdl2_ttf'))
