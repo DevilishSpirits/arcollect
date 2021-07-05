@@ -7,3 +7,4 @@ This project include some third-party programs with different licensing conditio
 * [**RapidJSON**](https://github.com/Tencent/rapidjson) from *THL A29 Limited* released under the MIT license and retrieved by a Meson Wrap
 * **[Roboto](https://fonts.google.com/specimen/Roboto)** fonts from *Google* released under the Apache 2.0 license and retrieved by a Meson Wrap
 * [**uBlock Origin**](https://github.com/gorhill/uBlock) from *[ Raymond Hill ](https://github.com/gorhill)* released under the GPL-3.0 license and located in a built form into `webextension/tests/`. It is only used during in-browser tests to fasten them and hide questionable ads.
+* [**mingw-std-threads**](https://github.com/meganz/mingw-std-threads) from *[Mega Limited](https://github.com/meganz)* released under the BSD-2-Clause License and retrieved by a Meson Wrap

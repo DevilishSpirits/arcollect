@@ -60,7 +60,7 @@ static bool tokenizer_test_new_token_callback(Arcollect::db::search::Token token
 	return false;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	std::cout << "1.." << test_case_count << std::endl;
 	int test_i = 1;

@@ -27,7 +27,6 @@
 #endif
 
 extern SDL::Renderer *renderer;
-int main(void);
 namespace Arcollect {
 	namespace db {
 		typedef sqlite_int64 artwork_id;

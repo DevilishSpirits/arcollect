@@ -1,5 +1,6 @@
 #include "../config.hpp"
 #include "../db/artwork-loader.hpp"
+#include <SDL.h> // For SDL_main hack
 #include <iostream>
 
 #define foreach_param_step(config_name,instructions) \
@@ -22,7 +23,7 @@
 extern SDL::Renderer *renderer;
 SDL::Renderer *renderer;
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	bool test_success;
 	std::cout << "1..1" << std::endl;

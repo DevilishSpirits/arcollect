@@ -53,7 +53,7 @@ static bool bool_debug_flag(const char* env_var)
 }
 
 #define WITH_DEBUG // TODO Made this a project option
-int main(void)
+int main(int argc, char *argv[])
 {
 	// Read config
 	Arcollect::config::read_config();

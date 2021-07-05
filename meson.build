@@ -43,12 +43,41 @@ elif
 	with_xdg = with_xdg.enabled()
 endif
 
+# Check for threading support
+with_mingw_std_threads = false
+if enable_native_progs
+	# Check if threading is supported
+	threading_tests = {
+		'std::mutex': 'mutex',
+		'std::thread': 'thread',
+		'std::lock_guard': 'mutex',
+		'std::condition_variable': 'condition_variable',
+	}
+	has_threading = true
+	foreach type, header: threading_tests
+		if not cpp.has_header_symbol(header,type)
+			has_threading = false
+		endif
+	endforeach
+	# If not, try to use a third-party library
+	if not has_threading
+		if (host_machine.system() == 'windows') and (meson.get_compiler('cpp').get_id() == 'gcc')
+			# Use MinGW std threads on MinGW
+			with_mingw_std_threads = true
+		else
+			# fail
+			error('Threading support is required.')
+		endif
+	endif
+endif
+
 # Basic configuration
 config_h = configuration_data()
 config_h.set('ARCOLLECT_VERSION',meson.project_version())
 config_h.set('ARCOLLECT_WEBSITE','https://github.com/DevilishSpirits/arcollect')
 config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
 config_h.set('WITH_XDG',with_xdg ? '1' : '0')
+config_h.set('WITH_MINGW_STD_THREADS',with_mingw_std_threads ? '1' : '0')
 
 # Version requirements
 # These are centralized here. Update README.md if you change things there.

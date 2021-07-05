@@ -17,9 +17,15 @@
 #pragma once
 #include "artwork.hpp"
 #include <arcollect-paths.hpp>
+#if WITH_MINGW_STD_THREADS
+#include <mingw.condition_variable.h>
+#include <mingw.mutex.h>
+#include <mingw.thread.h>
+#else
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+#endif
 #include <unordered_map>
 #include <SDL_image.h>
 namespace Arcollect {

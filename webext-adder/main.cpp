@@ -27,7 +27,7 @@ extern const std::string user_agent;
 bool debug;
 std::unique_ptr<SQLite3::sqlite3> db;
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	#ifdef __unix__
 	if (isatty(0) == 1) {
