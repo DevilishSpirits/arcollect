@@ -4,4 +4,3 @@ option('tests_online', type: 'boolean', value: false, description: 'Enable tests
 option('tests_browser', type: 'boolean', value: false, description: 'Enable in-browser web-extension tests (ignore -Dtest_online).')
 option('tests_nsfw', type: 'boolean', value: false, description: 'Download and display NSFW content in tests. By setting this setting to true, you agree that you can legally see adult oriented content.')
 option('with_xdg', type: 'feature', value: 'auto', description: 'Integrate with XDG compliant desktops.')
-option('sdl_threading', type: 'feature', value: 'auto', description: 'Use SDL threading support.')
