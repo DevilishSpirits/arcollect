@@ -1,0 +1,8 @@
+[wrap-file]
+directory = mingw-std-threads-1.0.0
+
+source_url = https://github.com/meganz/mingw-std-threads/archive/refs/tags/1.0.0.tar.gz
+source_filename = mingw-std-threads-1.0.0.tar.gz
+source_hash = 9511a41c8f759d252a628be025e6bb158c858b832b3930de8108330b86a1b965
+
+patch_directory = mingw-std-threads
