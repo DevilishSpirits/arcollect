@@ -14,3 +14,5 @@ common_incdirs = [
 ]
 
 common_lib = static_library('common', common_srcs, include_directories: common_incdirs, dependencies: common_deps)
+
+common_dep = declare_dependency(link_with: common_lib, include_directories: common_incdirs, dependencies: common_deps)

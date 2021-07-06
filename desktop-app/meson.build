@@ -2,6 +2,7 @@
 roboto_proj = subproject('roboto')
 
 deskapp_deps = [
+	common_dep,
 	dep_sdl2,
 	dep_sdl2_image,
 	dep_sdl2_ttf,
@@ -63,9 +64,9 @@ if not has_threading
 	endif
 endif
 
-desktop_app_staticlib = static_library('desktop-app-staticlib', deskapp_srcs, deskapp_additional_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: common_lib)
+desktop_app_staticlib = static_library('desktop-app-staticlib', deskapp_srcs, deskapp_additional_srcs, dependencies: deskapp_deps)
 
-desktop_app_dep = declare_dependency(sources: deskapp_additional_srcs, dependencies: deskapp_deps, include_directories: common_incdirs, link_with: desktop_app_staticlib)
+desktop_app_dep = declare_dependency(sources: deskapp_additional_srcs, dependencies: deskapp_deps, link_with: desktop_app_staticlib)
 
 arcollect_exe = executable('arcollect', 'main.cpp', dependencies: desktop_app_dep, install: true)
 
