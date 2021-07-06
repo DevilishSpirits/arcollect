@@ -142,7 +142,7 @@ if jpg_dep.found()
 endif
 
 webp_dep = dependency('libwebp', required: get_option('enable_webp'))
-if jpg_dep.found()
+if webp_dep.found()
 	add_project_arguments('-DLOAD_WEBP', language: 'c')
 	deps += webp_dep
 endif
