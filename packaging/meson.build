@@ -47,7 +47,7 @@ if enable_native_progs
 	dep_sqlite3_static = dep_sqlite3.type_name() == 'internal'
 	dep_inih_static = dep_inih.type_name() == 'internal'
 	summary({
-		'curl': not dep_curl_static,
+		'libcurl': not dep_curl_static,
 		'sdl2': not dep_sdl2_static,
 		'sdl2_image': not dep_sdl2_image_static,
 		'sdl2_ttf': not dep_sdl2_ttf_static,
