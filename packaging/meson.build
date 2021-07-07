@@ -183,13 +183,15 @@ if candle_prog.found() and light_prog.found() and enable_native_progs
 	]
 	wix_dep_files = files(
 		'../COPYING.rtf',
-	)
+	)+[
+		webext_appmanifest_firefox_windows,
+	]
 	# Configuration
 	wix_conf = configuration_data()
 	wix_conf.merge_from(config_h)
 	wix_conf.set('built_arcollect_exe',arcollect_exe.full_path())
 	wix_conf.set('built_webext_adder_exe',webext_adder_exe.full_path())
-	wix_conf.set('built_mozilla_manifest',webext_adder_exe.full_path())
+	wix_conf.set('built_mozilla_manifest',webext_appmanifest_firefox_windows_full_path) # webext_appmanifest_firefox_windows
 	
 	# Auto-configuration
 	if host_machine.cpu_family() == 'x86'

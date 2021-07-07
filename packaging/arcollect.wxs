@@ -14,6 +14,9 @@
 							</File>
 							<File Id='WebextAdderEXE' Name='arcollect-webext-adder.exe' DiskId='1' Source='$(var.built_webext_adder_exe)' />
 						</Component>
+						<Component Id='NativeMessagingHosts' Guid='441491DA-5A6B-4C01-8A8D-DF3E7E2F4123'>
+							<File Id='NativeMessagingFirefox' Name='native-message-firefox.json' DiskId='1' Source='$(var.built_mozilla_manifest)' KeyPath='yes'/>
+						</Component>
 					</Directory>
 				</Directory>
 			<Directory Id="ProgramMenuFolder" Name="Programs">
@@ -29,6 +32,7 @@
 		<Feature Id='Complete' Title='Arcollect $(var.ARCOLLECT_VERSION)' Description='The complete package.' Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
 			<Feature Id='Arcollect' Title='Program' Description='The main executable.' Level='1'>
 				<ComponentRef Id='MainProgram' />
+				<ComponentRef Id='NativeMessagingHosts' />
 				<ComponentRef Id='ProgramMenuDir' />
 			</Feature>
 		</Feature>
