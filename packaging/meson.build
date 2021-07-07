@@ -66,7 +66,7 @@ endif
 # Two favlors are generated:
 # 	PKGBUILD usable by anybody
 # 	PKGBUILD.local that use local directory as source directory
-pkgbuild_depends = []
+pkgbuild_depends = ['xdg-utils']
 pkgbuild_depends_list = {
 	# 'dependency_name': 'ArchLinux package name'
 	'curl'             : 'curl',
@@ -121,7 +121,7 @@ if dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found()
 	# Get the "Architecture:" field using dpkg-achitecture
 	dpkg_architecture_run = run_command(dpkg_architecture_prog,'-q','DEB_HOST_ARCH', check: true)
 	
-	debian_depends = ['libc6', 'libstdc++6']
+	debian_depends = ['libc6', 'libstdc++6', 'xdg-utils']
 	debian_depends_list = {
 		# 'dependency_name': 'Debian package name'
 		'curl'             : 'libcurl4',
