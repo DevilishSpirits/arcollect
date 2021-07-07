@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+	<Product Name='Arcollect $(var.ARCOLLECT_VERSION)' Id='7D81775F-86C7-4D14-AEC0-86416A69ABDE' UpgradeCode='7D81775F-7349-453F-94F6-BCB5110BA4FD' Language='1033' Codepage='1252' Version='1.0.0' Manufacturer='DevilishSpirits'>
+		<Package Id='*' Keywords='Installer' Description="Arcollect $(var.ARCOLLECT_VERSION) Installer" Comments='Your personal artwork library.' Manufacturer='DevilishSpirits' InstallerVersion='310' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+		<Media Id='1' Cabinet='Main.cab' EmbedCab='yes' />
+		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+			<Directory Id='TARGETDIR' Name='SourceDir'>
+				<Directory Id='ProgramFilesFolder' Name='PFiles'>
+					<Directory Id='INSTALLDIR' Name='Arcollect'>
+						<Component Id='MainProgram' Guid='7D81775F-83F1-4F22-985B-FDB3C8ABD471'>
+							<File Id='ArcollectEXE' Name='arcollect.exe' DiskId='1' Source='$(var.built_arcollect_exe)' KeyPath='yes'>
+								<Shortcut Id="startmenu" Directory="ProgramMenuDir" Name="Arcollect" WorkingDirectory='INSTALLDIR' Icon="arcollect.exe" IconIndex="0" Advertise="yes" />
+								<Shortcut Id="desktop" Directory="DesktopFolder" Name="Arcollect" WorkingDirectory='INSTALLDIR' Icon="arcollect.exe" IconIndex="0" Advertise="yes" />
+							</File>
+							<File Id='WebextAdderEXE' Name='arcollect-webext-adder.exe' DiskId='1' Source='$(var.built_webext_adder_exe)' />
+						</Component>
+					</Directory>
+				</Directory>
+			<Directory Id="ProgramMenuFolder" Name="Programs">
+				<Directory Id="ProgramMenuDir" Name="Arcollect">
+					<Component Id="ProgramMenuDir" Guid="7D81775F-7E98-44CE-B049-C477CC0A2B00">
+						<RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+						<RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
+					</Component>
+				</Directory>
+			</Directory>
+			<Directory Id="DesktopFolder" Name="Desktop" />
+		</Directory>
+		<Feature Id='Complete' Title='Arcollect $(var.ARCOLLECT_VERSION)' Description='The complete package.' Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
+			<Feature Id='Arcollect' Title='Program' Description='The main executable.' Level='1'>
+				<ComponentRef Id='MainProgram' />
+				<ComponentRef Id='ProgramMenuDir' />
+			</Feature>
+		</Feature>
+		<UIRef Id="WixUI_InstallDir" />
+		<UIRef Id="WixUI_ErrorProgressText" />
+		<WixVariable Id="WixUILicenseRtf" Value="../COPYING.rtf" />
+		<Icon Id="arcollect.exe" SourceFile="$(var.built_arcollect_exe)" />
+	</Product>
+</Wix>

@@ -169,3 +169,59 @@ if dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found()
 		build_by_default: false,
 	)
 endif
+
+# Windows
+candle_prog = find_program('candle', required: false, version: '>=3')
+light_prog = find_program('light', required: false)
+
+if candle_prog.found() and light_prog.found() and enable_native_progs
+	# WiX depends
+	wix_deps = [
+		arcollect_exe,
+		webext_adder_exe,
+	]
+	wix_dep_files = files(
+		'../COPYING.rtf',
+	)
+	# Configuration
+	wix_conf = configuration_data()
+	wix_conf.merge_from(config_h)
+	wix_conf.set('built_arcollect_exe',arcollect_exe.full_path())
+	wix_conf.set('built_webext_adder_exe',webext_adder_exe.full_path())
+	wix_conf.set('built_mozilla_manifest',webext_adder_exe.full_path())
+	
+	# Auto-configuration
+	if host_machine.cpu_family() == 'x86'
+		candle_arch = 'x86'
+	elif host_machine.cpu_family() == 'x86_64'
+		candle_arch = 'x64'
+	elif host_machine.cpu_family() == 'ia64'
+		candle_arch = 'ia64'
+	else # Likely won't works outside x86 and ia64
+		candle_arch = host_machine.cpu_family()
+		warning('Unknow CPU family '+candle_arch+'. MSI creation should fail')
+	endif
+	
+	wix_args = [
+		'-pedantic',
+	]
+	foreach key: wix_conf.keys()
+		wix_args += ['-d'+key+'='+wix_conf.get(key)]
+	endforeach
+	
+	candle_args = wix_args+[
+		'-arch',candle_arch,
+		'-out','@OUTPUT@',
+		'@INPUT@'
+	]
+	
+	candle = generator(candle_prog, arguments: candle_args, output: ['@BASENAME@.wixobj'])
+	
+	light_args = wix_args+[
+		'-sval', # Needed under Wine
+		'-ext', 'WixUIExtension',
+		'-out','@OUTPUT@',
+		'@INPUT@'
+	]
+	custom_target('arcollect.msi', command: [light_prog, light_args], input: candle.process('arcollect.wxs'), output: 'arcollect.msi', depends: wix_deps, depend_files: wix_dep_files)
+endif
