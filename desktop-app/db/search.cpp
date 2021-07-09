@@ -14,9 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "search.hpp"
+#include "config.hpp"
 #include "db.hpp"
 #include "filter.hpp"
+#include "search.hpp"
 #include <cctype>
 #include <sstream>
 
@@ -90,7 +91,12 @@ namespace Arcollect {
 			 * must be present (AND NOT).
 			 */
 			negatable_container<std::vector<std::string_view>> tags{current_identifier_is_negated};
+			/** List of column,value prefix matchs
+			 */
 			negatable_container<std::vector<std::pair<std::string,std::string_view>>> db_prefixes{current_identifier_is_negated};
+			/** List of column,value exact matchs
+			 */
+			negatable_container<std::vector<std::pair<std::string,std::string_view>>> db_matches{current_identifier_is_negated};
 			typedef std::function<bool(search_do_search_struct&,search::Token,search::Token)> ColonHandler;
 			ColonHandler current_colon_handler;
 			
@@ -114,6 +120,38 @@ namespace Arcollect {
 							case Arcollect::db::search::TOK_IDENTIFIER: {
 								// Add the match
 								search.db_prefixes().emplace_back("art_platform",search.current_tag);
+								search.current_identifier_is_negated = false;
+								search.reset_current_tag();
+							} return false;
+							default: return false;
+						}
+					} return false;
+					default: return false;
+				}
+			}},{"rating",[](search_do_search_struct& search, search::Token token, search::Token last_token) -> bool {
+				switch (token) {
+					case Arcollect::db::search::TOK_BLANK:
+					case Arcollect::db::search::TOK_EOL: {
+						search.current_colon_handler = nullptr;
+						switch (last_token) {
+							case Arcollect::db::search::TOK_IDENTIFIER: {
+								// Analyze rating
+								static const std::string rating_none   = std::to_string(Arcollect::config::RATING_NONE);
+								static const std::string rating_mature = std::to_string(Arcollect::config::RATING_MATURE);
+								static const std::string rating_adult  = std::to_string(Arcollect::config::RATING_ADULT);
+								switch (search.current_tag[0]) {
+									case 's':case 'S': {
+										search.db_matches().emplace_back("art_rating",rating_none);
+									} break;
+									case 'q':case 'Q': {
+										search.db_matches().emplace_back("art_rating",rating_mature);
+									} break;
+									case 'e':case 'E': {
+										search.db_matches().emplace_back("art_rating",rating_adult);
+									} break;
+									default: return true;
+								};
+								// Add the match
 								search.current_identifier_is_negated = false;
 								search.reset_current_tag();
 							} return false;
@@ -235,6 +273,16 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 	}
 	if (src.tags.positive_matches.size() || src.tags.negative_matches.size())
 		query << ")";
+	for (auto &match: src.db_matches.positive_matches) {
+		// FIXME That's not very safe
+		query << " AND (" << match.first << " = ?)";
+		query_bindings.emplace_back(match.second);
+	}
+	for (auto &match: src.db_matches.negative_matches) {
+		// FIXME That's not very safe
+		query << " AND (" << match.first << " != ?)";
+		query_bindings.emplace_back(match.second);
+	}
 	for (auto &match: src.db_prefixes.positive_matches) {
 		// FIXME That's not very safe
 		query << " AND (instr(" << match.first << ",lower(?)) = 1)";
