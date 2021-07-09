@@ -18,5 +18,10 @@ if geckodriver_prog.found()
 		common_test_deps,
 	]
 	test_suite = ['firefox-webextension','webextension']
-	test('firefox-furaffinity',webextension_browser_test_prog, args: ['browser_geckodriver','platform_furaffinity',files('../../webext-adder/tests/furaffinity.net.json')], env: webext_test_env, protocol: 'tap', timeout: 600, depends: geckodriver_test_deps, suite: test_suite)
+	test('firefox-furaffinity',webextension_browser_test_prog, args: ['browser_geckodriver','platform_furaffinity',files('../../webext-adder/tests/furaffinity.net.json')], env: webext_test_env, protocol: 'tap', timeout: 600, depends: geckodriver_test_deps, suite: test_suite, is_parallel: false)
+	
+	if get_option('tests_nsfw')
+		test('firefox-e621',webextension_browser_test_prog, args: ['browser_geckodriver','platform_e621',files('../../webext-adder/tests/e621.net.json')], env: webext_test_env, protocol: 'tap', timeout: 600, depends: geckodriver_test_deps, suite: test_suite, is_parallel: false)
+		test('firefox-e621-nsfw',webextension_browser_test_prog, args: ['browser_geckodriver','platform_e621',files('../../webext-adder/tests/e621.net-nsfw.json')], env: webext_test_env, protocol: 'tap', timeout: 600, depends: geckodriver_test_deps, suite: test_suite, is_parallel: false)
+	endif
 endif
