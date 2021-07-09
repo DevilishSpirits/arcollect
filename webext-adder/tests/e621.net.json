@@ -53,10 +53,10 @@
 		"id":"muscular",
 		"kind":null
 	},{
-		"id":"muscular anthro",
+		"id":"muscular-anthro",
 		"kind":null
 	},{
-		"id":"muscular male",
+		"id":"muscular-male",
 		"kind":null
 	},{
 		"id":"nude",
@@ -74,19 +74,19 @@
 		"id":"phone",
 		"kind":null
 	},{
-		"id":"simple background",
+		"id":"simple-background",
 		"kind":null
 	},{
 		"id":"solo",
 		"kind":null
 	},{
-		"id":"white background",
+		"id":"white-background",
 		"kind":null
 	},{
-		"id":"yellow eyes",
+		"id":"yellow-eyes",
 		"kind":null
 	},{
-		"id":"hi res",
+		"id":"hi-res",
 		"kind":null
 	}],
 	"art_acc_links":[{
@@ -135,10 +135,10 @@
 		"tag":"muscular"
 	},{
 		"artwork":"https://e621.net/posts/2821766",
-		"tag":"muscular anthro"
+		"tag":"muscular-anthro"
 	},{
 		"artwork":"https://e621.net/posts/2821766",
-		"tag":"muscular male"
+		"tag":"muscular-male"
 	},{
 		"artwork":"https://e621.net/posts/2821766",
 		"tag":"nude"
@@ -156,18 +156,18 @@
 		"tag":"phone"
 	},{
 		"artwork":"https://e621.net/posts/2821766",
-		"tag":"simple background"
+		"tag":"simple-background"
 	},{
 		"artwork":"https://e621.net/posts/2821766",
 		"tag":"solo"
 	},{
 		"artwork":"https://e621.net/posts/2821766",
-		"tag":"white background"
+		"tag":"white-background"
 	},{
 		"artwork":"https://e621.net/posts/2821766",
-		"tag":"yellow eyes"
+		"tag":"yellow-eyes"
 	},{
 		"artwork":"https://e621.net/posts/2821766",
-		"tag":"hi res"
+		"tag":"hi-res"
 	}]
 }

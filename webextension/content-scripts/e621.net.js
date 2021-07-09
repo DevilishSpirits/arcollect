@@ -69,16 +69,17 @@ function save_artwork()
 	for (let i = 0; i < tagList.length; i++) {
 		// Check tag
 		let category = null;
+		let tag_id = tagList[i].text.arcollect_tag();
 		switch (tagList[i].parentNode.className) {
 			case 'category-1': { // Artists
 				accounts.push({
-					'id': tagList[i].text,
+					'id': tag_id,
 					'name': tagList[i].text,
 					'url': tagList[i].href,
 					'icon': 'https://e621.net/apple-touch-icon.png'
 				});
 				art_acc_links.push({
-					'account': tagList[i].text,
+					'account': tag_id,
 					'artwork': source,
 					'link': 'account'
 				});
@@ -91,12 +92,12 @@ function save_artwork()
 			} break;
 		};
 		tags.push({
-			'id': tagList[i].text,
+			'id': tag_id,
 			'kind': category
 		});
 		art_tag_links.push({
 			'artwork': source,
-			'tag': tagList[i].text
+			'tag': tag_id
 		});
 	}
 	

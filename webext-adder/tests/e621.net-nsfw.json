@@ -47,7 +47,7 @@
 		"id":"wolf",
 		"kind":"species"
 	},{
-		"id":"animal genitalia",
+		"id":"animal-genitalia",
 		"kind":null
 	},{
 		"id":"anthro",
@@ -65,10 +65,10 @@
 		"id":"muscular",
 		"kind":null
 	},{
-		"id":"muscular anthro",
+		"id":"muscular-anthro",
 		"kind":null
 	},{
-		"id":"muscular male",
+		"id":"muscular-male",
 		"kind":null
 	},{
 		"id":"nude",
@@ -80,25 +80,25 @@
 		"id":"sheath",
 		"kind":null
 	},{
-		"id":"simple background",
+		"id":"simple-background",
 		"kind":null
 	},{
 		"id":"solo",
 		"kind":null
 	},{
-		"id":"white background",
+		"id":"white-background",
 		"kind":null
 	},{
-		"id":"hi res",
+		"id":"hi-res",
 		"kind":null
 	},{
 		"id":"abs",
 		"kind":null
 	},{
-		"id":"brown body",
+		"id":"brown-body",
 		"kind":null
 	},{
-		"id":"brown fur",
+		"id":"brown-fur",
 		"kind":null
 	},{
 		"id":"bulge",
@@ -110,7 +110,7 @@
 		"id":"clothing",
 		"kind":null
 	},{
-		"id":"eyes closed",
+		"id":"eyes-closed",
 		"kind":null
 	},{
 		"id":"fur",
@@ -160,7 +160,7 @@
 		"tag":"wolf"
 	},{
 		"artwork":"https://e621.net/posts/2617248",
-		"tag":"animal genitalia"
+		"tag":"animal-genitalia"
 	},{
 		"artwork":"https://e621.net/posts/2617248",
 		"tag":"anthro"
@@ -178,10 +178,10 @@
 		"tag":"muscular"
 	},{
 		"artwork":"https://e621.net/posts/2617248",
-		"tag":"muscular anthro"
+		"tag":"muscular-anthro"
 	},{
 		"artwork":"https://e621.net/posts/2617248",
-		"tag":"muscular male"
+		"tag":"muscular-male"
 	},{
 		"artwork":"https://e621.net/posts/2617248",
 		"tag":"nude"
@@ -193,16 +193,16 @@
 		"tag":"sheath"
 	},{
 		"artwork":"https://e621.net/posts/2617248",
-		"tag":"simple background"
+		"tag":"simple-background"
 	},{
 		"artwork":"https://e621.net/posts/2617248",
 		"tag":"solo"
 	},{
 		"artwork":"https://e621.net/posts/2617248",
-		"tag":"white background"
+		"tag":"white-background"
 	},{
 		"artwork":"https://e621.net/posts/2617248",
-		"tag":"hi res"
+		"tag":"hi-res"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
 		"tag":"canid"
@@ -238,10 +238,10 @@
 		"tag":"anthro"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
-		"tag":"brown body"
+		"tag":"brown-body"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
-		"tag":"brown fur"
+		"tag":"brown-fur"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
 		"tag":"bulge"
@@ -253,7 +253,7 @@
 		"tag":"clothing"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
-		"tag":"eyes closed"
+		"tag":"eyes-closed"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
 		"tag":"fur"
@@ -268,16 +268,16 @@
 		"tag":"muscular"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
-		"tag":"muscular anthro"
+		"tag":"muscular-anthro"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
-		"tag":"muscular male"
+		"tag":"muscular-male"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
 		"tag":"pecs"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
-		"tag":"simple background"
+		"tag":"simple-background"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
 		"tag":"solo"
@@ -286,9 +286,9 @@
 		"tag":"topless"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
-		"tag":"white background"
+		"tag":"white-background"
 	},{
 		"artwork":"https://e621.net/posts/2621355",
-		"tag":"hi res"
+		"tag":"hi-res"
 	}]
 }
