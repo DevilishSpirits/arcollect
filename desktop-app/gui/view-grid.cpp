@@ -14,7 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include "font.hpp"
 #include "views.hpp"
+#include "../db/account.hpp"
 #include "../db/db.hpp"
 void Arcollect::gui::view_vgrid::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
 {
@@ -58,6 +60,36 @@ void Arcollect::gui::view_vgrid::render(void)
 	for (auto &lines: viewports)
 		for (artwork_viewport &viewport: lines)
 			viewport.render(displacement);
+	// Render hover effect on viewport
+	SDL::Point cursor_position;
+	SDL_GetMouseState(&cursor_position.x,&cursor_position.y);
+	artwork_viewport* hover = get_pointed(cursor_position);
+	if (hover)
+		render_viewport_hover(*hover);
+}
+void Arcollect::gui::view_vgrid::render_viewport_hover(const artwork_viewport& viewport)
+{
+	Arcollect::gui::Font font;
+	SDL::Rect rect{viewport.corner_tl.x,viewport.corner_tl.y-scroll_position,viewport.corner_tr.x-viewport.corner_tl.x,viewport.corner_bl.y-viewport.corner_tl.y};
+	renderer->SetDrawColor(0,0,0,192);
+	renderer->FillRect(rect);
+	
+	Arcollect::gui::TextPar title_par(font,viewport.artwork->title(),18);
+	SDL::Texture* title_par_text(title_par.render(rect.w-8));
+	SDL::Point title_par_size;
+	title_par_text->QuerySize(title_par_size);
+	SDL::Rect title_par_rect{rect.x+(rect.w-title_par_size.x)/2,rect.y+(rect.h-title_par_size.y)/2,title_par_size.x,title_par_size.y};
+	renderer->Copy(title_par_text,NULL,&title_par_rect);
+	
+	auto accounts = viewport.artwork->get_linked_accounts("account");
+	if (accounts.size()) {
+		Arcollect::gui::TextPar artist_par(font,accounts[0]->title(),14,TTF_STYLE_NORMAL,{255,255,255,192});
+		SDL::Texture* artist_par_text(artist_par.render(rect.w-8));
+		SDL::Point artist_par_size;
+		artist_par_text->QuerySize(artist_par_size);
+		SDL::Rect artist_par_rect{rect.x+(rect.w-artist_par_size.x)/2,title_par_rect.y+title_par_rect.h+8,artist_par_size.x,artist_par_size.y};
+		renderer->Copy(artist_par_text,NULL,&artist_par_rect);
+	}
 }
 bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
 {

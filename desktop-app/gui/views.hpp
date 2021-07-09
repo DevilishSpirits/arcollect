@@ -178,6 +178,7 @@ namespace Arcollect {
 				 */
 				artwork_viewport *get_pointed(SDL::Point mousepos);
 				void render(void) override;
+				void render_viewport_hover(const artwork_viewport& viewport);
 				bool event(SDL::Event &e) override;
 		};
 	}
