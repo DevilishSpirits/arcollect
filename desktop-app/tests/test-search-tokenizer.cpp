@@ -20,8 +20,8 @@ static struct test_case {
 } test_cases[] = {
 	{"dragon",{BLANK(""),IDENTIFIER("dragon")}},
 	{"-dragon",{BLANK(""),NEGATE("-"),IDENTIFIER("dragon")}},
-	{"-black-dragon",{BLANK(""),NEGATE("-"),IDENTIFIER("black"),NEGATE("-"),IDENTIFIER("dragon")}},
-	{"bat digital-2d",{BLANK(""),IDENTIFIER("bat"),BLANK(" "),IDENTIFIER("digital"),NEGATE("-"),IDENTIFIER("2d")}},
+	{"-black-dragon",{BLANK(""),NEGATE("-"),IDENTIFIER("black-dragon")}},
+	{"bat digital-2d",{BLANK(""),IDENTIFIER("bat"),BLANK(" "),IDENTIFIER("digital-2d")}},
 	{"dragon site:artstation.com",{BLANK(""),IDENTIFIER("dragon"),BLANK(" "),IDENTIFIER("site"),COLON(":"),IDENTIFIER("artstation.com")}},
 };
 

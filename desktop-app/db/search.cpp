@@ -38,18 +38,22 @@ static Arcollect::db::search::Token classify_char(char chr)
 const char* Arcollect::db::search::tokenize(const char* search, std::function<bool(Token token, std::string_view value, void* data)> new_token, void* data)
 {
 	Token state = TOK_BLANK;
-	const char* token_start = search;
-	while (state != Arcollect::db::search::TOK_EOL) {
+	for (const char* token_start = search; state != Arcollect::db::search::TOK_EOL; search++) {
 		Token next_state = classify_char(search[0]);
 		if (next_state == Arcollect::db::search::TOK_INVALID)
 			return search;
+		/** Handle 'black-dragon' like constructs
+		 *
+		 * This generate one TOK_IDENTIFIER 'black-dragon'
+		 */
+		if ((state == TOK_IDENTIFIER)&&(next_state == TOK_NEGATE))
+			continue;
 		if (state != next_state) {
 			if (new_token(state,std::string_view(token_start,search-token_start),data))
 				return token_start;
 			state = next_state;
 			token_start = search;
 		}
-		search++;
 	}
 	return NULL;
 }
@@ -65,14 +69,28 @@ namespace Arcollect {
 			 * In such case, 
 			 */
 			std::string_view current_tag;
-			bool current_tag_is_negated = false;
-			/** List of tags to AND
+			bool current_identifier_is_negated = false;
+			template <typename T>
+			struct negatable_container {
+				typedef T type_name;
+				bool &negated;
+				T positive_matches;
+				T negative_matches;
+				inline operator T&(void) {
+					return negated ? negative_matches : positive_matches;
+				}
+				inline T& operator()(void) {
+					return *this;
+				}
+				negatable_container(bool &negated) : negated(negated) {}
+			};
+			/** List of tags
 			 *
-			 * This is the list of tags that must be present in 
+			 * All positive matching tags must be present (a AND) and no negative one
+			 * must be present (AND NOT).
 			 */
-			std::vector<std::string_view> tags;
-			std::vector<std::string_view> negated_tags;
-			std::vector<std::pair<std::string,std::string_view>> db_col_matches;
+			negatable_container<std::vector<std::string_view>> tags{current_identifier_is_negated};
+			negatable_container<std::vector<std::pair<std::string,std::string_view>>> db_prefixes{current_identifier_is_negated};
 			typedef std::function<bool(search_do_search_struct&,search::Token,search::Token)> ColonHandler;
 			ColonHandler current_colon_handler;
 			
@@ -95,7 +113,8 @@ namespace Arcollect {
 						switch (last_token) {
 							case Arcollect::db::search::TOK_IDENTIFIER: {
 								// Add the match
-								search.db_col_matches.emplace_back("art_platform",search.current_tag);
+								search.db_prefixes().emplace_back("art_platform",search.current_tag);
+								search.current_identifier_is_negated = false;
 								search.reset_current_tag();
 							} return false;
 							default: return false;
@@ -103,21 +122,13 @@ namespace Arcollect {
 					} return false;
 					default: return false;
 				}
-			}}
+			}},
 		};
 		static bool search_do_search_callback(Arcollect::db::search::Token token, std::string_view value, void* data)
 		{
 			struct Arcollect::db::search_do_search_struct &search = *reinterpret_cast<struct Arcollect::db::search_do_search_struct*>(data);
 			auto last_token = search.last_token;
 			search.last_token = token;
-			/** Handle the TOK_NEGATE in 'black-dragon' like constructs
-			 *
-			 * Fake a TOK_IDENTIFIER token for the TOK_NEGATE.
-			 */
-			if ((token == Arcollect::db::search::TOK_NEGATE) && (last_token == Arcollect::db::search::TOK_IDENTIFIER)) {
-				search.last_token = Arcollect::db::search::TOK_IDENTIFIER;
-				return false;
-			}
 			// Update current_tag for identifiers
 			if (token == Arcollect::db::search::TOK_IDENTIFIER) {
 				if (search.current_tag.empty())
@@ -131,8 +142,8 @@ namespace Arcollect {
 					// last_token dependent handling
 					switch (last_token) {
 						case Arcollect::db::search::TOK_NEGATE: {
-							// '-dragon' like construct -> Raise current_tag_is_negated flag
-							search.current_tag_is_negated = true;
+							// '-dragon' like construct -> Raise current_identifier_is_negated flag
+							search.current_identifier_is_negated = true;
 						} return false;
 						default: {
 						} return false;
@@ -154,11 +165,9 @@ namespace Arcollect {
 					switch (last_token) {
 						case Arcollect::db::search::TOK_IDENTIFIER: {
 							// Append the tag
-							if (search.current_tag_is_negated)
-								search.negated_tags.emplace_back(search.current_tag);
-							else search.tags.emplace_back(search.current_tag);
-							// Reset current_tag_is_negated flag and current_tag
-							search.current_tag_is_negated = false;
+							search.tags().emplace_back(search.current_tag);
+							// Reset current_identifier_is_negated flag and current_tag
+							search.current_identifier_is_negated = false;
 							search.reset_current_tag();
 						} return false;
 						default: return false;
@@ -183,13 +192,13 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 	
 	query << "SELECT art_artid,"+Arcollect::db::artid_randomizer+" AS art_order FROM artworks WHERE " << Arcollect::db_filter::get_sql() << " AND (0";
 	// Title OR match
-	if (src.tags.size() || src.negated_tags.size()) {
+	if (src.tags.positive_matches.size() || src.tags.negative_matches.size()) {
 		// Note: will be followed by a tag matching
 		query << " OR (INSTR(lower(art_title),lower(?)) > 0) OR (1";
 		query_bindings.emplace_back(search);
 	} else query << " OR 1";// No token: Force a full match
 	// Tags OR matching
-	if (src.tags.size()) {
+	if (src.tags.positive_matches.size()) {
 		/** Add tag checking logic
 		 *
 		 * Tags are checked using an EXISTS subquery on art_tag_links JOIN tags.
@@ -200,14 +209,14 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 			"SELECT 1 FROM art_tag_links"
 			" NATURAL JOIN tags WHERE art_tag_links.art_artid = artworks.art_artid"
 			" AND tags.tag_platid in (?";
-		query_bindings.emplace_back(src.tags[0]);
-		for (decltype(src.tags)::size_type i = 1; i < src.tags.size(); i++) {
+		query_bindings.emplace_back(src.tags.positive_matches[0]);
+		for (decltype(src.tags.positive_matches)::size_type i = 1; i < src.tags.positive_matches.size(); i++) {
 			query << ",?";
-			query_bindings.emplace_back(src.tags[i]);
+			query_bindings.emplace_back(src.tags.positive_matches[i]);
 		}
-		query << ") LIMIT " << (src.tags.size()-1) << ",1)";
+		query << ") LIMIT " << (src.tags.positive_matches.size()-1) << ",1)";
 	}
-	if (src.negated_tags.size()) {
+	if (src.tags.negative_matches.size()) {
 		/** Add tag exclusion logic
 		 *
 		 * It's the same thing as above but negated and without the LIMIT because a
@@ -217,18 +226,23 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 			"SELECT 1 FROM art_tag_links"
 			" NATURAL JOIN tags WHERE art_tag_links.art_artid = artworks.art_artid"
 			" AND tags.tag_platid in (?";
-		query_bindings.emplace_back(src.negated_tags[0]);
-		for (decltype(src.negated_tags)::size_type i = 1; i < src.negated_tags.size(); i++) {
+		query_bindings.emplace_back(src.tags.negative_matches[0]);
+		for (decltype(src.tags.negative_matches)::size_type i = 1; i < src.tags.negative_matches.size(); i++) {
 			query << ",?";
-			query_bindings.emplace_back(src.negated_tags[i]);
+			query_bindings.emplace_back(src.tags.negative_matches[i]);
 		}
 		query << "))";
 	}
-	if (src.tags.size() || src.negated_tags.size())
+	if (src.tags.positive_matches.size() || src.tags.negative_matches.size())
 		query << ")";
-	for (auto &match: src.db_col_matches) {
+	for (auto &match: src.db_prefixes.positive_matches) {
 		// FIXME That's not very safe
 		query << " AND (instr(" << match.first << ",lower(?)) = 1)";
+		query_bindings.emplace_back(match.second);
+	}
+	for (auto &match: src.db_prefixes.negative_matches) {
+		// FIXME That's not very safe
+		query << " AND (instr(" << match.first << ",lower(?)) != 1)";
 		query_bindings.emplace_back(match.second);
 	}
 	query << ") ORDER BY art_order;";
