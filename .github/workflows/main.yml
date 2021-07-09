@@ -134,23 +134,41 @@ jobs:
         run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now'
       - name: Build project
         run: ninja -C build
-      - name: Test project
-        run: ninja -C build test
-      - name: Generate Debian package
-        run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
-        shell: bash
-      - name: Lintian Debian package
-        run: lintian --no-tag-display-limit --dont-check-part debian/changelog,debian/copyright -I -E --verbose -- "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
-      - name: Uploading Debian package artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: build-ubuntu-20_04-packaging
-          path: build/packaging
       - name: Uploading arcollect-webextension.zip artifact
         uses: actions/upload-artifact@v2
         with:
           name: build-ubuntu-20_04_webextension.zip
           path: build/webextension/arcollect.zip
+      - name: Generate Debian package
+        run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+        shell: bash
+      - name: Uploading Debian package artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-ubuntu-20_04-packaging
+          path: build/packaging
+      - name: Test project
+        run: ninja -C build test
+      - name: Link Debian package
+        run: ln "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)" arcollect.deb
+        shell: bash
+      - name: Lintian Debian package
+        run: lintian --no-tag-display-limit --dont-check-part debian/changelog,debian/copyright -I -E --verbose -- arcollect.deb
+      - name: Install Debian package
+        run: sudo dpkg -i arcollect.deb
+        shell: bash
+      - name: Run `webext-adder-online` test
+        run: python3 webext-adder/tests/webext-adder-test.py webext-adder-online $(find -regex '.*\.[a-z]+.json')
+        shell: bash
+        env:
+          ARCOLLECT_DEBUG: all
+          ARCOLLECT_WEBEXT_ADDER_PATH: /usr/libexec/arcollect-webext-adder
+      - name: Upload `webext-adder-online` XDG_DATA_HOME
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: webext-adder-online-ubuntu-20_04
+          path: webext-adder-online
   build-windows-2019:
     runs-on: [windows-2019]
     env:
