@@ -15,8 +15,6 @@ destdir_depends = []
 destdir_depend_files = []
 if enable_native_progs
 	destdir_depends += [webext_adder_exe,arcollect_exe]
-endif
-if enable_webextension
 	destdir_depend_files += [webext_appmanifest_firefox]
 endif
 destdir_target = custom_target('destdir',
