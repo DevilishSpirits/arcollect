@@ -1,9 +1,11 @@
 offline_tests = files(
 )
 online_tests = files(
+	'e621.net.json',
 	'furaffinity.net.json',
 )
 online_nsfw_tests = files(
+	'e621.net-nsfw.json',
 	'furaffinity.net-nsfw.json',
 )
 
