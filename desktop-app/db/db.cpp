@@ -19,7 +19,8 @@
 std::unique_ptr<SQLite3::sqlite3> Arcollect::database;
 sqlite_int64 Arcollect::data_version = -1;
 static sqlite_int64 private_data_version = 0;
-const std::string Arcollect::db::artid_randomizer = "((art_artid+"+std::to_string(std::time(NULL))+")*2654435761) % 4294967296";
+const std::time_t Arcollect::db::artid_randomizer_seed = std::time(NULL);
+const std::string Arcollect::db::artid_randomizer = "((art_artid+"+std::to_string(artid_randomizer_seed)+")*2654435761) % 4294967296";
 
 sqlite_int64 Arcollect::update_data_version(void)
 {

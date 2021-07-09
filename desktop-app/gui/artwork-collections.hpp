@@ -100,6 +100,32 @@ namespace Arcollect {
 					ids.push_back(stmt->column_int64(0));
 				stmt.reset();
 			}
+			/** Perform find() assuming "ORDER BY artid_randomizer"
+			 *
+			 * This is an optimized "divide-and-conquer" search.
+			 */
+			artwork_collection::iterator find_artid_randomized(const std::shared_ptr<db::artwork> &artwork) {
+				decltype(ids)::size_type left = 0;
+				decltype(ids)::size_type size = ids.size();
+				auto target = db::artid_randomize(artwork->art_id);
+				while (size) {
+					size -= 1;
+					size /= 2;
+					auto current = left + size;
+					auto diff = db::artid_randomize(ids[current])-target;
+					if (diff == 0)
+						// Match
+						return artwork_collection::iterator(new iterator(ids.begin()+current));
+					else if (diff < 0)
+						// Match is in the right part, update left
+						left += size + 1;
+					//else size will be shrink on next loop iteration, nothing to do
+				}
+				return end();
+			}
+			artwork_collection::iterator find(const std::shared_ptr<db::artwork> &artwork) override {
+				return find_artid_randomized(artwork);
+			}
 		};
 	}
 }

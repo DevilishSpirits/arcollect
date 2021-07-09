@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#pragma once
+#include <ctime>
 #include <sqlite3.hpp>
 #include <string>
 
@@ -46,6 +48,11 @@ namespace Arcollect {
 	sqlite_int64 update_data_version(void);
 	
 	namespace db {
+		/** Seed used for #Arcollect::db::artid_randomizer
+		 *
+		 * It's set to std::time(NULL) at program init.
+		 */
+		extern const std::time_t artid_randomizer_seed;
 		/** SQL select column statement for stable artwork order randomization
 		 *
 		 * To avoid complete reorganization of the slideshow grid with random sort
@@ -60,5 +67,11 @@ namespace Arcollect {
 		 * most collections.
 		 */
 		extern const std::string artid_randomizer;
+		
+		/** Apply #Arcollect::db::artid_randomizer locally
+		 */
+		inline sqlite_int64 artid_randomize(sqlite_int64 art_artid) {
+			return ((art_artid+artid_randomizer_seed)*2654435761) % 4294967296;
+		}
 	}
 }
