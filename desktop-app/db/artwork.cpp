@@ -92,7 +92,7 @@ static std::string column_string_default(std::unique_ptr<SQLite3::stmt> &stmt, i
 {
 	if (stmt->column_type(col) == SQLITE_NULL)
 		return "";
-	else return stmt->column_string(0);
+	else return stmt->column_string(col);
 }
 
 void Arcollect::db::artwork::db_sync(void)
