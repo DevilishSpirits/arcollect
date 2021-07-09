@@ -93,6 +93,19 @@ namespace Arcollect {
 				iterator end(void) {
 					return iterator(new_end());
 				}
+				/** Find the iterator to an artwork
+				 * \param artwork The artwork to find
+				 * \return An iterator to the artwork of end() if not found
+				 * 
+				 * This function perform a naive full travel. The collection may
+				 * override this function with a more efficient algorithm.
+				 */
+				virtual iterator find(const std::shared_ptr<db::artwork> &artwork) {
+					iterator iter = begin();
+					const iterator iter_end = end();
+					for (; (iter != iter_end) && (*iter != artwork); ++iter);
+					return iter;
+				}
 				virtual ~artwork_collection(void) = default;
 		};
 	}

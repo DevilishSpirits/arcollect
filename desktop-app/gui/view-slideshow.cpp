@@ -20,18 +20,20 @@
 
 void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
 {
-	auto new_collection_iterator = new_collection->begin();
 	collection = new_collection;
+	// Save last_artwork if it's valid
+	if (viewport.artwork)
+		last_artwork = viewport.artwork;
+	auto new_collection_iterator = new_collection->begin();
 	if (new_collection_iterator != new_collection->end()) {
-		// FIXME This brute force may take a lot of time !
-		if (last_artwork)
-			while (++new_collection_iterator != new_collection->end())
-				if (*new_collection_iterator == last_artwork)
-					break;
-		if (new_collection_iterator != new_collection->end())
-			set_collection_iterator(new_collection_iterator);
-		else set_collection_iterator(new_collection->begin());
-	} else viewport.artwork = NULL;
+		// Avoid resetting the artwork to new_collection->begin()
+		if (last_artwork) {
+			new_collection_iterator = new_collection->find(last_artwork);
+			if (new_collection_iterator == new_collection->end())
+				new_collection_iterator = new_collection->begin();
+		} else new_collection_iterator = new_collection->begin();
+	}
+	set_collection_iterator(new_collection_iterator);
 }
 void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 {
@@ -61,9 +63,11 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 }
 void Arcollect::gui::view_slideshow::set_collection_iterator(const artwork_collection::iterator &iter)
 {
-	collection_iterator = std::make_unique<artwork_collection::iterator>(iter);
-	last_artwork = viewport.artwork = **collection_iterator;
-	resize(rect);
+	if (iter != collection->end()) {
+		collection_iterator = std::make_unique<artwork_collection::iterator>(iter);
+		viewport.artwork = **collection_iterator;
+		resize(rect);
+	} else viewport.artwork = NULL;
 }
 void Arcollect::gui::view_slideshow::render_info_incard(void)
 {
