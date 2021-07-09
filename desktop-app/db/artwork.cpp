@@ -212,7 +212,14 @@ int Arcollect::db::artwork::db_delete(void)
 	Arcollect::local_data_version_changed();
 	return 0;
 }
-#if WITH_XDG
+#if defined(_WIN32)
+#include <windows.h>
+#include <shellapi.h>
+void Arcollect::db::artwork::open_url(void)
+{
+	ShellExecuteA(NULL,"open",source().c_str(),NULL,NULL,SW_SHOWNORMAL);
+}
+#elif WITH_XDG
 #include <spawn.h>
 extern char** environ;
 void Arcollect::db::artwork::open_url(void)
