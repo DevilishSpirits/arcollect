@@ -81,6 +81,11 @@ namespace Arcollect {
 						std::shared_ptr<db::artwork>& operator*(void) {
 							return base->operator*();
 						}
+						iterator& operator=(const iterator& right) {
+							delete base;
+							base = right.base->copy();
+							return *this;
+						}
 				};
 				iterator begin(void) {
 					return iterator(new_begin());
