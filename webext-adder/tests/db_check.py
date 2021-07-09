@@ -46,18 +46,7 @@ def test_count(test_set):
 	return result
 
 def check_db(test_num, db, test_set):
-	# DB count checkings
-	#for table in db_line_count_checks:
-	#	test_num += 1
-	#	# FIXME That's an awful unsafe injection yet still with trusted data
-	#	count_test = len(test_set[table])
-	#	count_db   = db.execute('SELECT COUNT(*) FROM '+table+';').fetchone()[0]
-	#	if count_db == count_test:
-	#		ok_string = 'ok'
-	#	else:
-	#		ok_string = 'not ok'
-	#	print(ok_string,test_num,'- Checking row count in',table,'table # Expected:',count_test,'Got:',count_db)
-	
+	platform = test_set['platform']
 	# Check artworks
 	print('# Checking "artworks" table')
 	for artwork in test_set['artworks']:
@@ -65,7 +54,7 @@ def check_db(test_num, db, test_set):
 		artwork_db = db.execute('SELECT art_platform, art_title, art_desc, art_rating, art_height, art_width FROM artworks where art_source = ?;',[artwork['source']]).fetchone()
 		
 		expected_values = (
-			('art_platform','furaffinity.net'),
+			('art_platform',platform),
 			('art_title'   ,artwork['title'] ),
 			('art_desc'    ,artwork['desc']  ),
 			('art_rating'  ,artwork['rating']),
@@ -91,7 +80,7 @@ def check_db(test_num, db, test_set):
 		account_db = db.execute('SELECT acc_platform, acc_name, acc_title, acc_url FROM accounts where acc_platid = ?;',[account['id']]).fetchone()
 		
 		expected_values = (
-			('acc_platform','furaffinity.net'),
+			('acc_platform',platform),
 			('acc_name'    ,account.setdefault('name' ,None)),
 			('acc_title'   ,account.setdefault('title',None)),
 			('acc_url'     ,account.setdefault('url',None)),
@@ -120,3 +109,4 @@ def check_db(test_num, db, test_set):
 			ok_string = 'not ok'
 		
 		print(ok_string,test_num,'- Checking',art_acc_link['artwork'],'to',art_acc_link['account'],art_acc_link['link'],'link # Found',count_in_db,'time(s)')
+	return test_num
