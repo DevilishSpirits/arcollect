@@ -56,12 +56,14 @@ static const char* json_string(rapidjson::Value::ConstValueIterator iter, const 
 	} else return NULL;
 }
 
-static void data_saveto(const char* data_string, std::filesystem::path target, const char* referer)
+static std::optional<std::string> data_saveto(const char* data_string, std::filesystem::path target, const char* referer)
 {
 	// Check for "https://" schema (and it take 8 bytes exactly...)
 	// TODO FIXME Check data_string length !!!
 	if (*reinterpret_cast<const uint64_t*>(data_string) == *reinterpret_cast<const uint64_t*>("https://")) {
 		// TODO Error handling
+		char curl_errorbuffer[CURL_ERROR_SIZE];
+		std::optional<std::string> result;
 		FILE* file = fopen(target.string().c_str(),"wb");
 		auto easyhandle = curl_easy_init(); 
 		curl_easy_setopt(easyhandle,CURLOPT_URL,data_string);
@@ -69,16 +71,24 @@ static void data_saveto(const char* data_string, std::filesystem::path target, c
 		curl_easy_setopt(easyhandle,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS); // FIXME Should I be HTTPS-only ?
 		curl_easy_setopt(easyhandle,CURLOPT_REFERER,referer);
 		curl_easy_setopt(easyhandle,CURLOPT_USERAGENT,user_agent.c_str());
+		curl_easy_setopt(easyhandle,CURLOPT_ERRORBUFFER,curl_errorbuffer);
 		
-		curl_easy_perform(easyhandle); // TODO Error checkings
-		curl_easy_cleanup(easyhandle);
+		CURLcode curl_res = curl_easy_perform(easyhandle);
 		fclose(file);
+		
+		if (curl_res != CURLE_OK) {
+			result = std::string(curl_errorbuffer);
+			std::filesystem::remove(target);
+		}
+		curl_easy_cleanup(easyhandle);
+		return result;
 	} else {
 		// Assume base64 encoding
 		// TODO Decode in-place
 		std::string binary;
 		macaron::Base64::Decode(data_string,binary);
 		std::ofstream(target) << binary;
+		return std::nullopt;
 	}
 }
 
@@ -336,7 +346,9 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 			case SQLITE_ROW: {
 				// Save artwork
 				artwork.second.art_id = insert_stmt->column_int64(0);
-				data_saveto(artwork.second.data,Arcollect::path::artwork_pool / std::to_string(artwork.second.art_id),artwork.second.art_source);
+				auto saveto_res = data_saveto(artwork.second.data,Arcollect::path::artwork_pool / std::to_string(artwork.second.art_id),artwork.second.art_source);
+				if (saveto_res)
+					return saveto_res;
 			} break;
 			case SQLITE_DONE: {
 			} break;
@@ -377,7 +389,9 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 						// Save profile icon
 						account.second.acc_arcoid = insert_stmt->column_int64(0);
 						std::ofstream account_file(Arcollect::path::account_avatars / std::to_string(account.second.acc_arcoid));
-						data_saveto(account.second.icon_data,Arcollect::path::account_avatars / std::to_string(account.second.acc_arcoid),account.second.acc_url);
+						auto saveto_res = data_saveto(account.second.icon_data,Arcollect::path::account_avatars / std::to_string(account.second.acc_arcoid),account.second.acc_url);
+						if (saveto_res)
+							return saveto_res;
 					} break;
 					case SQLITE_DONE: {
 					} break;
