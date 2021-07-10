@@ -181,10 +181,15 @@ jobs:
         run: meson build --force-fallback-for=zlib -Denable_webextension=false # TODO Make it works on Windows
       - name: Build project
         run: ninja -C build
-      - name: Test project
-        run: ninja -C build test
       - name: Generate MSI
         run: ninja -C build packaging/arcollect.msi
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: msi-windows-2019
+          path: build/packaging/arcollect.msi
+      - name: Test project
+        run: ninja -C build test
       - name: Install MSI
         run: msiexec /i /q build/packaging/arcollect.msi
   check-webextensions-same:
