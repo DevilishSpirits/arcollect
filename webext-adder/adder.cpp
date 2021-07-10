@@ -558,8 +558,10 @@ std::string handle_json_dom(rapidjson::Document &json_dom)
 	else result_json += "true";
 	if (transaction_id)
 		result_json += ",\"transaction_id\":\"" + escape_json(transaction_id) + "\"";
-	if (reason)
+	if (reason) {
 		result_json += ",\"reason\":\"" + escape_json(reason->c_str()) + "\"";
+		std::cerr << "Addition failed: " << *reason << std::endl;
+	}
 	
 	return result_json+"}";
 }
