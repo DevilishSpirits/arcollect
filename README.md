@@ -31,22 +31,20 @@ Currently these platforms are supported :
 
 ## Installation
 Only recent Linux distributions with Firefox are supported right-now.
+*Microsoft Windows support is coming soon...*
 
-I recommend you to build the source code from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.9), there is also some prebuilt packages. Checkout also the [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.9#readme) of this version.
+I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.9) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.9#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
 
-You must also install/update the webextension in your web-browser to use Arcollect.
-
-After getting the source code, install Meson. You should also install SQLite, SDL2, his image and ttf modules and libcurl.
-
-To build and install Arcollect on a Linux machine, open a shell in source root and then :
+If you want to build the software yourself, grab the source code, install Meson (>0.57.1), SQLite, SDL2, his image and ttf modules and libcurl. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
 
 ```sh
 	# Ensure that you have a working version of Meson
 	pip3 install meson>=0.57.1
 	# Configure the project with release configuration
 	meson build -Dbuildtype=release -Db_lto=true -Dstrip=true -Denable_webextension=false
-	# Install the program in /usr/local prefix (require root privileges)
-	ninja install -C build
+	# Don't do that but you can install the program in /usr/local prefix
+	# This won't works on Windows target, generate the MSI instead.
+	#ninja install -C build
 ```
 Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge versions of dependencies to run. Most problematic ones are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. After installing Meson 0.57.1 (at least) from PyPI, things should works out-of-the-box and does on GitHub Actions Ubuntu 20.04 VM. Ubuntu 18.04 works if you build with Clang (`CC=clang CXX=clang++ meson build ...`).
 
