@@ -16,6 +16,9 @@
 						</Component>
 						<Component Id='NativeMessagingHosts' Guid='441491DA-5A6B-4C01-8A8D-DF3E7E2F4123'>
 							<File Id='NativeMessagingFirefox' Name='native-message-firefox.json' DiskId='1' Source='$(var.built_mozilla_manifest)' KeyPath='yes'/>
+							<RegistryKey Root="HKLM" Key="SOFTWARE\Mozilla\NativeMessagingHosts\arcollect_webext_adder">
+								<RegistryValue Type="string" Value="[INSTALLDIR]native-message-firefox.json"/>
+							</RegistryKey>
 						</Component>
 					</Directory>
 				</Directory>
