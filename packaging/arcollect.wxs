@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-	<Product Name='Arcollect $(var.ARCOLLECT_VERSION)' Id='7D81775F-86C7-4D14-AEC0-86416A69ABDE' UpgradeCode='7D81775F-7349-453F-94F6-BCB5110BA4FD' Language='1033' Codepage='1252' Version='1.0.0' Manufacturer='DevilishSpirits'>
+	<Product Name='Arcollect $(var.ARCOLLECT_VERSION)' Id='7D81775F-86C7-4D14-AEC0-86416A69ABDE' UpgradeCode='7D81775F-7349-453F-94F6-BCB5110BA4FD' Language='1033' Codepage='1252' Version='$(var.ARCOLLECT_VERSION)' Manufacturer='DevilishSpirits'>
 		<Package Id='*' Keywords='Installer' Description="Arcollect $(var.ARCOLLECT_VERSION) Installer" Comments='Your personal artwork library.' Manufacturer='DevilishSpirits' InstallerVersion='310' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 		<Media Id='1' Cabinet='Main.cab' EmbedCab='yes' />
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
