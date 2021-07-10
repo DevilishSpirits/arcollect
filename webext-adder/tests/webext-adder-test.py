@@ -55,12 +55,12 @@ for test_set_path in sys.argv[2:]:
 	if stdout_json['success']:
 		print('ok',test_num,'- Web-ext adder for',test_set_path)
 	else:
-		print('not ok',test_num,'- Web-ext adder #',stdout_json['reason'])
+		print('not ok',test_num,'- Web-ext adder for',test_set_path,'#',stdout_json['reason'])
 		webext_success = False
 	
 if not webext_success:
-	print('Bail Out! Addition failed')
-	os.exit(1)
+	print('Bail out! Addition failed')
+	sys.exit(1)
 
 print('# Starting database checks')
 db = db_check.open_db()
