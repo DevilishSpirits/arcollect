@@ -15,7 +15,7 @@ static void write_ttf_file(const char* ttf_file_path, const std::string &var_nam
 {
 	std::cerr << "Including \"" << ttf_file_path << "\" as Arcollect::Roboto::" << var_name << std::endl;
 	char ttf_file[524288];
-	std::ifstream ttf(ttf_file_path);
+	std::ifstream ttf(ttf_file_path,std::fstream::binary);
 	//ttf.exceptions(ttf.failbit|ttf.badbit);
 	ttf.read(ttf_file,sizeof(ttf_file));
 	// Fail if not at EOF
