@@ -28,13 +28,15 @@ destdir_target = custom_target('destdir',
 
 # destdir_md5sum
 # This target run md5sum on DESTDIR (destdir_target)
-md5sum_target = custom_target('destdir_md5sum',
-	command: [sh_prog,'-c','cd \''+destdir_target.full_path()+'\' && find usr -type f | exec xargs md5sum'],
-	output: 'md5sums',
-	capture: true,
-	depends: destdir_target,
-	build_by_default: false,
-)
+if sh_prog.found()
+	md5sum_target = custom_target('destdir_md5sum',
+		command: [sh_prog,'-c','cd \''+destdir_target.full_path()+'\' && find usr -type f | exec xargs md5sum'],
+		output: 'md5sums',
+		capture: true,
+		depends: destdir_target,
+		build_by_default: false,
+	)
+endif
 
 # Check what have been statically linked
 if enable_native_progs
@@ -115,7 +117,7 @@ endforeach
 dpkg_architecture_prog = find_program('dpkg-architecture', required: false, native: true)
 tar_prog = find_program('tar', required: false, native: true)
 ar_prog  = find_program('ar', required: false, native: true)
-if dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found()
+if dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found() and sh_prog.found()
 	# Get the "Architecture:" field using dpkg-achitecture
 	dpkg_architecture_run = run_command(dpkg_architecture_prog,'-q','DEB_HOST_ARCH', check: true)
 	
