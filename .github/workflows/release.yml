@@ -22,28 +22,6 @@ jobs:
         with:
           name: archlinux-package
           path: build/packaging
-  test-wrapped:
-    runs-on: [archlinux]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: build
-          setup-options: -Dbuildtype=release -Db_lto=true -Dstrip=true -Denable_webextension=false --force-fallback-for sqlite,libcurl,sdl2,sdl2_image,sdl2_ttf
-          meson-version: 0.57.1
-      - name: Test project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: test
-          meson-version: 0.57.1
-      - name: Install project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: install
-          meson-version: 0.57.1
-        env:
-          DESTDIR: "archive-out"
   ubuntu-18_04-package:
     runs-on: [ubuntu-18.04]
     steps:
@@ -114,7 +92,7 @@ jobs:
           path: debian-package 
   build-webextension:
     # Simply build the webextension (only)
-    needs: [archlinux-package, test-wrapped, ubuntu-20_04-package, ubuntu-18_04-package]
+    needs: [archlinux-package, ubuntu-20_04-package, ubuntu-18_04-package]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
