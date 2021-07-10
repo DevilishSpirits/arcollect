@@ -25,13 +25,12 @@ Currently these platforms are supported :
 
 *Your favorite platform may be missing. Read `NEW-PLATFORM.md` (this is important !) to learn how to integrate your platform then feel free to code the extension and share your work.*
 
-*Chromiums, Windows and macOS support are also welcome. Please, keep things simple and cross-patform, you have C++ and the SDL, use them. However, I am not against platform specific integration.*
+*Chromiums and macOS support are also welcome. Please, keep things simple and cross-patform, you have C++ and the SDL, use them. However, I am not against platform specific integration.*
 
 *This project also lack internationalization, translations, color management and real font rendering.*
 
 ## Installation
-Only recent Linux distributions with Firefox are supported right-now.
-*Microsoft Windows support is coming soon...*
+Recent Linux distributions and Microsoft Windows with Firefox are supported.
 
 I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.9) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.9#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
 
