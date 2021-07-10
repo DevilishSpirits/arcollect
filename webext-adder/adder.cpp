@@ -20,6 +20,7 @@
 #include <fstream>
 #include <functional>
 #include <unordered_map>
+#include <optional>
 #include <vector>
 #include <arcollect-paths.hpp>
 #include <rapidjson/document.h>
@@ -265,17 +266,8 @@ map_type json_parse_objects(rapidjson::Document &json_dom, const char* json_key,
 
 extern bool debug;
 
-std::string handle_json_dom(rapidjson::Document &json_dom)
+static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 {
-	// Get the transaction_id
-	const char* transaction_id = NULL;
-	if (json_dom.HasMember("transaction_id") && json_dom["transaction_id"].IsString()) {
-		transaction_id = json_dom["transaction_id"].GetString();
-		if (debug)
-			std::cerr << "transaction_id set to \"" << transaction_id << "\"" << std::endl;
-	}
-	// Prepare success_js
-	std::string success_js = "{\"success\": true" + (transaction_id ? (", \"transaction_id\": \"" + std::string(transaction_id) + "\"") : "" ) + "}";
 	// Get some constants platform
 	const std::string platform = json_dom["platform"].GetString();
 	if (debug) {
@@ -484,8 +476,76 @@ std::string handle_json_dom(rapidjson::Document &json_dom)
 		}
 		insert_stmt->reset();
 	}
+	// Return success
+	return std::nullopt;
+}
+
+static std::string escape_json(const char* input)
+{
+	std::string output;
+	for (;*input;input++)
+		switch (*input) {
+			case '\\':output += "\\\\";break;
+			case '"' :output += "\\\'";break;
+			case '\0':output += "\\u0000";break;
+			case 0x01:output += "\\u0001";break;
+			case 0x02:output += "\\u0002";break;
+			case 0x03:output += "\\u0003";break;
+			case 0x04:output += "\\u0004";break;
+			case 0x05:output += "\\u0005";break;
+			case 0x06:output += "\\u0006";break;
+			case 0x07:output += "\\u0007";break;
+			case '\b':output += "\\b";break;
+			case '\t':output += "\\t";break;
+			case '\n':output += "\\n";break;
+			case 0x0B:output += "\\u000B";break;
+			case 0x0C:output += "\\u000C";break;
+			case '\r':output += "\\r";break;
+			case 0x0E:output += "\\u000E";break;
+			case 0x0F:output += "\\u000F";break;
+			case 0x11:output += "\\u0011";break;
+			case 0x12:output += "\\u0012";break;
+			case 0x13:output += "\\u0013";break;
+			case 0x14:output += "\\u0014";break;
+			case 0x15:output += "\\u0015";break;
+			case 0x16:output += "\\u0016";break;
+			case 0x17:output += "\\u0017";break;
+			case 0x18:output += "\\u0018";break;
+			case 0x19:output += "\\u0019";break;
+			case 0x1A:output += "\\u001A";break;
+			case 0x1B:output += "\\u001B";break;
+			case 0x1C:output += "\\u001C";break;
+			case 0x1D:output += "\\u001D";break;
+			case 0x1E:output += "\\u001E";break;
+			case 0x1F:output += "\\u001F";break;
+			default  :output += *input;break;
+		}
+	return output;
+}
+std::string handle_json_dom(rapidjson::Document &json_dom)
+{
+	// Get the transaction_id
+	const char* transaction_id = NULL;
+	if (json_dom.HasMember("transaction_id") && json_dom["transaction_id"].IsString()) {
+		transaction_id = json_dom["transaction_id"].GetString();
+		if (debug)
+			std::cerr << "transaction_id set to \"" << transaction_id << "\"" << std::endl;
+	}
+	// Perform addition
+	std::optional<std::string> reason = do_add(json_dom);
+	// Commit or rollback
+	if (reason)
+		db->exec("ROLLBACK;"); // TODO Check errors
+	else db->exec("COMMIT;"); // TODO Check errors
 	
-	db->exec("COMMIT;");
-	// Send success_js
-	return success_js;
+	std::string result_json = "{\"success\":";
+	if (reason)
+		result_json += "false";
+	else result_json += "true";
+	if (transaction_id)
+		result_json += ",\"transaction_id\":\"" + escape_json(transaction_id) + "\"";
+	if (reason)
+		result_json += ",\"reason\":\"" + escape_json(reason->c_str()) + "\"";
+	
+	return result_json+"}";
 }
