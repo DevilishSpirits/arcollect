@@ -37,9 +37,7 @@ webext_appmanifest_firefox_windows = configure_file(input: 'appmanifest-firefox.
 webext_appmanifest_firefox_windows_full_path = meson.current_build_dir()/'appmanifest-firefox-windows.json'
 
 if host_machine.system() == 'windows'
-	webext_appmanifest_firefox_installdir = get_option('libdir') / 'arcollect'
-	warning('Native application manifest is a WIP')
-	# TODO Windows support
+	webext_appmanifest_firefox_installdir = ''
 elif host_machine.system() == 'darwin'
 	webext_appmanifest_firefox_installdir = '/Library/Application Support/Mozilla/NativeMessagingHosts/'
 else # Assume Linux-like
