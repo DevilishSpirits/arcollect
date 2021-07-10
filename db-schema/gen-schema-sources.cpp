@@ -51,7 +51,7 @@ static void write_sql_file(const char* sql_file_path, const std::string &var_nam
 		COMMENT_BEGIN, // We read a '/', maybe the start of a comment
 		COMMENT_IN,   // We are in a comment
 		COMMENT_END, // We read a '*', maybe the end of the comment
-	} comment_state;
+	} comment_state = COMMENT_NO;
 	// case: on blanks chars
 	#define case_blank case ' ':case '\t':case '\n':case '\r'
 	for (auto i = 0; i < sql_size; i++)
