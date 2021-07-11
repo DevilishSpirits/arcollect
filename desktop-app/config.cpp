@@ -31,9 +31,6 @@ void Arcollect::config::read_config(void)
 	start_window_mode.value = reader.GetInteger("arcollect","start_window_mode",start_window_mode.default_value);
 	current_rating.value = reader.GetInteger("arcollect","current_rating",current_rating.default_value);
 	image_memory_limit.value = reader.GetInteger("arcollect","image_memory_limit",image_memory_limit.default_value);
-	
-	// Save back updated file
-	write_config();
 }
 void Arcollect::config::write_config(void)
 {
@@ -42,7 +39,7 @@ void Arcollect::config::write_config(void)
 	       << "; Arcollect configuration file\n"
 	       << "; This file contain Arcollect configuration\n"
 	       << "; Your library is stored at " << Arcollect::path::arco_data_home << "\n"
-	       << "; Note: This file is rewritten upon each start and your comments will be lost\n"
+	       << "; Note: Your comments won't be preserved\n"
 	       << "\n"
 	       << "; first_run - Whether you did the first run for this version\n"
 	       << "first_run=" << first_run << '\n'
