@@ -42,6 +42,13 @@
 		<UIRef Id="WixUI_InstallDir" />
 		<UIRef Id="WixUI_ErrorProgressText" />
 		<WixVariable Id="WixUILicenseRtf" Value="../COPYING.rtf" />
+		<Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="IMPORTANT!!! You can't save artworks without the associated web-extension. Go on
+http://github.com/DevilishSpirits/arcollect/releases/tag/v$(var.ARCOLLECT_VERSION) and click on your browser extension :
+ - For Firefox, click on the .xpi file
+ - Other browsers are not supported
+
+Then checkout artworks you love and save them !" />
+		
 		<Icon Id="arcollect.exe" SourceFile="$(var.built_arcollect_exe)" />
 	</Product>
 </Wix>
