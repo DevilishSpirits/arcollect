@@ -40,7 +40,7 @@ static void main_thread(void)
 			artwork = pending_thread.back();
 			pending_thread.pop_back();
 			// Ensure the artwork is not already loaded
-			if (done.find(artwork) != done.end())
+			if ((done.find(artwork) != done.end()) || artwork->texture_is_loaded())
 				continue;
 		}
 		// Load the artwork
