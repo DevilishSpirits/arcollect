@@ -19,6 +19,7 @@
 #include "../sdl2-hpp/SDL.hpp"
 #include "../config.hpp"
 #include <cstddef>
+#include <list>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -53,7 +54,14 @@ namespace Arcollect {
 				Arcollect::config::Rating art_rating;
 				std::unordered_map<std::string,std::vector<std::shared_ptr<account>>> linked_accounts;
 				std::unique_ptr<SDL::Texture> text;
+				std::list<std::reference_wrapper<artwork>>::iterator last_rendered_iterator;
 			public:
+				/** Return wether texture is loaded
+				 * \return true is the texture in loaded in memory
+				 */
+				inline bool texture_is_loaded(void) const {
+					return text.get() != NULL;
+				}
 				/** Query artwork loading
 				 *
 				 * The artwork is pushed onto the artwork loader stack.
@@ -73,6 +81,14 @@ namespace Arcollect {
 				 * in the loader thread.
 				 */
 				void texture_loaded(std::unique_ptr<SDL::Texture> &texture);
+				/** Unload texture
+				 *
+				 * This function is called by the main thread when
+				 * Arcollect::config::image_memory_limit is exceeded.
+				 *
+				 * It free texture data and remove myself from #last_rendered list.
+				 */
+				void texture_unload(void);
 				/** Query the texture
 				 * \return The texture or NULL if it is not loaded right-now.
 				 * 
@@ -138,6 +154,16 @@ namespace Arcollect {
 				 * This function create or return a cached version of the #Arcollect::db::artwork.
 				 */
 				static std::shared_ptr<artwork> &query(Arcollect::db::artwork_id art_id);
+				
+				/** Last render list
+				 *
+				 * This list is used to tack which artworks has been rendered most
+				 * recently and to only unload artworks which have not been rendered
+				 * recently.
+				 *
+				 * The front contain the most recently rendered artwork
+				 */
+				static std::list<std::reference_wrapper<artwork>> last_rendered;
 		};
 	}
 }

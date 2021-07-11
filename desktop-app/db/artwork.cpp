@@ -22,6 +22,7 @@
 #include <iostream>
 #include <SDL_image.h>
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::artwork>> artworks_pool;
+std::list<std::reference_wrapper<Arcollect::db::artwork>> Arcollect::db::artwork::last_rendered;
 
 Arcollect::db::artwork::artwork(Arcollect::db::artwork_id art_id) :
 	data_version(-2),
@@ -63,6 +64,16 @@ void Arcollect::db::artwork::texture_loaded(std::unique_ptr<SDL::Texture> &textu
 		set_size_stmt->step();
 		database->exec("COMMIT;");
 	}
+	// Set last_rendered_iterator
+	last_rendered.emplace_front(*this);
+	last_rendered_iterator = last_rendered.begin();
+}
+void Arcollect::db::artwork::texture_unload(void)
+{
+	// Free texture
+	text.reset();
+	// Erase myself from last_rendered
+	last_rendered.erase(last_rendered_iterator);
 }
 std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 {
@@ -79,9 +90,12 @@ std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
 {
 	std::unique_ptr<SDL::Texture> &text = query_texture();
-	if (text)
+	if (text) {
+		// Bump me in last_rendered list
+		last_rendered.splice(last_rendered.begin(),last_rendered,last_rendered_iterator);
+		// Render
 		return renderer->Copy(text.get(),NULL,dstrect);
-	else {
+	}else {
 		// Render a placeholder
 		renderer->SetDrawColor(0,0,0,192);
 		return renderer->FillRect(*dstrect);

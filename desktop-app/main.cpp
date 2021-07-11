@@ -175,6 +175,12 @@ int main(int argc, char *argv[])
 			if (Arcollect::db::artwork_loader::pending_main.size())
 				Arcollect::db::artwork_loader::pending_thread = std::move(Arcollect::db::artwork_loader::pending_main);
 		}
+		// Unload artworks if exceeding image_memory_limit
+		while (Arcollect::db::artwork_loader::image_memory_usage>>20 > Arcollect::config::image_memory_limit) {
+			Arcollect::db::artwork& artwork = *--Arcollect::db::artwork::last_rendered.end();
+			Arcollect::db::artwork_loader::image_memory_usage -= artwork.image_memory();
+			artwork.texture_unload();
+		}
 		// Query artworks to preload
 		if (preload_artworks_stmt) {
 			preload_artworks_stmt->reset();
