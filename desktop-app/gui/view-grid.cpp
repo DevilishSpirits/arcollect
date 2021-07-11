@@ -141,6 +141,12 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	// Create right viewports if needed
 	// NOTE! right_y is offset by minus one row
 	while ((right_y < scroll_target + rect.h + artwork_height) && !layout_invalid && (*right_iter != end_iter) && new_line_right(right_y));
+	// Stop scrolling if bottom is hit
+	if (scroll_target + rect.h > right_y)
+		scroll_target = right_y - rect.h;
+	// Stop scrolling if top is hit
+	if (scroll_target < 0)
+		scroll_target = 0;
 	// Drop left viewports if too much
 	while ((left_y < scroll_origin - 2 * artwork_height)&&(left_y < scroll_target - 2 * artwork_height)) {
 		*left_iter += viewports.front().size();
@@ -153,12 +159,6 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 		viewports.pop_back();
 		right_y -= artwork_height + artwork_margin.y;
 	}
-	// Stop scrolling if bottom is hit
-	if (scroll_target + rect.h > right_y)
-		scroll_target = right_y - rect.h;
-	// Stop scrolling if top is hit
-	if (scroll_target < 0)
-		scroll_target = 0;
 	// Do scrolling
 	scroll_position = scroll_target;
 }
