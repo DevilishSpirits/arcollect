@@ -26,6 +26,9 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e)
 	switch (e.type) {
 		case SDL_WINDOWEVENT: {
 		} return true;
+		case SDL_MOUSEBUTTONDOWN: {
+			pop();
+		} return true;
 		case SDL_KEYDOWN: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_BACKSPACE: {
