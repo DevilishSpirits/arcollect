@@ -52,19 +52,15 @@ static bool bool_debug_flag(const char* env_var)
 	return (value != NULL) && (env_var[0] != '\0') && (env_var[0] != '0');
 }
 
-#define WITH_DEBUG // TODO Made this a project option
 int main(int argc, char *argv[])
 {
 	// Read config
 	Arcollect::config::read_config();
-	#ifdef WITH_DEBUG
 	/** Debug redraws.
 	 *
 	 * Print frame rate and a moving square from left to right at each frame redraw.
 	 */
 	bool debug_redraws = Arcollect::debug::is_on("redraws");
-	SDL::Rect debug_redraws_rect{0,0,32,32};
-	#endif
 	// Init SDL
 	SDL::Hint::SetRenderScaleQuality(SDL::Hint::RENDER_SCALE_QUALITY_BEST);
 	if (SDL::Init(SDL::INIT_VIDEO)) {
@@ -113,6 +109,7 @@ int main(int argc, char *argv[])
 	bool done = false;
 	Arcollect::gui::time_now = SDL_GetTicks();
 	while (true/*!done*/) {
+		Uint32 loop_start_ticks = SDL_GetTicks();
 		// Wait for event
 		bool saved_animation_running = Arcollect::gui::animation_running;
 		Arcollect::gui::animation_running = false;
@@ -125,6 +122,7 @@ int main(int argc, char *argv[])
 		Arcollect::gui::time_framedelta = Arcollect::gui::time_now-new_ticks;
 		Arcollect::gui::time_now = new_ticks;
 		// Handle event
+		Uint32 event_start_ticks = SDL_GetTicks();
 		while (has_event) {
 			if (Arcollect::gui::window_borders::event(e)) {
 				// Propagate event to modals
@@ -143,6 +141,7 @@ int main(int argc, char *argv[])
 			break;
 		// Check for DB updates
 		Arcollect::update_data_version();
+		Uint32 render_start_ticks = SDL_GetTicks();
 		// Render frame
 		renderer->SetDrawColor(0,0,0,0);
 		renderer->Clear();
@@ -155,10 +154,8 @@ int main(int argc, char *argv[])
 			iter.get().render();
 		}
 		Arcollect::gui::window_borders::render();
-		#ifdef WITH_DEBUG
-		if (!debug_redraws)
-		#endif
-		renderer->Present();
+		Uint32 loader_start_ticks = SDL_GetTicks();
+		auto load_pending_count = Arcollect::db::artwork_loader::pending_main.size();
 		// Erase artwork_loader pending list and load artworks into texture
 		{
 			std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
@@ -183,27 +180,99 @@ int main(int argc, char *argv[])
 			while (preload_artworks_stmt->step() == SQLITE_ROW)
 				Arcollect::db::artwork::query(preload_artworks_stmt->column_int64(0))->queue_for_load();
 		}
-		#ifdef WITH_DEBUG
 		// Redraws debugging
 		if (debug_redraws) {
-			static Uint32 last_frame_time_now = 0;
-			debug_redraws_rect.x++;
-			debug_redraws_rect.x %= 500;
-			renderer->SetDrawColor(255,255,255,255);
-			renderer->FillRect(debug_redraws_rect);
-			renderer->SetDrawColor(0,0,0,255);
-			renderer->DrawRect(debug_redraws_rect);
-			Uint32 render_time = SDL_GetTicks() - new_ticks;
-			Uint32 events_time = new_ticks - last_frame_time_now;
-			std::cerr << "Render: " << render_time << "ms/" << 1000.f/render_time << " FPS"
-			          << "\tEvents:" << events_time << "ms" 
-			          << "\tTotal:" << render_time + events_time << "ms/" << 1000.f/(render_time + events_time) << " FPS\t("
-			          <<  "animation_running:" << (saved_animation_running ? "y" : "n")
-			          << ")." << std::endl;
-			last_frame_time_now = new_ticks;
-			renderer->Present();
+			Uint32 final_ticks = SDL_GetTicks();
+			struct debug_sample {
+				Uint32   idle;
+				Uint32  event;
+				Uint32 render;
+				Uint32 loader;
+				Uint32  frame;
+				decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending;
+				
+				debug_sample(Uint32 loop_start_ticks, Uint32 event_start_ticks, Uint32 render_start_ticks, Uint32 loader_start_ticks, Uint32 final_ticks, decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending) : 
+					idle  (event_start_ticks  -   loop_start_ticks),
+					event (render_start_ticks -  event_start_ticks),
+					render(loader_start_ticks - render_start_ticks),
+					loader(final_ticks        - loader_start_ticks),
+					frame (final_ticks        -  event_start_ticks),
+					load_pending(load_pending)
+				{
+				}
+				debug_sample(void) = default;
+				
+				debug_sample max(const debug_sample &right) {
+					debug_sample result;
+					result.idle   = std::max(idle  ,right.idle  );
+					result.event  = std::max(event ,right.event );
+					result.render = std::max(render,right.render);
+					result.loader = std::max(loader,right.loader);
+					result.frame  = std::max(frame ,right.frame );
+					result.load_pending = std::max(load_pending,right.load_pending);
+					return result;
+				}
+				static inline void draw_time_bar(SDL::Rect &time_bar, Uint32 var, Uint8 r, Uint8 g, Uint8 b) {
+					time_bar.w  = var;
+					renderer->SetDrawColor(r,g,b,255);
+					renderer->FillRect(time_bar);
+					time_bar.x += var;
+				}
+				void draw_time_bar(SDL::Rect time_bar) {
+					draw_time_bar(time_bar,event ,255,255,0  );
+					draw_time_bar(time_bar,render,0  ,255,255);
+					draw_time_bar(time_bar,loader,255,0  ,0  );
+				}
+				std::string print(void) {
+					return "	Idle  : " + std::to_string(idle  ) + "ms\n"
+					+ "	Event : " + std::to_string(event ) + "ms\n"
+					+ "	Render: " + std::to_string(render) + "ms\n"
+					+ "	Loader: " + std::to_string(loader) + "ms " + std::to_string(load_pending) + " artworks pending\n"
+					+ "	Total = " + std::to_string(frame ) + "ms/"+std::to_string(1000.f/frame)+"FPS\n"
+					;
+				}
+			};
+			debug_sample frame_sample(loop_start_ticks,event_start_ticks,render_start_ticks,loader_start_ticks,final_ticks,load_pending_count);
+			
+			static Uint32 last_second_tick = 0;
+			static debug_sample last_second_sample;
+			constexpr const auto last_second_reset_interval = 3000;
+			if (last_second_tick != final_ticks/last_second_reset_interval) {
+				last_second_tick    = final_ticks/last_second_reset_interval;
+				last_second_sample  = debug_sample(0,0,0,0,0,0);
+			}
+			last_second_sample = last_second_sample.max(frame_sample);
+			
+			std::string stats = "Tick: " + std::to_string(final_ticks) + "\n"
+				+ "Frame stats:\n"+ frame_sample.print()
+				+ "Maximums (reset in " + std::to_string((last_second_reset_interval-final_ticks)%last_second_reset_interval) + "ms):\n"+ last_second_sample.print()
+				//+ "animation_running:" + (saved_animation_running ? "y" : "n")
+			;
+			std::cerr << stats << std::endl;
+			// Render debug window
+			Arcollect::gui::Font font;
+			Arcollect::gui::TextPar debug_par(font,stats,14);
+			SDL::Texture* debug_par_text(debug_par.render(800));
+			SDL::Point debug_par_size;
+			debug_par_text->QuerySize(debug_par_size);
+			SDL::Rect debug_par_text_dstrect{5,10,debug_par_size.x,debug_par_size.y};
+			SDL::Rect debug_box_dstrect{0,0,debug_par_text_dstrect.w+5+debug_par_text_dstrect.x,debug_par_text_dstrect.h+5+debug_par_text_dstrect.y};
+			renderer->SetDrawBlendMode(SDL::BLENDMODE_BLEND);
+			renderer->SetDrawColor(0,0,0,224);
+			renderer->FillRect(debug_box_dstrect);
+			renderer->Copy(debug_par_text,NULL,&debug_par_text_dstrect);
+			
+			// Render time bar
+			frame_sample.draw_time_bar({0,0,0,4});
+			last_second_sample.draw_time_bar({0,4,0,1});
+			// Draw 60FPS mark
+			renderer->SetDrawColor(0,255,0,192);
+			renderer->DrawLine(1000.f/60,0,1000.f/60,7);
+			// Draw 30FPS mark
+			renderer->SetDrawColor(255,255,0,192);
+			renderer->DrawLine(1000.f/30,0,1000.f/30,7);
 		}
-		#endif
+		renderer->Present();
 	}
 	// Cleanups
 	// Erase artwork_loader pending list
