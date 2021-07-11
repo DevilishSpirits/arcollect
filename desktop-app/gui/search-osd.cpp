@@ -29,8 +29,15 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e)
 		case SDL_KEYDOWN: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_BACKSPACE: {
-					if (!text.empty())
+					// Delete char
+					if (!text.empty()) {
+						if (text.back() & 0x80)
+							// Remove all UTF-8 code points
+							while ((text.back() & 0xC0) == 0x80)
+								text.pop_back();
 						text.pop_back();
+					}
+					// Refresh search
 					update_background(text,true);
 				} break;
 				default: {
