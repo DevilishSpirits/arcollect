@@ -104,7 +104,7 @@ namespace Arcollect {
 			 *
 			 * This is an optimized "divide-and-conquer" search.
 			 */
-			artwork_collection::iterator find_artid_randomized(const std::shared_ptr<db::artwork> &artwork) {
+			artwork_collection::iterator find_artid_randomized(const std::shared_ptr<db::artwork> &artwork, bool nearest) {
 				decltype(ids)::size_type left = 0;
 				decltype(ids)::size_type size = ids.size();
 				auto target = db::artid_randomize(artwork->art_id);
@@ -121,10 +121,15 @@ namespace Arcollect {
 						left += size + 1;
 					//else size will be shrink on next loop iteration, nothing to do
 				}
-				return end();
+				if (nearest)
+					return artwork_collection::iterator(new iterator(ids.begin()+left));
+				else return end();
 			}
 			artwork_collection::iterator find(const std::shared_ptr<db::artwork> &artwork) override {
-				return find_artid_randomized(artwork);
+				return find_artid_randomized(artwork,false);
+			}
+			artwork_collection::iterator find_nearest(const std::shared_ptr<db::artwork> &artwork) override {
+				return find_artid_randomized(artwork,true);
 			}
 		};
 	}

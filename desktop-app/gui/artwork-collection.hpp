@@ -106,6 +106,16 @@ namespace Arcollect {
 					for (; (iter != iter_end) && (*iter != artwork); ++iter);
 					return iter;
 				}
+				/** Find the nearest iterator to an artwork
+				 * \param artwork The artwork to find
+				 * \return An iterator near the artwork, may return end()
+				 * 
+				 * Actually default implementation is find().. The collection may
+				 * override this function with a near finding algorithm.
+				 */
+				virtual iterator find_nearest(const std::shared_ptr<db::artwork> &artwork) {
+					return find(artwork);
+				}
 				virtual ~artwork_collection(void) = default;
 		};
 	}

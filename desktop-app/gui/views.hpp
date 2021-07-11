@@ -53,10 +53,18 @@ namespace Arcollect {
 				SDL::Rect rect;
 				// The main artwork viewport
 				artwork_viewport viewport;
-				std::shared_ptr<db::artwork> last_artwork;
 				bool size_know = false;
 				std::unique_ptr<artwork_collection::iterator> collection_iterator;
 			public:
+				/** Artwork to target
+				 *
+				 * When calling set_collection(), try to display the #target_artwork or
+				 * the nearest one.
+				 *
+				 * This make a natural behavior during searchs where the slideshow seem
+				 * to "remember" the last artwork when you erase search.
+				 */
+				std::shared_ptr<db::artwork> target_artwork;
 				void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) override;
 				void resize(SDL::Rect rect) override;
 				void set_collection_iterator(const artwork_collection::iterator &iter);

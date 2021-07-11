@@ -21,14 +21,11 @@
 void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
 {
 	collection = new_collection;
-	// Save last_artwork if it's valid
-	if (viewport.artwork)
-		last_artwork = viewport.artwork;
 	auto new_collection_iterator = new_collection->begin();
 	if (new_collection_iterator != new_collection->end()) {
 		// Avoid resetting the artwork to new_collection->begin()
-		if (last_artwork) {
-			new_collection_iterator = new_collection->find(last_artwork);
+		if (target_artwork) {
+			new_collection_iterator = new_collection->find_nearest(target_artwork);
 			if (new_collection_iterator == new_collection->end())
 				new_collection_iterator = new_collection->begin();
 		} else new_collection_iterator = new_collection->begin();
@@ -180,7 +177,7 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 					if (viewport.artwork) {
 						++*collection_iterator;
 						if (*collection_iterator != collection->end()) {
-							viewport.artwork = **collection_iterator;
+							target_artwork = viewport.artwork = **collection_iterator;
 							resize(rect);
 						} else --*collection_iterator; // Rewind
 					}
@@ -188,7 +185,7 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 				case SDL_SCANCODE_LEFT: {
 					if (viewport.artwork) {
 						if (*collection_iterator != collection->begin()) {
-							viewport.artwork = *--*collection_iterator;
+							target_artwork = viewport.artwork = *--*collection_iterator;
 							resize(rect);
 						}
 					}
@@ -196,14 +193,14 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 				case SDL_SCANCODE_HOME: {
 					if (viewport.artwork) {
 						collection_iterator = std::make_unique<gui::artwork_collection::iterator>(collection->begin());
-						viewport.artwork = **collection_iterator;
+						target_artwork = viewport.artwork = **collection_iterator;
 						resize(rect);
 					}
 				} break;
 				case SDL_SCANCODE_END: {
 					if (viewport.artwork) {
 						collection_iterator = std::make_unique<gui::artwork_collection::iterator>(collection->end());
-						viewport.artwork = *--*collection_iterator;
+						target_artwork = viewport.artwork = *--*collection_iterator;
 						resize(rect);
 					}
 				} break;

@@ -37,6 +37,7 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 			} return false;
 			case SDL_MOUSEBUTTONUP: {
 				if (mousedown_viewport && (mousedown_viewport == get_pointed({e.button.x,e.button.y}))) {
+					Arcollect::gui::background_slideshow.target_artwork = mousedown_viewport->artwork;
 					Arcollect::gui::background_slideshow.set_collection_iterator(*(mousedown_viewport->iter));
 					Arcollect::gui::modal_stack.pop_back();
 				}
