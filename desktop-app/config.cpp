@@ -21,6 +21,7 @@
 Arcollect::config::Param<int> Arcollect::config::first_run(0);
 Arcollect::config::Param<int> Arcollect::config::start_window_mode(Arcollect::config::STARTWINDOW_MAXIMIZED);
 Arcollect::config::Param<int> Arcollect::config::current_rating(Arcollect::config::RATING_ADULT); // FIXME Adult default is not a sane default for everyone
+Arcollect::config::Param<int> Arcollect::config::image_memory_limit(2048);
 
 void Arcollect::config::read_config(void)
 {
@@ -29,6 +30,7 @@ void Arcollect::config::read_config(void)
 	first_run.value = reader.GetInteger("arcollect","first_run",first_run.default_value);
 	start_window_mode.value = reader.GetInteger("arcollect","start_window_mode",start_window_mode.default_value);
 	current_rating.value = reader.GetInteger("arcollect","current_rating",current_rating.default_value);
+	image_memory_limit.value = reader.GetInteger("arcollect","image_memory_limit",image_memory_limit.default_value);
 	
 	// Save back updated file
 	write_config();
@@ -57,5 +59,11 @@ void Arcollect::config::write_config(void)
 	       << "; " << RATING_ADULT  << ": Adult content\n"
 	       << "; This option is set when you change current rating\n"
 	       << "current_rating=" << current_rating << '\n'
+	       << "\n"
+	       << "; image_memory_limit - The maximum amount of memory used by images in MiB\n"
+	       << "; This is a kind of VRAM limit. Arcollect will unload artworks when the size of loaded pixels exceed this value.\n"
+	       << "; The consumed memory is estimated by computing the size needed to store artworks in a uncompressed form.\n"
+	       << "; Default is " << image_memory_limit.default_value << " (" << image_memory_limit.default_value/1024 << " GiB)\n"
+	       << "image_memory_limit=" << image_memory_limit << '\n'
 	;
 }

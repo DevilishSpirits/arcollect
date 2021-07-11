@@ -24,6 +24,7 @@
 #include <iostream>
 #include <arcollect-paths.hpp>
 #include <config.h>
+#include <cstddef>
 namespace Arcollect {
 	/** `arcollect.ini` file configuration namespace
 	 *
@@ -94,5 +95,15 @@ namespace Arcollect {
 		 * This is a global filter on displayed artworks
 		 */
 		extern Param<int> current_rating;
+		
+		/** image_memory_limit - The maximum amount of memory used by images in MiB
+		 *
+		 * This is a kind of VRAM limit. Arcollect will unload artworks when the
+		 * size of loaded pixels exceed this value.
+		 *
+		 * The consumed memory is estimated by computing the size needed to store
+		 * artworks in a uncompressed form.
+		 */
+		extern Param<int> image_memory_limit;
 	}
 }
