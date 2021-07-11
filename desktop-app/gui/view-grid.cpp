@@ -38,6 +38,7 @@ void Arcollect::gui::view_vgrid::flush_layout(void)
 	left_y = 0;
 	right_y = 0;
 	// Force viewport regeneration
+	
 	do_scroll(0);
 	// Inhibate scroll
 	scroll_position.val_origin = scroll_position.val_target;
@@ -136,16 +137,16 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	
 	layout_invalid = false;
 	// Create left viewports if needed
-	while ((left_y < scroll_target) && !layout_invalid && new_line_left(left_y - artwork_height - artwork_margin.y));
-	// Drop left viewports if too much
-	while ((left_y > scroll_origin + 2 * artwork_height)&&(left_y > scroll_target + 2 * artwork_height)) {
-		*left_iter -= viewports.front().size();
-		viewports.pop_front();
-		left_y += artwork_height + artwork_margin.y;
-	}
+	while ((left_y > scroll_target - artwork_height) && !layout_invalid && new_line_left(left_y - artwork_height - artwork_margin.y));
 	// Create right viewports if needed
 	// NOTE! right_y is offset by minus one row
 	while ((right_y < scroll_target + rect.h + artwork_height) && !layout_invalid && (*right_iter != end_iter) && new_line_right(right_y));
+	// Drop left viewports if too much
+	while ((left_y < scroll_origin - 2 * artwork_height)&&(left_y < scroll_target - 2 * artwork_height)) {
+		*left_iter += viewports.front().size();
+		viewports.pop_front();
+		left_y += artwork_height + artwork_margin.y;
+	}
 	// Drop right viewports if too much
 	while ((right_y > scroll_origin + rect.h + 2 * artwork_height)&&(right_y > scroll_target + rect.h + 2 * artwork_height)) {
 		*right_iter -= viewports.back().size();
@@ -234,7 +235,7 @@ bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std:
 			artwork_viewport& viewport = new_viewports.emplace_back();
 			viewport.artwork = artwork;
 			viewport.iter = std::make_unique<artwork_collection::iterator>(iter);
-			viewport.set_corners({0,y,free_space,artwork_height});
+			viewport.set_corners({artwork_margin.x,y,free_space,artwork_height});
 			// Remove all free_space
 			free_space = 0;
 			return true;
@@ -259,15 +260,16 @@ void Arcollect::gui::view_vgrid::new_line_place_horizontal_l(int free_space, std
 void Arcollect::gui::view_vgrid::new_line_place_horizontal_r(int free_space, std::vector<artwork_viewport> &new_viewports)
 {
 	int spacing = artwork_margin.x + free_space / (new_viewports.size() > 1 ? new_viewports.size()-1 : new_viewports.size());
-	int x = rect.x + rect.w;
-	for (artwork_viewport& viewport: new_viewports) {
+	int x = rect.x;
+	for (auto iter = new_viewports.rbegin(); iter != new_viewports.rend(); ++iter) {
+		artwork_viewport& viewport = *iter;
 		// Move corners
 		viewport.corner_tl.x += x;
 		viewport.corner_tr.x += x;
 		viewport.corner_br.x += x;
 		viewport.corner_bl.x += x;
 		// Update x
-		x -= viewport.corner_tr.x - viewport.corner_tl.x + spacing;
+		x += viewport.corner_tr.x - viewport.corner_tl.x + spacing;
 	}
 }
 
