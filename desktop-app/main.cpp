@@ -167,6 +167,7 @@ int main(int argc, char *argv[])
 				for (auto &art: Arcollect::db::artwork_loader::done) {
 					std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,art.second.get()));
 					art.first->texture_loaded(text);
+					Arcollect::db::artwork_loader::image_memory_usage += art.first->image_memory();
 				}
 				Arcollect::db::artwork_loader::done.clear();
 			}
@@ -246,7 +247,9 @@ int main(int argc, char *argv[])
 			std::string stats = "Tick: " + std::to_string(final_ticks) + "\n"
 				+ "Frame stats:\n"+ frame_sample.print()
 				+ "Maximums (reset in " + std::to_string((last_second_reset_interval-final_ticks)%last_second_reset_interval) + "ms):\n"+ last_second_sample.print()
+				+ "\n"
 				//+ "animation_running:" + (saved_animation_running ? "y" : "n")
+				+ "Image memory usage: " + std::to_string(Arcollect::db::artwork_loader::image_memory_usage >> 20) +" MiB"
 			;
 			std::cerr << stats << std::endl;
 			// Render debug window

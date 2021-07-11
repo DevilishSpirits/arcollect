@@ -21,6 +21,7 @@ std::vector<std::shared_ptr<Arcollect::db::artwork>> Arcollect::db::artwork_load
 std::unordered_map<std::shared_ptr<Arcollect::db::artwork>,std::unique_ptr<SDL::Surface>> Arcollect::db::artwork_loader::done;
 std::condition_variable Arcollect::db::artwork_loader::condition_variable;
 bool Arcollect::db::artwork_loader::stop = false;
+std::size_t Arcollect::db::artwork_loader::image_memory_usage = 0;
 
 static void main_thread(void)
 {

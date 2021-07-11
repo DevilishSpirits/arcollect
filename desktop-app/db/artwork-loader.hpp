@@ -66,6 +66,13 @@ namespace Arcollect {
 			extern bool stop;
 			extern std::thread thread;
 			extern std::condition_variable condition_variable;
+			
+			/** Estimation of VRAM usage of artworks in bytes
+		 *
+		 * This value is used to enforce Arcollect::config::image_memory_limit.
+		 * It's updated by artworks.
+		 */
+			extern std::size_t image_memory_usage;
 		}
 	}
 }

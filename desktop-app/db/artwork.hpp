@@ -18,6 +18,7 @@
 #include <sqlite3.hpp>
 #include "../sdl2-hpp/SDL.hpp"
 #include "../config.hpp"
+#include <cstddef>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -124,6 +125,12 @@ namespace Arcollect {
 				 * This is not an innocent function !
 				 */
 				int db_delete(void);
+				
+				/** Estimate VRAM usage of this artwork
+				 *
+				 * It require the artwork to be loaded to work correctly
+				 */
+				std::size_t image_memory(void);
 				
 				/** Query an artwork
 				 * \param art_id The artwork identifier

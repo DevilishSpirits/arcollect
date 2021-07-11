@@ -212,6 +212,13 @@ int Arcollect::db::artwork::db_delete(void)
 	Arcollect::local_data_version_changed();
 	return 0;
 }
+
+std::size_t Arcollect::db::artwork::image_memory(void)
+{
+	// FIXME Don't assume 8-bit RGB
+	return 3*sizeof(Uint8)*art_size.x*art_size.y;
+}
+
 #if defined(_WIN32)
 #include <windows.h>
 #include <shellapi.h>
