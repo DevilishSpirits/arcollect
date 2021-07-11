@@ -29,6 +29,7 @@ namespace Arcollect {
 				 * This flag is set to remember weather the grid was shown or not.
 				 */
 				bool also_pop_grid_after;
+				void pop(void);
 			public:
 				bool event(SDL::Event &e) override;
 				void render(void) override;
