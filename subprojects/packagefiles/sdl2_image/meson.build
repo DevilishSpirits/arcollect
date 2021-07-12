@@ -1,5 +1,4 @@
 project('sdl2-image', 'c', version: '2.0.5')
-config_h = configuration_data()
 #dnl Process this file with autoconf to produce a configure script.
 #AC_INIT(README.txt)
 #
@@ -119,6 +118,11 @@ config_h = configuration_data()
 #
 #dnl Check for SDL
 #AC_SUBST(SDL_VERSION)
+cc = meson.get_compiler('c')
+
+# Silent some warnings
+add_project_arguments(cc.get_supported_arguments(['-Wno-misleading-indentation','-Wno-unused-function','-Wno-unused-variable','-Wno-unused-but-set-variable']), language: 'c')
+
 deps = [
 	dependency('sdl2', version: '>=2.0.8'),
 ]
