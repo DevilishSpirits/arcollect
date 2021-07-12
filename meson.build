@@ -97,7 +97,6 @@ config_h_inc = include_directories('.')
 prog_zip = find_program('zip', native: true, required: enable_webextension)
 # Dependencies
 if enable_native_progs
-	dep_zlib = dependency('zlib', required: true)
 	# Hack to have --force-fallback-for libcurl works
 	dep_curl = dependency('libcurl', required: false, fallback: ['not-buildable','dummy'])
 	if not dep_curl.found()
@@ -143,11 +142,27 @@ if enable_native_progs
 	else # Normal behavior
 		dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
 	endif
-	# For SDL2_image
-	dep_libjpeg  = dependency('libjpeg', required: true)
-	dep_libpng  = dependency('libpng', required: true)
-	dep_libtiff  = dependency('libtiff-4', required: true)
-	dep_sdl2_image = dependency('SDL2_image')
+	dep_sdl2_image = dependency('SDL2_image', default_options: [
+		# Force enable all images formats
+		'enable_bmp=enabled',
+		'enable_gif=enabled',
+		'enable_jpg=enabled',
+		#'jpg_shared=true',
+		'enable_lbm=enabled',
+		'enable_pcx=enabled',
+		'enable_png=enabled',
+		#'png_shared=true',
+		'enable_pnm=enabled',
+		'enable_svg=enabled',
+		'enable_tga=enabled',
+		'enable_tif=enabled',
+		#'tif_shared=true',
+		'enable_xcf=enabled',
+		'enable_xpm=enabled',
+		'enable_xv=enabled',
+		# FIXME 'enable_webp=enabled',
+		#'webp_shared=enabled',
+	])
 	
 	dep_freetype2  = dependency('freetype2')
 	dep_sdl2_ttf   = dependency('SDL2_ttf', version: config_h.get('ARCOLLECT_VERREQ_sdl2_ttf'))
