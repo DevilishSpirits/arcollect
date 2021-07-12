@@ -42,26 +42,9 @@ if with_xdg
 	install_data('arcollect.desktop', install_dir: get_option('datadir')/'applications')
 endif
 
-# Check for threading support
-threading_tests = {
-	'std::mutex': 'mutex',
-	'std::thread': 'thread',
-	'std::lock_guard': 'mutex',
-	'std::condition_variable': 'condition_variable',
-}
-has_threading = true
-foreach type, header: threading_tests
-	if not cpp.has_header_symbol(header,type)
-		has_threading = false
-	endif
-endforeach
-
-if not has_threading
-	if (host_machine.system() == 'windows') and (meson.get_compiler('c').get_id() == 'gcc')
-		deskapp_deps += subproject('mingw-std-threads').get_variable('std_threaddep')
-	else
-		error('Threading support is required.')
-	endif
+# Add MinGW std threads if needed
+if with_mingw_std_threads
+	deskapp_deps += subproject('mingw-std-threads').get_variable('std_threaddep')
 endif
 
 desktop_app_staticlib = static_library('desktop-app-staticlib', deskapp_srcs, deskapp_additional_srcs, dependencies: deskapp_deps)
