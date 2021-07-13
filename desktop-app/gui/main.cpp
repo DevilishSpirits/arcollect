@@ -84,6 +84,8 @@ int Arcollect::gui::init(void)
 	if (Arcollect::database->prepare(Arcollect::db::schema::preload_artworks,preload_artworks_stmt) != SQLITE_OK)
 	std::cerr << "Failed to prepare preload_artworks SQL stmt: " << Arcollect::database->errmsg() << std::endl;
 	
+	// Init background
+	Arcollect::gui::update_background(true);
 	
 	// Start artwork_loader
 	Arcollect::db::artwork_loader::start();
@@ -92,18 +94,30 @@ int Arcollect::gui::init(void)
 }
 void Arcollect::gui::start(int argc, char** argv)
 {
-	// Get window size
-	SDL::Rect window_rect{0,0};
-	renderer->GetOutputSize(window_rect.w,window_rect.h);
-	// Bootstrap the background
-	Arcollect::gui::update_background(true);
-	Arcollect::gui::background_slideshow.resize(window_rect);
-	Arcollect::gui::modal_stack.push_back(Arcollect::gui::background_slideshow);
-	// Show the first run if not done
-	if (Arcollect::config::first_run == 0)
-		Arcollect::gui::modal_stack.push_back(Arcollect::gui::first_run_modal);
-	
-	SDL_ShowWindow(window);
+	if (!Arcollect::gui::enabled) {
+		// Get window size
+		SDL::Rect window_rect{0,0};
+		renderer->GetOutputSize(window_rect.w,window_rect.h);
+		// Bootstrap the background
+		Arcollect::gui::background_slideshow.resize(window_rect);
+		Arcollect::gui::modal_stack.push_back(Arcollect::gui::background_slideshow);
+		// Show the first run if not done
+		if (Arcollect::config::first_run == 0)
+			Arcollect::gui::modal_stack.push_back(Arcollect::gui::first_run_modal);
+		
+		SDL_ShowWindow(window);
+	}
+	// Handle CLI
+	switch (argc) {
+		case 3: {
+			std::shared_ptr<Arcollect::db::artwork> artwork = Arcollect::db::artwork::query(atoi(argv[2]));
+			if (artwork)
+				Arcollect::gui::background_slideshow.target_artwork = artwork;
+		} //falltrough;
+		case 2: {
+			Arcollect::gui::update_background(argv[1],true);
+		}
+	}
 	
 	Arcollect::gui::time_now = SDL_GetTicks();
 	Arcollect::gui::enabled = true;
