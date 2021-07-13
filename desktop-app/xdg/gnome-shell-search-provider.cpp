@@ -18,16 +18,21 @@
 #include "../db/artwork.hpp"
 #include "../db/db.hpp"
 #include "../db/search.hpp"
+#include "../gui/main.hpp"
 
 std::unique_ptr<SQLite3::stmt> Arcollect::dbus::gnome_shell_search_provider_result_metas_stmt;
-
-static DBusHandlerResult GetResultSet(DBus::Connection &conn, DBusMessage *message, DBus::Message::iterator terms)
+static std::string gnome_shell_search_string(DBus::Message::iterator terms)
 {
-	// Rebuild search_string that we'll retokenize again
 	std::string search_string;
 	for (auto term: terms) {
 		search_string += " " + std::string(term.get_basic<const char*>());
 	}
+	return search_string;
+}
+static DBusHandlerResult GetResultSet(DBus::Connection &conn, DBusMessage *message, DBus::Message::iterator terms)
+{
+	// Rebuild search_string that we'll retokenize again
+	std::string search_string = gnome_shell_search_string(terms);
 	
 	// Prepare reply
 	DBusMessage *reply = dbus_message_new_method_return(message);
@@ -89,6 +94,24 @@ static DBusHandlerResult GetResultMetas(DBus::Connection &conn, DBusMessage *mes
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+static DBusHandlerResult ActivateResult(DBus::Connection &conn, DBusMessage *message)
+{
+	DBus::Message::iterator iter(message);
+	const char* artid = iter.get_basic<const char*>();
+	std::string search = gnome_shell_search_string(++iter);
+	char* argv[] = {NULL,(char*)search.c_str(),(char*)artid};
+	Arcollect::gui::start(3,argv);
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+static DBusHandlerResult LaunchSearch(DBus::Connection &conn, DBusMessage *message)
+{
+	;
+	std::string search = gnome_shell_search_string(DBus::Message::iterator(message));
+	char* argv[] = {NULL,(char*)search.c_str()};
+	Arcollect::gui::start(2,argv);
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
 DBusHandlerResult Arcollect::dbus::gnome_shell_search_provider_intf(DBus::Connection &conn, DBusMessage *message)
 {
 	if (dbus_message_has_member(message,"GetInitialResultSet")) {
@@ -97,6 +120,10 @@ DBusHandlerResult Arcollect::dbus::gnome_shell_search_provider_intf(DBus::Connec
 		return GetResultSet(conn,message,++DBus::Message::iterator(message));
 	} else if (dbus_message_has_member(message,"GetResultMetas")) {
 		return GetResultMetas(conn,message);
+	} else if (dbus_message_has_member(message,"ActivateResult")) {
+		return ActivateResult(conn,message);
+	} else if (dbus_message_has_member(message,"LaunchSearch")) {
+		return LaunchSearch(conn,message);
 	} else return Arcollect::dbus::reply_unknow_method(conn,message);
 }
 
