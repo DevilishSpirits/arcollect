@@ -14,18 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#pragma once
-#include <sqlite3.hpp>
-#include "dbus-helper.hpp"
-#include <memory>
-namespace Arcollect {
-	namespace dbus {
-		extern const DBusObjectPathVTable root_handler_vtable;
-		
-		DBusHandlerResult reply_unknow_method(DBus::Connection &conn, DBusMessage *message);
-		
-		DBusHandlerResult freedesktop_application_intf(DBus::Connection &conn, DBusMessage *message);
-		DBusHandlerResult gnome_shell_search_provider_intf(DBus::Connection &conn, DBusMessage *message);
-		extern std::unique_ptr<SQLite3::stmt> gnome_shell_search_provider_result_metas_stmt;
-	}
+#include "dbus.hpp"
+#include "../gui/main.hpp"
+
+DBusHandlerResult Arcollect::dbus::freedesktop_application_intf(DBus::Connection &conn, DBusMessage *message)
+{
+	if (dbus_message_has_member(message,"Activate")) {
+		Arcollect::gui::start(1,NULL);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else return Arcollect::dbus::reply_unknow_method(conn,message);
 }
+

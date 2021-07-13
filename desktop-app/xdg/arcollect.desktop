@@ -4,6 +4,7 @@ Version=1.5
 Name=Arcollect
 Encoding=UTF-8
 Comment=Your personal visual artwork library.
+DBusActivatable=true
 Exec=arcollect
 Terminal=false
 Categories=2DGraphics;Amusement;RasterGraphics:Viewer

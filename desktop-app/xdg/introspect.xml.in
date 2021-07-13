@@ -13,6 +13,11 @@
 			<arg type="s" name="machine_uuid" direction="out"/>
 		</method>
 	</interface>
+	<interface name='org.freedesktop.Application'>
+		<method name='Activate'>
+			<arg type='a{sv}' name='platform_data' direction='in'/>
+		</method>
+	</interface>
 	<interface name="org.gnome.Shell.SearchProvider2">
 		<method name="GetInitialResultSet">
 			<arg type="as" name="terms" direction="in"/>

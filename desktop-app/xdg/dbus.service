@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=@ARCOLLECT_DBUS_NAME@
+Exec=/usr/bin/arcollect --dbus-service # FIXME This is hardcoded

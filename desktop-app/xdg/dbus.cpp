@@ -27,6 +27,11 @@ static const char* dbus_introspection =
 "			<arg type=\"s\" name=\"xml_data\" direction=\"out\"/>\n"
 "		</method>\n"
 "	</interface>\n"
+"	<interface name=\"org.freedesktop.Application\">\n"
+"		<method name=\"Activate\">\n"
+"			<arg type=\"a{sv}\" name='platform_data\" direction=\"in\"/>\n"
+"		</method>\n"
+"	</interface>\n"
 "	<interface name=\"org.freedesktop.DBus.Peer\">\n"
 "		<method name=\"Ping\"/>\n"
 "		<method name=\"GetMachineId\">\n"
@@ -87,6 +92,8 @@ static DBusHandlerResult root_handler(DBusConnection *connection, DBusMessage *m
 			conn.send(reply);
 			dbus_message_unref(reply);
 		} else return Arcollect::dbus::reply_unknow_method(conn,message);
+	else if (dbus_message_has_interface(message,"org.freedesktop.Application"))
+		return Arcollect::dbus::freedesktop_application_intf(conn,message);
 	else if (dbus_message_has_interface(message,"org.gnome.Shell.SearchProvider2")) {
 		return Arcollect::dbus::gnome_shell_search_provider_intf(conn,message);
 	} else return reply_unknow_interface(conn,message);
