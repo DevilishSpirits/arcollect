@@ -12,29 +12,28 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-/** \file main.cpp
- *  \brief Implementation of main()
- */
-#include <arcollect-db-open.hpp>
-#include "config.hpp"
-#include "db/db.hpp"
-#include "gui/main.hpp"
-
-int main(int argc, char *argv[])
-{
-	// WARNING! Init order is important.
-	// Read config
-	Arcollect::config::read_config();
-	// Load the db
-	Arcollect::database = Arcollect::db::open();
-	// Init the GUI
-	if (Arcollect::gui::init())
-		return 1;
-	// Run GUI main-loop
-	Arcollect::gui::start();
-	while (Arcollect::gui::main());
-	Arcollect::gui::stop();
-	return 0;
+#pragma once
+namespace Arcollect {
+	namespace gui {
+		/** Init the GUI part
+		 * \return Zero on success
+		 *
+		 * This must be called once before the main(). It init graphic resources.
+		 */
+		int init(void);
+		/** GUI show
+		 */
+		void start(void);
+		/** Main-loop of the GUI part
+		 * \return false if the app should quit
+		 *
+		 * This function is blocking.
+		 */
+		bool main(void);
+		/** GUI hide
+		 */
+		void stop(void);
+	}
 }

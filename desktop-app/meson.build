@@ -23,6 +23,7 @@ deskapp_srcs = [
 	'gui/artwork-viewport.cpp',
 	'gui/first-run.cpp',
 	'gui/font.cpp',
+	'gui/main.cpp',
 	'gui/menu.cpp',
 	'gui/modal.cpp',
 	'gui/rating-selector.cpp',
