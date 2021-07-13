@@ -39,8 +39,9 @@ deskapp_additional_srcs = [
 	roboto_proj.get_variable('gen_roboto_target')[1],
 ]
 
+main_cpp = 'main.cpp'
 if with_xdg
-	install_data('arcollect.desktop', install_dir: get_option('datadir')/'applications')
+	subdir('xdg')
 endif
 
 # Add MinGW std threads if needed
@@ -52,6 +53,6 @@ desktop_app_staticlib = static_library('desktop-app-staticlib', deskapp_srcs, de
 
 desktop_app_dep = declare_dependency(sources: deskapp_additional_srcs, dependencies: deskapp_deps, link_with: desktop_app_staticlib)
 
-arcollect_exe = executable('arcollect', 'main.cpp', dependencies: desktop_app_dep, win_subsystem: 'windows', install: true)
+arcollect_exe = executable('arcollect', main_cpp, dependencies: desktop_app_dep, win_subsystem: 'windows', install: true)
 
 subdir('tests')

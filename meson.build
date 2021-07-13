@@ -20,6 +20,7 @@ enable_native_progs = get_option('enable_native_progs')
 with_xdg = get_option('with_xdg')
 
 # Detect environment
+dep_dbus = dependency('dbus-1', required: with_xdg)
 if with_xdg.auto()
 	with_xdg = false
 	if host_machine.system() in [
@@ -36,6 +37,8 @@ if with_xdg.auto()
 		warning('XDG integration disabled due to missing posix_spawnp')
 	elif not cpp.links('extern char** environ;int main(void){return environ != nullptr;}')
 		warning('XDG integration disabled due to missing "extern char** environ;"')
+	elif not dep_dbus.found()
+		warning('XDG integration disabled due to missing D-Bus library')
 	else # XDG test passed
 		with_xdg = true
 	endif
@@ -78,6 +81,10 @@ config_h.set('ARCOLLECT_WEBSITE','https://github.com/DevilishSpirits/arcollect')
 config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
 config_h.set('WITH_XDG',with_xdg ? '1' : '0')
 config_h.set('WITH_MINGW_STD_THREADS',with_mingw_std_threads ? '1' : '0')
+
+# D-Bus stuff
+config_h.set('ARCOLLECT_DBUS_NAME','me.d-spirits.arcollect')
+config_h.set('ARCOLLECT_DBUS_PATH','/')
 
 # Version requirements
 # These are centralized here. Update README.md if you change things there.
