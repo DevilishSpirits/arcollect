@@ -27,9 +27,11 @@
 #include "xdg/dbus.hpp"
 #include "gui/main.hpp"
 #include "sdl2-hpp/SDL.hpp"
+#include <cstring>
 #include <thread>
 
 static volatile bool dbus_continue = true;
+static Uint32 last_dbus_activity = SDL_GetTicks();
 static void dbus_thread_func(DBus::Connection conn)
 {
 	while (dbus_continue && conn.read_write(100))
@@ -38,7 +40,9 @@ static void dbus_thread_func(DBus::Connection conn)
 			SDL_Event e;
 			e.type = SDL_USEREVENT;
 			SDL_PushEvent(&e);
+			last_dbus_activity = SDL_GetTicks();
 		}
+	dbus_continue = false;
 }
 
 int main(int argc, char *argv[])
@@ -63,10 +67,14 @@ int main(int argc, char *argv[])
 	std::thread dbus_thread(dbus_thread_func,conn);
 	dbus_thread.detach();
 	// Run GUI main-loop
-	Arcollect::gui::start();
-	while (Arcollect::gui::main())
+	if ((argc < 2)|| std::strcmp(argv[1],"--dbus-service"))
+		Arcollect::gui::start(argc,argv);
+	while ((dbus_continue && ((SDL_GetTicks()-last_dbus_activity) < 10000)) || Arcollect::gui::enabled) {
+		if (Arcollect::gui::enabled)
+			if (!Arcollect::gui::main())
+				Arcollect::gui::stop();
 		conn.dispatch();
+	}
 	dbus_continue = false;
-	Arcollect::gui::stop();
 	return 0;
 }

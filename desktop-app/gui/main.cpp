@@ -41,6 +41,8 @@ std::vector<std::reference_wrapper<Arcollect::gui::modal>> Arcollect::gui::modal
 bool debug_redraws;
 static std::unique_ptr<SQLite3::stmt> preload_artworks_stmt;
 
+bool Arcollect::gui::enabled = false;
+
 // animation.hpp variables
 bool   Arcollect::gui::animation_running;
 Uint32 Arcollect::gui::time_now;
@@ -57,7 +59,7 @@ int Arcollect::gui::init(void)
 		return 1;
 	}
 	// Create the SDL window
-	int window_create_flags = SDL_WINDOW_RESIZABLE;
+	int window_create_flags = SDL_WINDOW_RESIZABLE|SDL_WINDOW_HIDDEN;
 	switch (Arcollect::config::start_window_mode) {
 		case Arcollect::config::STARTWINDOW_NORMAL: {
 			window_create_flags |= 0; // Add no flag
@@ -88,7 +90,7 @@ int Arcollect::gui::init(void)
 	
 	return 0;
 }
-void Arcollect::gui::start(void)
+void Arcollect::gui::start(int argc, char** argv)
 {
 	// Get window size
 	SDL::Rect window_rect{0,0};
@@ -100,8 +102,11 @@ void Arcollect::gui::start(void)
 	// Show the first run if not done
 	if (Arcollect::config::first_run == 0)
 		Arcollect::gui::modal_stack.push_back(Arcollect::gui::first_run_modal);
-	// Main-loop
+	
+	SDL_ShowWindow(window);
+	
 	Arcollect::gui::time_now = SDL_GetTicks();
+	Arcollect::gui::enabled = true;
 }
 bool Arcollect::gui::main(void)
 {
@@ -280,9 +285,12 @@ bool Arcollect::gui::main(void)
 }
 void Arcollect::gui::stop(void)
 {
+	Arcollect::gui::modal_stack.clear();
+	SDL_HideWindow(window);
 	// Erase artwork_loader pending list
 	{
 		std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
 		Arcollect::db::artwork_loader::pending_thread.clear();
 	}
+	Arcollect::gui::enabled = false;
 }

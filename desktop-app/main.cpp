@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 	if (Arcollect::gui::init())
 		return 1;
 	// Run GUI main-loop
-	Arcollect::gui::start();
+	Arcollect::gui::start(argc,argv);
 	while (Arcollect::gui::main());
 	Arcollect::gui::stop();
 	return 0;

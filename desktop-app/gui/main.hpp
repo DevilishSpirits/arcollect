@@ -25,7 +25,10 @@ namespace Arcollect {
 		int init(void);
 		/** GUI show
 		 */
-		void start(void);
+		void start(int argc, char** argv);
+		/** Wether the GUI is on
+		 */
+		extern bool enabled;
 		/** Main-loop of the GUI part
 		 * \return false if the app should quit
 		 *
