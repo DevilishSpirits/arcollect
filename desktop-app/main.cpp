@@ -104,6 +104,8 @@ int main(int argc, char *argv[])
 	// Show the first run if not done
 	if (Arcollect::config::first_run == 0)
 		Arcollect::gui::modal_stack.push_back(Arcollect::gui::first_run_modal);
+	// Start artwork_loader
+	Arcollect::db::artwork_loader::start();
 	// Main-loop
 	SDL::Event e;
 	bool done = false;
@@ -289,8 +291,5 @@ int main(int argc, char *argv[])
 		std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
 		Arcollect::db::artwork_loader::pending_thread.clear();
 	}
-	Arcollect::db::artwork_loader::stop = true;
-	Arcollect::db::artwork_loader::condition_variable.notify_one();
-	Arcollect::db::artwork_loader::thread.join();
 	return 0;
 }

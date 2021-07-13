@@ -20,19 +20,18 @@ std::vector<std::shared_ptr<Arcollect::db::artwork>> Arcollect::db::artwork_load
 std::vector<std::shared_ptr<Arcollect::db::artwork>> Arcollect::db::artwork_loader::pending_thread;
 std::unordered_map<std::shared_ptr<Arcollect::db::artwork>,std::unique_ptr<SDL::Surface>> Arcollect::db::artwork_loader::done;
 std::condition_variable Arcollect::db::artwork_loader::condition_variable;
-bool Arcollect::db::artwork_loader::stop = false;
 std::size_t Arcollect::db::artwork_loader::image_memory_usage = 0;
+std::unique_ptr<Arcollect::db::artwork_loader> Arcollect::db::artwork_loader::thread;
 
-static void main_thread(void)
+void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 {
-	using namespace Arcollect::db::artwork_loader;
 	while (1) {
 		// Find an artwork to load
 		std::shared_ptr<Arcollect::db::artwork> artwork;
 		{
 			std::unique_lock<std::mutex> lock_guard(lock);
 			while (!pending_thread.size()) {
-				if (Arcollect::db::artwork_loader::stop)
+				if (stop)
 					return;
 				condition_variable.wait(lock_guard);
 			}
@@ -58,4 +57,19 @@ static void main_thread(void)
 		}
 	}
 }
-std::thread Arcollect::db::artwork_loader::thread(main_thread);
+
+void Arcollect::db::artwork_loader::start(void)
+{
+	Arcollect::db::artwork_loader::thread.reset(new Arcollect::db::artwork_loader());
+}
+void Arcollect::db::artwork_loader::shutdown(void)
+{
+	Arcollect::db::artwork_loader::thread.reset();
+}
+
+Arcollect::db::artwork_loader::~artwork_loader(void)
+{
+	stop = true;
+	condition_variable.notify_one();
+	join();
+}

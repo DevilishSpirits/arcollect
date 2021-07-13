@@ -40,9 +40,5 @@ int main(int argc, char *argv[])
 		test_success &= step_success;
 	});
 	std::cout << (test_success ? "ok" : "not ok") << " 1 - Check if settings to default values works" << std::endl;
-	// Stop background thread
-	Arcollect::db::artwork_loader::stop = true;
-	Arcollect::db::artwork_loader::condition_variable.notify_one();
-	Arcollect::db::artwork_loader::thread.join();
 	return 0;
 }
