@@ -1,0 +1,9 @@
+[wrap-file]
+directory = oiio-2.2.16.0
+source_url = https://github.com/OpenImageIO/oiio/archive/refs/tags/v2.2.16.0.tar.gz
+source_filename = oiio-2.2.16.0.tar.gz
+source_hash = 9a61babd8f12084281eada2636388238be66449d93f7686a163bd9a2e300c17c
+patch_directory = oiio-2.2.16.0
+
+[provide]
+OpenImageIO = dep_oiio

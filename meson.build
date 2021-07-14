@@ -8,7 +8,7 @@ project('arcollect', 'cpp',
 	meson_version: '>=0.57.1',
 	default_options: [
 		'cpp_std=c++17',
-		'cpp_rtti=false',
+		#'cpp_rtti=false',
 		'default_library=static', # For subprojects
 	])
 
