@@ -28,7 +28,7 @@
 #endif
 #include <memory>
 #include <unordered_map>
-#include <SDL_image.h>
+#include <OpenImageIO/imageio.h>
 namespace Arcollect {
 	namespace db {
 		/** Asynchronous artwork loading utility

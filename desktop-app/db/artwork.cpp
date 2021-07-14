@@ -19,10 +19,29 @@
 #include "account.hpp"
 #include "db.hpp"
 #include <arcollect-paths.hpp>
+#include <OpenImageIO/imageio.h>
 #include <iostream>
-#include <SDL_image.h>
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::artwork>> artworks_pool;
 std::list<std::reference_wrapper<Arcollect::db::artwork>> Arcollect::db::artwork::last_rendered;
+extern SDL::Renderer *renderer;
+
+extern SDL_Surface* IMG_Load(const char* path);
+SDL_Surface* IMG_Load(const char* path)
+{
+	auto image = OIIO::ImageInput::open(std::string(path));
+	if (!image)
+		return NULL;
+	const OIIO::ImageSpec &spec = image->spec();
+	int pixel_format;
+	switch (spec.nchannels) {
+		case 4:pixel_format = SDL_PIXELFORMAT_ABGR8888;break;
+		case 3:pixel_format = SDL_PIXELFORMAT_BGR888;break;
+		default:return NULL;
+	}
+	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0,spec.width,spec.height,spec.nchannels*8,pixel_format);
+	image->read_scanlines(0,0,0,spec.height-1,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,surface->pixels,surface->format->BytesPerPixel,surface->pitch);
+	return surface;
+}
 
 Arcollect::db::artwork::artwork(Arcollect::db::artwork_id art_id) :
 	data_version(-2),

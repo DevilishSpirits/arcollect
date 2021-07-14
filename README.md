@@ -34,7 +34,7 @@ Recent Linux distributions and Microsoft Windows with Firefox are supported.
 
 I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.10) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.10#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
 
-If you want to build the software yourself, grab the source code, install Meson (>0.57.1), dbus, SQLite, SDL2, his image and ttf modules and libcurl. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
+If you want to build the software yourself, grab the source code, install Meson (>0.57.1), dbus, SQLite, SDL2 and his ttf module, OpenImageIO and libcurl. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
 
 ```sh
 	# Ensure that you have a working version of Meson

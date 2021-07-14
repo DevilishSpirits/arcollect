@@ -149,27 +149,7 @@ if enable_native_progs
 	else # Normal behavior
 		dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
 	endif
-	dep_sdl2_image = dependency('SDL2_image', default_options: [
-		# Force enable all images formats
-		'enable_bmp=enabled',
-		'enable_gif=enabled',
-		'enable_jpg=enabled',
-		#'jpg_shared=true',
-		'enable_lbm=enabled',
-		'enable_pcx=enabled',
-		'enable_png=enabled',
-		#'png_shared=true',
-		'enable_pnm=enabled',
-		'enable_svg=enabled',
-		'enable_tga=enabled',
-		'enable_tif=enabled',
-		#'tif_shared=true',
-		'enable_xcf=enabled',
-		'enable_xpm=enabled',
-		'enable_xv=enabled',
-		# FIXME 'enable_webp=enabled',
-		#'webp_shared=enabled',
-	])
+	dep_oiio = dependency('OpenImageIO')
 	
 	dep_freetype2  = dependency('freetype2')
 	dep_sdl2_ttf   = dependency('SDL2_ttf', version: config_h.get('ARCOLLECT_VERREQ_sdl2_ttf'))

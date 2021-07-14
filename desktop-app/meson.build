@@ -3,8 +3,8 @@ roboto_proj = subproject('roboto')
 
 deskapp_deps = [
 	common_dep,
+	dep_oiio,
 	dep_sdl2,
-	dep_sdl2_image,
 	dep_sdl2_ttf,
 	dep_sqlite3,
 	dep_inih,

@@ -42,14 +42,14 @@ endif
 if enable_native_progs
 	dep_curl_static = dep_curl.type_name() == 'internal'
 	dep_sdl2_static = dep_sdl2.type_name() == 'internal'
-	dep_sdl2_image_static = dep_sdl2_image.type_name() == 'internal'
+	#dep_sdl2_image_static = dep_sdl2_image.type_name() == 'internal'
 	dep_sdl2_ttf_static = dep_sdl2_ttf.type_name() == 'internal'
 	dep_sqlite3_static = dep_sqlite3.type_name() == 'internal'
 	dep_inih_static = dep_inih.type_name() == 'internal'
 	summary({
 		'libcurl': not dep_curl_static,
 		'sdl2': not dep_sdl2_static,
-		'sdl2_image': not dep_sdl2_image_static,
+		#'sdl2_image': not dep_sdl2_image_static,
 		'sdl2_ttf': not dep_sdl2_ttf_static,
 		'sqlite3': not dep_sqlite3_static,
 		'INIReader': not dep_inih_static,
@@ -71,7 +71,6 @@ pkgbuild_depends_list = {
 	# 'dependency_name': 'ArchLinux package name'
 	'curl'             : 'curl',
 	#'sdl2' has special handling
-	'sdl2_image'       : 'sdl2_image',
 	'sdl2_ttf'         : 'sdl2_ttf',
 	'sqlite3'          : 'sqlite',
 	'inih'             : 'libINIReader.so',
@@ -83,7 +82,7 @@ if enable_native_progs
 		endif
 	endforeach
 	# namcap report warning upon redundant dependencies and sdl2 might be one
-	if (not dep_sdl2_static) and ((dep_sdl2_image_static and dep_sdl2_ttf_static))
+	if (not dep_sdl2_static) and dep_sdl2_ttf_static
 		pkgbuild_depends += '\'sdl2'+config_h.get('ARCOLLECT_VERREQ_sdl2','')+'\''
 	endif
 endif
@@ -126,7 +125,6 @@ if dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found() and s
 		# 'dependency_name': 'Debian package name'
 		'curl'             : 'libcurl4',
 		'sdl2'             : 'libsdl2-2.0-0',
-		'sdl2_image'       : 'libsdl2-image-2.0-0',
 		'sdl2_ttf'         : 'libsdl2-ttf-2.0-0',
 		'sqlite3'          : 'libsqlite3-0',
 		'inih'             : 'libinireader0',

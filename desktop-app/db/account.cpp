@@ -17,8 +17,8 @@
 #include "account.hpp"
 #include "db.hpp"
 #include <arcollect-paths.hpp>
-#include <SDL_image.h>
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::account>> accounts_pool;
+extern SDL_Surface* IMG_Load(const char* path);
 
 Arcollect::db::account::account(Arcollect::db::account_id arcoid) :
 	arcoid(arcoid)
