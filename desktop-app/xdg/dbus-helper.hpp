@@ -13,7 +13,7 @@ namespace DBus {
 		protected:
 			inline DBusRefCounted(T *pointer) : internal(pointer) {};
 		public:
-			inline DBusRefCounted(DBusRefCounted &other) : internal(ref(other.internal)) {};
+			inline DBusRefCounted(const DBusRefCounted &other) : internal(ref(other.internal)) {};
 			inline ~DBusRefCounted(void) {unref(internal);};
 			operator T*(void) {
 				return internal;
