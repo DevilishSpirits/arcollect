@@ -6,6 +6,7 @@ libpng-*
 tiff-*
 packagecache
 rapidjson-*
+robin-map-0.6.3
 roboto-*
 SDL2-*
 SDL2_ttf-*
