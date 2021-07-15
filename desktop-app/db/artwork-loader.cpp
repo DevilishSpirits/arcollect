@@ -45,7 +45,7 @@ void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 		// Load the artwork
 		SDL::Surface *surf = artwork->load_surface();
 		// Queue the surface
-		{
+		if (surf) {
 			std::lock_guard<std::mutex> lock_guard(lock);
 			if (done.size() == 0) {
 				// No art done, wake-up the main thread ONLY once (hence the if)
