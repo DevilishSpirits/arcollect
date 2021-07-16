@@ -79,45 +79,6 @@ jobs:
         with:
           name: build-wrapped_webextension.zip
           path: build/webextension/arcollect.zip
-  build-ubuntu-18_04:
-    runs-on: [ubuntu-18.04]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Update apt cache
-        run: sudo apt update
-      - name: Install SDL2 and, his ttf module, OIIO, Boost, libcurl, Python3 setuptools and lintian
-        run: sudo apt install libsdl2-dev libsdl2-ttf-dev libopenimageio-dev libboost-all-dev libcurl4-openssl-dev python3-setuptools lintian
-      - name: Install Meson and Ninja using pip3
-        run: sudo pip3 install meson==0.57.1 ninja
-      - name: Install Mozilla's web-ext with npm
-        run: sudo npm install -g web-ext
-      - name: Setup project
-        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now'
-        env:
-          CC:  clang
-          CXX: clang++
-      - name: Build project
-        run: ninja -C build
-        env:
-          CC:  clang
-          CXX: clang++
-      - name: Test project
-        run: ninja -C build test
-      - name: Generate Debian package
-        run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
-        shell: bash
-      #- name: Lintian Debian package
-      #TODO  run: lintian --no-tag-display-limit --dont-check-part debian/changelog,debian/copyright -I -E --verbose -- "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
-      - name: Uploading Debian package artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: build-ubuntu-18_04-packaging
-          path: build/packaging
-      - name: Uploading arcollect-webextension.zip artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: build-ubuntu-18_04_webextension.zip
-          path: build/webextension/arcollect.zip
   build-ubuntu-20_04:
     runs-on: [ubuntu-20.04]
     steps:
@@ -195,7 +156,7 @@ jobs:
       - name: Install MSI
         run: msiexec /i /q build/packaging/arcollect.msi
   check-webextensions-same:
-    needs: [build, build-wrapped, build-ubuntu-18_04, build-ubuntu-20_04]
+    needs: [build, build-wrapped, build-ubuntu-20_04]
     runs-on: [ubuntu-latest]
     steps:
       - name: Download build_webextension.zip
@@ -213,29 +174,19 @@ jobs:
         with:
           name: build-ubuntu-20_04_webextension.zip
           path: build-ubuntu-20_04_webextension
-      - name: Download build-ubuntu-18_04_webextension.zip
-        uses: actions/download-artifact@v2
-        with:
-          name: build-ubuntu-18_04_webextension.zip
-          path: build-ubuntu-18_04_webextension
       - name: Make unpack dirs
-        run: mkdir build build-wrapped build-ubuntu-20_04 build-ubuntu-18_04
+        run: mkdir build build-wrapped build-ubuntu-20_04
       - name: Unpack build_webextension.zip
         run: unzip ../build_webextension/arcollect.zip
         working-directory: build
       - name: Unpack build-wrapped_webextension.zip
         run: unzip ../build-wrapped_webextension/arcollect.zip
         working-directory: build-wrapped
-      - name: Unpack build-ubuntu-18_04_webextension.zip
-        run: unzip ../build-ubuntu-18_04_webextension/arcollect.zip
-        working-directory: build-ubuntu-18_04
       - name: Unpack build-ubuntu-20_04_webextension.zip
         run: unzip ../build-ubuntu-20_04_webextension/arcollect.zip
         working-directory: build-ubuntu-20_04
       - name: Compare build and build-wrapped results
         run: diff -ry build build-wrapped
-      - name: Compare build and build-ubuntu-18_04 results
-        run: diff -ry build build-ubuntu-18_04
       - name: Compare build and build-ubuntu-20_04 results
         run: diff -ry build build-ubuntu-20_04
   merge-to-master:

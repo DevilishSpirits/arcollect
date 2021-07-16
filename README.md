@@ -45,7 +45,7 @@ If you want to build the software yourself, grab the source code, install Meson 
 	# This won't works on Windows target, generate the MSI instead.
 	#ninja install -C build
 ```
-Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge versions of dependencies to run. Most problematic ones are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. After installing Meson 0.57.1 (at least) from PyPI, things should works out-of-the-box and does on GitHub Actions Ubuntu 20.04 VM. Ubuntu 18.04 works if you build with Clang (`CC=clang CXX=clang++ meson build ...`).
+Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge versions of dependencies to run. Most problematic ones are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. After installing Meson 0.57.1 (at least) from PyPI, things should works out-of-the-box and does on GitHub Actions Ubuntu 20.04 VM. Ubuntu 18.04 might works with Clang (`CC=clang CXX=clang++ meson build ...`) and an updated version of Boost.
 
 Here is a matrix of versions requirements to help troubleshooting. The *Wrap* column show you the version that is automatically embeded if you have a *Known buggy* version of that library.
 
