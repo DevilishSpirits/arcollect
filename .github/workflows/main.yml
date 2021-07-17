@@ -130,6 +130,12 @@ jobs:
         with:
           name: webext-adder-online-ubuntu-20_04
           path: webext-adder-online
+      - name: Upload build dir
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ubuntu-20_04-builddir
+          path: build
   build-windows-2019:
     runs-on: [windows-2019]
     env:
@@ -155,6 +161,12 @@ jobs:
         run: ninja -C build test
       - name: Install MSI
         run: msiexec /i /q build/packaging/arcollect.msi
+      - name: Upload build dir
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-2019-builddir
+          path: build
   check-webextensions-same:
     needs: [build, build-wrapped, build-ubuntu-20_04]
     runs-on: [ubuntu-latest]
