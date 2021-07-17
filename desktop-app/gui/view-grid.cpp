@@ -170,10 +170,13 @@ bool Arcollect::gui::view_vgrid::new_line_left(int y)
 	std::vector<artwork_viewport> &new_viewports = viewports.emplace_front();
 	// Generate viewports
 	while (*left_iter != begin_iter) {
-		if (new_line_check_fit(free_space,y,new_viewports,*left_iter))
-			--*left_iter;
-		else break; // Line is full, break
+		--*left_iter;
+		if (!new_line_check_fit(free_space,y,new_viewports,*left_iter))
+			break;
 	}
+	// Rollback 
+	if (*left_iter != begin_iter)
+		++*left_iter;
 	// Place viewport horizontally
 	if (new_viewports.size()) {
 		new_line_place_horizontal_r(free_space,new_viewports);
