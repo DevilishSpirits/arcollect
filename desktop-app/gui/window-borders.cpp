@@ -42,26 +42,30 @@ static TitleButton titlebtn_pressed = TITLEBTN_NONE;
 
 static std::vector<std::shared_ptr<Arcollect::gui::menu_item>> topbar_menu_items;
 
-static SDL_HitTestResult hit_test(SDL_Window *window, const SDL_Point *point, void* data)
+static SDL_HitTestResult hit_test(SDL_Window *, const SDL_Point *point, void* data)
 {
+	auto window_flags = SDL_GetWindowFlags(window);
 	SDL::Point window_size;
 	renderer->GetOutputSize(window_size);
 	// TODO Check errors
-	// Compute resize boxes
-	const bool l_resize = point->x <= Arcollect::gui::window_borders::resize_width;
-	const bool t_resize = point->y <= Arcollect::gui::window_borders::resize_width;
-	const bool r_resize = window_size.x - point->x <= Arcollect::gui::window_borders::resize_width;
-	const bool b_resize = window_size.y - point->y <= Arcollect::gui::window_borders::resize_width;
-	// Check for corner resizes
-	if (l_resize && t_resize) return SDL_HITTEST_RESIZE_TOPLEFT;
-	if (t_resize && r_resize) return SDL_HITTEST_RESIZE_TOPRIGHT;
-	if (r_resize && b_resize) return SDL_HITTEST_RESIZE_BOTTOMRIGHT;
-	if (b_resize && l_resize) return SDL_HITTEST_RESIZE_BOTTOMLEFT;
-	// Check for border resizes
-	if (l_resize) return SDL_HITTEST_RESIZE_LEFT;
-	if (t_resize) return SDL_HITTEST_RESIZE_TOP;
-	if (r_resize) return SDL_HITTEST_RESIZE_RIGHT;
-	if (b_resize) return SDL_HITTEST_RESIZE_BOTTOM;
+	// Ignore borders if in fullscreen mode
+	if (((window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP)&&((window_flags & SDL_WINDOW_MAXIMIZED) != SDL_WINDOW_MAXIMIZED)) {
+		// Compute resize boxes
+		const bool l_resize = point->x <= Arcollect::gui::window_borders::resize_width;
+		const bool t_resize = point->y <= Arcollect::gui::window_borders::resize_width;
+		const bool r_resize = window_size.x - point->x <= Arcollect::gui::window_borders::resize_width;
+		const bool b_resize = window_size.y - point->y <= Arcollect::gui::window_borders::resize_width;
+		// Check for corner resizes
+		if (l_resize && t_resize) return SDL_HITTEST_RESIZE_TOPLEFT;
+		if (t_resize && r_resize) return SDL_HITTEST_RESIZE_TOPRIGHT;
+		if (r_resize && b_resize) return SDL_HITTEST_RESIZE_BOTTOMRIGHT;
+		if (b_resize && l_resize) return SDL_HITTEST_RESIZE_BOTTOMLEFT;
+		// Check for border resizes
+		if (l_resize) return SDL_HITTEST_RESIZE_LEFT;
+		if (t_resize) return SDL_HITTEST_RESIZE_TOP;
+		if (r_resize) return SDL_HITTEST_RESIZE_RIGHT;
+		if (b_resize) return SDL_HITTEST_RESIZE_BOTTOM;
+	}
 	// Check for dragable area
 	if ((point->y <= Arcollect::gui::window_borders::title_height)&&
 	 (point->x < window_size.x-(title_button_width*TITLEBTN_N)))
