@@ -149,7 +149,18 @@ if enable_native_progs
 	else # Normal behavior
 		dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
 	endif
-	dep_oiio = dependency('OpenImageIO')
+	dep_oiio = dependency('OpenImageIO', default_options: [
+		'enable_bmp=enabled',
+		'enable_cineon=enabled',
+		'enable_dds=enabled',
+		'enable_dpx=auto', # TODO OpenEXR wrap
+		'enable_gif=enabled',
+		'enable_jpeg=enabled',
+		'enable_jpeg2000=disabled', # FIXME It's broken
+		'enable_png=enabled',
+		'enable_psd=enabled',
+		'enable_tiff=enabled',
+	])
 	
 	dep_freetype2  = dependency('freetype2')
 	dep_sdl2_ttf   = dependency('SDL2_ttf', version: config_h.get('ARCOLLECT_VERREQ_sdl2_ttf'))
