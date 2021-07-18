@@ -104,44 +104,7 @@ config_h_inc = include_directories('.')
 prog_zip = find_program('zip', native: true, required: enable_webextension)
 # Dependencies
 if enable_native_progs
-	# Hack to have --force-fallback-for libcurl works
-	dep_curl = dependency('libcurl', required: false, fallback: ['not-buildable','dummy'])
-	if not dep_curl.found()
-		cmake = import('cmake')
-		subproj_opts_curl = cmake.subproject_options()
-		subproj_opts_curl.add_cmake_defines({
-			'BUILD_CURL_EXE': false,
-			'BUILD_SHARED_LIBS': false,
-			'BUILD_TESTING': false,
-			'CMAKE_USE_LIBSSH': false,
-			'CMAKE_USE_LIBSSH2': false,
-			'CURL_DISABLE_COOKIES': true,
-			'CURL_DISABLE_CRYPTO_AUTH': true,
-			'ENABLE_IPV6': true,
-			'ENABLE_MANUAL': false,
-			'ENABLE_UNIX_SOCKETS': false,
-			'HTTP_ONLY': true,
-			'SSL_ENABLED': true,
-		})
-		dep_curl = []
-		if host_machine.system() == 'windows'
-			subproj_opts_curl.add_cmake_defines({
-				'CMAKE_USE_SCHANNEL': true,
-			})
-			dep_curl += cpp.find_library('advapi32')
-			dep_curl += cpp.find_library('crypt32')
-		elif host_machine.system() == 'darwin'
-			subproj_opts_curl.add_cmake_defines({
-				'CMAKE_USE_SECTRANSP': true,
-			})
-			dep_curl += cpp.find_library('CoreFoundation')
-			dep_curl += cpp.find_library('Security')
-		endif
-		subproj_opts_curl.set_install(false)
-		subproj_curl = cmake.subproject('libcurl', options: subproj_opts_curl)
-		dep_curl_cmake = subproj_curl.dependency('libcurl')
-		dep_curl = declare_dependency(dependencies: [dep_curl_cmake,dep_curl], version: dep_curl_cmake.version())
-	endif
+	dep_curl = dependency('libcurl', required: true)
 	
 	if (host_machine.system() == 'windows') and (meson.get_compiler('c').get_id() == 'gcc')
 		# Use MinGW prebuilt SDL2 on Windows platform (fix wrap build on GitHub Actions Windows 2019)
