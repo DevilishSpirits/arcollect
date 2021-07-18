@@ -91,6 +91,12 @@ namespace Arcollect {
 			 * must be present (AND NOT).
 			 */
 			negatable_container<std::vector<std::string_view>> tags{current_identifier_is_negated};
+			/** List of accounts
+			 *
+			 * All positive matching tags must be present (a AND) and no negative one
+			 * must be present (AND NOT).
+			 */
+			negatable_container<std::vector<std::string_view>> accounts{current_identifier_is_negated};
 			/** List of column,value prefix matchs
 			 */
 			negatable_container<std::vector<std::pair<std::string,std::string_view>>> db_prefixes{current_identifier_is_negated};
@@ -111,6 +117,24 @@ namespace Arcollect {
 		 * This map, colon-handler names to the function that handle them.
 		 */
 		static std::unordered_map<std::string,ColonHandler> search_colon_handlers{
+			{"account",[](search_do_search_struct& search, search::Token token, search::Token last_token) -> bool {
+				switch (token) {
+					case Arcollect::db::search::TOK_BLANK:
+					case Arcollect::db::search::TOK_EOL: {
+						search.current_colon_handler = nullptr;
+						switch (last_token) {
+							case Arcollect::db::search::TOK_IDENTIFIER: {
+								// Add the match
+								search.accounts().emplace_back(search.current_tag);
+								search.current_identifier_is_negated = false;
+								search.reset_current_tag();
+							} return false;
+							default: return false;
+						}
+					} return false;
+					default: return false;
+				}
+			}},
 			{"site",[](search_do_search_struct& search, search::Token token, search::Token last_token) -> bool {
 				switch (token) {
 					case Arcollect::db::search::TOK_BLANK:
@@ -230,7 +254,7 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 	
 	query << "SELECT art_artid,"+Arcollect::db::artid_randomizer+" AS art_order FROM artworks WHERE " << Arcollect::db_filter::get_sql() << " AND (0";
 	// Title OR match
-	if (src.tags.positive_matches.size() || src.tags.negative_matches.size()) {
+	if (src.tags.positive_matches.size() || src.tags.negative_matches.size() || src.accounts.positive_matches.size() || src.accounts.negative_matches.size()) {
 		// Note: will be followed by a tag matching
 		query << " OR (INSTR(lower(art_title),lower(?)) > 0) OR (1";
 		query_bindings.emplace_back(search);
@@ -271,7 +295,32 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 		}
 		query << "))";
 	}
-	if (src.tags.positive_matches.size() || src.tags.negative_matches.size())
+	// Accounts OR matching
+	if (src.accounts.positive_matches.size()) {
+		query <<" AND EXISTS ("
+			"SELECT 1 FROM art_acc_links"
+			" NATURAL JOIN accounts WHERE art_acc_links.art_artid = artworks.art_artid"
+			" AND accounts.acc_platid in (?";
+		query_bindings.emplace_back(src.accounts.positive_matches[0]);
+		for (decltype(src.accounts.positive_matches)::size_type i = 1; i < src.accounts.positive_matches.size(); i++) {
+			query << ",?";
+			query_bindings.emplace_back(src.accounts.positive_matches[i]);
+		}
+		query << ") LIMIT " << (src.accounts.positive_matches.size()-1) << ",1)";
+	}
+	if (src.accounts.negative_matches.size()) {
+		query << " AND NOT EXISTS ("
+			"SELECT 1 FROM art_acc_links"
+			" NATURAL JOIN accounts WHERE art_acc_links.art_artid = artworks.art_artid"
+			" AND accounts.acc_platid in (?";
+		query_bindings.emplace_back(src.accounts.negative_matches[0]);
+		for (decltype(src.accounts.negative_matches)::size_type i = 1; i < src.accounts.negative_matches.size(); i++) {
+			query << ",?";
+			query_bindings.emplace_back(src.accounts.negative_matches[i]);
+		}
+		query << "))";
+	}
+	if (src.tags.positive_matches.size() || src.tags.negative_matches.size() || src.accounts.positive_matches.size() || src.accounts.negative_matches.size())
 		query << ")";
 	for (auto &match: src.db_matches.positive_matches) {
 		// FIXME That's not very safe
