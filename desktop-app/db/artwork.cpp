@@ -21,10 +21,14 @@
 #include <arcollect-paths.hpp>
 #include <OpenImageIO/imageio.h>
 #include <iostream>
+#include "lcms2.h"
+
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::artwork>> artworks_pool;
 std::list<std::reference_wrapper<Arcollect::db::artwork>> Arcollect::db::artwork::last_rendered;
 extern SDL::Renderer *renderer;
-
+// FIXME This as global is bad
+extern cmsHPROFILE    cms_screenprofile;
+cmsHPROFILE cms_screenprofile = NULL; // Filled in Arcollect::gui::init()
 extern SDL_Surface* IMG_Load(const char* path);
 SDL_Surface* IMG_Load(const char* path)
 {
@@ -40,6 +44,52 @@ SDL_Surface* IMG_Load(const char* path)
 	}
 	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0,spec.width,spec.height,spec.nchannels*8,pixel_format);
 	image->read_scanlines(0,0,0,spec.height-1,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,surface->pixels,surface->format->BytesPerPixel,surface->pitch);
+	
+	// Set pixel format for lcms2
+	cmsUInt32Number cms_pixel_format;
+	switch (surface->format->BytesPerPixel) {
+		case 4:cms_pixel_format = TYPE_BGRA_8;break;
+		case 3:cms_pixel_format = TYPE_BGR_8;break;
+	}
+	
+	// Get image profile
+	cmsHPROFILE image_profile = NULL;
+	const OIIO::ParamValue *icc_profile = spec.find_attribute("ICCProfile");
+	if (icc_profile)
+		image_profile = cmsOpenProfileFromMem(icc_profile->data(),icc_profile->datasize());
+	if (!image_profile) {
+		// oiio:ColorSpace string
+		static const cmsCIExyY D65 = {0.3127,0.3291,1};
+		auto color_space = spec.get_string_attribute("oiio:ColorSpace","none");
+		if (color_space == "Linear")
+			image_profile = cmsCreateXYZProfile();
+		/* TODO and need a review
+		else if (color_space == "Rec709") {
+			const cmsCIExyYTRIPLE        Primaries    = {{0.64,0.33,1},{0.30,0.60,1},{0.15,0.06,1}};
+			static cmsToneCurve*  TransferFunction    = cmsBuildGamma(NULL,2.4);
+			static cmsToneCurve* TransferFunctions[3] = {TransferFunction,TransferFunction,TransferFunction};
+			image_profile = cmsCreateRGBProfile(&D65,&Primaries,TransferFunctions);
+		}
+		*/
+		// TODO else if (color_space == "ACES")
+		// TODO else if (color_space == "AdobeRGB")
+		// TODO else if (color_space == "KodakLog")
+		// else if (color_space == "sRGB") // This is the fallback anyway
+	}
+	if (!image_profile)
+		// Fallback to sRGB
+		image_profile = cmsCreate_sRGBProfile();
+	if (cms_screenprofile) {
+		cmsHTRANSFORM hTransform = cmsCreateTransform(image_profile,cms_pixel_format,cms_screenprofile,cms_pixel_format,INTENT_PERCEPTUAL,cmsFLAGS_HIGHRESPRECALC);
+		if (hTransform) {
+			for (int y = 0; y < spec.height; y++) {
+				char* pixels = static_cast<char*>(surface->pixels) + y*surface->pitch;
+				cmsDoTransform(hTransform,pixels,pixels,spec.width);
+			}
+			cmsDeleteTransform(hTransform);
+		}
+	}
+	cmsCloseProfile(image_profile);
 	return surface;
 }
 

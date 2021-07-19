@@ -31,11 +31,13 @@
 #include <arcollect-debug.hpp>
 #include <iostream>
 #include <vector>
+#include <lcms2.h>
 
 extern SDL_Window    *window;
 SDL_Window    *window;
 extern SDL::Renderer *renderer;
 SDL::Renderer *renderer;
+extern cmsHPROFILE    cms_screenprofile;
 std::vector<std::reference_wrapper<Arcollect::gui::modal>> Arcollect::gui::modal_stack;
 
 bool debug_redraws;
@@ -75,6 +77,14 @@ int Arcollect::gui::init(void)
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
+	// Load ICC profile
+	size_t icc_profile_size;
+	void  *icc_profile_data = SDL_GetWindowICCProfile(window,&icc_profile_size);
+	if (icc_profile_data) {
+		cmsHPROFILE cms_screenprofile = cmsOpenProfileFromMem(icc_profile_data,icc_profile_size);
+		SDL_free(icc_profile_data);
+	}
+	//cmsOpenProfileFromFile("/home/luc/.local/share/icc/edid-2b0c404b880f360dde05aed774d88fdc.icc","r");
 	// Load font
 	// TODO Use real font management
 	TTF_Init();

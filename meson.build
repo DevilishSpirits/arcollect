@@ -106,7 +106,10 @@ prog_zip = find_program('zip', native: true, required: enable_webextension)
 if enable_native_progs
 	dep_curl = dependency('libcurl', required: true)
 	
-	dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
+	# SDL_GetWindowICCProfile has not been released yet
+	#dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
+	dep_sdl2 = subproject('sdl2').get_variable('sdl2_dep')
+	
 	dep_oiio = dependency('OpenImageIO', default_options: [
 		'enable_bmp=enabled',
 		'enable_cineon=enabled',
@@ -120,6 +123,7 @@ if enable_native_progs
 		'enable_tiff=enabled',
 	])
 	
+	dep_lcms2  = dependency('lcms2')
 	dep_freetype2  = dependency('freetype2')
 	dep_sdl2_ttf   = dependency('SDL2_ttf', version: config_h.get('ARCOLLECT_VERREQ_sdl2_ttf'))
 	dep_sqlite3 = dependency('sqlite3', version: config_h.get('ARCOLLECT_VERREQ_sqlite3'))
