@@ -1,5 +1,6 @@
 [wrap-file]
-directory = SDL2-2.0.14
-source_url = https://www.libsdl.org/release/SDL2-2.0.14.tar.gz
-source_filename = SDL2-2.0.14.tar.gz
-source_hash = d8215b571a581be1332d2106f8036fcb03d12a70bae01e20f424976d275432bc
+directory = SDL-761f42f71ff72e829dc2f611eeb43921c3ae33f0
+source_url = https://github.com/Cacodemon345/SDL/archive/761f42f71ff72e829dc2f611eeb43921c3ae33f0.zip
+source_filename = SDL-761f42f71ff72e829dc2f611eeb43921c3ae33f0.zip
+source_hash = fdf7eaa6913dc8b5c5c695a4056881a66889f7581255dead7a2e913c3339e9f1
+patch_directory = SDL-761f42f71ff72e829dc2f611eeb43921c3ae33f0
