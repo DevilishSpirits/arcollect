@@ -106,12 +106,7 @@ prog_zip = find_program('zip', native: true, required: enable_webextension)
 if enable_native_progs
 	dep_curl = dependency('libcurl', required: true)
 	
-	if (host_machine.system() == 'windows') and (meson.get_compiler('c').get_id() == 'gcc')
-		# Use MinGW prebuilt SDL2 on Windows platform (fix wrap build on GitHub Actions Windows 2019)
-		dep_sdl2 = dependency('sdl2', fallback: ['sdl2-mingw', 'sdl2_dep'])
-	else # Normal behavior
-		dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
-	endif
+	dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
 	dep_oiio = dependency('OpenImageIO', default_options: [
 		'enable_bmp=enabled',
 		'enable_cineon=enabled',

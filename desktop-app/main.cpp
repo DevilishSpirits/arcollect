@@ -21,9 +21,11 @@
 #include "config.hpp"
 #include "db/db.hpp"
 #include "gui/main.hpp"
+#include "sdl2-hpp/SDL.hpp" // For SDL_main
 
 int main(int argc, char *argv[])
 {
+	#undef main // Alias no longer needed
 	// WARNING! Init order is important.
 	// Read config
 	Arcollect::config::read_config();
