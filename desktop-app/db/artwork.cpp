@@ -21,11 +21,13 @@
 #include <arcollect-paths.hpp>
 #include <OpenImageIO/imageio.h>
 #include <iostream>
+#define CMSREGISTER // Remove warnings about 'register' keyword
 #include "lcms2.h"
 
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::artwork>> artworks_pool;
 std::list<std::reference_wrapper<Arcollect::db::artwork>> Arcollect::db::artwork::last_rendered;
 extern SDL::Renderer *renderer;
+extern bool debug_icc_profile;
 // FIXME This as global is bad
 extern cmsHPROFILE    cms_screenprofile;
 cmsHPROFILE cms_screenprofile = NULL; // Filled in Arcollect::gui::init()
@@ -48,47 +50,92 @@ SDL_Surface* IMG_Load(const char* path)
 	// Set pixel format for lcms2
 	cmsUInt32Number cms_pixel_format;
 	switch (surface->format->BytesPerPixel) {
-		case 4:cms_pixel_format = TYPE_BGRA_8;break;
-		case 3:cms_pixel_format = TYPE_BGR_8;break;
+		case 4:cms_pixel_format = TYPE_RGBA_8;break;
+		case 3:cms_pixel_format = TYPE_RGB_8;break;
 	}
 	
 	// Get image profile
 	cmsHPROFILE image_profile = NULL;
 	const OIIO::ParamValue *icc_profile = spec.find_attribute("ICCProfile");
-	if (icc_profile)
+	if (debug_icc_profile)
+		std::cerr << path << ":";
+	if (icc_profile) {
 		image_profile = cmsOpenProfileFromMem(icc_profile->data(),icc_profile->datasize());
+		if (debug_icc_profile) {
+			std::cerr << " embed ICC profile ";
+			if (image_profile) {
+				char description[64];
+				char manufacturer[64];
+				char model[64];
+				char copyright[64];
+				cmsGetProfileInfoASCII(image_profile,cmsInfoDescription,cmsNoLanguage,cmsNoCountry,description,sizeof(description));
+				cmsGetProfileInfoASCII(image_profile,cmsInfoManufacturer,cmsNoLanguage,cmsNoCountry,manufacturer,sizeof(manufacturer));
+				cmsGetProfileInfoASCII(image_profile,cmsInfoModel,cmsNoLanguage,cmsNoCountry,model,sizeof(model));
+				cmsGetProfileInfoASCII(image_profile,cmsInfoCopyright,cmsNoLanguage,cmsNoCountry,copyright,sizeof(copyright));
+				std::cerr << "from " << manufacturer << " \"" << model << "\" (" << copyright << "): " << description << ".";
+			} else std::cerr << "that failed to load.";
+		}
+	}
 	if (!image_profile) {
 		// oiio:ColorSpace string
 		static const cmsCIExyY D65 = {0.3127,0.3291,1};
-		auto color_space = spec.get_string_attribute("oiio:ColorSpace","none");
-		if (color_space == "Linear")
-			image_profile = cmsCreateXYZProfile();
-		/* TODO and need a review
-		else if (color_space == "Rec709") {
-			const cmsCIExyYTRIPLE        Primaries    = {{0.64,0.33,1},{0.30,0.60,1},{0.15,0.06,1}};
-			static cmsToneCurve*  TransferFunction    = cmsBuildGamma(NULL,2.4);
-			static cmsToneCurve* TransferFunctions[3] = {TransferFunction,TransferFunction,TransferFunction};
-			image_profile = cmsCreateRGBProfile(&D65,&Primaries,TransferFunctions);
+		static const cmsCIExyYTRIPLE     sRGBPrimaries = {{0.64,0.33,1},{0.30,0.60,1},{0.15,0.06,1}};
+		static const cmsCIExyYTRIPLE AdobeRGBPrimaries = {{0.64,0.33,1},{0.21,0.71,1},{0.15,0.06,1}};
+		struct GammaTriplet {
+			cmsToneCurve *curve;
+			cmsToneCurve* triplet[3];
+			GammaTriplet(cmsFloat64Number gamma) : curve(cmsBuildGamma(NULL,gamma)), triplet{curve,curve,curve} {}
+			operator cmsToneCurve**(void) {
+				return triplet;
+			};
+		};
+		static GammaTriplet gamma1_0(1.0);
+		static GammaTriplet gamma2_2(2.2);
+		static GammaTriplet gamma2_4(2.4);
+		
+		auto color_space = spec.get_string_attribute("oiio:ColorSpace","no");
+		if (debug_icc_profile)
+			std::cerr << " OIIO report " << color_space << " color-space.";
+		if (color_space == "Linear") {
+			if (debug_icc_profile)
+				std::cerr << " sRGB with gamma=1.";
+			image_profile = cmsCreateRGBProfile(&D65,&sRGBPrimaries,gamma1_0);
 		}
-		*/
+		else if (color_space == "Rec709") {
+			if (debug_icc_profile)
+				std::cerr << " sRGB with gamma=2.4.";
+			image_profile = cmsCreateRGBProfile(&D65,&sRGBPrimaries,gamma2_4);
+		}
 		// TODO else if (color_space == "ACES")
-		// TODO else if (color_space == "AdobeRGB")
+		else if (color_space == "AdobeRGB") {
+			if (debug_icc_profile)
+				std::cerr << " Use AdobeRGB.";
+			image_profile = cmsCreateRGBProfile(&D65,&AdobeRGBPrimaries,gamma2_2);
+		}
 		// TODO else if (color_space == "KodakLog")
 		// else if (color_space == "sRGB") // This is the fallback anyway
 	}
-	if (!image_profile)
+	if (!image_profile) {
 		// Fallback to sRGB
+		if (debug_icc_profile)
+			std::cerr << " Fallback to sRGB.";
 		image_profile = cmsCreate_sRGBProfile();
+	}
 	if (cms_screenprofile) {
-		cmsHTRANSFORM hTransform = cmsCreateTransform(image_profile,cms_pixel_format,cms_screenprofile,cms_pixel_format,INTENT_PERCEPTUAL,cmsFLAGS_HIGHRESPRECALC);
+		cmsHTRANSFORM hTransform = cmsCreateTransform(image_profile,cms_pixel_format,cms_screenprofile,cms_pixel_format,INTENT_RELATIVE_COLORIMETRIC,cmsFLAGS_HIGHRESPRECALC|cmsFLAGS_BLACKPOINTCOMPENSATION);
 		if (hTransform) {
+			if (debug_icc_profile)
+				std::cerr << " Colors are managed.";
 			for (int y = 0; y < spec.height; y++) {
 				char* pixels = static_cast<char*>(surface->pixels) + y*surface->pitch;
 				cmsDoTransform(hTransform,pixels,pixels,spec.width);
 			}
 			cmsDeleteTransform(hTransform);
-		}
+		} else if (debug_icc_profile)
+			std::cerr << " cmsCreateTransform() failed!";
 	}
+	if (debug_icc_profile)
+		std::cerr << std::endl;
 	cmsCloseProfile(image_profile);
 	return surface;
 }

@@ -41,6 +41,7 @@ extern cmsHPROFILE    cms_screenprofile;
 std::vector<std::reference_wrapper<Arcollect::gui::modal>> Arcollect::gui::modal_stack;
 
 bool debug_redraws;
+bool debug_icc_profile;
 static std::unique_ptr<SQLite3::stmt> preload_artworks_stmt;
 
 bool Arcollect::gui::enabled = false;
@@ -52,8 +53,9 @@ Uint32 Arcollect::gui::time_framedelta;
 
 int Arcollect::gui::init(void)
 {
-	// Sample "redraws" debug flag
+	// Sample debug flags
 	debug_redraws = Arcollect::debug::is_on("redraws");
+	debug_icc_profile = Arcollect::debug::is_on("icc-profile");
 	// Init SDL
 	SDL::Hint::SetRenderScaleQuality(SDL::Hint::RENDER_SCALE_QUALITY_BEST);
 	if (SDL::Init(SDL::INIT_VIDEO)) {
@@ -81,10 +83,20 @@ int Arcollect::gui::init(void)
 	size_t icc_profile_size;
 	void  *icc_profile_data = SDL_GetWindowICCProfile(window,&icc_profile_size);
 	if (icc_profile_data) {
-		cmsHPROFILE cms_screenprofile = cmsOpenProfileFromMem(icc_profile_data,icc_profile_size);
+		cms_screenprofile = cmsOpenProfileFromMem(icc_profile_data,icc_profile_size);
 		SDL_free(icc_profile_data);
-	}
-	//cmsOpenProfileFromFile("/home/luc/.local/share/icc/edid-2b0c404b880f360dde05aed774d88fdc.icc","r");
+		if (debug_icc_profile) {
+			char description[64];
+			char manufacturer[64];
+			char model[64];
+			char copyright[64];
+			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoDescription,cmsNoLanguage,cmsNoCountry,description,sizeof(description));
+			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoManufacturer,cmsNoLanguage,cmsNoCountry,manufacturer,sizeof(manufacturer));
+			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoModel,cmsNoLanguage,cmsNoCountry,model,sizeof(model));
+			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoCopyright,cmsNoLanguage,cmsNoCountry,copyright,sizeof(copyright));
+			std::cerr << "Using screen ICC profile for " << manufacturer << " " << model << " (" << copyright << "): " << description << std::endl;
+		}
+	} else std::cerr << "No screen ICC profile found, color management disabled" << std::endl;
 	// Load font
 	// TODO Use real font management
 	TTF_Init();
