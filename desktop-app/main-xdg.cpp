@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 		if (Arcollect::gui::enabled)
 			if (!Arcollect::gui::main())
 				Arcollect::gui::stop();
+		else SDL_Delay(100); // Sleep
 		conn.dispatch();
 	}
 	dbus_continue = false;
