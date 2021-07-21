@@ -1,4 +1,5 @@
 dep_openexr = dependency('OpenEXR', required: get_option('enable_dpx'))
+summary('dpx', dep_openexr.found(), bool_yn: true, section: 'ImageIO plugins')
 if dep_openexr.found()
 	oiio_plugins += declare_dependency(sources: files(
 		'dpxinput.cpp',

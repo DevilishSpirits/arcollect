@@ -1,4 +1,5 @@
 dep_jpeg = dependency('libjpeg', required: get_option('enable_psd'))
+summary('psd', dep_jpeg.found(), bool_yn: true, section: 'ImageIO plugins')
 if dep_jpeg.found()
 	oiio_plugins += declare_dependency(sources: files(
 		'psdinput.cpp',

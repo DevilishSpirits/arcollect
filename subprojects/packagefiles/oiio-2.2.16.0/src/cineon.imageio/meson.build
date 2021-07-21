@@ -10,6 +10,8 @@ if not get_option('enable_cineon').disabled()
 		'libcineon/ElementReadStream.cpp',
 		'libcineon/InStream.cpp',
 	))
+	summary('cineon', true , bool_yn: true, section: 'ImageIO plugins')
 else
 	oiio_plugins += declare_dependency(compile_args: '-DDISABLE_CINEON=1')
+	summary('cineon', false, bool_yn: true, section: 'ImageIO plugins')
 endif

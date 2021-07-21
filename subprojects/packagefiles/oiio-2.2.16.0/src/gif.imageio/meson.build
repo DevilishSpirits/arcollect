@@ -6,6 +6,7 @@ else
 		dep_giflib = dependency('giflib')
 	endif
 endif
+summary('gif', dep_giflib.found(), bool_yn: true, section: 'ImageIO plugins')
 if dep_giflib.found()
 	oiio_plugins += declare_dependency(sources: files(
 		'gifinput.cpp',

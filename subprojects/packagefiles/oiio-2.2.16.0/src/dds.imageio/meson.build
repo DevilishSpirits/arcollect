@@ -12,6 +12,8 @@ if not get_option('enable_dds').disabled()
 		'squish/singlecolourfit.cpp',
 		'squish/squish.cpp',
 	), include_directories: include_directories('squish'))
+	summary('dds', true, bool_yn: true, section: 'ImageIO plugins')
 else
 	oiio_plugins += declare_dependency(compile_args: '-DDISABLE_DDS=1')
+	summary('dds', false, bool_yn: true, section: 'ImageIO plugins')
 endif
