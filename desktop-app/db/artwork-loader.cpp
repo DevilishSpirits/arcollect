@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include <arcollect-debug.hpp>
 #include "artwork-loader.hpp"
 std::mutex Arcollect::db::artwork_loader::lock;
 std::vector<std::shared_ptr<Arcollect::db::artwork>> Arcollect::db::artwork_loader::pending_main;
@@ -25,6 +26,7 @@ std::unique_ptr<Arcollect::db::artwork_loader> Arcollect::db::artwork_loader::th
 
 void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 {
+	const bool debug = Arcollect::debug::is_on("artwork-loader");
 	while (1) {
 		// Find an artwork to load
 		std::shared_ptr<Arcollect::db::artwork> artwork;

@@ -35,8 +35,10 @@ extern SDL_Surface* IMG_Load(const char* path);
 SDL_Surface* IMG_Load(const char* path)
 {
 	auto image = OIIO::ImageInput::open(std::string(path));
-	if (!image)
+	if (!image) {
+		std::cerr << "Failed to open " << path << ". " << OIIO::geterror();
 		return NULL;
+	}
 	const OIIO::ImageSpec &spec = image->spec();
 	int pixel_format;
 	switch (spec.nchannels) {
@@ -45,6 +47,10 @@ SDL_Surface* IMG_Load(const char* path)
 		default:return NULL;
 	}
 	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0,spec.width,spec.height,spec.nchannels*8,pixel_format);
+	if (!surface) {
+		std::cerr << "Failed to load pixels from " << path << ". " << image->geterror();
+		return NULL;
+	}
 	image->read_scanlines(0,0,0,spec.height-1,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,surface->pixels,surface->format->BytesPerPixel,surface->pitch);
 	
 	// Set pixel format for lcms2
