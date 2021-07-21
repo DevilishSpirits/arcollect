@@ -131,7 +131,7 @@ jobs:
           name: webext-adder-online-ubuntu-20_04
           path: webext-adder-online
       - name: Upload build dir
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: ubuntu-20_04-builddir
