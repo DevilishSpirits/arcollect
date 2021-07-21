@@ -162,7 +162,7 @@ jobs:
       - name: Install MSI
         run: msiexec /i /q build/packaging/arcollect.msi
       - name: Upload build dir
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: windows-2019-builddir
