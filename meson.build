@@ -118,7 +118,6 @@ if enable_native_progs
 	])
 	
 	dep_lcms2  = dependency('lcms2')
-	dep_freetype2  = dependency('freetype2')
 	dep_sdl2_ttf   = dependency('SDL2_ttf', version: config_h.get('ARCOLLECT_VERREQ_sdl2_ttf'))
 	dep_sqlite3 = dependency('sqlite3', version: config_h.get('ARCOLLECT_VERREQ_sqlite3'))
 	dep_inih = dependency('INIReader', fallback: ['inih', 'INIReader_dep'], default_options: [

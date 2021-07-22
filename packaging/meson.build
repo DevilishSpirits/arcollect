@@ -9,6 +9,51 @@ packages_conf.set('MESON_SOURCE_ROOT', meson.project_source_root())
 
 sh_prog = find_program('sh', required: false, native: true)
 
+# Track application dependencies
+system_dependencies = []
+static_dependencies = []
+if enable_native_progs
+	# TODO Add sdl2 when no longer using a special branch
+	native_progs_deps = ['OpenImageIO','lcms2','SDL2_ttf','sqlite3','libcurl']
+	if with_xdg
+		native_progs_deps += 'dbus-1'
+	endif
+	foreach dep_name: native_progs_deps
+		dep = dependency(dep_name, required: false)
+		if dep.found()
+			if dep.type_name() == 'internal'
+				static_dependencies += dep_name
+			else
+				system_dependencies += dep_name
+			endif
+		endif
+	endforeach
+endif
+
+if 'SDL2_ttf' in static_dependencies
+	dep = dependency('freetype2', required: false)
+	if dep.type_name() == 'internal'
+		static_dependencies += 'freetype2'
+	else
+		system_dependencies += 'freetype2'
+	endif
+endif
+# TODO if 'OpenImageIO' in static_dependencies
+#endif
+
+if (host_machine.system() == 'windows') and (system_dependencies.length() > 0)
+	# TODO Scan the whole dependency tree
+	deps = static_dependencies+system_dependencies
+	warning('You are linking to DLLs!. You should reconfigure with --force-fallback-for='+','.join(deps))
+endif
+
+foreach dep: system_dependencies
+	summary(dep,true , section: 'Using system dependencies (NO if embeded)', bool_yn: true)
+endforeach
+foreach dep: static_dependencies
+	summary(dep,false, section: 'Using system dependencies (NO if embeded)', bool_yn: true)
+endforeach
+	
 # DESTDIR target
 # This special target run `meson compile` to a DESTDIR
 destdir_depends = []
@@ -38,53 +83,30 @@ if sh_prog.found()
 	)
 endif
 
-# Check what have been statically linked
-if enable_native_progs
-	dep_curl_static = dep_curl.type_name() == 'internal'
-	dep_sdl2_static = dep_sdl2.type_name() == 'internal'
-	#dep_sdl2_image_static = dep_sdl2_image.type_name() == 'internal'
-	dep_sdl2_ttf_static = dep_sdl2_ttf.type_name() == 'internal'
-	dep_sqlite3_static = dep_sqlite3.type_name() == 'internal'
-	dep_inih_static = dep_inih.type_name() == 'internal'
-	summary({
-		'libcurl': not dep_curl_static,
-		'sdl2': not dep_sdl2_static,
-		#'sdl2_image': not dep_sdl2_image_static,
-		'sdl2_ttf': not dep_sdl2_ttf_static,
-		'sqlite3': not dep_sqlite3_static,
-		'INIReader': not dep_inih_static,
-		
-		'freetype2': dep_freetype2.type_name() != 'internal',
-		'libjpeg': dependency('libjpeg').type_name() != 'internal',
-		'libpng': dependency('libpng').type_name() != 'internal',
-		'libtiff-4': dependency('libtiff-4').type_name() != 'internal',
-		'zlib': dependency('zlib').type_name() != 'internal',
-	}, section: 'Using system dependency (NO if embeded)', bool_yn: true)
-endif
-
 # ArchLinux PKGBUILD
 # Two favlors are generated:
 # 	PKGBUILD usable by anybody
 # 	PKGBUILD.local that use local directory as source directory
-pkgbuild_depends = ['xdg-utils']
+pkgbuild_depends = ['\'xdg-utils\'']
 pkgbuild_depends_list = {
 	# 'dependency_name': 'ArchLinux package name'
 	'curl'             : 'curl',
-	#'sdl2' has special handling
+	'dbus-1'           : 'dbus',
+	'lcms2'            : 'lcms2',
+	'OpenImageIO'      : 'openimageio',
+	#'sdl2' have special handling
 	'sdl2_ttf'         : 'sdl2_ttf',
 	'sqlite3'          : 'sqlite',
 	'inih'             : 'libINIReader.so',
 }
-if enable_native_progs
-	foreach dep_name, package_name: pkgbuild_depends_list
-		if not get_variable('dep_'+dep_name+'_static')
-			pkgbuild_depends += '\''+package_name+config_h.get('ARCOLLECT_VERREQ_'+dep_name,'')+'\''
-		endif
-	endforeach
-	# namcap report warning upon redundant dependencies and sdl2 might be one
-	if (not dep_sdl2_static) and dep_sdl2_ttf_static
-		pkgbuild_depends += '\'sdl2'+config_h.get('ARCOLLECT_VERREQ_sdl2','')+'\''
+foreach dep_name, package_name: pkgbuild_depends_list
+	if dep_name in system_dependencies
+		pkgbuild_depends += '\''+package_name+config_h.get('ARCOLLECT_VERREQ_'+dep_name,'')+'\''
 	endif
+endforeach
+# namcap report warning upon redundant dependencies and sdl2 might be one
+if ('sdl2' in system_dependencies) and ('sdl2_ttf' in static_dependencies)
+	pkgbuild_depends += '\'sdl2'+config_h.get('ARCOLLECT_VERREQ_sdl2','')+'\''
 endif
 
 pkgbuild_conf = configuration_data()
@@ -124,6 +146,9 @@ if dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found() and s
 	debian_depends_list = {
 		# 'dependency_name': 'Debian package name'
 		'curl'             : 'libcurl4',
+		'dbus-1'           : 'libdbus-1-3',
+		'lcms2'            : 'liblcms2-2',
+		'OpenImageIO'      : 'libopenimageio2.2',
 		'sdl2'             : 'libsdl2-2.0-0',
 		'sdl2_ttf'         : 'libsdl2-ttf-2.0-0',
 		'sqlite3'          : 'libsqlite3-0',
@@ -131,7 +156,7 @@ if dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found() and s
 	}
 	if enable_native_progs
 		foreach dep_name, package_name: debian_depends_list
-			if not get_variable('dep_'+dep_name+'_static')
+			if dep_name in system_dependencies
 				if config_h.has('ARCOLLECT_VERREQ_'+dep_name)
 					debian_depends += package_name+' ('+config_h.get('ARCOLLECT_VERREQ_'+dep_name,'')+')'
 				else
