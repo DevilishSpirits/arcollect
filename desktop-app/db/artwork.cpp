@@ -355,20 +355,7 @@ std::size_t Arcollect::db::artwork::image_memory(void)
 	return 3*sizeof(Uint8)*art_size.x*art_size.y;
 }
 
-#if defined(_WIN32)
-#include <windows.h>
-#include <shellapi.h>
 void Arcollect::db::artwork::open_url(void)
 {
-	ShellExecuteA(NULL,"open",source().c_str(),NULL,NULL,SW_SHOWNORMAL);
+	SDL_OpenURL(source().c_str());
 }
-#elif WITH_XDG
-#include <spawn.h>
-extern char** environ;
-void Arcollect::db::artwork::open_url(void)
-{
-	// Use plain `xdg-open` for now
-	char* argv[] = {(char*)"xdg-open",(char*)source().c_str(),NULL};
-	posix_spawnp(NULL,argv[0],NULL,NULL,argv,environ);
-}
-#endif

@@ -31,12 +31,6 @@ if with_xdg.auto()
 		'windows',
 	]
 		# With are not on a XDG platform
-	elif not cpp.has_header('spawn.h')
-		warning('XDG integration disabled due to missing <spawn.h>')
-	elif not cpp.has_function('posix_spawnp', prefix:'#include <spawn.h>')
-		warning('XDG integration disabled due to missing posix_spawnp')
-	elif not cpp.links('extern char** environ;int main(void){return environ != nullptr;}')
-		warning('XDG integration disabled due to missing "extern char** environ;"')
 	elif not dep_dbus.found()
 		warning('XDG integration disabled due to missing D-Bus library')
 	else # XDG test passed
