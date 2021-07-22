@@ -70,10 +70,10 @@ int main(int argc, char *argv[])
 	if ((argc < 2)|| std::strcmp(argv[1],"--dbus-service"))
 		Arcollect::gui::start(argc,argv);
 	while ((dbus_continue && ((SDL_GetTicks()-last_dbus_activity) < 10000)) || Arcollect::gui::enabled) {
-		if (Arcollect::gui::enabled)
+		if (Arcollect::gui::enabled) {
 			if (!Arcollect::gui::main())
 				Arcollect::gui::stop();
-		else SDL_Delay(100); // Sleep
+		} else SDL_Delay(100); // Sleep
 		conn.dispatch();
 	}
 	dbus_continue = false;
