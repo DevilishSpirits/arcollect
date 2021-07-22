@@ -131,10 +131,6 @@ jobs:
         with:
           name: archlinux-package
           path: archlinux-package
-      - name: Download Ubuntu 18.04 package
-        uses: actions/download-artifact@v2.0.9
-        with:
-          name: build-ubuntu-18_04-packaging
       - name: Download Ubuntu 20.04 package
         uses: actions/download-artifact@v2.0.9
         with:
