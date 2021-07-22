@@ -35,7 +35,7 @@ jobs:
       - name: Install Mozilla's web-ext with npm
         run: sudo npm install -g web-ext
       - name: Setup project
-        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dbuildtype=release -Dunity=on -Denable_webextension=false -Dlto=true
+        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dbuildtype=release -Denable_webextension=false -Dlto=true
       - name: Build project
         run: ninja -C build
       - name: Test project
