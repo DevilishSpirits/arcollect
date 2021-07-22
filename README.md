@@ -32,7 +32,7 @@ Currently these platforms are supported :
 ## Installation
 Recent Linux distributions and Microsoft Windows with Firefox are supported.
 
-I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.10) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.10#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
+I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.11) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.11#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
 
 If you want to build the software yourself, grab the source code, install Meson (>0.57.1), dbus on UNIX-like, SQLite, SDL2_ttf (a special version of SDL2 is required), OpenImageIO, lcms2 and libcurl. CMake may also be needed. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
 

@@ -4,7 +4,7 @@ project('arcollect', 'cpp',
 	# | +-- Build: Incremented to rebuild webextension and public packages.
 	# |
 	# +---- Minor: Will be incremented one day
-	version: '0.10',
+	version: '0.11',
 	meson_version: '>=0.57.1',
 	default_options: [
 		'cpp_std=c++17',
