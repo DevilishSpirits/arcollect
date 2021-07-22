@@ -22,51 +22,14 @@ jobs:
         with:
           name: archlinux-package
           path: build/packaging
-  ubuntu-18_04-package:
-    runs-on: [ubuntu-18.04]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Update apt cache
-        run: sudo apt update
-      - name: Install SDL2, his image and ttf modules, libcurl, Python3 setuptools and lintian
-        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev python3-setuptools lintian
-      - name: Install Meson and Ninja using pip3
-        run: sudo pip3 install meson==0.57.1 ninja
-      - name: Install Mozilla's web-ext with npm
-        run: sudo npm install -g web-ext
-      - name: Setup project
-        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dbuildtype=release -Dunity=on -Denable_webextension=false -Dcpp_link_args='-z now' # Find out why to make works -Dlto=true
-        env:
-          CC:  clang
-          CXX: clang++
-      - name: Build project
-        run: ninja -C build
-        env:
-          CC:  clang
-          CXX: clang++
-      - name: Test project
-        run: ninja -C build test
-      - name: Generate Debian package
-        run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
-        shell: bash
-      # TODO - name: Lintian Debian package
-      #  run: lintian --no-tag-display-limit --dont-check-part debian/copyright -I -E --verbose -- "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
-      - name: Move Debian package
-        run: mkdir debian-package && mv "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)" "debian-package/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja | sed 's/-1/-ubuntu18.04/')"
-        shell: bash
-      - name: Uploading Debian package artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: build-ubuntu-18_04-packaging
-          path: debian-package
   ubuntu-20_04-package:
     runs-on: [ubuntu-20.04]
     steps:
       - uses: actions/checkout@v2
       - name: Update apt cache
         run: sudo apt update
-      - name: Install SDL2, his image and ttf modules, libcurl and lintian
-        run: sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcurl4-openssl-dev lintian
+      - name: Install dependencies and tools
+        run: sudo apt install libsdl2-dev libsdl2-ttf-dev libopenimageio-dev libboost-all-dev libcurl4-openssl-dev libdbus-1-dev liblcms2-dev python3-setuptools lintian
       - name: Install Meson and Ninja using pip3
         run: sudo pip3 install meson==0.57.1 ninja
       - name: Install Mozilla's web-ext with npm
@@ -115,7 +78,7 @@ jobs:
         run: msiexec /i /q build/packaging/arcollect.msi
   build-webextension:
     # Simply build the webextension (only)
-    needs: [archlinux-package, ubuntu-20_04-package, ubuntu-18_04-package, windows-x64-msi-package]
+    needs: [archlinux-package, ubuntu-20_04-package, windows-x64-msi-package]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
