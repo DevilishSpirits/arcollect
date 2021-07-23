@@ -22,10 +22,22 @@
 #include "db/db.hpp"
 #include "gui/main.hpp"
 #include "sdl2-hpp/SDL.hpp" // For SDL_main
+#ifdef _WIN32
+#include <arcollect-debug.hpp>
+#include <windows.h>
+#include <stdio.h>
+#endif
 
 int main(int argc, char *argv[])
 {
 	#undef main // Alias no longer needed
+	#ifdef _WIN32
+	// Init debug console
+	if (!Arcollect::debug::env.empty()) {
+		AllocConsole();
+		freopen("CONOUT$","w",stderr);
+	}
+	#endif
 	// WARNING! Init order is important.
 	// Read config
 	Arcollect::config::read_config();
