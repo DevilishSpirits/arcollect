@@ -135,25 +135,37 @@ endforeach
 # FIXME Generated a binary package by hand is really dirty !
 # The Debian package generation consist of the generation a binary package
 # manually.
+apt_prog = find_program('apt', required: false, native: true)
 dpkg_architecture_prog = find_program('dpkg-architecture', required: false, native: true)
 tar_prog = find_program('tar', required: false, native: true)
 ar_prog  = find_program('ar', required: false, native: true)
-if dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found() and sh_prog.found()
+if apt_prog.found() and dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found() and sh_prog.found()
 	# Get the "Architecture:" field using dpkg-achitecture
 	dpkg_architecture_run = run_command(dpkg_architecture_prog,'-q','DEB_HOST_ARCH', check: true)
 	
 	debian_depends = ['libc6', 'libstdc++6', 'xdg-utils']
 	debian_depends_list = {
-		# 'dependency_name': 'Debian package name'
-		'curl'             : 'libcurl4',
-		'dbus-1'           : 'libdbus-1-3',
-		'lcms2'            : 'liblcms2-2',
-		'OpenImageIO'      : 'libopenimageio2.1',
-		'sdl2'             : 'libsdl2-2.0-0',
-		'sdl2_ttf'         : 'libsdl2-ttf-2.0-0',
-		'sqlite3'          : 'libsqlite3-0',
-		'inih'             : 'libinireader0',
+		# 'dependency_name': ['Debian -dev package name','package-regex'[0-9\-\.]*]
+		'libcurl'          : ['libcurl4-openssl-dev'    ,'libcurl4'],
+		'dbus-1'           : ['libdbus-1-dev'           ,'libdbus-1'],
+		'lcms2'            : ['liblcms2-dev'            ,'liblcms2'],
+		'OpenImageIO'      : ['libopenimageio-dev'      ,'libopenimageio'],
+		'sdl2'             : ['libsdl2-dev'             ,'libsdl2'],
+		'SDL2_ttf'         : ['libsdl2-ttf-dev'         ,'libsdl2-ttf'],
+		'sqlite3'          : ['libsqlite3-dev'          ,'libsqlite3'],
+		'inih'             : ['libinih-dev'             ,'libinireader'],
 	}
+	# Detect non-dev package name
+	foreach dep: system_dependencies
+		pkg_name = debian_depends_list[dep]
+		result = run_command(sh_prog,'-c','\''+apt_prog.full_path()+'\' show \''+pkg_name[0]+'\' | grep -F \'Depends:\' -m 1 | exec grep -oE \''+pkg_name[1]+'[0-9\.-]*(\ |$)\' -m 1')
+		if result.returncode() == 0
+			debian_depends_list += {dep: result.stdout().strip()}
+		else
+			debian_depends_list += {dep: pkg_name[1]}
+		endif
+	endforeach
+	
 	if enable_native_progs
 		foreach dep_name, package_name: debian_depends_list
 			if dep_name in system_dependencies
