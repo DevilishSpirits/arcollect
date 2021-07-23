@@ -36,7 +36,7 @@ if with_xdg.auto()
 	else # XDG test passed
 		with_xdg = true
 	endif
-elif
+else
 	with_xdg = with_xdg.enabled()
 endif
 
