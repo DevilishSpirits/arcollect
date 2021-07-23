@@ -1,5 +1,6 @@
 common_deps = [
 	dep_sqlite3,
+	cpp.find_library('Kernel32', required: false), # For AllocConsole()
 ]
 common_srcs = [
 	'db-open.cpp',

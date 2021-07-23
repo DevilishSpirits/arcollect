@@ -17,6 +17,10 @@
 #include "arcollect-debug.hpp"
 #include <cstring>
 #include <iostream>
+#ifdef _WIN32
+#include <windows.h>
+#include <stdio.h>
+#endif
 const std::string Arcollect::debug::env = []{
 	const char* env_value = std::getenv("ARCOLLECT_DEBUG");
 	if (env_value)
@@ -27,6 +31,12 @@ const std::string Arcollect::debug::env = []{
 const std::unordered_set<std::string_view> Arcollect::debug::flags = []{
 	std::unordered_set<std::string_view> debug_flags;
 	if (!Arcollect::debug::env.empty()) {
+		#ifdef _WIN32
+		// Init debug console
+		AllocConsole();
+		freopen("CONOUT$","w",stderr);
+		std::cerr.clear(); // Reset the stream to apply the redirection
+		#endif
 		// Tokenize the string
 		const char* start = Arcollect::debug::env.c_str();
 		const char* current;
