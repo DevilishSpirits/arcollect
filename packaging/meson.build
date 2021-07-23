@@ -148,7 +148,7 @@ if dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found() and s
 		'curl'             : 'libcurl4',
 		'dbus-1'           : 'libdbus-1-3',
 		'lcms2'            : 'liblcms2-2',
-		'OpenImageIO'      : 'libopenimageio2.2',
+		'OpenImageIO'      : 'libopenimageio2.1',
 		'sdl2'             : 'libsdl2-2.0-0',
 		'sdl2_ttf'         : 'libsdl2-ttf-2.0-0',
 		'sqlite3'          : 'libsqlite3-0',
