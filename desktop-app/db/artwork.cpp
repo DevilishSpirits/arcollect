@@ -23,6 +23,7 @@
 #include <iostream>
 #define CMSREGISTER // Remove warnings about 'register' keyword
 #include "lcms2.h"
+#include <cstdlib>
 
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::artwork>> artworks_pool;
 std::list<std::reference_wrapper<Arcollect::db::artwork>> Arcollect::db::artwork::last_rendered;
@@ -220,7 +221,34 @@ int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
 	}else {
 		// Render a placeholder
 		renderer->SetDrawColor(0,0,0,192);
-		return renderer->FillRect(*dstrect);
+		renderer->FillRect(*dstrect);
+		if (dstrect) {
+			SDL::Rect placeholder_rect{dstrect->x,dstrect->y,dstrect->h/4,dstrect->h/8};
+			if (placeholder_rect.w > dstrect->w*3/4) {
+				placeholder_rect.w = dstrect->w*3/4;
+			}
+			placeholder_rect.x += (dstrect->w-placeholder_rect.w)/2;
+			placeholder_rect.y += (dstrect->h-placeholder_rect.h)/2;
+			renderer->SetDrawColor(255,255,255,128);
+			renderer->DrawRect(placeholder_rect);
+			// Draw inside bars
+			const auto bar_count = 3;
+			auto border = placeholder_rect.w/8;
+			placeholder_rect.x += border;
+			placeholder_rect.y += border;
+			placeholder_rect.h -= border*2;
+			placeholder_rect.w -= border*(1+bar_count);
+			placeholder_rect.w /= bar_count;
+			for (auto i = bar_count; i; i--) {
+				Uint8 light_level = std::rand()%256;
+				renderer->SetDrawColor(std::rand()%256,std::rand()%256,std::rand()%256,32);
+				renderer->FillRect(placeholder_rect);
+				renderer->SetDrawColor(std::rand()%256,std::rand()%256,std::rand()%256,64);
+				renderer->DrawRect(placeholder_rect);
+				placeholder_rect.x += placeholder_rect.w+border;
+			}
+		}
+		return 0;
 	}
 }
 

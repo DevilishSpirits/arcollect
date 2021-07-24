@@ -81,7 +81,6 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	
 	// Draw rect
 	renderer->SetDrawColor(0,0,0,192);
-	renderer->SetDrawBlendMode(SDL::BLENDMODE_BLEND);
 	renderer->FillRect(render_rect);
 	// Apply padding
 	const auto box_padding = rect.h/100;
@@ -116,7 +115,6 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 
 void Arcollect::gui::view_slideshow::render(void)
 {
-	renderer->SetDrawBlendMode(SDL::BLENDMODE_NONE);
 	if (viewport.artwork) {
 		// Preload previous artwork
 		if (*collection_iterator != collection->begin()) {
