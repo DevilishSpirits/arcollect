@@ -8,7 +8,7 @@
 		"scripts": ["background.js"]
 	},
 	"content_scripts": [{
-		"matches": ["https://www.artstation.com/artwork/*"],
+		"matches": ["https://www.artstation.com/*"],
 		"js": ["content-scripts/common.js","content-scripts/artstation.com.js"]
 	},{
 		"matches": ["https://www.furaffinity.net/view/*"],
@@ -21,6 +21,7 @@
 		"js": ["content-scripts/common.js","content-scripts/deviantart.com.js"]
 	}],
 	"permissions": [
+		"https://www.artstation.com/artwork/*",
 		"nativeMessaging"
 	],
 	"browser_specific_settings": {

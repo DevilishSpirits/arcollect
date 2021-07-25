@@ -144,6 +144,21 @@ function artstation_make_save_ui(assetActions) {
 	assetActions.insertBefore(saveButtonA,assetActions.firstElementChild);
 }
 
-assetActionss = document.getElementsByClassName('asset-actions')
-for (let i = 0; i < assetActionss.length; i++)
-	artstation_make_save_ui(assetActionss[i])
+function trigger_artwork_page() {
+	let assetActionss = document.getElementsByClassName('asset-actions')
+	for (let i = 0; i < assetActionss.length; i++)
+		artstation_make_save_ui(assetActionss[i])
+}
+
+function page_changed() {
+	// TODO Check for artwork page
+	let project_assets_observer = new MutationObserver(trigger_artwork_page);
+	project_assets_observer.observe(document.getElementsByTagName('project-assets')[0],{
+		'childList': true,
+	})
+}
+let wrapper_main_observer = new MutationObserver(page_changed);
+wrapper_main_observer.observe(document.getElementsByClassName('wrapper-main')[0],{
+	'childList': true,
+})
+trigger_artwork_page();
