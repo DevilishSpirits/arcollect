@@ -144,6 +144,7 @@ void Arcollect::gui::start(int argc, char** argv)
 	Arcollect::gui::time_now = SDL_GetTicks();
 	Arcollect::gui::enabled = true;
 }
+static Uint32 loop_end_ticks;
 bool Arcollect::gui::main(void)
 {
 	SDL::Event e;
@@ -230,14 +231,16 @@ bool Arcollect::gui::main(void)
 			Uint32  event;
 			Uint32 render;
 			Uint32 loader;
+			Uint32  other;
 			Uint32  frame;
 			decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending;
 			
-			debug_sample(Uint32 loop_start_ticks, Uint32 event_start_ticks, Uint32 render_start_ticks, Uint32 loader_start_ticks, Uint32 final_ticks, decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending) : 
+			debug_sample(Uint32 loop_start_ticks, Uint32 event_start_ticks, Uint32 render_start_ticks, Uint32 loader_start_ticks, Uint32 final_ticks, Uint32 loop_end_ticks, decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending) : 
 				idle  (event_start_ticks  -   loop_start_ticks),
 				event (render_start_ticks -  event_start_ticks),
 				render(loader_start_ticks - render_start_ticks),
 				loader(final_ticks        - loader_start_ticks),
+				other (loop_start_ticks   -     loop_end_ticks),
 				frame (final_ticks        -  event_start_ticks),
 				load_pending(load_pending)
 			{
@@ -250,6 +253,7 @@ bool Arcollect::gui::main(void)
 				result.event  = std::max(event ,right.event );
 				result.render = std::max(render,right.render);
 				result.loader = std::max(loader,right.loader);
+				result.other  = std::max(other ,right.other );
 				result.frame  = std::max(frame ,right.frame );
 				result.load_pending = std::max(load_pending,right.load_pending);
 				return result;
@@ -264,24 +268,31 @@ bool Arcollect::gui::main(void)
 				draw_time_bar(time_bar,event ,255,255,0  );
 				draw_time_bar(time_bar,render,0  ,255,255);
 				draw_time_bar(time_bar,loader,255,0  ,0  );
+				draw_time_bar(time_bar,other ,0  ,0  ,255);
 			}
 			std::string print(void) {
 				return "	Idle  : " + std::to_string(idle  ) + "ms\n"
 				+ "	Event : " + std::to_string(event ) + "ms\n"
 				+ "	Render: " + std::to_string(render) + "ms\n"
 				+ "	Loader: " + std::to_string(loader) + "ms " + std::to_string(load_pending) + " artworks pending\n"
+				+ "	Other : " + std::to_string(other ) + "ms"
+					#ifdef WITH_XDG
+					+ " (D-Bus)\n"
+					#else
+					+ "\n"
+					#endif
 				+ "	Total = " + std::to_string(frame ) + "ms/"+std::to_string(1000.f/frame)+"FPS\n"
 				;
 			}
 		};
-		debug_sample frame_sample(loop_start_ticks,event_start_ticks,render_start_ticks,loader_start_ticks,final_ticks,load_pending_count);
+		debug_sample frame_sample(loop_start_ticks,event_start_ticks,render_start_ticks,loader_start_ticks,final_ticks,loop_end_ticks,load_pending_count);
 		
 		static Uint32 last_second_tick = 0;
 		static debug_sample last_second_sample;
 		constexpr const auto last_second_reset_interval = 3000;
 		if (last_second_tick != final_ticks/last_second_reset_interval) {
 			last_second_tick    = final_ticks/last_second_reset_interval;
-			last_second_sample  = debug_sample(0,0,0,0,0,0);
+			last_second_sample  = debug_sample(0,0,0,0,0,0,0);
 		}
 		last_second_sample = last_second_sample.max(frame_sample);
 		
@@ -316,6 +327,7 @@ bool Arcollect::gui::main(void)
 		renderer->SetDrawColor(255,255,0,192);
 		renderer->DrawLine(1000.f/30,0,1000.f/30,7);
 	}
+	loop_end_ticks = SDL_GetTicks();
 	renderer->Present();
 	return true;
 }
