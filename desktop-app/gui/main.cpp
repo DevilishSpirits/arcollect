@@ -288,17 +288,23 @@ bool Arcollect::gui::main(void)
 		debug_sample frame_sample(loop_start_ticks,event_start_ticks,render_start_ticks,loader_start_ticks,final_ticks,loop_end_ticks,load_pending_count);
 		
 		static Uint32 last_second_tick = 0;
-		static debug_sample last_second_sample;
-		constexpr const auto last_second_reset_interval = 3000;
-		if (last_second_tick != final_ticks/last_second_reset_interval) {
-			last_second_tick    = final_ticks/last_second_reset_interval;
-			last_second_sample  = debug_sample(0,0,0,0,0,0,0);
+		static debug_sample last_second_samples[30];
+		const auto last_second_samples_n = sizeof(last_second_samples)/sizeof(last_second_samples[0]);
+		static int last_second_sample_i = 0;
+		if (last_second_tick != final_ticks/100) {
+			last_second_tick    = final_ticks/100;
+			last_second_sample_i++;
+			last_second_sample_i %= last_second_samples_n;
+			last_second_samples[last_second_sample_i] = debug_sample(0,0,0,0,0,0,0);
 		}
-		last_second_sample = last_second_sample.max(frame_sample);
+		last_second_samples[last_second_sample_i] = last_second_samples[last_second_sample_i].max(frame_sample);
+		debug_sample maximums = debug_sample(0,0,0,0,0,0,0);
+		for (const debug_sample &sample: last_second_samples)
+			maximums = maximums.max(sample);
 		
 		std::string stats = "Tick: " + std::to_string(final_ticks) + "\n"
 			+ "Frame stats:\n"+ frame_sample.print()
-			+ "Maximums (reset in " + std::to_string((last_second_reset_interval-final_ticks)%last_second_reset_interval) + "ms):\n"+ last_second_sample.print()
+			+ "Maximums (last 3 seconds):\n"+ maximums.print()
 			+ "\n"
 			//+ "animation_running:" + (saved_animation_running ? "y" : "n")
 			+ "Image memory usage: " + std::to_string(Arcollect::db::artwork_loader::image_memory_usage >> 20) +" MiB"
@@ -310,7 +316,7 @@ bool Arcollect::gui::main(void)
 		SDL::Texture* debug_par_text(debug_par.render(800));
 		SDL::Point debug_par_size;
 		debug_par_text->QuerySize(debug_par_size);
-		SDL::Rect debug_par_text_dstrect{5,10,debug_par_size.x,debug_par_size.y};
+		SDL::Rect debug_par_text_dstrect{5,20,debug_par_size.x,debug_par_size.y};
 		SDL::Rect debug_box_dstrect{0,0,debug_par_text_dstrect.w+5+debug_par_text_dstrect.x,debug_par_text_dstrect.h+5+debug_par_text_dstrect.y};
 		renderer->SetDrawBlendMode(SDL::BLENDMODE_BLEND);
 		renderer->SetDrawColor(0,0,0,224);
@@ -318,8 +324,18 @@ bool Arcollect::gui::main(void)
 		renderer->Copy(debug_par_text,NULL,&debug_par_text_dstrect);
 		
 		// Render time bar
-		frame_sample.draw_time_bar({0,0,0,4});
-		last_second_sample.draw_time_bar({0,4,0,1});
+		frame_sample.draw_time_bar({0,0,0,4}); // Draw frame time
+		maximums.draw_time_bar({0,11,0,1});    // Draw last 3 seconds max
+		maximums = debug_sample(0,0,0,0,0,0,0);
+		for (int i = 0; i < 1; i++)
+			maximums = maximums.max(last_second_samples[(i+last_second_sample_i)%last_second_samples_n]);
+		maximums.draw_time_bar({0,5,0,1});    // Draw last 0.1 second max
+		for (int i = 1; i < 10; i++)
+			maximums = maximums.max(last_second_samples[(i+last_second_sample_i)%last_second_samples_n]);
+		maximums.draw_time_bar({0,7,0,1});    // Draw last second max
+		for (int i = 10; i < 20; i++)
+			maximums = maximums.max(last_second_samples[(i+last_second_sample_i)%last_second_samples_n]);
+		maximums.draw_time_bar({0,9,0,1});    // Draw last 2 seconds max
 		// Draw 60FPS mark
 		renderer->SetDrawColor(0,255,0,192);
 		renderer->DrawLine(1000.f/60,0,1000.f/60,7);
