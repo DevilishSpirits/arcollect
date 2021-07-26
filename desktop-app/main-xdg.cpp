@@ -74,7 +74,8 @@ int main(int argc, char *argv[])
 			if (!Arcollect::gui::main())
 				Arcollect::gui::stop();
 		} else SDL_Delay(100); // Sleep
-		conn.dispatch();
+		while (dbus_connection_get_dispatch_status(conn) == DBUS_DISPATCH_DATA_REMAINS)
+			conn.dispatch();
 	}
 	dbus_continue = false;
 	return 0;
