@@ -379,8 +379,10 @@ int Arcollect::db::artwork::db_delete(void)
 
 std::size_t Arcollect::db::artwork::image_memory(void)
 {
-	// FIXME Don't assume 8-bit RGB
-	return 3*sizeof(Uint8)*art_size.x*art_size.y;
+	Uint32 format = SDL_PIXELFORMAT_RGBA32; // Fallback to 32bpp
+	if (text)
+		text->QueryTexture(&format);
+	return SDL_BYTESPERPIXEL(format)*sizeof(Uint8)*art_size.x*art_size.y; // Assume 8-bits RGBA
 }
 
 void Arcollect::db::artwork::open_url(void)
