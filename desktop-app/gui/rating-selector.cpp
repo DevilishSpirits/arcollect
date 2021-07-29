@@ -175,7 +175,7 @@ static void set_rating(Arcollect::config::Rating new_rating)
 	Arcollect::db_filter::set_rating(new_rating);
 }
 Arcollect::gui::rating_selector_menu::rating_selector_menu(void) :
-	text_line(font,"Rating",14)
+	text_line("Rating",14)
 {
 	selector.has_kid = true;
 	selector.has_mature = true;
@@ -184,8 +184,7 @@ Arcollect::gui::rating_selector_menu::rating_selector_menu(void) :
 }
 SDL::Point Arcollect::gui::rating_selector_menu::size(void)
 {
-	SDL::Point size;
-	text_line.render()->QuerySize(size);
+	SDL::Point size = text_line.size();
 	size.x += (1+selector.has_kid+selector.has_mature+selector.has_adult)*size.y;
 	return size;
 }
@@ -198,11 +197,7 @@ void Arcollect::gui::rating_selector_menu::render(SDL::Rect target)
 	// Update rating
 	selector.rating = static_cast<Arcollect::config::Rating>(static_cast<int>(Arcollect::config::current_rating));
 	// Render label
-	SDL::Point label_size;
-	SDL::Texture *text = text_line.render();
-	text->QuerySize(label_size);
-	SDL::Rect label_rect{target.x,target.y+(target.h-label_size.y)/2,label_size.x,label_size.y};
-	renderer->Copy(text,NULL,&label_rect);
+	text_line.render_tl(target.x,target.y+(target.h-text_line.size().y)/2);
 	//Render selector
 	selector.render(target);
 }

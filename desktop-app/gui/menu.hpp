@@ -22,16 +22,14 @@
  * vertical layout and hence, is reusable in many places.
  */
 #pragma once
-#include "modal.hpp"
 #include "font.hpp"
+#include "modal.hpp"
 #include <functional>
 #include <memory>
 #include <vector>
 namespace Arcollect {
 	namespace gui {
 		class menu_item {
-			protected:
-				Arcollect::gui::Font font;
 			public:
 				/** Standard menu item height
 				 */
@@ -87,8 +85,7 @@ namespace Arcollect {
 			private:
 				bool pressed = false;
 			protected:
-				Arcollect::gui::TextLine text_line;
-				std::unique_ptr<SDL::Texture> text;
+				Arcollect::gui::font::Renderable text_line;
 			public:
 				SDL::Point size(void) override;
 				void event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location) override;

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-#include "font.hpp"
 #include "search-osd.hpp"
 #include "slideshow.hpp"
 #include "window-borders.hpp"
@@ -40,8 +39,7 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e)
 								text.pop_back();
 						text.pop_back();
 					}
-					// Refresh search
-					update_background(text,true);
+					text_changed();
 				} break;
 				default: {
 				} break;
@@ -61,7 +59,7 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e)
 		} return false;
 		case SDL_TEXTINPUT: {
 			text += std::string(e.text.text);
-			update_background(text,true);
+			text_changed();
 		} return false;
 		default: {
 		} return false;
@@ -76,21 +74,23 @@ void Arcollect::gui::search_osd::render(void)
 void Arcollect::gui::search_osd::render_titlebar(SDL::Rect target, int window_width)
 {
 	// Render text
-	Arcollect::gui::Font font;
 	const int title_border = target.h/4;
-	const int font_height = target.h-2*title_border;
-	Arcollect::gui::TextLine search_line(font,text.c_str(),font_height);
-	SDL::Texture *text = search_line.render();
-	// Compute sizes
-	SDL::Point text_size;
-	text->QuerySize(text_size);
-	// Blit
-	SDL::Rect rect{target.h+title_border,title_border,text_size.x,text_size.y};
-	renderer->Copy(text,NULL,&rect);
+	text_render.render_tl(title_border+target.h,title_border);
+}
+void Arcollect::gui::search_osd::text_changed(void)
+{
+	const int title_border = window_borders::title_height/4;
+	const int font_height = window_borders::title_height-2*title_border;
+	const char* search_term = " ";
+	if (!text.empty())
+		search_term = text.c_str();
+	text_render = font::Renderable(search_term,font_height);
+	update_background(text,true);
 }
 void Arcollect::gui::search_osd::push(void)
 {
 	text = saved_text = Arcollect::gui::get_current_search();
+	text_changed();
 	SDL_StartTextInput();
 	also_pop_grid_after = &modal_stack.back().get() != &Arcollect::gui::background_vgrid;
 	if (also_pop_grid_after)

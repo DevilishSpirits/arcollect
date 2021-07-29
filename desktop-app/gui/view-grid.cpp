@@ -43,6 +43,9 @@ void Arcollect::gui::view_vgrid::flush_layout(void)
 	// Inhibate scroll
 	scroll_position.val_origin = scroll_position.val_target;
 	scroll_position.time_end = 0;
+	
+	// Invalidate cached caption
+	caption_cache_artwork.reset();
 }
 void Arcollect::gui::view_vgrid::resize(SDL::Rect rect)
 {
@@ -70,26 +73,30 @@ void Arcollect::gui::view_vgrid::render(void)
 }
 void Arcollect::gui::view_vgrid::render_viewport_hover(const artwork_viewport& viewport)
 {
-	Arcollect::gui::Font font;
+	// Draw backdrop
 	SDL::Rect rect{viewport.corner_tl.x,viewport.corner_tl.y-scroll_position,viewport.corner_tr.x-viewport.corner_tl.x,viewport.corner_bl.y-viewport.corner_tl.y};
 	renderer->SetDrawColor(0,0,0,192);
 	renderer->FillRect(rect);
-	
-	Arcollect::gui::TextPar title_par(font,viewport.artwork->title(),18);
-	SDL::Texture* title_par_text(title_par.render(rect.w-8));
-	SDL::Point title_par_size;
-	title_par_text->QuerySize(title_par_size);
-	SDL::Rect title_par_rect{rect.x+(rect.w-title_par_size.x)/2,rect.y+(rect.h-title_par_size.y)/2,title_par_size.x,title_par_size.y};
-	renderer->Copy(title_par_text,NULL,&title_par_rect);
-	
+	// Draw title
+	if (caption_cache_artwork != viewport.artwork) {
+		caption_title = gui::font::Renderable(viewport.artwork->title().c_str(),18,rect.w);
+		caption_cache_has_artist = false; // Invalidate caption_account
+		caption_cache_artwork = viewport.artwork;
+	}
+	int caption_title_y = rect.y+(rect.h-caption_title.size().y)/2;
+	caption_title.render_tl(rect.x+(rect.w-caption_title.size().x)/2,caption_title_y);
+	// Draw account
 	auto accounts = viewport.artwork->get_linked_accounts("account");
 	if (accounts.size()) {
-		Arcollect::gui::TextPar artist_par(font,accounts[0]->title(),14,TTF_STYLE_NORMAL,{255,255,255,192});
-		SDL::Texture* artist_par_text(artist_par.render(rect.w-8));
-		SDL::Point artist_par_size;
-		artist_par_text->QuerySize(artist_par_size);
-		SDL::Rect artist_par_rect{rect.x+(rect.w-artist_par_size.x)/2,title_par_rect.y+title_par_rect.h+8,artist_par_size.x,artist_par_size.y};
-		renderer->Copy(artist_par_text,NULL,&artist_par_rect);
+		if (!caption_cache_has_artist) {
+			Arcollect::gui::font::Elements elements;
+			elements << std::string_view(accounts[0]->title());
+			elements.initial_color  = {255,255,255,192};
+			elements.initial_height = 14;
+			caption_account = gui::font::Renderable(elements,rect.w);
+			caption_cache_has_artist = true;
+		}
+		caption_account.render_tl(rect.x+(rect.w-caption_account.size().x)/2,caption_title_y+caption_title.size().y+8);
 	}
 }
 bool Arcollect::gui::view_vgrid::event(SDL::Event &e)

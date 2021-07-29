@@ -19,113 +19,80 @@
 #include <SDL_ttf.h>
 #include <memory>
 #include <string>
-#include <arcollect-roboto.hpp>
+#include <string_view>
+#include <variant>
+#include <vector>
 namespace Arcollect {
 	namespace gui {
-		class Font {
-			public:
-				/** Render a line of text
-				 */
-				std::unique_ptr<SDL::Surface> render_line(int font_height, SDL_Color font_color, const char* text, int style = TTF_STYLE_NORMAL) {
-					// FIXME This is awful
-					TTF_Font *font = TTF_OpenFontRW(SDL_RWFromConstMem(Arcollect::Roboto::Light.data(),Arcollect::Roboto::Light.size()),1,font_height);
-					TTF_SetFontStyle(font,style);
-					std::unique_ptr<SDL::Surface> result((SDL::Surface*)TTF_RenderUTF8_Blended(font,text,font_color));
-					TTF_CloseFont(font);
-					return result;
+		namespace font {
+			TTF_Font *query_font(Uint32 font_size);
+			/** Text-element
+			 *
+			 * A text element can be content (text) or attribute changes (color, ...).
+			 *
+			 * A list of #Element is used to generate text.
+			 */
+			typedef std::variant<
+				std::string,      // Owned text
+				std::string_view // Referenced text
+				//SDL_Color,        // Text color change
+			> Element;
+			enum ElementIndex: std::size_t {
+				ELEMENT_STRING,
+				ELEMENT_STRING_VIEW,
+				//ELEMENT_COLOR,
+			};
+			/** Vector of #Element
+			 *
+			 * Used to ease text building with operator<<. Also contain initial state.
+			 */
+			struct Elements: public std::vector<Element> {
+				int       initial_height = 12;
+				SDL_Color initial_color = {255,255,255,255};
+				
+				template <typename T>
+				inline Elements& operator<<(const T value) {
+					emplace_back(value);
+					return *this;
 				}
-				/** Render a paragraph of text
-				 */
-				std::unique_ptr<SDL::Surface> render_paragraph(int font_height, SDL_Color font_color, Uint32 width, const char* text, int style = TTF_STYLE_NORMAL) {
-					// FIXME This is awful
-					TTF_Font *font = TTF_OpenFontRW(SDL_RWFromConstMem(Arcollect::Roboto::Light.data(),Arcollect::Roboto::Light.size()),1,font_height);
-					TTF_SetFontStyle(font,style);
-					std::unique_ptr<SDL::Surface> result((SDL::Surface*)TTF_RenderUTF8_Blended_Wrapped(font,text,font_color,width));
-					TTF_CloseFont(font);
-					return result;
-				}
-		};
-		/** Cached text line
-		 *
-		 * This class cache a line of text avoiding costful text rerender at each frame.
-		 */
-		class TextLine {
-			private:
-				int font_height;
-				SDL_Color font_color;
-				int font_style;
-				std::unique_ptr<SDL::Texture> cached_render;
-				std::string text;
-			public:
-				/** The text font
-				 *
-				 */
-				Font &font;
-				/** Change the text
-				 */
-				void set_text(const std::string &new_text) {
-					cached_render.reset();
-					text = new_text;
-				}
-				/** Change the font height
-				 */
-				void set_font_height(int new_font_height) {
-					cached_render.reset();
-					font_height = new_font_height;
-				}
-				/** Change the font style
-				 */
-				void set_font_style(int new_font_style) {
-					cached_render.reset();
-					font_style = new_font_style;
-				}
-				/** Render the line of text
-				 * \return The texture, DO NOT FREE ! Texture can be destroyed upon each function call to this #TextLine, so you cannot store the returned pointer.
-				 */
-				SDL::Texture* render(void);
-				TextLine(Font &font, const std::string& text, int font_height, int font_style = TTF_STYLE_NORMAL, SDL_Color font_color = {255,255,255,255});
-		};
-		/** Cached paragraph line
-		 *
-		 * This class cache a line of text avoiding rerendering text at each frame.
-		 */
-		class TextPar {
-			private:
-				int font_height;
-				SDL_Color font_color;
-				int font_style;
-				std::unique_ptr<SDL::Texture> cached_render;
-				Uint32 cached_width; 
-				std::string text;
-			public:
-				/** The text font
-				 *
-				 */
-				Font &font;
-				/** Change the text
-				 */
-				void set_text(const std::string &new_text) {
-					cached_render.reset();
-					text = new_text;
-				}
-				/** Change the font height
-				 */
-				void set_font_height(int new_font_height) {
-					cached_render.reset();
-					font_height = new_font_height;
-				}
-				/** Change the font style
-				 */
-				void set_font_style(int new_font_style) {
-					cached_render.reset();
-					font_style = new_font_style;
-				}
-				/** Render the line of text
-				 * \param width
-				 * \return The texture, DO NOT FREE ! Texture can be destroyed upon each function call to this #TextLine, so you cannot store the returned pointer.
-				 */
-				SDL::Texture* render(Uint32 width);
-				TextPar(Font &font, const std::string& text, int font_height, int font_style = TTF_STYLE_NORMAL, SDL_Color font_color = {255,255,255,255});
-		};
+			};
+			/** Text shaping result
+			 *
+			 * This class can render a bloc of text. It can be generated to fit in a
+			 * particular box.
+			 */
+			class Renderable {
+				private:
+					std::shared_ptr<SDL::Texture> result;
+					SDL::Point result_size;
+				public:
+					inline const SDL::Point size() {
+						return result_size;
+					}
+					/** Renderable empty constructor
+					 *
+					 * \warning The object is invalid and trying to render is undefined.
+					 *          You must set the object to something valid before render.
+					 */
+					Renderable(void) = default;
+					Renderable(const Elements& elements);
+					Renderable(const Elements& elements, Uint32 wrap_width);
+					/** Convenience simple text rendering
+					 *
+					 * It use default values of #Elements
+					 */
+					Renderable(const char* text, int font_size);
+					/** Convenience simple text rendering
+					 *
+					 * It use default values of #Elements
+					 */
+					Renderable(const char* text, int font_size, Uint32 wrap_width);
+					Renderable(const Renderable&) = default;
+					void render_tl(int x, int y);
+					inline void render_tl(SDL::Point topleft_corner) {
+						return render_tl(topleft_corner.x,topleft_corner.y);
+					}
+			};
+		}
 	}
 }

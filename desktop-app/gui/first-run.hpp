@@ -15,10 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #pragma once
+#include "font.hpp"
 #include "modal.hpp"
 namespace Arcollect {
 	namespace gui {
 		class first_run: public modal {
+			std::unique_ptr<Arcollect::gui::font::Renderable> render_cache;
+			int cache_window_width;
 			bool event(SDL::Event &e) override;
 			void render() override;
 		};

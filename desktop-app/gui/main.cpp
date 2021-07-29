@@ -311,17 +311,12 @@ bool Arcollect::gui::main(void)
 		;
 		std::cerr << stats << std::endl;
 		// Render debug window
-		Arcollect::gui::Font font;
-		Arcollect::gui::TextPar debug_par(font,stats,14);
-		SDL::Texture* debug_par_text(debug_par.render(800));
-		SDL::Point debug_par_size;
-		debug_par_text->QuerySize(debug_par_size);
-		SDL::Rect debug_par_text_dstrect{5,20,debug_par_size.x,debug_par_size.y};
-		SDL::Rect debug_box_dstrect{0,0,debug_par_text_dstrect.w+5+debug_par_text_dstrect.x,debug_par_text_dstrect.h+5+debug_par_text_dstrect.y};
-		renderer->SetDrawBlendMode(SDL::BLENDMODE_BLEND);
+		Arcollect::gui::font::Renderable stats_text(stats.c_str(),14,800);
+		static constexpr const SDL::Point stats_text_tl{5,20};
+		SDL::Rect debug_box_dstrect{0,0,stats_text.size().x+5+stats_text_tl.x,stats_text.size().y+5+stats_text_tl.y};
 		renderer->SetDrawColor(0,0,0,224);
 		renderer->FillRect(debug_box_dstrect);
-		renderer->Copy(debug_par_text,NULL,&debug_par_text_dstrect);
+		stats_text.render_tl(stats_text_tl);
 		
 		// Render time bar
 		frame_sample.draw_time_bar({0,0,0,4}); // Draw frame time

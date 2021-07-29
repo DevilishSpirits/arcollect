@@ -42,7 +42,7 @@ namespace Arcollect {
 		};
 		class rating_selector_menu: public menu_item {
 			private:
-				Arcollect::gui::TextLine text_line;
+				Arcollect::gui::font::Renderable text_line;
 			public:
 				rating_selector selector;
 				SDL::Point size(void) override;

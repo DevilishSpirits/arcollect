@@ -175,29 +175,18 @@ void Arcollect::gui::menu::popup_context(const std::vector<std::shared_ptr<menu_
 }
 
 Arcollect::gui::menu_item_simple_label::menu_item_simple_label(const char* label, std::function<void()> onclick) :
-	text_line(font,label,14),
-	text(text_line.render()),
+	text_line(label,14),
 	onclick(onclick)
 {
 }
 SDL::Point Arcollect::gui::menu_item_simple_label::size(void)
 {
-	SDL::Point point;
-	text->QuerySize(point);
-	return point;
+	return text_line.size();
 }
 
 void Arcollect::gui::menu_item_simple_label::render(SDL::Rect target)
 {
-	// Center the text
-	SDL::Point point;
-	text->QuerySize(point);
-	target.x += (target.w-point.x)/2;
-	target.y += (target.h-point.y)/2;
-	target.w = point.x;
-	target.h = point.y;
-	// Render
-	renderer->Copy(text.get(),NULL,&target);
+	text_line.render_tl(target.x+(target.w-text_line.size().x)/2,target.y+(target.h-text_line.size().y)/2);
 }
 void Arcollect::gui::menu_item_simple_label::event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location)
 {

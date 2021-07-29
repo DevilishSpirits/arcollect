@@ -15,7 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "first-run.hpp"
-#include "font.hpp"
 #include "../config.hpp"
 
 extern SDL::Renderer *renderer;
@@ -28,6 +27,7 @@ bool Arcollect::gui::first_run::event(SDL::Event &e) {
 				case SDL_SCANCODE_RIGHT: {
 					Arcollect::gui::modal_stack.pop_back();
 					Arcollect::config::first_run = true;
+					render_cache.reset(); // Free some resources
 				} return true;
 				default:return false;
 			}
@@ -42,22 +42,20 @@ void Arcollect::gui::first_run::render()
 	SDL::Point window_size;
 	renderer->GetOutputSize(window_size);
 	
-	Arcollect::gui::Font font;
 	// Welcome text
-	Arcollect::gui::TextPar welcome_text(font,
-	"This is your first Arcollect run !\n\n"
-	"One day. I discovered that I love visual artworks and I made Arcollect to organize my growing collection. It allows you to easily save pictures you find on the internet in a few click and save a bunch metadata like who did that and where you took the picture.\n\n"
-	"With the associated web extension, buttons will appear on DeviantArt, e621 and FurAffinity artworks pages to save them in your personal collection.\n\n"
-	"Arcollect is a free and open-source software. It respect your privacy and will never judge you. See " ARCOLLECT_WEBSITE_STR " to learn more.\n\n"
-	"Now press and release the right arrow to see what's next..."
-	,16);
-	SDL::Texture* welcome_text_text(welcome_text.render(window_size.x-window_size.x/10));
-	SDL::Point welcome_text_size;
-	welcome_text_text->QuerySize(welcome_text_size);
-	SDL::Rect welcome_text_dstrect{window_size.x/20,(window_size.y-welcome_text_size.y)/2,welcome_text_size.x,welcome_text_size.y};
+	std::unique_ptr<Arcollect::gui::font::Renderable> cached_renderable;
+	if ((cache_window_width != window_size.x)||!render_cache) {
+		render_cache = std::make_unique<Arcollect::gui::font::Renderable>("This is your first Arcollect run !\n\n"
+		"One day. I discovered that I love visual artworks and I made Arcollect to organize my growing collection. It allows you to easily save pictures you find on the internet in a few click and save a bunch metadata like who did that and where you took the picture.\n\n"
+		"With the associated web extension, buttons will appear on DeviantArt, e621 and FurAffinity artworks pages to save them in your personal collection.\n\n"
+		"Arcollect is a free and open-source software. It respect your privacy and will never judge you. See " ARCOLLECT_WEBSITE_STR " to learn more.\n\n"
+		"Now press and release the right arrow to see what's next...",window_size.x-window_size.x/10);
+		cache_window_width = window_size.x;
+	}
 	const auto welcome_text_boxrect_padding = window_size.x/40;
-	SDL::Rect welcome_text_boxrect{welcome_text_dstrect.x-welcome_text_boxrect_padding,welcome_text_dstrect.y-welcome_text_boxrect_padding,welcome_text_dstrect.w+2*welcome_text_boxrect_padding,welcome_text_dstrect.h+2*welcome_text_boxrect_padding};
+	SDL::Point welcome_text_dst{window_size.x/20,(window_size.y-render_cache->size().y)/2};
+	SDL::Rect welcome_text_boxrect{welcome_text_dst.x-welcome_text_boxrect_padding,welcome_text_dst.y-welcome_text_boxrect_padding,render_cache->size().x+2*welcome_text_boxrect_padding,render_cache->size().y+2*welcome_text_boxrect_padding};
 	renderer->SetDrawColor(0,0,0,224);
 	renderer->FillRect(welcome_text_boxrect);
-	renderer->Copy(welcome_text_text,NULL,&welcome_text_dstrect);
+	render_cache->render_tl(welcome_text_dst);
 }

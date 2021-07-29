@@ -56,6 +56,8 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 		}
 		// Set viewport
 		viewport.set_corners(rect);
+		// Reset cached title render
+		title_text_cache.reset();
 	}
 }
 void Arcollect::gui::view_slideshow::set_collection_iterator(const artwork_collection::iterator &iter)
@@ -89,28 +91,16 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	render_rect.w -= 2*box_padding;
 	render_rect.h -= 2*box_padding;
 	// Render title text
-	Arcollect::gui::Font font;
-	Arcollect::gui::TextLine title_line(font,artwork.title(),font_height);
-	SDL::Texture* title_line_text(title_line.render());
-	SDL::Point title_line_size;
-	title_line_text->QuerySize(title_line_size);
-	// NOTE The text overload
-	render_rect.w = title_line_size.x;
-	render_rect.h = title_line_size.y;
-	renderer->Copy(title_line_text,NULL,&render_rect);
+	// TODO Cache this
+	Arcollect::gui::font::Renderable title_line(artwork.title().c_str(),font_height,render_rect.w);
+	title_line.render_tl(render_rect.x,render_rect.y);
 	// Render description text
+	// TODO Cache this
 	font_height /= 4;
 	if (font_height < min_desc_font_height)
 		font_height = min_desc_font_height;
-	Arcollect::gui::TextPar desc_par(font,artwork.desc(),min_title_font_height);
-	SDL::Texture* desc_par_text(desc_par.render(rect.w-2*box_padding));
-	SDL::Point desc_par_size;
-	desc_par_text->QuerySize(desc_par_size);
-	render_rect.y += render_rect.h + 4;
-	render_rect.w += render_rect.h + 4;
-	render_rect.w = desc_par_size.x;
-	render_rect.h = desc_par_size.y;
-	renderer->Copy(desc_par_text,NULL,&render_rect);
+	Arcollect::gui::font::Renderable desc_par(artwork.desc().c_str(),font_height,rect.w);
+	desc_par.render_tl(render_rect.x,render_rect.y + title_line.size().y + 4);
 }
 
 void Arcollect::gui::view_slideshow::render(void)
@@ -133,14 +123,10 @@ void Arcollect::gui::view_slideshow::render(void)
 		if (size_know)
 			viewport.render({0,0});
 	} else {
-		// FIXME 
-		Arcollect::gui::Font font;
-		Arcollect::gui::TextLine title_line(font,"There is no artwork to show",22);
-		SDL::Texture* title_line_text(title_line.render());
-		SDL::Point title_line_size;
-		title_line_text->QuerySize(title_line_size);
-		SDL::Rect render_rect{rect.x+(rect.w-title_line_size.x)/2,rect.y+(rect.h-title_line_size.y)/2,title_line_size.x,title_line_size.y};
-		renderer->Copy(title_line_text,NULL,&render_rect);
+		static std::unique_ptr<Arcollect::gui::font::Renderable> no_artwork_text_cache;
+		if (!no_artwork_text_cache)
+			no_artwork_text_cache = std::make_unique<Arcollect::gui::font::Renderable>("There is no artwork to show",22);
+		no_artwork_text_cache->render_tl(rect.x+(rect.w-no_artwork_text_cache->size().x)/2,rect.y+(rect.h-no_artwork_text_cache->size().y)/2);
 	}
 	//render_info_incard();
 }
@@ -155,13 +141,9 @@ void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int windo
 		}
 		// Render title
 		const int title_border = target.h/4;
-		Arcollect::gui::Font font;
-		Arcollect::gui::TextLine title_line(font,viewport.artwork->title(),target.h-2*title_border);
-		SDL::Texture* title_line_text(title_line.render());
-		SDL::Point title_line_size;
-		title_line_text->QuerySize(title_line_size);
-		SDL::Rect title_line_dstrect{target.x+title_border+target.h,target.y+title_border,title_line_size.x,title_line_size.y};
-		renderer->Copy(title_line_text,NULL,&title_line_dstrect);
+		if (!title_text_cache)
+			title_text_cache = std::make_unique<font::Renderable>(viewport.artwork->title().c_str(),target.h-2*title_border);
+		title_text_cache->render_tl(target.x+title_border+target.h,target.y+title_border);
 	}
 }
 bool Arcollect::gui::view_slideshow::event(SDL::Event &e)

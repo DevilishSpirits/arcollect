@@ -18,6 +18,7 @@
 #include "animation.hpp"
 #include "artwork-viewport.hpp"
 #include "artwork-collection.hpp"
+#include "font.hpp"
 #include "modal.hpp"
 #include <list>
 #include <vector>
@@ -55,6 +56,7 @@ namespace Arcollect {
 				artwork_viewport viewport;
 				bool size_know = false;
 				std::unique_ptr<artwork_collection::iterator> collection_iterator;
+				std::unique_ptr<font::Renderable> title_text_cache;
 			public:
 				/** Artwork to target
 				 *
@@ -104,6 +106,13 @@ namespace Arcollect {
 				sqlite_int64 data_version;
 				// The bounding rect
 				SDL::Rect rect;
+				
+				// Infos caption caches
+				std::shared_ptr<db::artwork> caption_cache_artwork;
+				bool caption_cache_has_artist; // To cope with DB change
+				gui::font::Renderable caption_title;
+				gui::font::Renderable caption_account;
+				
 				/** Layout invalid flag
 				 *
 				 * If set, this mean that the layout must be recomputed upon next draw.
