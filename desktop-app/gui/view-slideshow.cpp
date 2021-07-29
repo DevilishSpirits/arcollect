@@ -191,6 +191,8 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 {
 	// STOP READING CODE!!! You might not understand some weird syntax.
 	// There's a 'README BEFORE READING CODE!!!' in top Arcollect::gui::view_slideshow declaration.
+	SDL::Point cursorpos;
+	auto mouse_state = SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
 	switch (e.type) {
 		case SDL_KEYUP: {
 			switch (e.key.keysym.scancode) {
@@ -232,6 +234,15 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 			SDL::Point cursorpos;
 			SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
 			zoomat(e.wheel.y*.1f,cursorpos);
+		} break;
+		case SDL_MOUSEMOTION: {
+			if (mouse_state & SDL_BUTTON(1)) {
+				viewport_delta.x += e.motion.xrel;
+				viewport_delta.y += e.motion.yrel;
+				update_zoom();
+				// Skip animation
+				viewport_animation.val_origin = viewport_animation.val_target;
+			}
 		} break;
 		// Only called for Arcollect::gui::background_slideshow
 		case SDL_WINDOWEVENT: {
