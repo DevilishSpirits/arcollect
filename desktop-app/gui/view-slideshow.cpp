@@ -55,10 +55,49 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 			rect.h = height_for_width;
 		}
 		// Set viewport
-		viewport.set_corners(rect);
+		viewport_animation.val_origin = viewport_animation.val_target = rect;
 		// Reset cached title render
 		title_text_cache.reset();
+		viewport_delta.x = rect.x;
+		viewport_delta.y = rect.y;
+		artwork_zoom1.x = rect.w;
+		artwork_zoom1.y = rect.h;
+		viewport_zoom = rect.w/(float)art_size.x;
 	}
+}
+void Arcollect::gui::view_slideshow::update_zoom(void)
+{
+	SDL::Point art_size;
+	viewport.artwork->QuerySize(art_size);
+	MySDLRect target{viewport_delta.x,viewport_delta.y,static_cast<int>(art_size.x*viewport_zoom),static_cast<int>(art_size.y*viewport_zoom)};
+	// Bound check
+	SDL::Point border_limits{rect.w/32,rect.h/32};
+	if (rect.w - target.w > 2*border_limits.x)
+		viewport_delta.x = target.x = rect.x+(rect.w-target.w)/2; // Center
+	else if (target.x > border_limits.x)
+		viewport_delta.x = target.x = border_limits.x; // Snap left
+	else if (target.x < rect.w - target.w - border_limits.x)
+		viewport_delta.x = target.x = rect.w - target.w - border_limits.x;
+	if (rect.h - target.h > 2*border_limits.y)
+		viewport_delta.y = target.y = rect.y+(rect.h-target.h)/2; // Center
+	else if (target.y > border_limits.y)
+		viewport_delta.y = target.y = border_limits.y; // Snap left
+	else if (target.y < rect.h - target.h - border_limits.y)
+		viewport_delta.y = target.y = rect.h - target.h - border_limits.y;
+	viewport_animation = target;
+}
+void Arcollect::gui::view_slideshow::zoomat(float delta, SDL::Point point)
+{
+	// Update zoom
+	const double old_zoom = viewport_zoom;
+	const double new_zoom = old_zoom + delta;
+	point.x -= viewport_delta.x;
+	point.y -= viewport_delta.y;
+	viewport_delta.x -= ((point.x/old_zoom)-(point.x/new_zoom))*new_zoom;
+	viewport_delta.y -= ((point.y/old_zoom)-(point.y/new_zoom))*new_zoom;
+	viewport_zoom = new_zoom;
+	
+	update_zoom();
 }
 void Arcollect::gui::view_slideshow::set_collection_iterator(const artwork_collection::iterator &iter)
 {
@@ -120,8 +159,10 @@ void Arcollect::gui::view_slideshow::render(void)
 		if (!size_know)
 			resize(rect);
 		// Render artwork
-		if (size_know)
+		if (size_know) {
+			viewport.set_corners(viewport_animation);
 			viewport.render({0,0});
+		}
 	} else {
 		static std::unique_ptr<Arcollect::gui::font::Renderable> no_artwork_text_cache;
 		if (!no_artwork_text_cache)
@@ -186,6 +227,11 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 				} break;
 				default:break;
 			}
+		} break;
+		case SDL_MOUSEWHEEL: {
+			SDL::Point cursorpos;
+			SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
+			zoomat(e.wheel.y*.1f,cursorpos);
 		} break;
 		// Only called for Arcollect::gui::background_slideshow
 		case SDL_WINDOWEVENT: {

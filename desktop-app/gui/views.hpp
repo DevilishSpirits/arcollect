@@ -52,8 +52,37 @@ namespace Arcollect {
 			protected:
 				// The bounding rect
 				SDL::Rect rect;
+				/** Size of the artwork at default zoom (100%)
+				 */
+				SDL::Point artwork_zoom1;
 				// The main artwork viewport
 				artwork_viewport viewport;
+				/** Special SDL::Rect for animation purpose
+				 *
+				 * This SDL::Rect overload operator in order to be animatable by the
+				 * #Arcollect::gui::animation::scrolling template.
+				 */
+				struct MySDLRect: public SDL::Rect {
+					MySDLRect operator+(const MySDLRect& other) {
+						return {x+other.x,y+other.y,w+other.w,h+other.h};
+					}
+					MySDLRect operator-(const MySDLRect& other) {
+						return {x-other.x,y-other.y,w-other.w,h-other.h};
+					}
+					MySDLRect operator*(const float other) {
+						return {static_cast<int>(x*other),static_cast<int>(y*other),static_cast<int>(w*other),static_cast<int>(h*other)};
+					}
+					MySDLRect &operator=(const SDL::Rect& other) {
+						static_cast<SDL::Rect&>(*this) = other;
+						return *this;
+					}
+				};
+				animation::scrolling<MySDLRect> viewport_animation;
+				float viewport_zoom;
+				SDL::Point viewport_delta;
+				void update_zoom(void);
+				void zoomat(float delta, SDL::Point point);
+				
 				bool size_know = false;
 				std::unique_ptr<artwork_collection::iterator> collection_iterator;
 				std::unique_ptr<font::Renderable> title_text_cache;
