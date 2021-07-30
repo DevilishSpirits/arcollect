@@ -68,10 +68,15 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 void Arcollect::gui::view_slideshow::update_zoom(void)
 {
 	SDL::Point art_size;
-	viewport.artwork->QuerySize(art_size);
+	if (!viewport.artwork->QuerySize(art_size))
+		return;
+	SDL::Point border_limits{rect.w/32,rect.h/32};
+	// Zoom check
+	if ((art_size.x*viewport_zoom < border_limits.x)&&(art_size.y*viewport_zoom < border_limits.y))
+		viewport_zoom = std::min(border_limits.x/(float)art_size.x,border_limits.y/(float)art_size.y);
+	
 	MySDLRect target{viewport_delta.x,viewport_delta.y,static_cast<int>(art_size.x*viewport_zoom),static_cast<int>(art_size.y*viewport_zoom)};
 	// Bound check
-	SDL::Point border_limits{rect.w/32,rect.h/32};
 	if (rect.w - target.w > 2*border_limits.x)
 		viewport_delta.x = target.x = rect.x+(rect.w-target.w)/2; // Center
 	else if (target.x > border_limits.x)
