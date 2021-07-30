@@ -17,6 +17,7 @@
 #include "views.hpp"
 #include "font.hpp"
 #include "../db/account.hpp"
+#include <math.h>
 
 void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
 {
@@ -95,7 +96,7 @@ void Arcollect::gui::view_slideshow::zoomat(float delta, SDL::Point point)
 {
 	// Update zoom
 	const double old_zoom = viewport_zoom;
-	const double new_zoom = old_zoom + delta;
+	const double new_zoom = expf(logf(old_zoom)+delta);
 	point.x -= viewport_delta.x;
 	point.y -= viewport_delta.y;
 	viewport_delta.x -= ((point.x/old_zoom)-(point.x/new_zoom))*new_zoom;
