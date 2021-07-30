@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include "../config.hpp"
 #include "artwork.hpp"
 #include "artwork-loader.hpp"
 #include "account.hpp"
@@ -129,7 +130,7 @@ SDL_Surface* IMG_Load(const char* path)
 		image_profile = cmsCreate_sRGBProfile();
 	}
 	if (cms_screenprofile) {
-		cmsHTRANSFORM hTransform = cmsCreateTransform(image_profile,cms_pixel_format,cms_screenprofile,cms_pixel_format,INTENT_RELATIVE_COLORIMETRIC,cmsFLAGS_HIGHRESPRECALC|cmsFLAGS_BLACKPOINTCOMPENSATION);
+		cmsHTRANSFORM hTransform = cmsCreateTransform(image_profile,cms_pixel_format,cms_screenprofile,cms_pixel_format,Arcollect::config::littlecms_intent,Arcollect::config::littlecms_flags);
 		if (hTransform) {
 			if (debug_icc_profile)
 				std::cerr << " Colors are managed.";

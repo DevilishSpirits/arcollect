@@ -17,11 +17,14 @@
 #include "config.hpp"
 #include <INIReader.h>
 #include <fstream>
+#include "lcms2.h"
 
 Arcollect::config::Param<int> Arcollect::config::first_run(0);
 Arcollect::config::Param<int> Arcollect::config::start_window_mode(Arcollect::config::STARTWINDOW_MAXIMIZED);
 Arcollect::config::Param<int> Arcollect::config::current_rating(Arcollect::config::RATING_ADULT); // FIXME Adult default is not a sane default for everyone
 Arcollect::config::Param<int> Arcollect::config::image_memory_limit(2048);
+Arcollect::config::Param<int> Arcollect::config::littlecms_intent(INTENT_PERCEPTUAL);
+Arcollect::config::Param<int> Arcollect::config::littlecms_flags(cmsFLAGS_HIGHRESPRECALC|cmsFLAGS_BLACKPOINTCOMPENSATION);
 
 void Arcollect::config::read_config(void)
 {
@@ -31,6 +34,8 @@ void Arcollect::config::read_config(void)
 	start_window_mode.value = reader.GetInteger("arcollect","start_window_mode",start_window_mode.default_value);
 	current_rating.value = reader.GetInteger("arcollect","current_rating",current_rating.default_value);
 	image_memory_limit.value = reader.GetInteger("arcollect","image_memory_limit",image_memory_limit.default_value);
+	littlecms_flags.value = reader.GetInteger("arcollect","littlecms_flags",littlecms_flags.default_value);
+	littlecms_intent.value = reader.GetInteger("arcollect","littlecms_intent",littlecms_intent.default_value);
 }
 void Arcollect::config::write_config(void)
 {
@@ -62,5 +67,26 @@ void Arcollect::config::write_config(void)
 	       << "; The consumed memory is estimated by computing the size needed to store artworks in a uncompressed form.\n"
 	       << "; Default is " << image_memory_limit.default_value << " (" << image_memory_limit.default_value/1024 << " GiB)\n"
 	       << "image_memory_limit=" << image_memory_limit << '\n'
+	       << "\n"
+	       << "; littlecms_intent - Color management rendering intent\n"
+	       << "; This define the ICC rendering intent passed to cmsCreateTransform() call. Get known about color management to get the meaning of this param.\n"
+	       << "; Common values :\n"
+	       << ";  INTENT_PERCEPTUAL           : " << INTENT_PERCEPTUAL            << "\n"
+	       << ";  INTENT_RELATIVE_COLORIMETRIC: " << INTENT_RELATIVE_COLORIMETRIC << "\n"
+	       << ";  INTENT_SATURATION           : " << INTENT_SATURATION            << "\n"
+	       << ";  INTENT_ABSOLUTE_COLORIMETRIC: " << INTENT_ABSOLUTE_COLORIMETRIC << "\n"
+	       << ";  See LittleCMS API documentation for more values.\n"
+	       << "; Default is " << littlecms_intent.default_value << "\n"
+	       << "littlecms_intent=" << littlecms_intent << '\n'
+	       << "\n"
+	       << "; littlecms_flags - Color management flags\n"
+	       << "; Thesse flags is directly passed to LittleCMS cmsCreateTransform() function.\n"
+	       << "; Many useful values (combine by summing values, or 0 for none) :\n"
+	       << ";  cmsFLAGS_NULLTRANSFORM          (" << cmsFLAGS_NULLTRANSFORM          << "): Skip color management.\n"
+	       << ";  cmsFLAGS_HIGHRESPRECALC         (" << cmsFLAGS_HIGHRESPRECALC         << "): Use more memory to give better accurancy.\n"
+	       << ";  cmsFLAGS_BLACKPOINTCOMPENSATION (" << cmsFLAGS_BLACKPOINTCOMPENSATION << "): Enable black-point compensation.\n"
+	       << ";  See LittleCMS API documentation for more flags.\n"
+	       << "; Default is " << littlecms_flags.default_value << "\n"
+	       << "littlecms_flags=" << littlecms_flags << '\n'
 	;
 }

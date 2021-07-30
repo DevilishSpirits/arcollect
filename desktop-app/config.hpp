@@ -105,5 +105,15 @@ namespace Arcollect {
 		 * artworks in a uncompressed form.
 		 */
 		extern Param<int> image_memory_limit;
+		
+		/** littlecms_intent - Color management rendering intent
+		 */
+		extern Param<int> littlecms_intent;
+		
+		/** littlecms_flags - Color management flags
+		 *
+		 * This is the flags passed to LittleCMS cmsCreateTransform() call.
+		 */
+		extern Param<int> littlecms_flags;
 	}
 }
