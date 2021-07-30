@@ -194,8 +194,21 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 	SDL::Point cursorpos;
 	auto mouse_state = SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
 	switch (e.type) {
+		case SDL_KEYDOWN: {
+			switch (e.key.keysym.scancode) {
+				case SDL_SCANCODE_UP: { // Zoom-in
+					zoomat(+.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
+				} break;
+				case SDL_SCANCODE_DOWN: { // Zoom-out
+					zoomat(-.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
+				} break;
+				default:break;
+			}
+		} break;
 		case SDL_KEYUP: {
 			switch (e.key.keysym.scancode) {
+				case SDL_SCANCODE_AC_FORWARD:
+				case SDL_SCANCODE_PAGEDOWN:
 				case SDL_SCANCODE_RIGHT: {
 					if (viewport.artwork) {
 						++*collection_iterator;
@@ -205,6 +218,8 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 						} else --*collection_iterator; // Rewind
 					}
 				} break;
+				case SDL_SCANCODE_AC_BACK:
+				case SDL_SCANCODE_PAGEUP:
 				case SDL_SCANCODE_LEFT: {
 					if (viewport.artwork) {
 						if (*collection_iterator != collection->begin()) {

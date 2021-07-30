@@ -48,6 +48,8 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 				case SDL_SCANCODE_ESCAPE: {
 					Arcollect::gui::modal_stack.pop_back();
 				} break;
+				case SDL_SCANCODE_AC_SEARCH:
+				case SDL_SCANCODE_FIND:
 				case SDL_SCANCODE_SPACE: {
 					Arcollect::gui::search_osd_modal.push();
 				} break;
@@ -88,14 +90,23 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 		switch (e.type) {
 			case SDL_KEYUP: {
 				switch (e.key.keysym.scancode) {
+					case SDL_SCANCODE_AC_HOME:
 					case SDL_SCANCODE_RETURN:
 					case SDL_SCANCODE_ESCAPE: {
 						background_vgrid.resize(rect);
 						Arcollect::gui::modal_stack.push_back(background_vgrid);
 					} break;
+					case SDL_SCANCODE_AC_SEARCH:
+					case SDL_SCANCODE_FIND:
 					case SDL_SCANCODE_SPACE: {
 						Arcollect::gui::search_osd_modal.push();
 					} break;
+					#ifdef ARTWORK_HAS_OPEN_URL
+					case SDL_SCANCODE_WWW: {
+						// Open artwork in browser
+						open_in_browser();
+					} break;
+					#endif
 					default:break;
 				}
 			} break;

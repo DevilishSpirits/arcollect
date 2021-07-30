@@ -110,8 +110,14 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
 				case SDL_SCANCODE_DOWN: {
 					do_scroll(+artwork_height);
 				} break;
+				case SDL_SCANCODE_PAGEDOWN: {
+					do_scroll(+(rect.h/artwork_height)*artwork_height);
+				} break;
 				case SDL_SCANCODE_UP: {
 					do_scroll(-artwork_height);
+				} break;
+				case SDL_SCANCODE_PAGEUP: {
+					do_scroll(-(rect.h/artwork_height)*artwork_height);
 				} break;
 				default:break;
 			}
