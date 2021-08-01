@@ -35,6 +35,11 @@ namespace Arcollect {
 		 * This function is blocking.
 		 */
 		bool main(void);
+		/** Wake-up the main-loop
+		 *
+		 * This function push a dummy SDL event that trigger a new main-loop run.
+		 */
+		void wakeup_main(void);
 		/** GUI hide
 		 */
 		void stop(void);

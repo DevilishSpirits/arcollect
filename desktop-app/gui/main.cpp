@@ -353,3 +353,10 @@ void Arcollect::gui::stop(void)
 	}
 	Arcollect::gui::enabled = false;
 }
+
+void Arcollect::gui::wakeup_main(void)
+{
+	SDL_Event e;
+	e.type = SDL_USEREVENT;
+	SDL_PushEvent(&e);
+}
