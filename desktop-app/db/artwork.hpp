@@ -32,6 +32,7 @@ namespace Arcollect {
 		typedef sqlite_int64 artwork_id;
 		class artwork;
 		class account;
+		class artwork_loader;
 		/** Artwork data class holder
 		 *
 		 * This class hold data about an artwork. It's used trough a std::shared_ptr
@@ -41,6 +42,7 @@ namespace Arcollect {
 		 */
 		class artwork {
 			private:
+				friend artwork_loader; // For queued_for_load
 				artwork(Arcollect::db::artwork_id art_id);
 				// Cached DB infos
 				sqlite_int64 data_version;
@@ -53,6 +55,13 @@ namespace Arcollect {
 				std::unordered_map<std::string,std::vector<std::shared_ptr<account>>> linked_accounts;
 				std::unique_ptr<SDL::Texture> text;
 				std::list<std::reference_wrapper<artwork>>::iterator last_rendered_iterator;
+				/** Wheater this artwork is in the load queue
+				 *
+				 * Set to true in queue_for_load() and set to false in texture_loaded()
+				 * or by Arcollect::db::artwork_loader if it think the artwork is not
+				 * worth to load
+				 */
+				volatile bool queued_for_load = false;
 			public:
 				/** Return wether texture is loaded
 				 * \return true is the texture in loaded in memory
@@ -142,7 +151,9 @@ namespace Arcollect {
 				
 				/** Estimate VRAM usage of this artwork
 				 *
-				 * It require the artwork to be loaded to work correctly
+				 * It require the artwork to be loaded to work correctly. But it's fine
+				 * as an estimation (not for accounting as for
+				 * #Arcollect::db::artwork_loader::image_memory_usage).
 				 */
 				std::size_t image_memory(void);
 				
@@ -162,6 +173,12 @@ namespace Arcollect {
 				 * The front contain the most recently rendered artwork
 				 */
 				static std::list<std::reference_wrapper<artwork>> last_rendered;
+				/** Timestamp of last render attempt
+				 *
+				 * It's used to don't load artworks which have not been requested to
+				 * load since a while but are still queued for render.
+				 */
+				Uint32 last_render_timestamp = 0;
 		};
 	}
 }

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <arcollect-debug.hpp>
+#include "../config.hpp"
 #include "artwork-loader.hpp"
 std::mutex Arcollect::db::artwork_loader::lock;
 std::vector<std::shared_ptr<Arcollect::db::artwork>> Arcollect::db::artwork_loader::pending_main;
@@ -22,12 +23,12 @@ std::vector<std::shared_ptr<Arcollect::db::artwork>> Arcollect::db::artwork_load
 std::unordered_map<std::shared_ptr<Arcollect::db::artwork>,std::unique_ptr<SDL::Surface>> Arcollect::db::artwork_loader::done;
 std::condition_variable Arcollect::db::artwork_loader::condition_variable;
 std::size_t Arcollect::db::artwork_loader::image_memory_usage = 0;
-std::unique_ptr<Arcollect::db::artwork_loader> Arcollect::db::artwork_loader::thread;
+std::vector<std::unique_ptr<Arcollect::db::artwork_loader>> Arcollect::db::artwork_loader::threads;
 
 void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 {
 	const bool debug = Arcollect::debug::is_on("artwork-loader");
-	while (1) {
+	while (!stop) {
 		// Find an artwork to load
 		std::shared_ptr<Arcollect::db::artwork> artwork;
 		{
@@ -40,12 +41,13 @@ void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 			// Pop artwork
 			artwork = pending_thread.back();
 			pending_thread.pop_back();
-			// Ensure the artwork is not already loaded
-			if ((done.find(artwork) != done.end()) || artwork->texture_is_loaded())
-				continue;
 		}
-		// Load the artwork
-		SDL::Surface *surf = artwork->load_surface();
+		// Check if the artwork is worth to load
+		SDL::Surface *surf = NULL;
+		if (
+		 (SDL_GetTicks()-artwork->last_render_timestamp <= 1000) // The artwork was requested since the last second
+		 ||((image_memory_usage+artwork->image_memory())>>20 < static_cast<std::size_t>(Arcollect::config::image_memory_limit)) // The artwork fit in "VRAM"
+			) surf = artwork->load_surface(); // Load the artwork
 		// Queue the surface
 		if (surf) {
 			std::lock_guard<std::mutex> lock_guard(lock);
@@ -56,22 +58,26 @@ void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 				SDL_PushEvent(&e);
 			}
 			done.emplace(artwork,surf);
-		}
+		} else artwork->queued_for_load = false;
 	}
 }
 
 void Arcollect::db::artwork_loader::start(void)
 {
-	Arcollect::db::artwork_loader::thread.reset(new Arcollect::db::artwork_loader());
+	Arcollect::db::artwork_loader::threads.clear();
+	// Use all cores minus 1
+	Arcollect::db::artwork_loader::threads.emplace_back(new Arcollect::db::artwork_loader());
+	for (unsigned int i = 2; i < std::thread::hardware_concurrency(); i++)
+		Arcollect::db::artwork_loader::threads.emplace_back(new Arcollect::db::artwork_loader());
 }
 void Arcollect::db::artwork_loader::shutdown(void)
 {
-	Arcollect::db::artwork_loader::thread.reset();
+	Arcollect::db::artwork_loader::threads.clear();
 }
 
 Arcollect::db::artwork_loader::~artwork_loader(void)
 {
 	stop = true;
-	condition_variable.notify_one();
+	condition_variable.notify_all();
 	join();
 }

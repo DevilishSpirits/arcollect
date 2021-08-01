@@ -28,6 +28,7 @@
 #endif
 #include <memory>
 #include <unordered_map>
+#include <vector>
 #include <OpenImageIO/imageio.h>
 namespace Arcollect {
 	namespace db {
@@ -38,7 +39,7 @@ namespace Arcollect {
 		 */
 		class artwork_loader: private std::thread {
 			private:
-				static std::unique_ptr<artwork_loader> thread;
+				static std::vector<std::unique_ptr<artwork_loader>> threads;
 				/** Thread stop flag
 				 *
 				 * If true, the thread exit.
@@ -55,8 +56,8 @@ namespace Arcollect {
 				static std::mutex lock;
 				/** Pending artwork list (main thread side)
 				 *
-				 * This vector is populated with pending artworks to load and then copied
-				 * into #pending_thread.
+				 * This vector is populated with pending artworks to load and then
+				 * appended into #pending_thread.
 				 *
 				 * It is only used by the main thread.
 				 */
@@ -65,8 +66,8 @@ namespace Arcollect {
 				 *
 				 * This vector contain the list of pending artworks to load.
 				 * 
-				 * It is used by the loading thread, the main thread regulary erase it
-				 * with #pending_main content.
+				 * It is used by the loading thread, the main thread regulary append the
+				 * #pending_main content into.
 				 */
 				static std::vector<std::shared_ptr<Arcollect::db::artwork>> pending_thread;
 				/** Loaded artwork surface list

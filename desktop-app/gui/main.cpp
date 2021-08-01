@@ -191,24 +191,35 @@ bool Arcollect::gui::main(void)
 	}
 	Arcollect::gui::window_borders::render();
 	Uint32 loader_start_ticks = SDL_GetTicks();
-	auto load_pending_count = Arcollect::db::artwork_loader::pending_main.size();
-	// Erase artwork_loader pending list and load artworks into texture
+	decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending_count;
+	decltype(Arcollect::db::artwork_loader::done) main_done;
+	// Append pending_main to pending_thread and steal list of loaded artworks
 	{
 		std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
-		// Load artworks
-		if (Arcollect::db::artwork_loader::done.size()) {
-			// Generate a redraw
-			Arcollect::gui::animation_running = true;
-			// Load arts
-			for (auto &art: Arcollect::db::artwork_loader::done) {
-				std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,art.second.get()));
-				art.first->texture_loaded(text);
-			}
-			Arcollect::db::artwork_loader::done.clear();
+		// Shorten lines
+		using namespace Arcollect::db; // To shorten lines
+		decltype(artwork_loader::pending_main  ) &pending_main   = artwork_loader::pending_main;
+		decltype(artwork_loader::pending_thread) &pending_thread = artwork_loader::pending_thread;
+		
+		// Steal Arcollect::db::artwork_loader::done
+		main_done = std::move(artwork_loader::done);
+		// Upload pending artworks
+		pending_thread.insert(pending_thread.end(),pending_main.begin(),pending_main.end());
+		// Snapshot load_pending_count
+		load_pending_count = pending_thread.size();
+	}
+	Arcollect::db::artwork_loader::condition_variable.notify_all();
+	// Clear pending_main
+	Arcollect::db::artwork_loader::pending_main.clear();
+	// Load artworks
+	if (main_done.size()) {
+		// Generate a redraw
+		Arcollect::gui::animation_running = true;
+		// Load arts
+		for (auto &art: main_done) {
+			std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,art.second.get()));
+			art.first->texture_loaded(text);
 		}
-		// Update pending list
-		if (Arcollect::db::artwork_loader::pending_main.size())
-			Arcollect::db::artwork_loader::pending_thread = std::move(Arcollect::db::artwork_loader::pending_main);
 	}
 	// Unload artworks if exceeding image_memory_limit
 	while (Arcollect::db::artwork_loader::image_memory_usage>>20 > Arcollect::config::image_memory_limit) {

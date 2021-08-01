@@ -163,8 +163,10 @@ std::shared_ptr<Arcollect::db::artwork> &Arcollect::db::artwork::query(Arcollect
 
 void Arcollect::db::artwork::queue_for_load(void)
 {
-	Arcollect::db::artwork_loader::pending_main.push_back(query(art_id));
-	Arcollect::db::artwork_loader::condition_variable.notify_one();
+	if (!queued_for_load) {
+		Arcollect::db::artwork_loader::pending_main.push_back(query(art_id));
+		queued_for_load = true;
+	}
 }
 SDL::Surface *Arcollect::db::artwork::load_surface(void) const
 {
@@ -193,6 +195,8 @@ void Arcollect::db::artwork::texture_loaded(std::unique_ptr<SDL::Texture> &textu
 	last_rendered_iterator = last_rendered.begin();
 	// Increase image memory usage
 	Arcollect::db::artwork_loader::image_memory_usage += image_memory();
+	
+	queued_for_load = false;
 }
 void Arcollect::db::artwork::texture_unload(void)
 {
@@ -207,11 +211,13 @@ std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 {
 	static std::unique_ptr<SDL::Texture> null_text;
 	// Enforce rating
+	// Note: Returning null_text IS a bug. This is a safety to avoid accidents.
 	if (art_rating > Arcollect::config::current_rating)
 		return null_text;
 	
 	if (!text)
 		queue_for_load();
+	last_render_timestamp = SDL_GetTicks();
 	
 	return text;
 }
