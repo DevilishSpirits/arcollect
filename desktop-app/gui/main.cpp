@@ -203,7 +203,6 @@ bool Arcollect::gui::main(void)
 			for (auto &art: Arcollect::db::artwork_loader::done) {
 				std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,art.second.get()));
 				art.first->texture_loaded(text);
-				Arcollect::db::artwork_loader::image_memory_usage += art.first->image_memory();
 			}
 			Arcollect::db::artwork_loader::done.clear();
 		}
@@ -214,7 +213,6 @@ bool Arcollect::gui::main(void)
 	// Unload artworks if exceeding image_memory_limit
 	while (Arcollect::db::artwork_loader::image_memory_usage>>20 > Arcollect::config::image_memory_limit) {
 		Arcollect::db::artwork& artwork = *--Arcollect::db::artwork::last_rendered.end();
-		Arcollect::db::artwork_loader::image_memory_usage -= artwork.image_memory();
 		artwork.texture_unload();
 	}
 	// Query artworks to preload

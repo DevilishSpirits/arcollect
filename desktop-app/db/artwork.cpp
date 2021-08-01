@@ -191,6 +191,8 @@ void Arcollect::db::artwork::texture_loaded(std::unique_ptr<SDL::Texture> &textu
 	// Set last_rendered_iterator
 	last_rendered.emplace_front(*this);
 	last_rendered_iterator = last_rendered.begin();
+	// Increase image memory usage
+	Arcollect::db::artwork_loader::image_memory_usage += image_memory();
 }
 void Arcollect::db::artwork::texture_unload(void)
 {
@@ -198,6 +200,8 @@ void Arcollect::db::artwork::texture_unload(void)
 	text.reset();
 	// Erase myself from last_rendered
 	last_rendered.erase(last_rendered_iterator);
+	// Decrease image memory usage
+	Arcollect::db::artwork_loader::image_memory_usage -= image_memory();
 }
 std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 {
