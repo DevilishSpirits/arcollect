@@ -46,6 +46,7 @@ SDL_Surface* IMG_Load(const char* path)
 	switch (spec.nchannels) {
 		case 4:pixel_format = SDL_PIXELFORMAT_ABGR8888;break;
 		case 3:pixel_format = SDL_PIXELFORMAT_BGR888;break;
+		case 1:pixel_format = SDL_PIXELFORMAT_BGR888;break;
 		default:return NULL;
 	}
 	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0,spec.width,spec.height,spec.nchannels*8,pixel_format);
@@ -54,12 +55,19 @@ SDL_Surface* IMG_Load(const char* path)
 		return NULL;
 	}
 	image->read_scanlines(0,0,0,spec.height-1,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,surface->pixels,surface->format->BytesPerPixel,surface->pitch);
+	if (spec.nchannels == 1) {
+		// FIXME Optimize that
+		// Monochrome picture, populate green and blue
+	image->read_scanlines(0,0,0,spec.height-1,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,&((char*)surface->pixels)[1],surface->format->BytesPerPixel,surface->pitch);
+	image->read_scanlines(0,0,0,spec.height-1,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,&((char*)surface->pixels)[2],surface->format->BytesPerPixel,surface->pitch);
+	}
 	
 	// Set pixel format for lcms2
 	cmsUInt32Number cms_pixel_format;
 	switch (surface->format->BytesPerPixel) {
 		case 4:cms_pixel_format = TYPE_RGBA_8;break;
 		case 3:cms_pixel_format = TYPE_RGB_8;break;
+		case 1:cms_pixel_format = TYPE_RGB_8;break;
 	}
 	
 	// Get image profile
