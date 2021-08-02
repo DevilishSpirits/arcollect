@@ -72,7 +72,9 @@ void Arcollect::db::artwork_loader::start(void)
 }
 void Arcollect::db::artwork_loader::shutdown(void)
 {
-	Arcollect::db::artwork_loader::threads.clear();
+	for (auto& thread: Arcollect::db::artwork_loader::threads)
+		thread->stop = true;
+	condition_variable.notify_all();
 }
 
 Arcollect::db::artwork_loader::~artwork_loader(void)
