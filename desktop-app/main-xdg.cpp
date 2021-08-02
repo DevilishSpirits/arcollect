@@ -31,7 +31,6 @@
 #include "sdl2-hpp/SDL.hpp"
 #include <cstring>
 #include <fcntl.h>
-#include <limits>
 #include <unordered_map>
 #include <poll.h>
 #include <signal.h>
@@ -164,7 +163,7 @@ int main(int argc, char *argv[])
 	while ((dbus_continue && ((SDL_GetTicks()-last_dbus_activity) < 10000)) || Arcollect::gui::enabled) {
 		// Process timeouts
 		Uint32 timeout_timestamp = SDL_GetTicks();
-		int next_timeout = std::numeric_limits<int>::max();
+		int next_timeout = 10000; // D-Bus service timeout
 		for (auto &timeout: timeout_watch_list)
 			if (dbus_timeout_get_enabled(timeout.first)) {
 				auto interval = dbus_timeout_get_interval(timeout.first);
@@ -184,8 +183,6 @@ int main(int argc, char *argv[])
 		// Poll D-Bus file descriptors
 		if (Arcollect::gui::enabled)
 			next_timeout = 0;
-		else if (next_timeout == std::numeric_limits<int>::max())
-			next_timeout = -1;
 		
 		if (poll(sigio_watch_pollfd.data(),sigio_watch_pollfd.size(),next_timeout) >= 0) {
 			for (decltype(sigio_watch_pollfd)::size_type i = 0; i < sigio_watch_pollfd.size(); i++)
