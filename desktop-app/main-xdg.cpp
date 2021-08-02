@@ -61,10 +61,12 @@ static dbus_bool_t dbus_add_watch(DBusWatch *watch, void *data)
 	watch_pollfd.fd = dbus_watch_get_unix_fd(watch);
 	auto watch_flags = dbus_watch_get_flags(watch);
 	watch_pollfd.events = 0;
-	if (watch_flags & DBUS_WATCH_READABLE)
-		watch_pollfd.events |= POLLIN;
-	if (watch_flags & DBUS_WATCH_WRITABLE)
-		watch_pollfd.events |= POLLOUT;
+	if (dbus_watch_get_enabled(watch)) {
+		if (watch_flags & DBUS_WATCH_READABLE)
+			watch_pollfd.events |= POLLIN;
+		if (watch_flags & DBUS_WATCH_WRITABLE)
+			watch_pollfd.events |= POLLOUT;
+	}
 	sigio_watch_pollfd.push_back(watch_pollfd);
 	// Configure the file descriptor
 	if (fcntl(watch_pollfd.fd,F_SETOWN,getpid()) == -1)
@@ -79,6 +81,26 @@ static dbus_bool_t dbus_add_watch(DBusWatch *watch, void *data)
 		return true;
 	}
 	return true;
+}
+static void dbus_watch_toggled(DBusWatch *watch, void *data)
+{
+	// Find the index of our watch in a dumb way
+	decltype(sigio_watch_pollfd)::size_type i;
+	for (i = 0; i < sigio_watch_pollfd.size(); i++)
+		if (sigio_watch_list[i] == watch)
+			break;
+	// Update watch flags
+	if (i < sigio_watch_list.size()) {
+		auto &watch_pollfd = sigio_watch_pollfd[i];
+		auto watch_flags = dbus_watch_get_flags(watch);
+		watch_pollfd.events = 0;
+		if (dbus_watch_get_enabled(watch)) {
+			if (watch_flags & DBUS_WATCH_READABLE)
+				watch_pollfd.events |= POLLIN;
+			if (watch_flags & DBUS_WATCH_WRITABLE)
+				watch_pollfd.events |= POLLOUT;
+		}
+	} else std::cerr << "In dbus_watch_toggled(watch=" << watch << "), the watch was not found." << std::endl;
 }
 static void dbus_remove_watch(DBusWatch *watch, void *data)
 {
@@ -130,7 +152,7 @@ int main(int argc, char *argv[])
 	// Init D-Bus
 	dbus_threads_init_default();
 	DBus::Connection conn(DBus::BUS_SESSION);
-	dbus_connection_set_watch_functions(conn,dbus_add_watch,dbus_remove_watch,NULL,NULL,NULL);
+	dbus_connection_set_watch_functions(conn,dbus_add_watch,dbus_remove_watch,dbus_watch_toggled,NULL,NULL);
 	dbus_connection_set_timeout_functions(conn,dbus_add_timeout,dbus_remove_timeout,NULL,NULL,NULL);
 	dbus_connection_set_wakeup_main_function(conn,dbus_wakeup_main,NULL,NULL);
 	conn.set_exit_on_disconnect(false);
@@ -180,7 +202,7 @@ int main(int argc, char *argv[])
 						flags |= DBUS_WATCH_HANGUP;
 					if (flags)
 						dbus_watch_handle(sigio_watch_list[i],flags);
-				}
+				} else sigio_watch_pollfd[i].events = 0; // Disable the watch
 		} else perror("poll() on D-Bus files failed");
 		while (dbus_connection_get_dispatch_status(conn) == DBUS_DISPATCH_DATA_REMAINS) {
 			conn.dispatch();
