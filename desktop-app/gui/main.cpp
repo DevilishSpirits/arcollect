@@ -176,7 +176,15 @@ bool Arcollect::gui::main(void)
 		has_event = SDL::PollEvent(e);
 	}
 	// Check for DB updates
-	Arcollect::update_data_version();
+	sqlite_int64 data_version_snapshot = Arcollect::data_version;
+	if (data_version_snapshot != Arcollect::update_data_version()) {
+		// Query artworks to preload
+		if (preload_artworks_stmt) {
+			preload_artworks_stmt->reset();
+			while (preload_artworks_stmt->step() == SQLITE_ROW)
+				Arcollect::db::artwork::query(preload_artworks_stmt->column_int64(0))->queue_for_load();
+		}
+	}
 	Uint32 render_start_ticks = SDL_GetTicks();
 	// Render frame
 	renderer->SetDrawColor(0,0,0,0);
@@ -192,45 +200,41 @@ bool Arcollect::gui::main(void)
 	Arcollect::gui::window_borders::render();
 	Uint32 loader_start_ticks = SDL_GetTicks();
 	decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending_count;
-	decltype(Arcollect::db::artwork_loader::done) main_done;
+	static decltype(Arcollect::db::artwork_loader::done) main_done;
 	// Append pending_main to pending_thread and steal list of loaded artworks
 	{
-		std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
-		// Shorten lines
 		using namespace Arcollect::db; // To shorten lines
-		decltype(artwork_loader::pending_main  ) &pending_main   = artwork_loader::pending_main;
-		decltype(artwork_loader::pending_thread) &pending_thread = artwork_loader::pending_thread;
-		
+		std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
 		// Steal Arcollect::db::artwork_loader::done
-		main_done = std::move(artwork_loader::done);
-		// Upload pending artworks
-		pending_thread.insert(pending_thread.end(),pending_main.begin(),pending_main.end());
+		main_done.merge(artwork_loader::done);
+		// Queue pending artworks in pending_thread_second
+		for (auto &artwork: artwork_loader::pending_main)
+			if (artwork->load_state == artwork->LOAD_SCHEDULED) {
+				artwork_loader::pending_thread_second.emplace_back(artwork);
+				artwork->load_state = artwork->LOAD_PENDING;
+			}
+		// Move pending_main in pending_thread_first
+		artwork_loader::pending_thread_first = std::move(artwork_loader::pending_main);
 		// Snapshot load_pending_count
-		load_pending_count = pending_thread.size();
+		load_pending_count = artwork_loader::pending_thread_second.size();
 	}
 	Arcollect::db::artwork_loader::condition_variable.notify_all();
-	// Clear pending_main
-	Arcollect::db::artwork_loader::pending_main.clear();
 	// Load artworks
 	if (main_done.size()) {
 		// Generate a redraw
 		Arcollect::gui::animation_running = true;
 		// Load arts
-		for (auto &art: main_done) {
-			std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,art.second.get()));
-			art.first->texture_loaded(text);
-		}
+		do {
+			decltype(main_done)::node_type art = main_done.extract(main_done.begin());
+			std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,art.mapped().get()));
+			art.key()->texture_loaded(text);
+			// Ensure nice framerate 
+		} while ((SDL_GetTicks()-render_start_ticks < 50) && main_done.size());
 	}
 	// Unload artworks if exceeding image_memory_limit
 	while (Arcollect::db::artwork_loader::image_memory_usage>>20 > Arcollect::config::image_memory_limit) {
 		Arcollect::db::artwork& artwork = *--Arcollect::db::artwork::last_rendered.end();
 		artwork.texture_unload();
-	}
-	// Query artworks to preload
-	if (preload_artworks_stmt) {
-		preload_artworks_stmt->reset();
-		while (preload_artworks_stmt->step() == SQLITE_ROW)
-			Arcollect::db::artwork::query(preload_artworks_stmt->column_int64(0))->queue_for_load();
 	}
 	// Redraws debugging
 	if (debug_redraws) {
@@ -358,7 +362,8 @@ void Arcollect::gui::stop(void)
 	// Erase artwork_loader pending list
 	{
 		std::lock_guard<std::mutex> lock_guard(Arcollect::db::artwork_loader::lock);
-		Arcollect::db::artwork_loader::pending_thread.clear();
+		Arcollect::db::artwork_loader::pending_thread_first.clear();
+		Arcollect::db::artwork_loader::pending_thread_second.clear();
 	}
 	Arcollect::gui::enabled = false;
 }

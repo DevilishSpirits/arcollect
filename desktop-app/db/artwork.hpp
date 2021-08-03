@@ -41,6 +41,42 @@ namespace Arcollect {
 		 * It is instanciated on-demand trough Arcollect::db::artwork::query().
 		 */
 		class artwork {
+			public:
+				/** Loading stage of an #artwork
+				 */
+				volatile enum LoadState {
+					/** Not loaded, nor queued
+					 *
+					 * Artwork is not loaded nor scheduled to load in any queue
+					 */
+					UNLOADED,
+					/** Artwork scheduled to load
+					 *
+					 * Artwork has just been requested but is not yet into #artwork_loader
+					 * threads side. It will be pushed onto in the end of the main-loop.
+					 */
+					LOAD_SCHEDULED,
+					/** Artwork waiting for load
+					 *
+					 * Artwork is into #artwork_loader threads queue and will be loaded.
+					 */
+					LOAD_PENDING,
+					/** Artwork pixels are being loaded
+					 *
+					 * Artwork is processed into one #artwork_loader thread.
+					 */
+					READING_PIXELS,
+					/** Artwork pixels loaded in RAM
+					 *
+					 * Artwork has an #SDL::Surface but no #SDL::Texture yet.
+					 */
+					SURFACE_AVAILABLE,
+					/** Artwork is ready to use
+					 *
+					 * Artwork has a #SDL::Texture
+					 */
+					LOADED,
+				} load_state = UNLOADED;
 			private:
 				friend artwork_loader; // For queued_for_load
 				artwork(Arcollect::db::artwork_id art_id);
@@ -55,13 +91,6 @@ namespace Arcollect {
 				std::unordered_map<std::string,std::vector<std::shared_ptr<account>>> linked_accounts;
 				std::unique_ptr<SDL::Texture> text;
 				std::list<std::reference_wrapper<artwork>>::iterator last_rendered_iterator;
-				/** Wheater this artwork is in the load queue
-				 *
-				 * Set to true in queue_for_load() and set to false in texture_loaded()
-				 * or by Arcollect::db::artwork_loader if it think the artwork is not
-				 * worth to load
-				 */
-				volatile bool queued_for_load = false;
 			public:
 				/** Return wether texture is loaded
 				 * \return true is the texture in loaded in memory

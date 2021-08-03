@@ -64,12 +64,21 @@ namespace Arcollect {
 				static std::vector<std::shared_ptr<Arcollect::db::artwork>> pending_main;
 				/** Pending artwork list (thread side)
 				 *
-				 * This vector contain the list of pending artworks to load.
+				 * This vector contain the list of artworks to load in first place.
 				 * 
-				 * It is used by the loading thread, the main thread regulary append the
+				 * It is used by the loading thread, the main thread regulary move the
 				 * #pending_main content into.
 				 */
-				static std::vector<std::shared_ptr<Arcollect::db::artwork>> pending_thread;
+				static std::vector<std::shared_ptr<Arcollect::db::artwork>> pending_thread_first;
+				/** Pending artwork list (thread side)
+				 *
+				 * This vector contain the list of pending artworks to load.
+				 * 
+				 * The loading thread load these artworks if #pending_thread_first is
+				 * empty. The main thread regulary append the #pending_main content
+				 * into this list (as opposed to move into in for #pending_thread_first).
+				 */
+				static std::vector<std::shared_ptr<Arcollect::db::artwork>> pending_thread_second;
 				/** Loaded artwork surface list
 				 *
 				 * This vector contain the list of loaded surfaces. The main thread will

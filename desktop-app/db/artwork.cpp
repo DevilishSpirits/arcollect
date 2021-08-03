@@ -171,10 +171,10 @@ std::shared_ptr<Arcollect::db::artwork> &Arcollect::db::artwork::query(Arcollect
 
 void Arcollect::db::artwork::queue_for_load(void)
 {
-	if (!queued_for_load) {
-		Arcollect::db::artwork_loader::pending_main.push_back(query(art_id));
-		queued_for_load = true;
-	}
+	Arcollect::db::artwork_loader::pending_main.push_back(query(art_id));
+	last_render_timestamp = SDL_GetTicks();
+	if (load_state == UNLOADED)
+		load_state = LOAD_SCHEDULED;
 }
 SDL::Surface *Arcollect::db::artwork::load_surface(void) const
 {
@@ -204,7 +204,7 @@ void Arcollect::db::artwork::texture_loaded(std::unique_ptr<SDL::Texture> &textu
 	// Increase image memory usage
 	Arcollect::db::artwork_loader::image_memory_usage += image_memory();
 	
-	queued_for_load = false;
+	load_state = LOADED;
 }
 void Arcollect::db::artwork::texture_unload(void)
 {
@@ -214,6 +214,8 @@ void Arcollect::db::artwork::texture_unload(void)
 	last_rendered.erase(last_rendered_iterator);
 	// Decrease image memory usage
 	Arcollect::db::artwork_loader::image_memory_usage -= image_memory();
+	
+	load_state = UNLOADED;
 }
 std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 {
@@ -248,21 +250,44 @@ int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
 			}
 			placeholder_rect.x += (dstrect->w-placeholder_rect.w)/2;
 			placeholder_rect.y += (dstrect->h-placeholder_rect.h)/2;
+			int bar_count;
+			const int max_bar_count = 3;
+			switch (load_state) {
+				case UNLOADED: {
+					bar_count = 0;
+				} break;
+				case LOAD_SCHEDULED:
+				case LOAD_PENDING: {
+					bar_count = 1;
+				} break;
+				case READING_PIXELS: {
+					bar_count = 2;
+				} break;
+				case SURFACE_AVAILABLE:
+				case LOADED: {
+					bar_count = 3;
+				} break;
+			}
 			renderer->SetDrawColor(255,255,255,128);
 			renderer->DrawRect(placeholder_rect);
 			// Draw inside bars
-			const auto bar_count = 3;
 			auto border = placeholder_rect.w/8;
 			placeholder_rect.x += border;
 			placeholder_rect.y += border;
 			placeholder_rect.h -= border*2;
-			placeholder_rect.w -= border*(1+bar_count);
-			placeholder_rect.w /= bar_count;
+			placeholder_rect.w -= border*(1+max_bar_count);
+			placeholder_rect.w /= max_bar_count;
+			const SDL_Color bar_colors[] = {
+				{0,0,0,0},
+				{128,128,128,255},
+				{0,255,0,255},
+				{0,255,0,255},
+			};
 			for (auto i = bar_count; i; i--) {
-				Uint8 light_level = std::rand()%256;
-				renderer->SetDrawColor(std::rand()%256,std::rand()%256,std::rand()%256,32);
+				const SDL_Color &color = bar_colors[bar_count];
+				renderer->SetDrawColor((color.r+(rand()%256))/2,(color.g+(rand()%256))/2,(color.b+(rand()%256))/2,64);
 				renderer->FillRect(placeholder_rect);
-				renderer->SetDrawColor(std::rand()%256,std::rand()%256,std::rand()%256,64);
+				renderer->SetDrawColor(color.r,color.g,color.b,128);
 				renderer->DrawRect(placeholder_rect);
 				placeholder_rect.x += placeholder_rect.w+border;
 			}
