@@ -214,40 +214,40 @@ struct new_art_tag_link {
 	};
 };
 
+std::unique_ptr<SQLite3::stmt> find_artwork_stmt;
 sqlite_int64 find_artwork(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<std::string,new_artwork> &new_artworks, const std::string &url)
 {
 	auto iter = new_artworks.find(url);
 	if ((iter == new_artworks.end())||(iter->second.art_id < 0)) {
 		// TODO Error checkings
-		std::unique_ptr<SQLite3::stmt> select_stmt;
-		db->prepare("SELECT art_artid FROM artworks WHERE art_source = ?;",select_stmt);
-		select_stmt->bind(1,url.c_str());
-		select_stmt->step();
-		return select_stmt->column_int64(0);
+		find_artwork_stmt->reset();
+		find_artwork_stmt->bind(1,url.c_str());
+		find_artwork_stmt->step();
+		return find_artwork_stmt->column_int64(0);
 	} else return iter->second.art_id;
 }
+std::unique_ptr<SQLite3::stmt> find_account_stmt;
 sqlite_int64 find_account(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<std::string,new_account> &new_accounts, const platform_id& acc_platid)
 {
 	auto iter = new_accounts.find(acc_platid);
 	if ((iter == new_accounts.end())||(iter->second.acc_arcoid < 0)) {
 		// TODO Error checkings
-		std::unique_ptr<SQLite3::stmt> select_stmt;
-		db->prepare("SELECT acc_arcoid FROM accounts WHERE acc_platid = ?;",select_stmt);
-		acc_platid.bind(select_stmt,1);
-		select_stmt->step();
-		return select_stmt->column_int64(0);
+		find_account_stmt->reset();
+		acc_platid.bind(find_account_stmt,1);
+		find_account_stmt->step();
+		return find_account_stmt->column_int64(0);
 	} else return iter->second.acc_arcoid;
 }
+std::unique_ptr<SQLite3::stmt> find_tag_stmt;
 sqlite_int64 find_tag(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<std::string,new_tag> &new_tags, const platform_id& tag_platid)
 {
 	auto iter = new_tags.find(tag_platid);
 	if ((iter == new_tags.end())||(iter->second.tag_arcoid < 0)) {
 		// TODO Error checkings
-		std::unique_ptr<SQLite3::stmt> select_stmt;
-		db->prepare("SELECT tag_arcoid FROM tags WHERE tag_platid = ?;",select_stmt);
-		tag_platid.bind(select_stmt,1);
-		select_stmt->step();
-		return select_stmt->column_int64(0);
+		find_tag_stmt->reset();
+		tag_platid.bind(find_tag_stmt,1);
+		find_tag_stmt->step();
+		return find_tag_stmt->column_int64(0);
 	} else return iter->second.tag_arcoid;
 }
 
@@ -278,12 +278,12 @@ extern bool debug;
 
 static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 {
+	if (debug)
+		std::cerr << "JSON parsed. Reading DOM..." << std::endl;
 	// Get some constants platform
 	const std::string platform = json_dom["platform"].GetString();
-	if (debug) {
-		std::cerr << "JSON parsed. Reading DOM..." << std::endl
-		          << "Platform: " << platform << std::endl;
-	}
+	if (debug)
+		std::cerr << "Platform: " << platform << std::endl;
 	// Parse the DOM
 	std::unordered_map<std::string,new_artwork> new_artworks = json_parse_objects<decltype(new_artworks)>(json_dom,"artworks",
 		[](decltype(new_artworks)& new_artworks, rapidjson::Value::ConstValueIterator art_iter) {
@@ -327,9 +327,17 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 			std::cerr << "\t\"" << art_acc_link. << "\" (" << account.second.acc_name << ") [" << (account.second.acc_platid_str ? account.second.acc_platid_str : std::to_string(account.second.acc_platid_int).c_str()) << "]" << std::endl << std::endl;
 		*/
 	}
+	// Prepare SELECT transactions
+	if (db->prepare("SELECT art_artid FROM artworks WHERE art_source = ?;",find_artwork_stmt))
+		return "Failed to prepare the find_artwork_stmt " + std::string(db->errmsg());
+	if (db->prepare("SELECT acc_arcoid FROM accounts WHERE acc_platid = ?;",find_account_stmt))
+		return "Failed to prepare the find_account_stmt " + std::string(db->errmsg());
+	if (db->prepare("SELECT tag_arcoid FROM tags WHERE tag_platid = ?;",find_tag_stmt))
+		return "Failed to prepare the find_tag_stmt " + std::string(db->errmsg());
 	// Perform transaction
 	db->exec("BEGIN IMMEDIATE;");
-	
+	if (debug)
+		std::cerr << "Started SQLite transaction" << std::endl;
 	// INSERT INTO artworks
 	std::unique_ptr<SQLite3::stmt> insert_stmt;
 	if (db->prepare("INSERT OR FAIL INTO artworks (art_title,art_platform,art_desc,art_source,art_rating) VALUES (?,?,?,?,?) RETURNING art_artid;",insert_stmt)) {
@@ -485,7 +493,7 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 			case SQLITE_DONE: {
 			} break;
 			default: {
-				std::cerr << "INSERT INTO art_tag_links (tag_arcoid, art_artid) VALUES (" << find_tag(db,new_tags,art_tag_link.tag_platid) << "," << find_artwork(db,new_artworks,art_tag_link.art_source) << "\") failed: " << db->errmsg() << std::endl;
+				std::cerr << "INSERT INTO art_tag_links (tag_arcoid, art_artid) VALUES (" << find_tag(db,new_tags,art_tag_link.tag_platid) << "," << find_artwork(db,new_artworks,art_tag_link.art_source) << ") failed: " << db->errmsg() << std::endl;
 			} break;
 		}
 		insert_stmt->reset();
