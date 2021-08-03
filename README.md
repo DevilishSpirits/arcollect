@@ -2,9 +2,9 @@
 
 If you like visual arts like me, you may want to save some artworks you find on the net. Right-click and save picture works but is not very convenient, forget the artwork source and classification is complicated.
 
-This personal project aim to fulfill my needs of artwork collection management and to ease it's creation, browsing and growth that I do in a few clicks thanks to the web-extension which put a *Save in Arcollect* button on artwork pages. Metadata like the source, account, tags and the rating are also saved. I made Arcollect for my needs, but it's something nice to share like the artworks you will save.
+This personal project aim to fulfill my needs of artwork collection management and to ease it's creation, browsing and growth that I do in a one click thanks to the web-extension which put a *Save in Arcollect* button on artwork pages. Metadata like the source, account, tags and the rating are also saved. I made Arcollect for my needs, but it's something nice to share like artworks you will save.
 
-Note that it's goal is to provide an easy way to browse your saved artworks. It will not help you to discover new artworks or make any recommendations, it's outside his scope. In fact, there is no mention of any platforms excluding if you use it or checkout the list of supported platforms and (trust me) it's better this way.
+It's goal is limited to easily browse and save artworks, it won't help you to discover new artworks or make any recommendations. No one can judge what's good or not better than you.
 
 Under the hood, the application is powered with C++17 by the [SDL2](https://www.libsdl.org/) ([this fork currenctly](https://github.com/Cacodemon345/SDL/tree/iccprofile)), [SQLite3](https://www.sqlite.org/) for metadata storage, [OpenImageIO](https://openimageio.readthedocs.org/) for image loading and [LittleCMS](https://littlecms.com/) for color management and many other components listed under `THIRD-PARTY.md`.
 
@@ -13,28 +13,24 @@ This application respect your privacy and will never judge you.
 ## Supported platforms
 Currently these platforms are supported :
 
-* **[ArtStation](https://www.artstation.com/)** - You have `Save in Arcollect` buttons on top of artworks on artworks pages. Support is limited.
+* **[ArtStation](https://www.artstation.com/)** - You have `Save in Arcollect` next to the download button on artworks. Porfolios are not supported yet.
 * **[DeviantArt](https://www.deviantart.com/)** - You have a `Save in Arcollect` button below the artwork. Support is limited.
 * **[e621](https://e621.net/)**/**[e926](https://e926.net)** - You have a `Save in Arcollect` button below the artwork.
 * **[FurAffinity](https://www.furaffinity.net/)** - You have a `Save in Arcollect` button below the artwork.
 
 ## Contributing
-**I am not in the mood of accepting contributions.** When I'll accept contribution, you might read something like this draft that imply that I made and published more work that I intend to do :
+I am open to contributions but keep in mind that this is a personal project, not a community driven thing. Arcollect mostly have what I use and can do with time, but it is built with extensibility and platform agnostism in mind.
 
-*Currently Arcollect is limited to what I use and my abilities. But it is built with extensibility and platform agnostism in mind.*
+Your favorite platform is likely missing, with a content-script in `webextension` you can add support into Arcollect. Chromiums and macOS support are also welcome. This project also lack internationalization, translations and real font rendering.
 
-*Your favorite platform may be missing. Read `NEW-PLATFORM.md` (this is important !) to learn how to integrate your platform then feel free to code the extension and share your work.*
-
-*Chromiums and macOS support are also welcome. Please, keep things simple and cross-patform, you have C++ and the SDL, use them. However, there is platform specific integration and you may do these aside the core.*
-
-*This project also lack internationalization, translations and real font rendering.*
+Please, keep things simple and cross-patform, you have C++, a modern SDL and a bunch of dependencies, use them. Platform specific integrations are good while lightweight and simple. As an example, Arcollect is a GNOME search provider not using GNOME libs but FreeDesktop ones.
 
 ## Installation
 Recent Linux distributions and Microsoft Windows with Firefox are supported.
 
 I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.12) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.12#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
 
-If you want to build the software yourself, grab the source code, install Meson (>0.57.1), dbus on UNIX-like, SQLite, SDL2_ttf (a special version of SDL2 is required), OpenImageIO, lcms2 and libcurl. CMake may also be needed. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
+If you want to build the software yourself, grab the source code, install Meson (>0.57.1), dbus on UNIX-like, SQLite, SDL2_ttf, OpenImageIO, lcms2 and libcurl. CMake is also required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
 
 ```sh
 	# Ensure that you have a working version of Meson
