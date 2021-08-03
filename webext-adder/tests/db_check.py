@@ -99,25 +99,25 @@ def check_db(test_num, db, test_set):
 	
 	# Check tags
 	print('# Checking "tags" table')
-	for account in test_set['tags']:
+	for tag in test_set['tags']:
 		test_num += 1
-		account_db = db.execute('SELECT tag_title, tag_kind FROM tags WHERE tag_platid = ? AND tag_platform = ?;',(account['id'],platform)).fetchone()
+		tag_db = db.execute('SELECT tag_title, tag_kind FROM tags WHERE tag_platid = ? AND tag_platform = ?;',(tag['id'],platform)).fetchone()
 		
 		expected_values = (
-			('tag_title'   ,account.setdefault('title',None)),
-			('tag_kind'    ,account.setdefault('kind',None)),
+			('tag_title'   ,tag.setdefault('title',None)),
+			('tag_kind'    ,tag.setdefault('kind',None)),
 		)
 		mismatchs = []
 		for i in range(len(expected_values)):
 			expected = expected_values[i][1]
-			got      = account_db[i]
+			got      = tag_db[i]
 			if expected != got:
 				mismatchs.append(expected_values[i][0]+' mismatch (expected:'+str(expected)+', got:'+str(got)+')')
 		
 		if len(mismatchs) == 0:
-			print('ok',test_num,'- Checking account',account['id'])
+			print('ok',test_num,'- Checking tag',tag['id'])
 		else:
-			print('not ok',test_num,'- Checking account',account['id'],'#',', '.join(mismatchs))
+			print('not ok',test_num,'- Checking tag',tag['id'],'#',', '.join(mismatchs))
 	
 	# Check art_acc_links
 	print('# Checking "art_acc_links" table')
