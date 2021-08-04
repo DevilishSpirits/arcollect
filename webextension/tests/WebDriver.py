@@ -86,3 +86,10 @@ class WebDriver:
 		result = self.post('element',{"using": using, 'value': value}).json()['value']
 		for key in result:
 			return WebElement(self,result[key])
+	def GetElements(self,using,value):
+		results = self.post('elements',{"using": using, 'value': value}).json()['value']
+		elements = []
+		for result in results:
+			for key in result:
+				elements.append(WebElement(self,result[key]))
+		return elements
