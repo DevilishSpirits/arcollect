@@ -82,6 +82,8 @@ class WebDriver:
 	
 	def navigateTo(self,url):
 		return self.post('url',{"url": url})
+	def GetCurrentURL(self):
+		return self.get('url').json()['value']
 	def GetElement(self,using,value):
 		result = self.post('element',{"using": using, 'value': value}).json()['value']
 		for key in result:
