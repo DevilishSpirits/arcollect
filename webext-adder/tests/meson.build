@@ -1,6 +1,7 @@
 offline_tests = files(
 )
 online_tests = files(
+	'artstation.com.json',
 	'e621.net.json',
 	'furaffinity.net.json',
 )
