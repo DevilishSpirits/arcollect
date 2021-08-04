@@ -47,6 +47,10 @@ class WebElement:
 		return self.post('click')
 	def GetText(self):
 		return self.get('text').json()['value']
+	def GetAttribute(self, name):
+		return self.get('attribute/'+name).json()['value']
+	def GetProperty(self, name):
+		return self.get('property/'+name).json()['value']
 
 class WebDriver:
 	def direct_request(self, method, url, data = {}, **kwargs):
