@@ -45,7 +45,7 @@ function artstation_save_artwork(saveButtonA)
 	 * derived from the real artwork URL.
 	 */
 	let source = window.location.origin+window.location.pathname+
-		'#'+artworkLink.split('/').slice(-1)[0].split('?')[0]+artworkLink.split('/').slice(-1)[0].replaceAll('?','_');
+		'#'+artworkLink.split('/').slice(-1)[0].split('?')[0];
 	
 	/** Extract account
 	 *
