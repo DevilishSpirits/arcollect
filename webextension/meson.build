@@ -1,5 +1,5 @@
 webext_src = [
-	configure_file(output: 'manifest.json', input: 'manifest.json.in', configuration: config_h),
+	configure_file(output: 'manifest.json', input: 'manifest.json', configuration: config_h),
 	'background.js',
 	'content-scripts/common.js',
 	'content-scripts/artstation.com.js',
