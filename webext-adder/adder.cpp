@@ -95,7 +95,7 @@ static std::optional<std::string> data_saveto(const char* data_string, std::file
 /** Helper struct storing either a sqlite_int64 or a std::string
  */
 struct platform_id {
-	std::string  platid_str;
+	std::string_view  platid_str;
 	sqlite_int64 platid_int;
 	
 	bool IsInt64(void) const {
@@ -104,11 +104,8 @@ struct platform_id {
 	operator sqlite_int64(void) const {
 		return platid_int;
 	};
-	operator const std::string(void) const {
+	operator const std::string_view&(void) const {
 		return platid_str;
-	};
-	operator const char*(void) const {
-		return platid_str.c_str();
 	};
 	
 	/** Bind a SQLite stmt value
@@ -116,7 +113,7 @@ struct platform_id {
 	int bind(std::unique_ptr<SQLite3::stmt> &stmt, int col) const {
 		if (IsInt64())
 			return stmt->bind(col,platid_int);
-		else return stmt->bind(col,platid_str.c_str());
+		else return stmt->bind(col,platid_str.data());
 	}
 	
 	platform_id(const rapidjson::GenericValue<rapidjson::UTF8<>> &value) {
@@ -128,7 +125,27 @@ struct platform_id {
 			platid_str = value.GetString();
 		}
 	}
+	bool operator==(const platform_id& other) const {
+		if (IsInt64() && other.IsInt64())
+			return platid_int == other.platid_int;
+		else if (!IsInt64() && !other.IsInt64())
+			return platid_str == other.platid_str;
+			// Type mismatch, convert this or other numeric value into std::string
+		else if (IsInt64()) // && !other.IsInt64() implied
+			return std::to_string(platid_int) == other.platid_str;
+		else //if (!IsInt64() && other.IsInt64() implied
+			return platid_str == std::to_string(other.platid_int);
+	}
 };
+namespace std {
+	template<> struct hash<platform_id> {
+		std::size_t operator()(const platform_id& plat) const noexcept {
+			if (plat.IsInt64())
+				return std::hash<sqlite_int64>{}(static_cast<sqlite_int64>(plat));
+			else return std::hash<std::string_view>{}(static_cast<std::string_view>(plat));
+		}
+	};
+}
 std::ostream &operator<<(std::ostream &left, const platform_id &right) {
 	if (right.IsInt64())
 		left << right.platid_int;
@@ -215,19 +232,19 @@ struct new_art_tag_link {
 };
 
 std::unique_ptr<SQLite3::stmt> find_artwork_stmt;
-sqlite_int64 find_artwork(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<std::string,new_artwork> &new_artworks, const std::string &url)
+sqlite_int64 find_artwork(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<std::string_view,new_artwork> &new_artworks, const std::string_view &url)
 {
 	auto iter = new_artworks.find(url);
 	if ((iter == new_artworks.end())||(iter->second.art_id < 0)) {
 		// TODO Error checkings
 		find_artwork_stmt->reset();
-		find_artwork_stmt->bind(1,url.c_str());
+		find_artwork_stmt->bind(1,url.data());
 		find_artwork_stmt->step();
 		return find_artwork_stmt->column_int64(0);
 	} else return iter->second.art_id;
 }
 std::unique_ptr<SQLite3::stmt> find_account_stmt;
-sqlite_int64 find_account(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<std::string,new_account> &new_accounts, const platform_id& acc_platid)
+sqlite_int64 find_account(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<platform_id,new_account> &new_accounts, const platform_id& acc_platid)
 {
 	auto iter = new_accounts.find(acc_platid);
 	if ((iter == new_accounts.end())||(iter->second.acc_arcoid < 0)) {
@@ -239,7 +256,7 @@ sqlite_int64 find_account(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_
 	} else return iter->second.acc_arcoid;
 }
 std::unique_ptr<SQLite3::stmt> find_tag_stmt;
-sqlite_int64 find_tag(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<std::string,new_tag> &new_tags, const platform_id& tag_platid)
+sqlite_int64 find_tag(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<platform_id,new_tag> &new_tags, const platform_id& tag_platid)
 {
 	auto iter = new_tags.find(tag_platid);
 	if ((iter == new_tags.end())||(iter->second.tag_arcoid < 0)) {
@@ -285,23 +302,19 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 	if (debug)
 		std::cerr << "Platform: " << platform << std::endl;
 	// Parse the DOM
-	std::unordered_map<std::string,new_artwork> new_artworks = json_parse_objects<decltype(new_artworks)>(json_dom,"artworks",
+	std::unordered_map<std::string_view,new_artwork> new_artworks = json_parse_objects<decltype(new_artworks)>(json_dom,"artworks",
 		[](decltype(new_artworks)& new_artworks, rapidjson::Value::ConstValueIterator art_iter) {
-			new_artworks.emplace(std::string(art_iter->operator[]("source").GetString()),art_iter);
+			new_artworks.emplace(std::string_view(art_iter->operator[]("source").GetString()),art_iter);
 	});
 	
-	std::unordered_map<std::string,new_account> new_accounts = json_parse_objects<decltype(new_accounts)>(json_dom,"accounts",
+	std::unordered_map<platform_id,new_account> new_accounts = json_parse_objects<decltype(new_accounts)>(json_dom,"accounts",
 		[](decltype(new_accounts)& new_accounts, rapidjson::Value::ConstValueIterator acc_iter) {
-			auto &id_value = acc_iter->operator[]("id");
-			std::string map_key = id_value.IsInt64() ? std::to_string(id_value.GetInt64()) : id_value.GetString();
-			new_accounts.emplace(map_key,acc_iter);
+			new_accounts.emplace(acc_iter->operator[]("id"),acc_iter);
 	});
 	
-	std::unordered_map<std::string,new_tag> new_tags = json_parse_objects<decltype(new_tags)>(json_dom,"tags",
+	std::unordered_map<platform_id,new_tag> new_tags = json_parse_objects<decltype(new_tags)>(json_dom,"tags",
 		[](decltype(new_tags)& new_tags, rapidjson::Value::ConstValueIterator tag_iter) {
-			auto &id_value = tag_iter->operator[]("id");
-			std::string map_key = id_value.IsInt64() ? std::to_string(id_value.GetInt64()) : id_value.GetString();
-			new_tags.emplace(map_key,tag_iter);
+			new_tags.emplace(tag_iter->operator[]("id"),tag_iter);
 	});
 	
 	std::vector<new_art_acc_link> new_art_acc_links = json_parse_objects<decltype(new_art_acc_links)>(json_dom,"art_acc_links",
