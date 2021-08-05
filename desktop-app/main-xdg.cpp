@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
 	while ((dbus_continue && ((SDL_GetTicks()-last_dbus_activity) < 10000)) || Arcollect::gui::enabled) {
 		// Process timeouts
 		Uint32 timeout_timestamp = SDL_GetTicks();
-		int next_timeout = 10000; // D-Bus service timeout
+		int next_timeout = 10000-(SDL_GetTicks()-last_dbus_activity); // D-Bus service timeout
 		for (auto &timeout: timeout_watch_list)
 			if (dbus_timeout_get_enabled(timeout.first)) {
 				auto interval = dbus_timeout_get_interval(timeout.first);
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 				Arcollect::gui::stop();
 		}
 		// Poll D-Bus file descriptors
-		if (Arcollect::gui::enabled)
+		if (Arcollect::gui::enabled || (next_timeout < 0))
 			next_timeout = 0;
 		
 		if (poll(sigio_watch_pollfd.data(),sigio_watch_pollfd.size(),next_timeout) >= 0) {
