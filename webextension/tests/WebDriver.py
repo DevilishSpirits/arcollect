@@ -51,6 +51,8 @@ class WebElement:
 		return self.get('attribute/'+name).json()['value']
 	def GetProperty(self, name):
 		return self.get('property/'+name).json()['value']
+	def GetRect(self):
+		return self.get('rect').json()['value']
 
 class WebDriver:
 	def direct_request(self, method, url, data = {}, **kwargs):
