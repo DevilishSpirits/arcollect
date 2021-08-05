@@ -53,25 +53,29 @@ def check_db(test_num, db, test_set):
 		test_num += 1
 		artwork_db = db.execute('SELECT art_platform, art_title, art_desc, art_rating, art_height, art_width FROM artworks where art_source = ?;',[artwork['source']]).fetchone()
 		
-		expected_values = (
-			('art_platform',platform),
-			('art_title'   ,artwork['title'] ),
-			('art_desc'    ,artwork['desc']  ),
-			('art_rating'  ,artwork['rating']),
-			('art_height'  ,None             ),
-			('art_width'   ,None             ),
-		)
-		mismatchs = []
-		for i in range(len(expected_values)):
-			expected = expected_values[i][1]
-			got      = artwork_db[i]
-			if expected != got:
-				mismatchs.append(expected_values[i][0]+' mismatch (expected:'+str(expected)+', got:'+str(got)+')')
-		
-		if len(mismatchs) == 0:
-			print('ok',test_num,'- Checking artwork',artwork['source'])
+		# Check if the artwork has been found
+		if artwork_db is None:
+			print('not ok',test_num,'- Checking artwork',artwork['source'],'# Not found in database')
 		else:
-			print('not ok',test_num,'- Checking artwork',artwork['source'],'#',', '.join(mismatchs))
+			expected_values = (
+				('art_platform',platform),
+				('art_title'   ,artwork['title'] ),
+				('art_desc'    ,artwork['desc']  ),
+				('art_rating'  ,artwork['rating']),
+				('art_height'  ,None             ),
+				('art_width'   ,None             ),
+			)
+			mismatchs = []
+			for i in range(len(expected_values)):
+				expected = expected_values[i][1]
+				got      = artwork_db[i]
+				if expected != got:
+					mismatchs.append(expected_values[i][0]+' mismatch (expected:'+str(expected)+', got:'+str(got)+')')
+			
+			if len(mismatchs) == 0:
+				print('ok',test_num,'- Checking artwork',artwork['source'])
+			else:
+				print('not ok',test_num,'- Checking artwork',artwork['source'],'#',', '.join(mismatchs))
 	
 	# Check accounts
 	print('# Checking "accounts" table')
