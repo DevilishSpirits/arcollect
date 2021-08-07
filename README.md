@@ -30,11 +30,11 @@ Recent Linux distributions and Microsoft Windows with Firefox are supported.
 
 I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.13) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.13#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
 
-If you want to build the software yourself, grab the source code, install Meson (>0.57.1), dbus on UNIX-like, SQLite, SDL2_ttf, OpenImageIO, lcms2 and libcurl. CMake is also required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
+If you want to build the software yourself, grab the source code, install Meson (>0.59.0), dbus on UNIX-like, SQLite, SDL2_ttf, OpenImageIO, lcms2 and libcurl. CMake is also required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
 
 ```sh
 	# Ensure that you have a working version of Meson
-	pip3 install meson>=0.57.1
+	pip3 install meson>=0.59.0
 	# Configure the project with release configuration
 	# More configuration may be needed like -Dc_link_args=-static and -Dcpp_link_args=-static
 	meson build -Dbuildtype=release -Db_lto=true -Dstrip=true -Denable_webextension=false
@@ -43,7 +43,7 @@ If you want to build the software yourself, grab the source code, install Meson 
 	#ninja install -C build
 ```
 
-Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge dependencies to build and run. Most are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. This does have some limits (like Boost that is not wrapped yet). After installing Meson 0.57.1 (at least) from PyPI, things should works out-of-the-box and does on GitHub Actions Ubuntu 20.04 and Windows 2019 (with Boost libs) VM. Ubuntu 18.04 might works with Clang (`CC=clang CXX=clang++ meson build ...`) and an updated version of Boost if you insist. I won't complexify the program to support older systems.
+Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge dependencies to build and run. Most are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. This does have some limits (like Boost that is not wrapped yet). After installing Meson 0.59.0 (at least) from PyPI, things should works out-of-the-box and does on GitHub Actions Ubuntu 20.04 and Windows 2019 (with Boost libs) VM. Ubuntu 18.04 might works with Clang (`CC=clang CXX=clang++ meson build ...`) and an updated version of Boost if you insist. I won't complexify the program to support older systems.
 
 ## Tests
 Arcollect have many tests and most notably fully automated "real-life" tests that start a program controlled web-browser. Tests requiring network access are not enabled by default. You can enable them with this set of `meson` options :

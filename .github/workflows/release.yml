@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies and tools
         run: sudo apt install libsdl2-dev libsdl2-ttf-dev libopenimageio-dev libboost-all-dev libcurl4-openssl-dev libdbus-1-dev liblcms2-dev python3-setuptools lintian
       - name: Install Meson and Ninja using pip3
-        run: sudo pip3 install meson==0.57.1 ninja
+        run: sudo pip3 install meson==0.59.0 ninja
       - name: Install Mozilla's web-ext with npm
         run: sudo npm install -g web-ext
       - name: Setup project
@@ -88,7 +88,7 @@ jobs:
         with:
           action: build
           setup-options: -Denable_native_progs=false # Disable C++ code
-          meson-version: 0.57.1
+          meson-version: 0.59.0
       - uses: actions/upload-artifact@v2
         with:
           name: arcollect-webextension.zip

@@ -10,7 +10,7 @@ This directory contain files used to generate packages. If you intend to install
 Don't immediately configure and build the project, package generation is likely to redo this from scratch and there is some configuration you must change. Install Meson and follow system specific instructions. You should also take a look in [`.github/workflows/release.yml`](https://github.com/DevilishSpirits/arcollect/blob/master/.github/workflows/release.yml) to see how releases are made, it may contain workaround missing there.
 ```sh
 	# Ensure that you have a working version of Meson
-	pip3 install meson>=0.57.1
+	pip3 install meson>=0.59.0
 	# That's all for now
 ```
 
