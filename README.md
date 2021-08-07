@@ -28,7 +28,7 @@ Please, keep things simple and cross-patform, you have C++, a modern SDL and a b
 ## Installation
 Recent Linux distributions and Microsoft Windows with Firefox are supported.
 
-I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.12) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.12#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
+I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.13) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.13#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
 
 If you want to build the software yourself, grab the source code, install Meson (>0.57.1), dbus on UNIX-like, SQLite, SDL2_ttf, OpenImageIO, lcms2 and libcurl. CMake is also required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
 
