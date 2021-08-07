@@ -210,14 +210,21 @@ endif
 candle_prog = find_program('candle', required: false, version: '>=3')
 light_prog = find_program('light', required: false)
 
+copying_rtf = custom_target('COPYING.rtf',
+	input: '../COPYING',
+	output: 'COPYING.rtf',
+	command: find_program('copying_to_rtf.py', required: true, native: true),
+	capture: true, feed: true
+)
+
 if candle_prog.found() and light_prog.found() and enable_native_progs
 	# WiX depends
 	wix_deps = [
 		arcollect_exe,
+		copying_rtf,
 		webext_adder_exe,
 	]
 	wix_dep_files = files(
-		'../COPYING.rtf',
 	)+[
 		webext_appmanifest_firefox_windows,
 	]
@@ -227,6 +234,7 @@ if candle_prog.found() and light_prog.found() and enable_native_progs
 	wix_conf.set('built_arcollect_exe',arcollect_exe.full_path())
 	wix_conf.set('built_webext_adder_exe',webext_adder_exe.full_path())
 	wix_conf.set('built_mozilla_manifest',webext_appmanifest_firefox_windows_full_path) # webext_appmanifest_firefox_windows
+	wix_conf.set('copying_rtf_path',copying_rtf.full_path())
 	
 	# Auto-configuration
 	if host_machine.cpu_family() == 'x86'
