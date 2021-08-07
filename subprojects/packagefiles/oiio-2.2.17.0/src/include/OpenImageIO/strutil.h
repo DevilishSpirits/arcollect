@@ -126,7 +126,11 @@ namespace fmt {
 template<typename... Args>
 inline std::string format (const char* fmt, const Args&... args)
 {
-    return ::fmt::format (fmt, args...);
+#if FMT_VERSION >= 70000
+    return ::fmt::vformat(fmt, ::fmt::make_format_args(args...));
+#else
+    return ::fmt::format(fmt, args...);
+#endif
 }
 } // namespace fmt
 
