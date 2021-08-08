@@ -147,7 +147,7 @@ jobs:
       - name: Install Meson
         run: pip install meson ninja
       - name: Configure project
-        run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,rapidjson,robin-map,roboto,sdl2,sdl2_ttf,sqlite3,zlib -Denable_webextension=false -Dcpp_link_args=-static -Dc_link_args=-static # TODO Make it works on Windows
+        run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,rapidjson,robin-map,roboto,sdl2,sdl2_ttf,sqlite3,zlib -Dcpp_link_args=-static -Dc_link_args=-static # TODO Make it works on Windows
       - name: Build project
         run: ninja -C build
       - name: Generate MSI
