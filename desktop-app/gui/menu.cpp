@@ -179,6 +179,11 @@ Arcollect::gui::menu_item_simple_label::menu_item_simple_label(const char* label
 	onclick(onclick)
 {
 }
+Arcollect::gui::menu_item_simple_label::menu_item_simple_label(const font::Elements& elements, std::function<void()> onclick) :
+	text_line(elements),
+	onclick(onclick)
+{
+}
 SDL::Point Arcollect::gui::menu_item_simple_label::size(void)
 {
 	return text_line.size();

@@ -92,6 +92,7 @@ namespace Arcollect {
 				void render(SDL::Rect target) override;
 				std::function<void()> onclick;
 				menu_item_simple_label(const char* label, std::function<void()> onclick);
+				menu_item_simple_label(const font::Elements& elements, std::function<void()> onclick);
 		};
 	}
 }
