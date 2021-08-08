@@ -94,8 +94,6 @@ endforeach
 configure_file(output: 'config.h', configuration: config_h)
 config_h_inc = include_directories('.')
 
-# Programs
-prog_zip = find_program('zip', native: true, required: enable_webextension)
 # Dependencies
 if enable_native_progs
 	dep_curl = dependency('libcurl', required: true)

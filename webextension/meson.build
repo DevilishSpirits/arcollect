@@ -1,14 +1,27 @@
-webext_src = [
-	configure_file(output: 'manifest.json', input: 'manifest.json', configuration: config_h),
-	'background.js',
-	'content-scripts/common.js',
-	'content-scripts/artstation.com.js',
-	'content-scripts/deviantart.com.js',
-	'content-scripts/e621.net.js',
-	'content-scripts/furaffinity.net.js',
+webext_zip_cmds = [
+	find_program('build_zip.py', native: true),
+	meson.current_build_dir(),
+	'@OUTPUT@'
 ]
+webext_zip_depend_files = []
+webext_srcs = [
+	'manifest.json',
+	'background.js',
+]
+webext_content_scripts = [
+	'common.js',
+	'artstation.com.js',
+	'deviantart.com.js',
+	'e621.net.js',
+	'furaffinity.net.js',
+]
+subdir('content-scripts')
+foreach file: webext_srcs
+	webext_zip_cmds += file
+	webext_zip_depend_files += configure_file(output: file, input: file, configuration: config_h)
+endforeach
 
-webextension_target = custom_target('arcollect.zip', output : 'arcollect.zip', input : webext_src, command : [files('build.sh'), '@CURRENT_SOURCE_DIR@', meson.current_build_dir(), prog_zip, '@OUTPUT@', '@INPUT@'], build_by_default: true)
+webextension_target = custom_target('arcollect.zip', output : 'arcollect.zip', command : webext_zip_cmds, build_by_default: true)
 
 # Test with web-ext lint
 prog_web_ext = find_program('web-ext', required: false)
