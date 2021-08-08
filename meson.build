@@ -102,7 +102,7 @@ if enable_native_progs
 	#dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
 	dep_sdl2 = subproject('sdl2').get_variable('sdl2_dep')
 	
-	dep_oiio = dependency('OpenImageIO', default_options: [
+	dep_oiio = dependency('OpenImageIO', fallback: ['oiio', 'dep_oiio'], default_options: [
 		'enable_bmp=enabled',
 		'enable_cineon=enabled',
 		'enable_dds=enabled',
