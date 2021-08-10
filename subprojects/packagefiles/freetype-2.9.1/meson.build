@@ -157,7 +157,6 @@ endif
 
 check_optional_deps = [
   ['bzip2'],
-  ['harfbuzz', {'version': '>= 1.3.0'}]
 ]
 
 conf = configuration_data()
