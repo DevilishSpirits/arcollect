@@ -97,9 +97,6 @@ int Arcollect::gui::init(void)
 			std::cerr << "Using screen ICC profile for " << manufacturer << " " << model << " (" << copyright << "): " << description << std::endl;
 		}
 	} else std::cerr << "No screen ICC profile found, color management disabled" << std::endl;
-	// Load font
-	// TODO Use real font management
-	TTF_Init();
 	// Set custom borders
 	Arcollect::gui::window_borders::init(window);
 	// Prepare preload_artworks stmt

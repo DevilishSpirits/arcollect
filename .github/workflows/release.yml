@@ -29,7 +29,7 @@ jobs:
       - name: Update apt cache
         run: sudo apt update
       - name: Install dependencies and tools
-        run: sudo apt install libsdl2-dev libsdl2-ttf-dev libopenimageio-dev libboost-all-dev libcurl4-openssl-dev libdbus-1-dev liblcms2-dev python3-setuptools lintian
+        run: sudo apt install libsdl2-dev libfreetype-dev libharfbuzz-dev libopenimageio-dev libboost-all-dev libcurl4-openssl-dev libdbus-1-dev liblcms2-dev python3-setuptools lintian
       - name: Install Meson and Ninja using pip3
         run: sudo pip3 install meson==0.59.0 ninja
       - name: Install Mozilla's web-ext with npm

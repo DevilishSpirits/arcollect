@@ -83,7 +83,6 @@ config_h.set('ARCOLLECT_DBUS_PATH','/')
 # Version requirements
 # These are centralized here. Update README.md if you change things there.
 config_h.set('ARCOLLECT_VERREQ_sdl2','>=2.0.8')
-config_h.set('ARCOLLECT_VERREQ_sdl2_ttf','>=2.0.12')
 config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
 
 foreach key: config_h.keys()
@@ -116,7 +115,8 @@ if enable_native_progs
 	])
 	
 	dep_lcms2  = dependency('lcms2')
-	dep_sdl2_ttf   = dependency('SDL2_ttf', version: config_h.get('ARCOLLECT_VERREQ_sdl2_ttf'))
+	dep_freetype   = dependency('freetype2')
+	dep_harfbuzz   = dependency('harfbuzz')
 	dep_sqlite3 = dependency('sqlite3', version: config_h.get('ARCOLLECT_VERREQ_sqlite3'))
 	dep_inih = dependency('INIReader', fallback: ['inih', 'INIReader_dep'], default_options: [
 		'with_INIReader=true',

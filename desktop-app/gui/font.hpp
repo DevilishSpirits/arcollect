@@ -16,16 +16,24 @@
  */
 #pragma once
 #include "../sdl2-hpp/SDL.hpp"
-#include <SDL_ttf.h>
+#include <hb.h>
 #include <memory>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <variant>
 #include <vector>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_BITMAP_H
 namespace Arcollect {
 	namespace gui {
 		namespace font {
-			TTF_Font *query_font(Uint32 font_size);
+			/** Arcollect FreeType2 render flags
+			 */
+			static constexpr const auto ft_flags = 0;
+			
+			FT_Face query_face(Uint32 font_size);
 			/** Text-element
 			 *
 			 * A text element can be content (text) or attribute changes (color, ...).
@@ -56,6 +64,53 @@ namespace Arcollect {
 					return *this;
 				}
 			};
+			
+			/** Cached glyph
+			 *
+			 * This structure hold the renderered version of a character Glyph.
+			 *
+			 * \todo The current implementation is using SDL_RenderDrawPoint to "copy"
+			 *       the FT_Bitmap. Drop the bitmap in a texture instead.
+			 */
+			struct Glyph {
+				// TODO SDL::Texture* text;
+				FT_Bitmap bitmap;
+				SDL::Point delta;
+				
+				struct key {
+					hb_codepoint_t glyphid;
+					int font_size;
+					struct hash {
+						inline std::size_t operator()(const key& key) const {
+							return (std::hash<hb_codepoint_t>()(key.glyphid) << 1) ^ std::hash<int>()(key.font_size);
+						}
+					};
+					inline bool operator==(const key& other) const {
+						return (glyphid == other.glyphid)&&(font_size == other.font_size);
+					}
+				};
+				
+				Glyph(hb_codepoint_t glyphid, int font_size);
+				inline Glyph(const key& key) : Glyph(key.glyphid,key.font_size) {}
+				~Glyph(void);
+				
+				void render(int origin_x, int origin_y, SDL_Color color) const;
+				inline void render(SDL::Point origin, SDL_Color color) const {
+					return render(origin.x,origin.y,color);
+				}
+				// Glyph cache
+				static std::unordered_map<key,std::unique_ptr<Glyph>,key::hash> glyph_cache;
+				static inline Glyph& query(const key& key) {
+					auto iter = glyph_cache.find(key);
+					if (iter == glyph_cache.end())
+						iter = glyph_cache.emplace(key,std::make_unique<Glyph>(key)).first;
+					return *(iter->second);
+				}
+				static inline Glyph& query(hb_codepoint_t glyphid, int font_size) {
+					return query(key{glyphid,font_size});
+				}
+			};
+			
 			/** Text shaping result
 			 *
 			 * This class can render a bloc of text. It can be generated to fit in a
@@ -63,8 +118,24 @@ namespace Arcollect {
 			 */
 			class Renderable {
 				private:
-					std::shared_ptr<SDL::Texture> result;
 					SDL::Point result_size;
+					struct GlyphData {
+						SDL::Point position;
+						Glyph     *glyph;
+						SDL_Color  color;
+						inline GlyphData& operator=(const GlyphData& other) {
+							position = other.position;
+							glyph = other.glyph;
+							color = other.color;
+							return *this;
+						}
+						GlyphData(void) = default;
+						inline GlyphData(SDL::Point position, Glyph &glyph, SDL_Color color)
+						: position(position), glyph(&glyph), color(color) {}
+					};
+					std::vector<GlyphData> glyphs;
+					void append_text(const std::string_view& text, SDL::Point &cursor, int wrap_width, Uint32 font_size, SDL_Color color);
+					void append_text(const std::u32string_view& text, SDL::Point &cursor, int wrap_width, Uint32 font_size, SDL_Color color);
 				public:
 					inline const SDL::Point size() {
 						return result_size;
@@ -76,7 +147,7 @@ namespace Arcollect {
 					 */
 					Renderable(void) = default;
 					Renderable(const Elements& elements);
-					Renderable(const Elements& elements, Uint32 wrap_width);
+					Renderable(const Elements& elements, int wrap_width);
 					/** Convenience simple text rendering
 					 *
 					 * It use default values of #Elements

@@ -6,7 +6,7 @@ This personal project aim to fulfill my needs of artwork collection management a
 
 It's goal is limited to easily browse and save artworks, it won't help you to discover new artworks or make any recommendations. No one can judge what's good or not better than you.
 
-Under the hood, the application is powered with C++17 by the [SDL2](https://www.libsdl.org/) ([this fork currenctly](https://github.com/Cacodemon345/SDL/tree/iccprofile)), [SQLite3](https://www.sqlite.org/) for metadata storage, [OpenImageIO](https://openimageio.readthedocs.org/) for image loading and [LittleCMS](https://littlecms.com/) for color management and many other components listed under `THIRD-PARTY.md`.
+Under the hood, the application is powered with C++17 by the [SDL2](https://www.libsdl.org/) ([this fork currenctly](https://github.com/Cacodemon345/SDL/tree/iccprofile)), [SQLite3](https://www.sqlite.org/) for metadata storage, [OpenImageIO](https://openimageio.readthedocs.org/) for image loading, [LittleCMS](https://littlecms.com/) for color management, [FreeType2](https://www.freetype.org/) for font rendering, [HarfBuzz](https://harfbuzz.github.io/) for text shaping and many other components listed under `THIRD-PARTY.md`.
 
 This application respect your privacy and will never judge you.
 
@@ -21,7 +21,7 @@ Currently these platforms are supported :
 ## Contributing
 I am open to contributions but keep in mind that this is a personal project, not a community driven thing. Arcollect mostly have what I use and can do with time, but it is built with extensibility and platform agnostism in mind.
 
-Your favorite platform is likely missing, with a content-script in `webextension` you can add support into Arcollect. Chromiums and macOS support are also welcome. This project also lack internationalization, translations and real font rendering.
+Your favorite platform is likely missing, with a content-script in `webextension` you can add support into Arcollect. Chromiums and macOS support are also welcome. This project also lack internationalization and translations.
 
 Please, keep things simple and cross-patform, you have C++, a modern SDL and a bunch of dependencies, use them. Platform specific integrations are good while lightweight and simple. As an example, Arcollect is a GNOME search provider not using GNOME libs but FreeDesktop ones.
 
@@ -30,7 +30,7 @@ Recent Linux distributions and Microsoft Windows with Firefox are supported.
 
 I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.13) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.13#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
 
-If you want to build the software yourself, grab the source code, install Meson (>0.59.0), dbus on UNIX-like, SQLite, SDL2_ttf, OpenImageIO, lcms2 and libcurl. CMake is also required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
+If you want to build the software yourself, grab the source code, install Meson (>0.59.0), dbus on UNIX-like, SQLite, FreeType2, Harfbuzz, OpenImageIO, lcms2 and libcurl. CMake is also required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
 
 ```sh
 	# Ensure that you have a working version of Meson

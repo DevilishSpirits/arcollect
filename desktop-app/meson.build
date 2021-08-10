@@ -6,7 +6,8 @@ deskapp_deps = [
 	dep_lcms2,
 	dep_oiio,
 	dep_sdl2,
-	dep_sdl2_ttf,
+	dep_harfbuzz,
+	dep_freetype,
 	dep_sqlite3,
 	dep_inih,
 ]

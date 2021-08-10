@@ -14,7 +14,7 @@ system_dependencies = []
 static_dependencies = []
 if enable_native_progs
 	# TODO Add sdl2 when no longer using a special branch
-	native_progs_deps = ['OpenImageIO','lcms2','SDL2_ttf','sqlite3','libcurl']
+	native_progs_deps = ['OpenImageIO','lcms2','freetype2','harfbuzz','sqlite3','libcurl']
 	if with_xdg
 		native_progs_deps += 'dbus-1'
 	endif
@@ -30,14 +30,6 @@ if enable_native_progs
 	endforeach
 endif
 
-if 'SDL2_ttf' in static_dependencies
-	dep = dependency('freetype2', required: false)
-	if dep.type_name() == 'internal'
-		static_dependencies += 'freetype2'
-	else
-		system_dependencies += 'freetype2'
-	endif
-endif
 # TODO if 'OpenImageIO' in static_dependencies
 #endif
 
@@ -94,8 +86,9 @@ pkgbuild_depends_list = {
 	'dbus-1'           : 'dbus',
 	'lcms2'            : 'lcms2',
 	'OpenImageIO'      : 'openimageio',
-	#'sdl2' have special handling
-	'sdl2_ttf'         : 'sdl2_ttf',
+	'sdl2'             : 'sdl2',
+	'freetype2'        : 'freetype2',
+	'harfbuzz'         : 'harfbuzz',
 	'sqlite3'          : 'sqlite',
 	'inih'             : 'libINIReader.so',
 }
@@ -104,10 +97,6 @@ foreach dep_name, package_name: pkgbuild_depends_list
 		pkgbuild_depends += '\''+package_name+config_h.get('ARCOLLECT_VERREQ_'+dep_name,'')+'\''
 	endif
 endforeach
-# namcap report warning upon redundant dependencies and sdl2 might be one
-if ('sdl2' in system_dependencies) and ('sdl2_ttf' in static_dependencies)
-	pkgbuild_depends += '\'sdl2'+config_h.get('ARCOLLECT_VERREQ_sdl2','')+'\''
-endif
 
 pkgbuild_conf = configuration_data()
 pkgbuild_conf.merge_from(config_h)
@@ -151,7 +140,8 @@ if apt_prog.found() and dpkg_architecture_prog.found() and tar_prog.found() and 
 		'lcms2'            : ['liblcms2-dev'            ,'liblcms2'],
 		'OpenImageIO'      : ['libopenimageio-dev'      ,'libopenimageio'],
 		'sdl2'             : ['libsdl2-dev'             ,'libsdl2'],
-		'SDL2_ttf'         : ['libsdl2-ttf-dev'         ,'libsdl2-ttf'],
+		'freetype2'        : ['libfreetype-dev'         ,'libfreetype'],
+		'harfbuzz'         : ['libharfbuzz-dev'         ,'libharfbuzz[0-9a-z]+'],
 		'sqlite3'          : ['libsqlite3-dev'          ,'libsqlite3'],
 		'inih'             : ['libinih-dev'             ,'libinireader'],
 	}
