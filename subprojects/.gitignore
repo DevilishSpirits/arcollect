@@ -1,6 +1,7 @@
 curl-*
 fmt-8.0.1
 freetype-*
+harfbuzz-*
 Imath-3.0.5
 inih-r53
 libjpeg-*
