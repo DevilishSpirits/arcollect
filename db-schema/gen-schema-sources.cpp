@@ -17,8 +17,8 @@
 /* Usage: gen-schema-sources.cpp db-schema.cpp arcollect-db-schema.hpp [current.sql...]
  *
  * This is a simple helper that is not designed to work on every edge cases, I
- * took harmless liberties here. Do not report bugs unless his behavior cause
- 
+ * took harmless liberties here. Do not report bugs or "improve" unless his
+ * behavior cause problems.
  */
 #include <filesystem>
 #include <iostream>
@@ -46,6 +46,7 @@ static void write_sql_file(const char* sql_file_path, const std::string &var_nam
 	// Write and minify the file
 	const auto sql_size = sql.gcount();
 	bool wasblank = true;
+	bool instring = false;
 	enum {
 		COMMENT_NO,     // We are not in a comment
 		COMMENT_BEGIN, // We read a '/', maybe the start of a comment
@@ -65,10 +66,21 @@ static void write_sql_file(const char* sql_file_path, const std::string &var_nam
 			} // falltrough;
 			case COMMENT_NO: {
 				switch (sql_file[i]) {
+					case '\'': {
+						// Check for \' escapes in strings
+						if (!instring || (sql_file[i-1] != '\\'))
+							instring = !instring; // We enter/leaved a string
+						cpp << sql_file[i];
+						wasblank = false;
+						comment_state = COMMENT_NO;
+					} break;
 					case '/': {
 						// Maybe the start of a comment
-						wasblank = false;
-						comment_state = COMMENT_BEGIN;
+						// Note: Ignore "'image/*'" in string
+						if (instring) {
+							cpp << sql_file[i];
+							wasblank = false;
+						} else comment_state = COMMENT_BEGIN;
 					} break;
 					case_blank: {
 						// Got a blank char, we collapses blanks
