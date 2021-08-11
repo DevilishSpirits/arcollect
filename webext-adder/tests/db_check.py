@@ -59,11 +59,11 @@ def check_db(test_num, db, test_set):
 		else:
 			expected_values = (
 				('art_platform',platform),
-				('art_title'   ,artwork['title'] ),
-				('art_desc'    ,artwork['desc']  ),
-				('art_rating'  ,artwork['rating']),
-				('art_height'  ,None             ),
-				('art_width'   ,None             ),
+				('art_title'   ,artwork.setdefault('title',None) ),
+				('art_desc'    ,artwork.setdefault('desc',None)  ),
+				('art_rating'  ,artwork.setdefault('rating',None)),
+				('art_height'  ,None                      ),
+				('art_width'   ,None                      ),
 			)
 			mismatchs = []
 			for i in range(len(expected_values)):
