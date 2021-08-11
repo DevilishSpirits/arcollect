@@ -48,12 +48,12 @@ static sqlite_int64 json_int64(rapidjson::Value::ConstValueIterator iter, const 
  * \param key  The key to read
  * \return NULL is the key doesn't exist or it's string value
  */
-static const char* json_string(rapidjson::Value::ConstValueIterator iter, const char* key)
+static const char* json_string(rapidjson::Value::ConstValueIterator iter, const char* key, const char* default_value = NULL)
 {
 	auto& object = *iter;
 	if (object.HasMember(key) && object[key].IsString()) {
 		return object[key].GetString();
-	} else return NULL;
+	} else return default_value;
 }
 
 static std::optional<std::string> data_saveto(const char* data_string, std::filesystem::path target, const char* referer)
