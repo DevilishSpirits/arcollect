@@ -11,9 +11,6 @@ deskapp_deps = [
 	dep_sqlite3,
 	dep_inih,
 ]
-if with_mingw_std_threads
-	deskapp_deps += subproject('mingw-std-threads').get_variable('std_threaddep')
-endif
 deskapp_srcs = [
 	'config.cpp',
 	'db/account.cpp',
@@ -44,11 +41,6 @@ deskapp_additional_srcs = [
 main_cpp = 'main.cpp'
 if with_xdg
 	subdir('xdg')
-endif
-
-# Add MinGW std threads if needed
-if with_mingw_std_threads
-	deskapp_deps += subproject('mingw-std-threads').get_variable('std_threaddep')
 endif
 
 desktop_app_staticlib = static_library('desktop-app-staticlib', deskapp_srcs, deskapp_additional_srcs, dependencies: deskapp_deps)
