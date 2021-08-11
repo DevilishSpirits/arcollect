@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-/* This SQL is ran each time a database is open. It perform some pragmas.
+/* This SQL is ran each time a database is open.
  *
- * It is not really part of the schema but it is SQL.
+ * It perform some pragmas.
  */
 PRAGMA foreign_keys = ON; /* Enforce foreign keys */
