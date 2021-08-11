@@ -23,6 +23,7 @@
 #include <optional>
 #include <vector>
 #include <arcollect-paths.hpp>
+#include <arcollect-sqls.hpp>
 #include <rapidjson/document.h>
 #include "base64.hpp"
 
@@ -357,8 +358,8 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 		std::cerr << "Started SQLite transaction" << std::endl;
 	// INSERT INTO artworks
 	std::unique_ptr<SQLite3::stmt> insert_stmt;
-	if (db->prepare("INSERT OR FAIL INTO artworks (art_title,art_platform,art_desc,art_source,art_rating,art_mimetype,art_postdate) VALUES (?,?,?,?,?,?,?) RETURNING art_artid;",insert_stmt)) {
-		std::cerr << "Failed to prepare the add_artwork_stmt " << db->errmsg() << std::endl;
+	if (db->prepare(Arcollect::db::sql::adder_insert_artwork.c_str(),insert_stmt)) {
+		std::cerr << "Failed to prepare adder_insert_artwork.sql " << db->errmsg() << std::endl;
 		std::exit(1);
 	}
 	for (auto& artwork : new_artworks) {
@@ -394,8 +395,8 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 		std::cerr << "Failed to prepare the get_account_stmt " << db->errmsg() << std::endl;
 		std::exit(1);
 	}
-	if (db->prepare("INSERT OR FAIL INTO accounts (acc_platid,acc_platform,acc_name,acc_title,acc_url) VALUES (?,?,?,?,?) RETURNING acc_arcoid;",insert_stmt)) {
-		std::cerr << "Failed to prepare the add_account_stmt " << db->errmsg() << std::endl;
+	if (db->prepare(Arcollect::db::sql::adder_insert_account.c_str(),insert_stmt)) {
+		std::cerr << "Failed to prepare adder_insert_account.sql " << db->errmsg() << std::endl;
 		std::exit(1);
 	}
 	for (auto& account : new_accounts) {
@@ -443,8 +444,8 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 		std::cerr << "Failed to prepare the get_tag_stmt " << db->errmsg() << std::endl;
 		std::exit(1);
 	}
-	if (db->prepare("INSERT OR FAIL INTO tags (tag_platid,tag_platform,tag_title,tag_kind) VALUES (?,?,?,?) RETURNING tag_arcoid;",insert_stmt)) {
-		std::cerr << "Failed to prepare the add_tag_stmt " << db->errmsg() << std::endl;
+	if (db->prepare(Arcollect::db::sql::adder_insert_tag.c_str(),insert_stmt)) {
+		std::cerr << "Failed to prepare adder_insert_tag.sql " << db->errmsg() << std::endl;
 		std::exit(1);
 	}
 	for (auto& tag : new_tags) {

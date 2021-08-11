@@ -1,4 +1,7 @@
 db_schema_src = [
+	'adder_insert_account.sql',
+	'adder_insert_artwork.sql',
+	'adder_insert_tag.sql',
 	'boot.sql',
 	'init.sql',
 	'preload_artworks.sql',
