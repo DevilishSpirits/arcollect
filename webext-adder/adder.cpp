@@ -158,14 +158,18 @@ struct new_artwork {
 	const char* art_desc;
 	const char* art_source;
 	sqlite_int64 art_rating;
+	const char* art_mimetype;
+	sqlite_int64 art_postdate;
 	sqlite_int64 art_id;
 	const char* data;
-	// TODO Artwork datas
+	static constexpr char* default_art_mimetype = "image/*";
 	new_artwork(rapidjson::Value::ConstValueIterator iter) : 
 		art_title(json_string(iter,"title")),
 		art_desc(json_string(iter,"desc")),
 		art_source(json_string(iter,"source")),
 		art_rating(json_int64(iter,"rating",0)),
+		art_postdate(json_int64(iter,"postdate",0)),
+		art_mimetype(json_string(iter,"mimetype",default_art_mimetype)),
 		art_id(-1),
 		data(iter->operator[]("data").GetString())
 	{
@@ -353,7 +357,7 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 		std::cerr << "Started SQLite transaction" << std::endl;
 	// INSERT INTO artworks
 	std::unique_ptr<SQLite3::stmt> insert_stmt;
-	if (db->prepare("INSERT OR FAIL INTO artworks (art_title,art_platform,art_desc,art_source,art_rating) VALUES (?,?,?,?,?) RETURNING art_artid;",insert_stmt)) {
+	if (db->prepare("INSERT OR FAIL INTO artworks (art_title,art_platform,art_desc,art_source,art_rating,art_mimetype,art_postdate) VALUES (?,?,?,?,?,?,?) RETURNING art_artid;",insert_stmt)) {
 		std::cerr << "Failed to prepare the add_artwork_stmt " << db->errmsg() << std::endl;
 		std::exit(1);
 	}
@@ -363,6 +367,10 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 		insert_stmt->bind(3,artwork.second.art_desc);
 		insert_stmt->bind(4,artwork.second.art_source);
 		insert_stmt->bind(5,artwork.second.art_rating);
+		insert_stmt->bind(6,artwork.second.art_mimetype);
+		if (artwork.second.art_postdate)
+			insert_stmt->bind(7,artwork.second.art_postdate);
+		else insert_stmt->bind_null(7);
 		switch (insert_stmt->step()) {
 			case SQLITE_ROW: {
 				// Save artwork

@@ -51,7 +51,7 @@ def check_db(test_num, db, test_set):
 	print('# Checking "artworks" table')
 	for artwork in test_set['artworks']:
 		test_num += 1
-		artwork_db = db.execute('SELECT art_platform, art_title, art_desc, art_rating, art_height, art_width FROM artworks where art_source = ?;',[artwork['source']]).fetchone()
+		artwork_db = db.execute('SELECT art_platform, art_title, art_desc, art_rating, art_height, art_width, art_mimetype, art_postdate FROM artworks where art_source = ?;',[artwork['source']]).fetchone()
 		
 		# Check if the artwork has been found
 		if artwork_db is None:
@@ -64,6 +64,8 @@ def check_db(test_num, db, test_set):
 				('art_rating'  ,artwork.setdefault('rating',None)),
 				('art_height'  ,None                      ),
 				('art_width'   ,None                      ),
+				('art_mimetype',artwork.setdefault('mimetype','image/*')),
+				('art_postdate',artwork.setdefault('postdate',None)),
 			)
 			mismatchs = []
 			for i in range(len(expected_values)):

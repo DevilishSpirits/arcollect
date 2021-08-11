@@ -16,9 +16,11 @@
  */
 /* This SQL boostrap the database.
  *
- * It contain and explain the whole schema
+ * It contain and explain the whole schema.
+ *
+ * All dates in the schema are UNIX timestamps.
  */
-BEGIN;
+BEGIN IMMEDIATE;
 	/* DB informations table
 	 *
 	 * This is a simple key/value pairs table holding metadata like the schema version.
@@ -28,9 +30,10 @@ BEGIN;
 		value TEXT                , /* The value */
 		PRIMARY KEY (key)
 	);
-	INSERT INTO arcollect_infos (key,value) VALUES (
-		'schema_version',1 /* Schema version - Used to upgrade the DB if needed */
-	);
+	INSERT INTO arcollect_infos (key,value) VALUES
+		('schema_version',2), /* Schema version - Used to upgrade the DB if needed */
+		('bootstrap_date',strftime('%s','now')) /* Bootstrap date - When the database was bootstraped/the user started using Arcollect */
+	;
 	
 	/* Artwork database
 	 *
@@ -46,17 +49,41 @@ BEGIN;
 	 * 	-  0 for unrated content
 	 * 	- 16 for Mature content
 	 * 	- 18 for Adult content
+	 *
+	 * Note about art_mimetype: This mime type is a somewhat relaxed thing. A mime
+	 * of `image/*` is valid and tell Arcollect that it's an image, in fact just
+	 * the image/ part tell Arcollect to load an artwork trough OpenImageIO but
+	 * anyway, it's better to put the full mime-type (IF CORRECT!!!) in order to
+	 * allow further nice features.
 	 */
 	CREATE TABLE artworks (
-		art_artid    INTEGER NOT NULL UNIQUE, /* The artwork unique ID   */
-		art_platform TEXT    NOT NULL       , /* The artwork platform    */
-		art_width    INTEGER                , /* Artwork width in pixel  */
-		art_height   INTEGER                , /* Artwork height in pixel */
-		art_title    TEXT                   , /* The artwork title       */
-		art_desc     TEXT                   , /* The artwork description */
-		art_source   TEXT    NOT NULL UNIQUE, /* The artwork source URL  */
-		art_rating   INTEGER                , /* The artwork rating age  */
+		art_artid    INTEGER NOT NULL UNIQUE, /* The artwork unique ID       */
+		art_platform TEXT    NOT NULL       , /* The artwork platform        */
+		art_width    INTEGER                , /* Artwork width in pixel      */
+		art_height   INTEGER                , /* Artwork height in pixel     */
+		art_title    TEXT                   , /* The artwork title           */
+		art_desc     TEXT                   , /* The artwork description     */
+		art_source   TEXT    NOT NULL UNIQUE, /* The artwork source URL      */
+		art_rating   INTEGER                , /* The artwork rating age      */
+		art_mimetype TEXT    NOT NULL       , /* The artwork mime-type       */
+		art_postdate INTEGER                , /* When the artwork was posted */
+		art_savedate INTEGER NOT NULL       DEFAULT (strftime('%s','now')), /* When the artwork was saved in Arcollect */
 		PRIMARY KEY (art_artid)
+	);
+	
+	/* Artwork not yet supported attributes
+	 *
+	 * This table complement artworks by saving generic key/value pairs of things
+	 * that Arcollect do not support (yet).
+	 *
+	 * The format is per patform.
+	 */
+	CREATE TABLE artworks_unsupported (
+		artu_artid    INTEGER NOT NULL UNIQUE, /* The artwork ID this relate to */
+		artu_key      TEXT    NOT NULL       , /* The key                       */
+		artu_value    TEXT                   , /* The value                     */
+		FOREIGN KEY (artu_artid) REFERENCES artworks(art_artid),
+		PRIMARY KEY (artu_artid,artu_key)
 	);
 	
 	/* Artist account database
@@ -67,12 +94,14 @@ BEGIN;
 	 * user ID when available.
 	 */
 	CREATE TABLE accounts (
-		acc_arcoid   INTEGER NOT NULL UNIQUE, /* The account ID within Arcollect */
-		acc_platid   INTEGER NOT NULL       , /* The account ID on the platform  */
-		acc_platform TEXT    NOT NULL       , /* The account platform            */
-		acc_name     TEXT                   , /* The account name                */
-		acc_title    TEXT                   , /* The account title               */
-		acc_url      TEXT    NOT NULL       , /* The account profile URL         */
+		acc_arcoid     INTEGER NOT NULL UNIQUE, /* The account ID within Arcollect */
+		acc_platid     INTEGER NOT NULL       , /* The account ID on the platform  */
+		acc_platform   TEXT    NOT NULL       , /* The account platform            */
+		acc_name       TEXT                   , /* The account name                */
+		acc_title      TEXT                   , /* The account title               */
+		acc_url        TEXT    NOT NULL       , /* The account profile URL         */
+		acc_createdate INTEGER                , /* When the account was created on the platform */
+		acc_savedate   INTEGER NOT NULL       DEFAULT (strftime('%s','now')), /* When the account was saved in Arcollect */
 		PRIMARY KEY (acc_arcoid)
 	);
 	
@@ -103,11 +132,13 @@ BEGIN;
 	 * - `character` -- The tag is related to a specific character
 	 */
 	CREATE TABLE tags (
-		tag_arcoid   INTEGER NOT NULL UNIQUE, /* The tag ID within Arcollect */
-		tag_platid   INTEGER NOT NULL       , /* The tag ID on the platform  */
-		tag_platform TEXT    NOT NULL       , /* The tag platform            */
-		tag_title    TEXT                   , /* The tag title to display    */
-		tag_kind     TEXT                   , /* The kind of tag             */
+		tag_arcoid     INTEGER NOT NULL UNIQUE, /* The tag ID within Arcollect */
+		tag_platid     INTEGER NOT NULL       , /* The tag ID on the platform  */
+		tag_platform   TEXT    NOT NULL       , /* The tag platform            */
+		tag_title      TEXT                   , /* The tag title to display    */
+		tag_kind       TEXT                   , /* The kind of tag             */
+		tag_createdate INTEGER                , /* When the tag was created on the platform */
+		tag_savedate   INTEGER NOT NULL       DEFAULT (strftime('%s','now')), /* When the tag was saved in Arcollect */
 		PRIMARY KEY (tag_arcoid)
 	);
 	

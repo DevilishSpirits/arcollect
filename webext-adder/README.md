@@ -50,7 +50,9 @@ The `artwork` array contain objects you wants to add with some properties :
 * `desc` is the artwork description.
 * `source` is the artwork URL. Caution ! This is a key in the database, reformat `window.location` in a way that the same artwork always have the same URL.
 * `rating` is the artwork rating. See the schema explanation of `artworks` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/db-schema/init.sql).
-* `data` is the artwork file itself in base64 encoding or an `https://` link to the image.
+* `mimetype` is the artwork mimetype. Try to guess the best MIME type but something like the default `image/*` is fine. When missing, Arcollect put `image/*` as default (in a future release it may record the HTTP [`Content-Type`](https://developer.mozilla.org/docs/Web/HTTP/Headers/Content-Typehttps://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header).
+* `postdate` is the UNIX timestamp of when the artworks has been posted (optional).
+* `data` is the artwork file itself in base64 encoding or an `https://` link to the image (`http://` won't be supported).
 
 The `account` array contain users you might wants to add with some properties :
 * `id` is the user internal id on the platform. It should be an immutable numeric id if available, or `name`. This is a key in the database. For example on Twitter `1294737021714550784`, you can use text.

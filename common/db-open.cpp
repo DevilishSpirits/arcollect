@@ -50,11 +50,21 @@ std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 			std::cerr << "The schema_version query failed. Assume that the database is empty and bootstrap it. Error message is " << data_db->errmsg() << std::endl;
 		} break;
 	}
+	schema_version_stmt.reset(); // Avoid SQLITE_LOCKED upon upgrades
+	
+	// Handle schema_version
 	switch (schema_version) {
 		default: {
 			std::cerr << "Unknown schema_version " << schema_version << ". Continue but might expect bugs..." << std::endl;
 		} break;
 		case 1: {
+			// Upgrade the database using 'upgrade_v2.sql'
+			if (data_db->exec(Arcollect::db::schema::upgrade_v2.c_str())) {
+				std::cerr << "Failed to upgrade DB \"" << db_path << "\" (upgrade_v2.sql): " << data_db->errmsg() << " Rollback." << std::endl;
+				data_db->exec("ROLLBACK;");
+			}
+		}
+		case 2: {
 			// Up-to-date database. Do nothing
 		} break;
 		case 0: {
