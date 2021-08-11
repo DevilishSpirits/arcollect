@@ -98,7 +98,7 @@ endif
 
 # Add subdir (include order is important !)
 if enable_native_progs
-	subdir('db-schema')
+	subdir('sqls')
 	subdir('common')
 	subdir('desktop-app')
 	subdir('webext-adder')

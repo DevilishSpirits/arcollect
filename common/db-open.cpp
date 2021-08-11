@@ -16,7 +16,7 @@
  */
 #include "arcollect-db-open.hpp"
 #include "arcollect-paths.hpp"
-#include <arcollect-db-schema.hpp>
+#include <arcollect-sqls.hpp>
 #include <iostream>
 
 std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
@@ -31,7 +31,7 @@ std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 		std::abort();
 	}
 	// TODO Error checking
-	if (data_db->exec(Arcollect::db::schema::boot.c_str())) {
+	if (data_db->exec(Arcollect::db::sql::boot.c_str())) {
 		std::cerr << "Failed to run SQL boot script: " << data_db->errmsg() << std::endl;
 	}
 	// Check schema version and update the DB if required
@@ -59,7 +59,7 @@ std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 		} break;
 		case 1: {
 			// Upgrade the database using 'upgrade_v2.sql'
-			if (data_db->exec(Arcollect::db::schema::upgrade_v2.c_str())) {
+			if (data_db->exec(Arcollect::db::sql::upgrade_v2.c_str())) {
 				std::cerr << "Failed to upgrade DB \"" << db_path << "\" (upgrade_v2.sql): " << data_db->errmsg() << " Rollback." << std::endl;
 				data_db->exec("ROLLBACK;");
 			}
@@ -70,7 +70,7 @@ std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 		case 0: {
 			// Bootstrap the database
 			std::cerr << "Blank database, bootstrap it and wish you will find and enjoy artworks !" << std::endl;
-			if (data_db->exec(Arcollect::db::schema::init.c_str())) {
+			if (data_db->exec(Arcollect::db::sql::init.c_str())) {
 				std::cerr << "Failed to init DB \"" << db_path << "\": " << data_db->errmsg() << std::endl;
 			}
 		} break;

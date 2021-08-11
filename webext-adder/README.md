@@ -49,7 +49,7 @@ The `artwork` array contain objects you wants to add with some properties :
 * `title` is the artwork title.
 * `desc` is the artwork description.
 * `source` is the artwork URL. Caution ! This is a key in the database, reformat `window.location` in a way that the same artwork always have the same URL.
-* `rating` is the artwork rating. See the schema explanation of `artworks` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/db-schema/init.sql).
+* `rating` is the artwork rating. See the schema explanation of `artworks` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/sql/init.sql).
 * `mimetype` is the artwork mimetype. Try to guess the best MIME type but something like the default `image/*` is fine. When missing, Arcollect put `image/*` as default (in a future release it may record the HTTP [`Content-Type`](https://developer.mozilla.org/docs/Web/HTTP/Headers/Content-Typehttps://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header).
 * `postdate` is the UNIX timestamp of when the artworks has been posted (optional).
 * `data` is the artwork file itself in base64 encoding or an `https://` link to the image (`http://` won't be supported).
@@ -64,12 +64,12 @@ The `account` array contain users you might wants to add with some properties :
 The `tags` array contain tags you might wants to add with some properties :
 * `id` is the tag internal id on the platform. It should be immutable. This is a key in the database. It can be a string or an integer
 * `title` is the pretty tag title, if different from `id`.
-* `kind` is the tag kind. See the schema explanation of `tags` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/db-schema/init.sql).
+* `kind` is the tag kind. See the schema explanation of `tags` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/sql/init.sql).
 
 The `art_acc_link` array contain links with artworks and profiles :
 * `artwork` is the artwork `"source"` to link.
 * `account` is the account `"id"`.
-* `link` describre the type of link. Here `"account"` mean that this is the account which posted the artwork. Valid values are listed in the explanation of `art_acc_links` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/db-schema/init.sql).
+* `link` describre the type of link. Here `"account"` mean that this is the account which posted the artwork. Valid values are listed in the explanation of `art_acc_links` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/sql/init.sql).
 
 The `art_tag_link` array contain links with artworks and tags :
 * `artwork` is the artwork `"source"` to link.

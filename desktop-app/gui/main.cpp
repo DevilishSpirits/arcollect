@@ -27,8 +27,8 @@
 #include "modal.hpp"
 #include "slideshow.hpp"
 #include "window-borders.hpp"
-#include <arcollect-db-schema.hpp>
 #include <arcollect-debug.hpp>
+#include <arcollect-sqls.hpp>
 #include <iostream>
 #include <vector>
 #include <lcms2.h>
@@ -100,7 +100,7 @@ int Arcollect::gui::init(void)
 	// Set custom borders
 	Arcollect::gui::window_borders::init(window);
 	// Prepare preload_artworks stmt
-	if (Arcollect::database->prepare(Arcollect::db::schema::preload_artworks,preload_artworks_stmt) != SQLITE_OK)
+	if (Arcollect::database->prepare(Arcollect::db::sql::preload_artworks,preload_artworks_stmt) != SQLITE_OK)
 	std::cerr << "Failed to prepare preload_artworks SQL stmt: " << Arcollect::database->errmsg() << std::endl;
 	
 	// Init background
