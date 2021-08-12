@@ -24,11 +24,12 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <string_view>
 
 static std::fstream cpp;
 static std::fstream hpp;
 
-static void write_sql_file(const char* sql_file_path, const std::string &var_name)
+static void write_sql_file(const char* sql_file_path, const std::string_view &var_name)
 {
 	std::cerr << "Including \"" << sql_file_path << "\" as Arcollect::db::sql::" << var_name << std::endl;
 	char sql_file[8192];
@@ -45,69 +46,82 @@ static void write_sql_file(const char* sql_file_path, const std::string &var_nam
 	cpp << "const std::string Arcollect::db::sql::" << var_name << " = \"";
 	// Write and minify the file
 	const auto sql_size = sql.gcount();
-	bool wasblank = true;
-	bool instring = false;
+	bool needblank = false;
+	bool wasblank = false;
 	enum {
-		COMMENT_NO,     // We are not in a comment
+		NORMAL,         // We are in initial state (reading plain SQL)
 		COMMENT_BEGIN, // We read a '/', maybe the start of a comment
 		COMMENT_IN,   // We are in a comment
 		COMMENT_END, // We read a '*', maybe the end of the comment
-	} comment_state = COMMENT_NO;
+		STRING_IN,  // We are in a string
+	} state = NORMAL;
 	// case: on blanks chars
 	#define case_blank case ' ':case '\t':case '\n':case '\r'
 	for (auto i = 0; i < sql_size; i++)
-		switch (comment_state) {
+		switch (state) {
 			case COMMENT_BEGIN: {
 				// We may be an a comment start
 				if (sql_file[i] == '*') {
-					comment_state = COMMENT_IN;
+					state = COMMENT_IN;
 					continue;
-				} else cpp << '/'; // Not a comment, echo the suspended '/'
+				} else {
+					cpp << '/'; // Not a comment, echo the suspended '/'
+					wasblank = false;
+					needblank = false;
+				}
 			} // falltrough;
-			case COMMENT_NO: {
+			case NORMAL: {
+				bool will_wasblank = false;
 				switch (sql_file[i]) {
 					case '\'': {
-						// Check for \' escapes in strings
-						if (!instring || (sql_file[i-1] != '\\'))
-							instring = !instring; // We enter/leaved a string
-						cpp << sql_file[i];
-						wasblank = false;
-						comment_state = COMMENT_NO;
+						// String start
+						cpp << '\'';
+						state = STRING_IN;
 					} break;
 					case '/': {
 						// Maybe the start of a comment
-						// Note: Ignore "'image/*'" in string
-						if (instring) {
-							cpp << sql_file[i];
-							wasblank = false;
-						} else comment_state = COMMENT_BEGIN;
+						state = COMMENT_BEGIN;
 					} break;
 					case_blank: {
-						// Got a blank char, we collapses blanks
-						if (!wasblank) {
-							cpp << ' ';
-							wasblank = true;
-							comment_state = COMMENT_NO;
-						}
+						// Skip blank chars
+						state = NORMAL;
+						will_wasblank = true;
 					} break;
 					default: {
+						bool will_needblank = (sql_file[i] >= 0x80) // Non ASCII character
+							||((sql_file[i] >= 'a')&&(sql_file[i] <= 'z')) // [a-z]
+							||((sql_file[i] >= 'A')&&(sql_file[i] <= 'Z')) // [A-Z]
+							||((sql_file[i] >= '0')&&(sql_file[i] <= '9')) // [0-9]
+						;
 						// Normal char
+						if (needblank && wasblank && will_needblank)
+							cpp << ' '; // Put a blank if needed
 						cpp << sql_file[i];
-						wasblank = false;
-						comment_state = COMMENT_NO;
+						state = NORMAL;
+						needblank = will_needblank;
 					}
 				}
+				wasblank  = will_wasblank;
 			} break;
 			case COMMENT_IN: {
 				// Check for comment end
 				if (sql_file[i] == '*')
-					comment_state = COMMENT_END;
+					state = COMMENT_END;
 			} break;
 			case COMMENT_END: {
 				// Check for comment end
 				if (sql_file[i] == '/')
-					comment_state = COMMENT_NO;
-				else comment_state = COMMENT_IN;
+					state = NORMAL;
+				else state = COMMENT_IN;
+			} break;
+			case STRING_IN: {
+				cpp << sql_file[i];
+				// Check for string end (and not an escape)
+				if (sql_file[i-1] != '\\') {
+					state = NORMAL;
+					wasblank = false;
+					needblank = false;
+				}
 			} break;
 		}
 	// Finish the C++
@@ -128,12 +142,11 @@ int main(int argc, char** argv)
 	// Write SQL files
 	for (auto i = 3; argv[i]; i++) {
 		// File names are ../../dir/dir/var_name.sql
-		int var_name_length = -1;
+		int var_name_length = 0;
 		int pos;
-		for (pos = std::strlen(argv[i])-4; (pos > 0) && (argv[i][pos] != '/'); pos--)
+		for (pos = std::strlen(argv[i])-4; (pos > 0) && (argv[i][pos-1] != '/'); pos--)
 			var_name_length++;
-		std::string var_name(argv[i],pos+1,var_name_length);
-		write_sql_file(argv[i],var_name);
+		write_sql_file(argv[i],std::string_view(&argv[i][pos],var_name_length));
 	}
 	// Finish the header
 	hpp << "\t\t}\n\t}\n}\n";
