@@ -77,6 +77,15 @@ namespace Arcollect {
 					 */
 					LOADED,
 				} load_state = UNLOADED;
+				/** Artwork type
+				 *
+				 * It change the way artworks are shown.
+				 */
+				enum ArtworkType {
+					ARTWORK_TYPE_UNKNOWN,
+					ARTWORK_TYPE_IMAGE,
+					// TODO ARTWORK_TYPE_TEXT,
+				} artwork_type;
 			private:
 				friend artwork_loader; // For queued_for_load
 				artwork(Arcollect::db::artwork_id art_id);
@@ -86,6 +95,7 @@ namespace Arcollect {
 				std::string art_title;
 				std::string art_desc;
 				std::string art_source;
+				std::string art_mimetype;
 				SDL::Point  art_size{0,0};
 				Arcollect::config::Rating art_rating;
 				std::unordered_map<std::string,std::vector<std::shared_ptr<account>>> linked_accounts;
@@ -162,6 +172,10 @@ namespace Arcollect {
 				inline const std::string &source(void) {
 					db_sync();
 					return art_source;
+				}
+				inline const std::string &mimetype(void) {
+					db_sync();
+					return art_mimetype;
 				}
 				
 				const std::vector<std::shared_ptr<account>> &get_linked_accounts(const std::string &link);

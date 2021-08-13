@@ -162,13 +162,26 @@ void Arcollect::gui::view_slideshow::render(void)
 			(***collection_iterator).query_texture();
 		--*collection_iterator;
 		// Resize is size is unknow
-		if (!size_know)
-			resize(rect);
-		// Render artwork
-		if (size_know) {
-			viewport.set_corners(viewport_animation);
-			viewport.render({0,0});
-		}
+			switch (viewport.artwork->artwork_type) {
+				case db::artwork::ARTWORK_TYPE_IMAGE: {
+					if (!size_know)
+						resize(rect);
+					// Render artwork
+					if (size_know) {
+						viewport.set_corners(viewport_animation);
+						viewport.render({0,0});
+					}
+				} break;
+				case db::artwork::ARTWORK_TYPE_UNKNOWN: {
+					static const std::string main_msg(" artwork type is not supported.");
+					Arcollect::gui::font::Elements unknown_artwork_elements;
+					unknown_artwork_elements.initial_height = 22;
+					unknown_artwork_elements.initial_color  = {255,255,0,255};
+					unknown_artwork_elements << std::string_view(viewport.artwork->mimetype()) << (SDL_Color){255,255,255,255} << std::string_view(main_msg);
+					Arcollect::gui::font::Renderable unknown_artwork_text_cache(unknown_artwork_elements);
+					unknown_artwork_text_cache.render_tl(rect.x+(rect.w-unknown_artwork_text_cache.size().x)/2,rect.y+(rect.h-unknown_artwork_text_cache.size().y)/2);
+				} break;
+			}
 	} else {
 		static std::unique_ptr<Arcollect::gui::font::Renderable> no_artwork_text_cache;
 		if (!no_artwork_text_cache)
