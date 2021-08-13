@@ -29,6 +29,22 @@
 namespace Arcollect {
 	namespace gui {
 		namespace font {
+			struct FontSize {
+				int size;
+				inline operator decltype(size)&(void) {return size;}
+				inline operator const decltype(size)&(void) const {return size;}
+				inline FontSize& operator=(decltype(size) new_size) {
+					size = new_size;
+					return *this;
+				}
+				inline decltype(size) operator=(const FontSize& new_size) {
+					size = new_size.size;
+					return *this;
+				}
+				inline FontSize(decltype(size) size) : size(size) {}
+				FontSize(const FontSize&) = default;
+				static const FontSize normal;
+			};
 			/** Arcollect FreeType2 render flags
 			 */
 			static constexpr const auto ft_flags = 0;
@@ -42,20 +58,22 @@ namespace Arcollect {
 			 */
 			typedef std::variant<
 				std::string,      // Owned text
-				std::string_view // Referenced text
-				//SDL_Color,        // Text color change
+				std::string_view, // Referenced text
+				FontSize,         // Font size
+				SDL_Color        // Text color change
 			> Element;
 			enum ElementIndex: std::size_t {
 				ELEMENT_STRING,
 				ELEMENT_STRING_VIEW,
-				//ELEMENT_COLOR,
+				ELEMENT_FONT_SIZE,
+				ELEMENT_COLOR,
 			};
 			/** Vector of #Element
 			 *
 			 * Used to ease text building with operator<<. Also contain initial state.
 			 */
 			struct Elements: public std::vector<Element> {
-				int       initial_height = 12;
+				FontSize  initial_height = FontSize::normal;
 				SDL_Color initial_color = {255,255,255,255};
 				
 				template <typename T>

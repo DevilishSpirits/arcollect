@@ -10,6 +10,8 @@ extern SDL::Renderer *renderer;
 
 static FT_Library ft_library;
 
+const Arcollect::gui::font::FontSize Arcollect::gui::font::FontSize::normal(12);
+
 Arcollect::gui::font::Glyph::Glyph(hb_codepoint_t glyphid, int font_size)
 {
 	FT_Face face = query_face(font_size);
@@ -159,13 +161,21 @@ Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_
 	result_size{0,0}
 {
 	SDL::Point cursor{0,0};
+	FontSize font_size = elements.initial_height;
+	SDL_Color color    = elements.initial_color;
 	for (const Element& element: elements) {
 		switch (element.index()) {
 			case ELEMENT_STRING: {
-				append_text(std::get<std::string>(element),cursor,wrap_width,elements.initial_height,elements.initial_color);
+				append_text(std::get<std::string>(element),cursor,wrap_width,font_size,color);
 			} break;
 			case ELEMENT_STRING_VIEW: {
-				append_text(std::get<std::string_view>(element),cursor,wrap_width,elements.initial_height,elements.initial_color);
+				append_text(std::get<std::string_view>(element),cursor,wrap_width,font_size,color);
+			} break;
+			case ELEMENT_FONT_SIZE: {
+				font_size = std::get<FontSize>(element);
+			} break;
+			case ELEMENT_COLOR: {
+				color = std::get<SDL_Color>(element);
 			} break;
 		}
 	}
