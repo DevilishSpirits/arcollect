@@ -179,8 +179,17 @@ void Arcollect::db::artwork::queue_for_load(void)
 }
 SDL::Surface *Arcollect::db::artwork::load_surface(void) const
 {
-	const std::filesystem::path path = Arcollect::path::artwork_pool / std::to_string(art_id);
-	return (SDL::Surface*)IMG_Load(path.string().c_str());
+	switch (artwork_type) {
+		case ARTWORK_TYPE_IMAGE: {
+			const std::filesystem::path path = Arcollect::path::artwork_pool / std::to_string(art_id);
+			return (SDL::Surface*)IMG_Load(path.string().c_str());
+		} break;
+		default: {
+			// Load the thumbnail
+			const std::filesystem::path path = Arcollect::path::artwork_pool / (std::to_string(art_id)+".thumbnail");
+			return (SDL::Surface*)IMG_Load(path.string().c_str());
+		} break;
+	}
 }
 void Arcollect::db::artwork::texture_loaded(std::unique_ptr<SDL::Texture> &texture)
 {
