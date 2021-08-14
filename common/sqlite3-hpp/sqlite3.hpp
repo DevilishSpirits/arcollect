@@ -103,6 +103,13 @@ namespace SQLite3 {
 				ppStmt.reset(stmt);
 			return code;
 		}
+		inline int prepare(const char *zSql, int nByte, std::unique_ptr<SQLite3::stmt> &ppStmt, const char *&pzTail) {
+			SQLite3::stmt *stmt;
+			int code = this->prepare(zSql,nByte,stmt,pzTail);
+			if (code == SQLite3::OK)
+				ppStmt.reset(stmt);
+			return code;
+		}
 		
 		int exec(const char *sql, int (*callback)(void*,int,char**,char**) = NULL, void *callback_data = NULL, char **errmsg = NULL) {
 			return sqlite3_exec((::sqlite3*)this,sql,callback,callback_data,errmsg);
