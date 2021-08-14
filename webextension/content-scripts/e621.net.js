@@ -125,6 +125,7 @@ function save_artwork()
 			'desc': description,
 			'source': source,
 			'rating': rating,
+			'mimetype': arcollect_mime_by_href_ext(imageDownloadLink.children[0].href),
 			'data': imageDownloadLink.children[0].href
 		}],
 		'accounts': accounts,
