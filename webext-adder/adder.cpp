@@ -577,6 +577,10 @@ std::string handle_json_dom(rapidjson::Document &json_dom)
 	}
 	// Perform addition
 	std::optional<std::string> reason = do_add(json_dom);
+	// Destroy SELECT transactions to unlock the database
+	find_artwork_stmt.reset();
+	find_account_stmt.reset();
+	find_tag_stmt.reset();
 	// Commit or rollback
 	if (reason)
 		db->exec("ROLLBACK;"); // TODO Check errors
