@@ -126,6 +126,7 @@ function save_artwork()
 			'source': source,
 			'rating': rating,
 			'mimetype': arcollect_mime_by_href_ext(imageDownloadLink.children[0].href),
+			'postdate': (new Date(document.querySelector('meta[itemprop=uploadDate]').content)).getTime()/1000,
 			'data': imageDownloadLink.children[0].href
 		}],
 		'accounts': accounts,
