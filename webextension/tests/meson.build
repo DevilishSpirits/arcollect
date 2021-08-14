@@ -1,6 +1,7 @@
 
 common_test_deps = [
 	webext_adder_exe,
+	webextension_target,
 ]
 
 webext_test_env  = environment({
