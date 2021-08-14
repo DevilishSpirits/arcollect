@@ -125,6 +125,7 @@ function save_artwork()
 			'desc': description,
 			'source': source,
 			// TODO 'rating': rating,
+			'postdate': new Date(deviationMeta.parentElement.getElementsByTagName('time')[0].dateTime).getTime(),
 			'data': artworkImg.src
 		}],
 		'accounts': accountJson,
