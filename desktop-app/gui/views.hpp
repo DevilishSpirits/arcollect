@@ -55,7 +55,8 @@ namespace Arcollect {
 				/** Size of the artwork at default zoom (100%)
 				 */
 				SDL::Point artwork_zoom1;
-				// The main artwork viewport
+				
+				// ARTWORK_TYPE_IMAGE stuff
 				artwork_viewport viewport;
 				/** Special SDL::Rect for animation purpose
 				 *
@@ -82,6 +83,9 @@ namespace Arcollect {
 				SDL::Point viewport_delta;
 				void update_zoom(void);
 				void zoomat(float delta, SDL::Point point);
+				
+				// ARTWORK_TYPE_TEXT stuff
+				std::unique_ptr<gui::font::Renderable> text_renderable;
 				
 				bool size_know = false;
 				std::unique_ptr<artwork_collection::iterator> collection_iterator;

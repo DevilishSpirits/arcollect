@@ -18,6 +18,7 @@
 #include <sqlite3.hpp>
 #include "../sdl2-hpp/SDL.hpp"
 #include "../config.hpp"
+#include "../gui/font.hpp"
 #include <cstddef>
 #include <list>
 #include <memory>
@@ -84,7 +85,7 @@ namespace Arcollect {
 				enum ArtworkType {
 					ARTWORK_TYPE_UNKNOWN,
 					ARTWORK_TYPE_IMAGE,
-					// TODO ARTWORK_TYPE_TEXT,
+					ARTWORK_TYPE_TEXT,
 				} artwork_type;
 			private:
 				friend artwork_loader; // For queued_for_load
@@ -100,7 +101,13 @@ namespace Arcollect {
 				Arcollect::config::Rating art_rating;
 				std::unordered_map<std::string,std::vector<std::shared_ptr<account>>> linked_accounts;
 				std::unique_ptr<SDL::Texture> text;
+				gui::font::Elements artwork_text_elements;
 				std::list<std::reference_wrapper<artwork>>::iterator last_rendered_iterator;
+				union {
+					enum {
+						ARTWORK_TYPE_TEXT_PLAIN,
+					} text;
+				} artwork_subtype;
 			public:
 				/** Return wether texture is loaded
 				 * \return true is the texture in loaded in memory
@@ -135,6 +142,7 @@ namespace Arcollect {
 				 * It free texture data and remove myself from #last_rendered list.
 				 */
 				void texture_unload(void);
+				const gui::font::Elements &query_font_elements(void);
 				/** Query the texture
 				 * \return The texture or NULL if it is not loaded right-now.
 				 * 

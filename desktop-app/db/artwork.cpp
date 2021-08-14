@@ -23,6 +23,7 @@
 #include <arcollect-sqls.hpp>
 #include <OpenImageIO/imageio.h>
 #include <iostream>
+#include <fstream>
 #define CMSREGISTER // Remove warnings about 'register' keyword
 #include "lcms2.h"
 #include <cstdlib>
@@ -241,6 +242,24 @@ std::unique_ptr<SDL::Texture> &Arcollect::db::artwork::query_texture(void)
 	
 	return text;
 }
+
+const Arcollect::gui::font::Elements &Arcollect::db::artwork::query_font_elements(void)
+{
+	if (artwork_text_elements.empty()) {
+		// Load the artwork
+		const std::filesystem::path path = Arcollect::path::artwork_pool / std::to_string(art_id);
+		switch (artwork_subtype.text) {
+			case artwork_subtype.ARTWORK_TYPE_TEXT_PLAIN: {
+				// TODO Use charset from the MIME type. Assume all UTF-8 for now.
+				std::string file_content;
+				std::getline(std::ifstream(path),file_content,'\0');
+				artwork_text_elements << std::move(file_content);
+			} break;
+		}
+	}
+	return artwork_text_elements;
+}
+
 int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
 {
 	std::unique_ptr<SDL::Texture> &text = query_texture();
@@ -341,7 +360,20 @@ void Arcollect::db::artwork::db_sync(void)
 			 &&(art_mimetype[4] == 'e')
 			 &&(art_mimetype[5] == '/'))
 				artwork_type = ARTWORK_TYPE_IMAGE;
-			else artwork_type = ARTWORK_TYPE_UNKNOWN;
+			else if ((art_mimetype.size() >= 10)
+			 &&(art_mimetype[0] == 't')
+			 &&(art_mimetype[1] == 'e')
+			 &&(art_mimetype[2] == 'x')
+			 &&(art_mimetype[3] == 't')
+			 &&(art_mimetype[4] == '/')
+			 &&(art_mimetype[5] == 'p')
+			 &&(art_mimetype[6] == 'l')
+			 &&(art_mimetype[7] == 'a')
+			 &&(art_mimetype[8] == 'i')
+			 &&(art_mimetype[9] == 'n')) {
+				artwork_type = ARTWORK_TYPE_TEXT;
+				artwork_subtype.text = artwork_subtype.ARTWORK_TYPE_TEXT_PLAIN;
+			} else artwork_type = ARTWORK_TYPE_UNKNOWN;
 			
 			data_version = Arcollect::data_version;
 		} else {

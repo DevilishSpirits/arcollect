@@ -59,6 +59,9 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 		viewport_animation.val_origin = viewport_animation.val_target = rect;
 		// Reset cached title render
 		title_text_cache.reset();
+		// Reset cached text render
+		text_renderable.reset();
+		
 		viewport_delta.x = rect.x;
 		viewport_delta.y = rect.y;
 		artwork_zoom1.x = rect.w;
@@ -171,6 +174,15 @@ void Arcollect::gui::view_slideshow::render(void)
 						viewport.set_corners(viewport_animation);
 						viewport.render({0,0});
 					}
+				} break;
+				case db::artwork::ARTWORK_TYPE_TEXT: {
+					int border = rect.w/10;
+					if (!text_renderable) {
+						Arcollect::gui::font::Elements elements = viewport.artwork->query_font_elements();
+						elements.initial_height = Arcollect::config::writing_font_size;
+						text_renderable = std::make_unique<Arcollect::gui::font::Renderable>(elements,rect.w-border-border);
+					}
+					text_renderable->render_tl(border,border);
 				} break;
 				case db::artwork::ARTWORK_TYPE_UNKNOWN: {
 					static const std::string main_msg(" artwork type is not supported.");
