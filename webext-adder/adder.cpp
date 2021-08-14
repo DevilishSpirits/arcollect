@@ -163,6 +163,7 @@ struct new_artwork {
 	sqlite_int64 art_postdate;
 	sqlite_int64 art_id;
 	const char* data;
+	const char* thumbnail;
 	static constexpr char* default_art_mimetype = "image/*";
 	new_artwork(rapidjson::Value::ConstValueIterator iter) : 
 		art_title(json_string(iter,"title")),
@@ -172,6 +173,7 @@ struct new_artwork {
 		art_postdate(json_int64(iter,"postdate",0)),
 		art_mimetype(json_string(iter,"mimetype",default_art_mimetype)),
 		art_id(-1),
+		thumbnail(json_string(iter,"thumbnail")),
 		data(iter->operator[]("data").GetString())
 	{
 	};
@@ -379,6 +381,11 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 				auto saveto_res = data_saveto(artwork.second.data,Arcollect::path::artwork_pool / std::to_string(artwork.second.art_id),artwork.second.art_source);
 				if (saveto_res)
 					return saveto_res;
+				if (artwork.second.thumbnail) {
+					saveto_res = data_saveto(artwork.second.thumbnail,Arcollect::path::artwork_pool / (std::to_string(artwork.second.art_id)+".thumbnail"),artwork.second.art_source);
+				if (saveto_res)
+					return saveto_res;
+				}
 			} break;
 			case SQLITE_DONE: {
 			} break;

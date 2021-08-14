@@ -417,6 +417,7 @@ int Arcollect::db::artwork::db_delete(void)
 	}
 	// Erase on disk
 	std::filesystem::remove(Arcollect::path::artwork_pool / std::to_string(art_id));
+	std::filesystem::remove(Arcollect::path::artwork_pool / (std::to_string(art_id)+".thumbnail"));
 	std::cerr << "Artwork \"" << art_title << "\" (" << art_id << ") has been deleted" << std::endl;
 	// Update data_version
 	Arcollect::local_data_version_changed();

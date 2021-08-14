@@ -16,7 +16,8 @@ When adding artwork, send the plain artwork with this kind of JSON :
 		"desc": "My sample warmup for the morning.",
 		"source": "https://example.net/art/123456/",
 		"rating": 0,
-		"data": "<... base64 data ...>"
+		"data": "<... base64 data ...>",
+		"thumbnail": "<... base64 data ...>"
 	}],
 	"accounts": [{
 		"id": 4213,
@@ -53,6 +54,7 @@ The `artwork` array contain objects you wants to add with some properties :
 * `mimetype` is the artwork mimetype. Try to guess the best MIME type but something like the default `image/*` is fine. When missing, Arcollect put `image/*` as default (in a future release it may record the HTTP [`Content-Type`](https://developer.mozilla.org/docs/Web/HTTP/Headers/Content-Typehttps://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header).
 * `postdate` is the UNIX timestamp of when the artworks has been posted (optional).
 * `data` is the artwork file itself in base64 encoding or an `https://` link to the image (`http://` won't be supported).
+* `thumbnail` is the image thumbnail to show for non image type artworks. Same format as `data`.
 
 The `account` array contain users you might wants to add with some properties :
 * `id` is the user internal id on the platform. It should be an immutable numeric id if available, or `name`. This is a key in the database. For example on Twitter `1294737021714550784`, you can use text.
