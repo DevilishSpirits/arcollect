@@ -38,6 +38,29 @@ function findElementByText(collection, text)
 	return null;
 }
 
+
+/** Get the #submissionImg
+ *
+ * This element allow me to get the title (the "alt") and a thumbnail.
+ */
+let submissionImg = document.getElementById('submissionImg');
+/** Extract artwork
+ *
+ * To ensure maximum resolution, we search for the <a>Download</a> button that
+ * link to the highest available artwork.
+ */
+let artworkLink = undefined;
+let artworkMIME = undefined;
+let downloadButtons = document.getElementsByClassName("button standard mobile-fix")
+for (i = 0; i < downloadButtons.length; i++)
+	if (downloadButtons[i].text == 'Download') {
+		artworkMIME = arcollect_mime_by_href_ext(downloadButtons[i].href);
+		if (artworkMIME != undefined) {
+			artworkLink = downloadButtons[i].href;
+			break;
+		}
+	}
+
 /** Save the artwork
  */
 function save_artwork()
@@ -144,29 +167,6 @@ function save_artwork()
 	 */
 	let description = document.getElementsByClassName('submission-description user-submitted-links')[0].textContent;
 	
-	/** Get the #submissionImg
-	 *
-	 * This element allow me to get the title (the "alt") and a fallback artwork
-	 * link.
-	 */
-	let submissionImg = document.getElementById('submissionImg');
-	
-	/** Extract artwork
-	 *
-	 * To ensure maximum resolution, we search for the <a>Download</a> button that
-	 * link to the highest available artwork.
-	 */
-	let artworkLink = submissionImg.src;
-	let downloadButtons = document.getElementsByClassName("button standard mobile-fix")
-	for (i = 0; i < downloadButtons.length; i++)
-		if (downloadButtons[i].text == 'Download') {
-			let maybeArtworkLink = downloadButtons[i].href;
-			if (maybeArtworkLink.endsWith('jpg') || maybeArtworkLink.endsWith('png') || maybeArtworkLink.endsWith('gif')) {
-				artworkLink = downloadButtons[i].href;
-				break;
-			}
-		}
-	
 	// Build the JSON
 	submit_json = {
 		'platform': 'furaffinity.net',
@@ -175,6 +175,7 @@ function save_artwork()
 			'desc': description,
 			'source': source,
 			'rating': rating,
+			'mimetype': artworkMIME,
 			'data': artworkLink
 		}],
 		'accounts': accountJson,
@@ -211,5 +212,6 @@ function make_save_ui() {
 	} else console.log('Arcollect error ! Found '+button_nav.length+' element(s) with class "aligncenter auto_link hideonfull1 favorite-nav".');
 }
 
-// TODO Check if we support this kind of button
-make_save_ui();
+if (artworkMIME != undefined)
+	make_save_ui();
+else console.warn('Arcollect does not support this artwork type.')
