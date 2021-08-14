@@ -78,6 +78,11 @@ namespace Arcollect {
 				
 				template <typename T>
 				inline Elements& operator<<(const T value) {
+					emplace_back(std::move(value));
+					return *this;
+				}
+				// Allow stealing of std::string trough std::move constructs
+				inline Elements& operator<<(std::string &&value) {
 					emplace_back(value);
 					return *this;
 				}
