@@ -81,6 +81,26 @@ String.prototype.arcollect_tag = function() {
 	return arcollect_normalize_tag(this)
 }
 
+/** File extension to MIME type dictionary
+ *
+ * Only contain supported formats.
+ */
+arcollect_mime_by_ext = {
+	'gif' : 'image/gif',
+	'jpe' : 'image/jpeg',
+	'jpg' : 'image/jpeg',
+	'jpeg': 'image/jpeg',
+	'png' : 'image/png',
+}
+/** File extension to MIME type dictionary
+ * \return the MIME type or undefined if not supported by Arcollect.
+ */
+function arcollect_mime_by_href_ext(href)
+{
+	href = href.split('#')[0].split('?')[0].split('.');
+	return arcollect_mime_by_ext[href[href.length-1]];
+}
+
 // Answer the associated Promise
 arcollect__port.onMessage.addListener(function(msg) {
 	// Get the transaction id
