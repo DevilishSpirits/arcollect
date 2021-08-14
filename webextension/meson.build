@@ -4,6 +4,7 @@ webext_zip_cmds = [
 	'@OUTPUT@'
 ]
 webext_zip_depend_files = []
+webext_zip_depends      = []
 webext_srcs = [
 	'manifest.json',
 	'background.js',
@@ -15,13 +16,14 @@ webext_content_scripts = [
 	'e621.net.js',
 	'furaffinity.net.js',
 ]
+python_copy_command = [find_program('python3'),'-c','import shutil\nimport sys\nshutil.copyfile(sys.argv[1],sys.argv[2])\n','@INPUT@','@OUTPUT@']
 subdir('content-scripts')
 foreach file: webext_srcs
 	webext_zip_cmds += file
 	webext_zip_depend_files += configure_file(output: file, input: file, configuration: config_h)
 endforeach
 
-webextension_target = custom_target('arcollect.zip', output : 'arcollect.zip', command : webext_zip_cmds, build_by_default: true)
+webextension_target = custom_target('arcollect.zip', output : 'arcollect.zip', command : webext_zip_cmds, depend_files: webext_zip_depend_files, depends: webext_zip_depends, build_by_default: true)
 
 # Test with web-ext lint
 prog_web_ext = find_program('web-ext', required: false)
