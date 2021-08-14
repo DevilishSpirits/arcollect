@@ -25,6 +25,7 @@ Arcollect::config::Param<int> Arcollect::config::current_rating(Arcollect::confi
 Arcollect::config::Param<int> Arcollect::config::image_memory_limit(2048);
 Arcollect::config::Param<int> Arcollect::config::littlecms_intent(INTENT_PERCEPTUAL);
 Arcollect::config::Param<int> Arcollect::config::littlecms_flags(cmsFLAGS_HIGHRESPRECALC|cmsFLAGS_BLACKPOINTCOMPENSATION);
+Arcollect::config::Param<int> Arcollect::config::writing_font_size(18);
 
 void Arcollect::config::read_config(void)
 {
@@ -36,6 +37,7 @@ void Arcollect::config::read_config(void)
 	image_memory_limit.value = reader.GetInteger("arcollect","image_memory_limit",image_memory_limit.default_value);
 	littlecms_flags.value = reader.GetInteger("arcollect","littlecms_flags",littlecms_flags.default_value);
 	littlecms_intent.value = reader.GetInteger("arcollect","littlecms_intent",littlecms_intent.default_value);
+	writing_font_size.value = reader.GetInteger("arcollect","writing_font_size",writing_font_size.default_value);
 }
 void Arcollect::config::write_config(void)
 {
@@ -88,5 +90,10 @@ void Arcollect::config::write_config(void)
 	       << ";  See LittleCMS API documentation for more flags.\n"
 	       << "; Default is " << littlecms_flags.default_value << "\n"
 	       << "littlecms_flags=" << littlecms_flags << '\n'
+	       << "\n"
+	       << "; writing_font_size - Font height of textual artworks in pixels\n"
+	       << "; This is the text height in pixels used to render text artworks.\n"
+	       << "; Default is " << writing_font_size.default_value << "\n"
+	       << "writing_font_size=" << writing_font_size << '\n'
 	;
 }

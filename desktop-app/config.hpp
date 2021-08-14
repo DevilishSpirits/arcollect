@@ -115,5 +115,11 @@ namespace Arcollect {
 		 * This is the flags passed to LittleCMS cmsCreateTransform() call.
 		 */
 		extern Param<int> littlecms_flags;
+		
+		/** writing_font_size - Font height of textual artworks in pixels
+		 *
+		 * This is the text height in pixels used to render text artworks.
+		 */
+		extern Param<int> writing_font_size;
 	}
 }
