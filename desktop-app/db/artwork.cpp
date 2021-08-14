@@ -20,6 +20,7 @@
 #include "account.hpp"
 #include "db.hpp"
 #include <arcollect-paths.hpp>
+#include <arcollect-sqls.hpp>
 #include <OpenImageIO/imageio.h>
 #include <iostream>
 #define CMSREGISTER // Remove warnings about 'register' keyword
@@ -376,50 +377,29 @@ int Arcollect::db::artwork::db_delete(void)
 		}
 	}
 	std::unique_ptr<SQLite3::stmt> stmt;
-	// Delete art_acc_links references
-	if (database->prepare("DELETE FROM art_acc_links WHERE art_artid = ?;",stmt) != SQLITE_OK) {
-		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to prepare \"DELETE FROM art_acc_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
-		return SQLITE_ERROR;
-	}
-	if (stmt->bind(1,art_id) != SQLITE_OK) {
-		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to bind art_artid in \"DELETE FROM art_acc_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
-		return SQLITE_ERROR;
-	}
-	if (stmt->step() != SQLITE_DONE) {
-		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to step \"DELETE FROM art_acc_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
-		return SQLITE_ERROR;
+	
+	// Run all substeps from 'delete_artwork.sql'
+	const char *zSql = Arcollect::db::sql::delete_artwork.c_str();
+	int substep = 0;
+	while (*zSql) {
+		substep++;
+		if (database->prepare(zSql,-1,stmt,zSql) != SQLITE_OK) {
+			std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to prepare substep " << substep << ": " << database->errmsg() << ". Rollback." << std::endl;
+			database->exec("ROLLBACK;");
+			return SQLITE_ERROR;
+		}
+		if (stmt->bind(1,art_id) != SQLITE_OK) {
+			std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to bind art_artid at substep " << substep << ": " << database->errmsg() << ". Rollback." << std::endl;
+			database->exec("ROLLBACK;");
+			return SQLITE_ERROR;
+		}
+		if (stmt->step() != SQLITE_DONE) {
+			std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to run substep " << substep << ": " << database->errmsg() << ". Rollback." << std::endl;
+			database->exec("ROLLBACK;"); // TODO Error checkings
+			return SQLITE_ERROR;
+		}
 	}
 	
-	// Delete art_tag_links references
-	if (database->prepare("DELETE FROM art_tag_links WHERE art_artid = ?;",stmt) != SQLITE_OK) {
-		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to prepare \"DELETE FROM art_tag_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
-		return SQLITE_ERROR;
-	}
-	if (stmt->bind(1,art_id) != SQLITE_OK) {
-		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to bind art_artid in \"DELETE FROM art_tag_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
-		return SQLITE_ERROR;
-	}
-	if (stmt->step() != SQLITE_DONE) {
-		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to step \"DELETE FROM art_tag_links WHERE art_artid = ?;\": " << database->errmsg() << ". Abort." << std::endl;
-		return SQLITE_ERROR;
-	}
-	
-	// Delete in artworks table
-	if (database->prepare("DELETE FROM artworks WHERE art_artid = ?;",stmt) != SQLITE_OK) {
-		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to prepare \"DELETE FROM artworks WHERE art_artid = ?;\": " << database->errmsg() << ". Rollback." << std::endl;
-		database->exec("ROLLBACK;"); // TODO Error checkings
-		return SQLITE_ERROR;
-	}
-	if (stmt->bind(1,art_id) != SQLITE_OK) {
-		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to bind art_artid in \"DELETE FROM artworks WHERE art_artid = ?;\": " << database->errmsg() << ". Rollback." << std::endl;
-		database->exec("ROLLBACK;"); // TODO Error checkings
-		return SQLITE_ERROR;
-	}
-	if (stmt->step() != SQLITE_DONE) {
-		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to step \"DELETE FROM artworks WHERE art_artid = ?;\": " << database->errmsg() << ". Rollback." << std::endl;
-		database->exec("ROLLBACK;"); // TODO Error checkings
-		return SQLITE_ERROR;
-	}
 	// Commit changes
 	if (database->exec("COMMIT;") != SQLITE_OK) {
 		std::cerr << "Deleting \"" << art_title << "\" (" << art_id << "), failed to commit changes: " << database->errmsg() << ". Rollback." << std::endl;

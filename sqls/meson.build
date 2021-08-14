@@ -3,6 +3,7 @@ db_schema_src = [
 	'adder_insert_artwork.sql',
 	'adder_insert_tag.sql',
 	'boot.sql',
+	'delete_artwork.sql',
 	'init.sql',
 	'preload_artworks.sql',
 	'upgrade_v2.sql',
