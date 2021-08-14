@@ -59,9 +59,9 @@ static const char* json_string(rapidjson::Value::ConstValueIterator iter, const 
 
 static std::optional<std::string> data_saveto(const char* data_string, std::filesystem::path target, const char* referer)
 {
-	// Check for "https://" schema (and it take 8 bytes exactly...)
-	// TODO FIXME Check data_string length !!!
-	if (*reinterpret_cast<const uint64_t*>(data_string) == *reinterpret_cast<const uint64_t*>("https://")) {
+	// Check for "https://" schema
+	const static char https_prefix[] = {'h','t','t','p','s',':','/','/'}; // "https://" without the '\0'
+	if (strncmp(https_prefix,data_string,sizeof(https_prefix)) == 0) {
 		// TODO Error handling
 		char curl_errorbuffer[CURL_ERROR_SIZE];
 		std::optional<std::string> result;
@@ -69,7 +69,7 @@ static std::optional<std::string> data_saveto(const char* data_string, std::file
 		auto easyhandle = curl_easy_init(); 
 		curl_easy_setopt(easyhandle,CURLOPT_URL,data_string);
 		curl_easy_setopt(easyhandle,CURLOPT_WRITEDATA,file);
-		curl_easy_setopt(easyhandle,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS); // FIXME Should I be HTTPS-only ?
+		curl_easy_setopt(easyhandle,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS);
 		curl_easy_setopt(easyhandle,CURLOPT_REFERER,referer);
 		curl_easy_setopt(easyhandle,CURLOPT_USERAGENT,user_agent.c_str());
 		curl_easy_setopt(easyhandle,CURLOPT_ERRORBUFFER,curl_errorbuffer);
