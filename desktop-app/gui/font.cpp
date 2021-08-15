@@ -95,7 +95,7 @@ void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& te
 	hb_shape(font,buf,NULL,0);
 	hb_font_destroy(font);
 	// Prepare glyphs process
-	const auto glyph_base = glyphs.size();
+	auto glyph_base = glyphs.size();
 	unsigned int glyph_count;
 	hb_glyph_info_t *glyph_infos    = hb_buffer_get_glyph_infos(buf, &glyph_count);
 	hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
@@ -109,18 +109,18 @@ void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& te
 		glyph_pos[i].y_advance >>= 6;
 		// Wrap text (but not if we already started a new_line, the cluster won't fit anyway)
 		if ((((cursor.x + glyph_pos[i].x_advance) > wrap_width) && (glyph_info.cluster != glyph_infos[glyphi_line_start].cluster))) {
-			// Search back to a safe char to wrap
-			unsigned int wrap_char;
-			for (wrap_char = glyph_info.cluster; wrap_char != glyph_infos[glyphi_line_start].cluster; wrap_char--)
-				if ((text[wrap_char] == U' ')||(text[wrap_char] == U'\t'))
-					break;
-			wrap_char++;
-			// Search back to the glyph index to wrap
+			// Search backward to a safe cluster and char to wrap
+			bool nobreak_found = true;
 			unsigned int i_newline;
-			for (i_newline = i; i_newline > glyph_infos[wrap_char].cluster; i_newline--);
+			for (i_newline = i; i_newline && nobreak_found; i_newline--)
+				for (unsigned int char_i = glyph_infos[i_newline].cluster; char_i >= glyph_infos[i_newline-1].cluster; char_i--)
+					if ((text[char_i] == U' ')||(text[char_i] == U'\t')) {
+						nobreak_found = false;
+						break;
+					}
 			// Replace glyphs
 			cursor.x = 0;
-			for (; i_newline < i; i_newline++) {
+			for (i_newline++; i_newline < i; i_newline++) {
 				glyphs[glyph_base+i_newline].position.x  = cursor.x;
 				glyphs[glyph_base+i_newline].position.y += font_size;
 				cursor.x += glyph_pos[i_newline].x_advance;
@@ -129,7 +129,7 @@ void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& te
 			cursor.y += font_size;
 		} else if (glyph_info.cluster >= clusteri_line_end) {
 			// We are on a line break '\n'
-			cursor.x = 0;
+			cursor.x = -glyph_pos[i].x_advance;
 			cursor.y += font_size;
 			clusteri_line_end = text.find(U'\n',clusteri_line_end+1); // Find the next line break
 		}
@@ -146,7 +146,7 @@ void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& te
 			// Update bound
 			result_size.x = std::max(result_size.x,static_cast<int>(cursor.x+glyph.delta.x+glyph.bitmap.width));
 			result_size.y = std::max(result_size.y,static_cast<int>(cursor.y+glyph.delta.y+glyph.bitmap.rows));
-		}
+		} else glyph_base--;
 		// Update cursor
 		cursor.x += glyph_pos[i].x_advance;
 		cursor.y += glyph_pos[i].y_advance;
