@@ -96,9 +96,8 @@ namespace Arcollect {
 			 *       the FT_Bitmap. Drop the bitmap in a texture instead.
 			 */
 			struct Glyph {
-				// TODO SDL::Texture* text;
-				FT_Bitmap bitmap;
-				SDL::Point delta;
+				SDL::Texture* text;
+				SDL::Rect coordinates;
 				
 				struct key {
 					hb_codepoint_t glyphid;

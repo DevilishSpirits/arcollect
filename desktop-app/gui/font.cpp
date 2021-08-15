@@ -17,31 +17,34 @@ Arcollect::gui::font::Glyph::Glyph(hb_codepoint_t glyphid, int font_size)
 	FT_Face face = query_face(font_size);
 	// Render glyph
 	FT_Load_Glyph(face,glyphid,ft_flags|FT_LOAD_RENDER);
-	// Set delta
-	delta.x = face->glyph->bitmap_left;
-	delta.y = font_size - face->glyph->bitmap_top;
 	// Copy bitmap
-	FT_Bitmap_Init(&bitmap);
-	FT_Bitmap_Copy(ft_library,&face->glyph->bitmap,&bitmap);
+	FT_Bitmap &bitmap = face->glyph->bitmap;
+	SDL::Surface* surf = (SDL::Surface*)SDL_CreateRGBSurfaceWithFormat(0,bitmap.width,bitmap.rows,32,SDL_PIXELFORMAT_RGBA32);
+	for (unsigned int y = 0; y < bitmap.rows; y++) {
+		char *pixels_line = &reinterpret_cast<char*>(surf->pixels)[surf->pitch*y];
+		for (unsigned int x = 0; x < bitmap.width; x++)
+			reinterpret_cast<Uint32*>(pixels_line)[x] = SDL_MapRGBA(surf->format,255,255,255,bitmap.buffer[y*bitmap.pitch+x]);
+	}
+	text = SDL::Texture::CreateFromSurface(renderer,surf);
+	delete surf;
+	// Set coordinates
+	coordinates.x = face->glyph->bitmap_left;
+	coordinates.y = font_size - face->glyph->bitmap_top;
+	coordinates.w = bitmap.width;
+	coordinates.h = bitmap.rows;
 }
 Arcollect::gui::font::Glyph::~Glyph(void) {
-	FT_Bitmap_Done(ft_library,&bitmap);
+	delete text;
 }
 
 void Arcollect::gui::font::Glyph::render(int origin_x, int origin_y, SDL_Color color) const
 {
-	origin_x += delta.x;
-	origin_y += delta.y;
-	switch (bitmap.pixel_mode) {
-		case FT_PIXEL_MODE_GRAY: {
-			for (unsigned int x = 0; x < bitmap.width; x++)
-				for (unsigned int y = 0; y < bitmap.rows; y++) {
-					unsigned char value = bitmap.buffer[y*bitmap.pitch+x];
-					renderer->SetDrawColor(color.r,color.g,color.b,(value/255.f)*(color.a/255.f)*255);
-					SDL_RenderDrawPoint((SDL_Renderer*)renderer,origin_x + x, origin_y + y);
-				}
-		} break;
-	}
+	SDL::Rect rect = coordinates;
+	rect.x += origin_x;
+	rect.y += origin_y;
+	SDL_SetTextureColorMod((SDL_Texture*)text,color.r,color.g,color.b);
+	SDL_SetTextureAlphaMod((SDL_Texture*)text,color.a);
+	renderer->Copy(text,NULL,&rect);
 }
 std::unordered_map<Arcollect::gui::font::Glyph::key,std::unique_ptr<Arcollect::gui::font::Glyph>,Arcollect::gui::font::Glyph::key::hash> Arcollect::gui::font::Glyph::glyph_cache;
 
@@ -144,8 +147,8 @@ void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& te
 			auto &glyph = Glyph::query(glyph_info.codepoint,font_size);
 			glyphs.emplace_back(cursor,glyph,color);
 			// Update bound
-			result_size.x = std::max(result_size.x,static_cast<int>(cursor.x+glyph.delta.x+glyph.bitmap.width));
-			result_size.y = std::max(result_size.y,static_cast<int>(cursor.y+glyph.delta.y+glyph.bitmap.rows));
+			result_size.x = std::max(result_size.x,static_cast<int>(cursor.x+glyph.coordinates.x+glyph.coordinates.w));
+			result_size.y = std::max(result_size.y,static_cast<int>(cursor.y+glyph.coordinates.y+glyph.coordinates.h));
 		} else glyph_base--;
 		// Update cursor
 		cursor.x += glyph_pos[i].x_advance;
