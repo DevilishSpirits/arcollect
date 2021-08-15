@@ -190,13 +190,22 @@ void Arcollect::gui::view_slideshow::render(void)
 					}
 				} break;
 				case db::artwork::ARTWORK_TYPE_TEXT: {
+					int current_scroll = text_scroll;
 					int border = rect.w/10;
+					// Shape text if not made already
 					if (!text_renderable) {
 						Arcollect::gui::font::Elements elements = viewport.artwork->query_font_elements();
 						elements.initial_height = Arcollect::config::writing_font_size;
 						text_renderable = std::make_unique<Arcollect::gui::font::Renderable>(elements,rect.w-border-border);
 					}
-					text_renderable->render_tl(border,border-text_scroll);
+					// Render text
+					int max_scroll = text_renderable->size().y - rect.h + border + border;
+					text_renderable->render_tl(border,border-current_scroll);
+					// Render progress bar
+					SDL::Rect progress_bar{rect.x,rect.y,current_scroll*rect.w/max_scroll,Arcollect::config::writing_font_size/8};
+					progress_bar.y += rect.h-progress_bar.h;
+					renderer->SetDrawColor(128,128,128,255);
+					renderer->FillRect(progress_bar);
 				} break;
 				case db::artwork::ARTWORK_TYPE_UNKNOWN: {
 					static const std::string main_msg(" artwork type is not supported.");
