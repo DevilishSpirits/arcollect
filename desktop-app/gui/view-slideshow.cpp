@@ -38,6 +38,8 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 	this->rect = rect;
 	size_know = false;
 	if (viewport.artwork) {
+		// Reset cached text render
+		text_renderable.reset();
 		// Preserve aspect ratio
 		SDL::Point art_size;
 		if (!viewport.artwork->QuerySize(art_size))
@@ -59,8 +61,6 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 		viewport_animation.val_origin = viewport_animation.val_target = rect;
 		// Reset cached title render
 		title_text_cache.reset();
-		// Reset cached text render
-		text_renderable.reset();
 		
 		viewport_delta.x = rect.x;
 		viewport_delta.y = rect.y;
