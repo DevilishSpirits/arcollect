@@ -355,7 +355,15 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 	if (db->prepare("SELECT tag_arcoid FROM tags WHERE tag_platid = ?;",find_tag_stmt))
 		return "Failed to prepare the find_tag_stmt " + std::string(db->errmsg());
 	// Perform transaction
-	db->exec("BEGIN IMMEDIATE;");
+	int begin_code = db->exec("BEGIN IMMEDIATE;");
+	switch (begin_code) {
+		case SQLITE_OK:
+			break; // It's okay!
+		case SQLITE_BUSY:
+			return "Arcollect database is locked by another process.";
+		default:
+			return "Failed to begin database transaction: " + std::string(db->errmsg());
+	}
 	if (debug)
 		std::cerr << "Started SQLite transaction" << std::endl;
 	// INSERT INTO artworks
