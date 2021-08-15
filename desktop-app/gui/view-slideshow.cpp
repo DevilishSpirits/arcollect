@@ -108,6 +108,20 @@ void Arcollect::gui::view_slideshow::zoomat(float delta, SDL::Point point)
 	
 	update_zoom();
 }
+
+void Arcollect::gui::view_slideshow::scroll_text(int line_delta)
+{
+	if (text_renderable) {
+		int border = rect.w/10;
+		auto target = text_scroll.val_target;
+		target += line_delta*Arcollect::config::writing_font_size;
+		if (target > text_renderable->size().y - rect.h + border + border)
+			target = text_renderable->size().y - rect.h + border + border;
+		else if (target < 0)
+			target = 0;
+		text_scroll = target;
+	}
+}
 void Arcollect::gui::view_slideshow::set_collection_iterator(const artwork_collection::iterator &iter)
 {
 	if (iter != collection->end()) {
@@ -182,7 +196,7 @@ void Arcollect::gui::view_slideshow::render(void)
 						elements.initial_height = Arcollect::config::writing_font_size;
 						text_renderable = std::make_unique<Arcollect::gui::font::Renderable>(elements,rect.w-border-border);
 					}
-					text_renderable->render_tl(border,border);
+					text_renderable->render_tl(border,border-text_scroll);
 				} break;
 				case db::artwork::ARTWORK_TYPE_UNKNOWN: {
 					static const std::string main_msg(" artwork type is not supported.");
@@ -224,14 +238,33 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 	// There's a 'README BEFORE READING CODE!!!' in top Arcollect::gui::view_slideshow declaration.
 	SDL::Point cursorpos;
 	auto mouse_state = SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
+	const auto text_scroll_speed = 5;
 	switch (e.type) {
 		case SDL_KEYDOWN: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_UP: { // Zoom-in
-					zoomat(+.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
+					if (viewport.artwork)
+						switch (viewport.artwork->artwork_type) {
+							case ARTWORK_TYPE_UNKNOWN:break;
+							case ARTWORK_TYPE_IMAGE: {
+								zoomat(+.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
+							} break;
+							case ARTWORK_TYPE_TEXT: {
+								scroll_text(-text_scroll_speed);
+							} break;
+						}
 				} break;
 				case SDL_SCANCODE_DOWN: { // Zoom-out
-					zoomat(-.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
+					if (viewport.artwork)
+						switch (viewport.artwork->artwork_type) {
+							case ARTWORK_TYPE_UNKNOWN:break;
+							case ARTWORK_TYPE_IMAGE: {
+								zoomat(-.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
+							} break;
+							case ARTWORK_TYPE_TEXT: {
+								scroll_text(+text_scroll_speed);
+							} break;
+						}
 				} break;
 				default:break;
 			}
@@ -277,9 +310,18 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 			}
 		} break;
 		case SDL_MOUSEWHEEL: {
-			SDL::Point cursorpos;
-			SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
-			zoomat(e.wheel.y*.1f,cursorpos);
+			if (viewport.artwork)
+				switch (viewport.artwork->artwork_type) {
+					case ARTWORK_TYPE_UNKNOWN:break;
+					case ARTWORK_TYPE_IMAGE: {
+						SDL::Point cursorpos;
+						SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
+						zoomat(e.wheel.y*.1f,cursorpos);
+					} break;
+					case ARTWORK_TYPE_TEXT: {
+						scroll_text(-e.wheel.y*text_scroll_speed);
+					} break;
+				}
 		} break;
 		case SDL_MOUSEMOTION: {
 			if (mouse_state & SDL_BUTTON(1)) {

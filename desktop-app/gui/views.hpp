@@ -86,6 +86,8 @@ namespace Arcollect {
 				
 				// ARTWORK_TYPE_TEXT stuff
 				std::unique_ptr<gui::font::Renderable> text_renderable;
+				animation::scrolling<int> text_scroll;
+				void scroll_text(int line_delta);
 				
 				bool size_know = false;
 				std::unique_ptr<artwork_collection::iterator> collection_iterator;
@@ -118,6 +120,11 @@ namespace Arcollect {
 				 */
 				void render_info_incard(void);
 				bool event(SDL::Event &e) override;
+				
+				// Convenience
+				static constexpr auto ARTWORK_TYPE_UNKNOWN = db::artwork::ARTWORK_TYPE_UNKNOWN;
+				static constexpr auto ARTWORK_TYPE_IMAGE   = db::artwork::ARTWORK_TYPE_IMAGE;
+				static constexpr auto ARTWORK_TYPE_TEXT    = db::artwork::ARTWORK_TYPE_TEXT;
 		};
 		/** Vertical grid view
 		 *
