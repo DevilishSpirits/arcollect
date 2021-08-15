@@ -54,13 +54,17 @@ let artworkMIME = undefined;
 let downloadButtons = document.getElementsByClassName("button standard mobile-fix")
 for (i = 0; i < downloadButtons.length; i++)
 	if (downloadButtons[i].text == 'Download') {
-		artworkMIME = arcollect_mime_by_href_ext(downloadButtons[i].href);
+		let ext = downloadButtons[i].href.split('#')[0].split('?')[0].split('.')
+		ext = ext[ext.length-1].toLowerCase()
+		// FurAffinity enforce UTF-8 character encoding
+		if (ext == 'txt')
+			artworkMIME = 'text/plain; charset=utf-8'; 
+		else artworkMIME = arcollect_mime_by_ext[ext];
 		if (artworkMIME != undefined) {
 			artworkLink = downloadButtons[i].href;
 			break;
 		}
 	}
-
 /** Save the artwork
  */
 function save_artwork()
@@ -183,6 +187,8 @@ function save_artwork()
 		'art_acc_links': art_acc_links,
 		'art_tag_links': art_tag_links,
 	};
+	if (artworkMIME.startsWith('text/'))
+		submit_json['artworks'][0]['thumbnail'] = submissionImg.src;
 	console.log('arcollect_submit('+JSON.stringify(submit_json)+')')
 	
 	// Submit
