@@ -93,6 +93,7 @@ void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& te
 	hb_buffer_set_language(buf, hb_language_from_string("en", -1));
 	// Invoke Harfbuzz
 	FT_Face face = query_face(font_size);
+	const auto line_spacing = face->height >> 6;
 	hb_font_t *font = hb_ft_font_create_referenced(face);
 	hb_ft_font_set_load_flags(font,ft_flags);
 	hb_shape(font,buf,NULL,0);
@@ -125,15 +126,15 @@ void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& te
 			cursor.x = 0;
 			for (i_newline++; i_newline < i; i_newline++) {
 				glyphs[glyph_base+i_newline].position.x  = cursor.x;
-				glyphs[glyph_base+i_newline].position.y += font_size;
+				glyphs[glyph_base+i_newline].position.y += line_spacing;
 				cursor.x += glyph_pos[i_newline].x_advance;
 			}
 			// Move the cursor
-			cursor.y += font_size;
+			cursor.y += line_spacing;
 		} else if (glyph_info.cluster >= clusteri_line_end) {
 			// We are on a line break '\n'
 			cursor.x = -glyph_pos[i].x_advance;
-			cursor.y += font_size;
+			cursor.y += line_spacing;
 			clusteri_line_end = text.find(U'\n',clusteri_line_end+1); // Find the next line break
 		}
 		// Don't render blanks codepoints
