@@ -5,8 +5,7 @@
 #endif
 namespace SDL {
 	struct Renderer;
-	struct Surface {
-		SDL_Surface surf;
+	struct Surface: public SDL_Surface {
 		inline void operator delete(void* surface) {
 			SDL_FreeSurface((SDL_Surface*)surface);
 		}
