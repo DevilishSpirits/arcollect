@@ -261,6 +261,18 @@ endforeach
 
 subdir('src')
 
+# Strip uneeded functionalities
+conf.set('HB_DISABLE_DEPRECATED'      ,1) # Deprecation ? No thanks.
+conf.set('HB_NO_BUFFER_MESSAGE'       ,1) # Nuke hb_buffer_message_func_t
+conf.set('HB_NO_BUFFER_SERIALIZE'     ,1) # Nuke hb_buffer_serialize_glyphs
+conf.set('HB_NO_CMAP_LEGACY_SUBTABLES',1) # Remove as much legacy as we can
+conf.set('HB_NO_FALLBACK_SHAPE'       ,1) # Remove as much legacy as we can
+conf.set('HB_NO_MT'                   ,1) # HarfBuzz is always used in the main thread
+conf.set('HB_NO_OT_FONT'              ,1) # We always use FreeType2
+conf.set('HB_NO_OT_FONT_GLYPH_NAMES'  ,1) # We never query glyph names
+conf.set('HB_NO_OT_LAYOUT_BLOCKLIST'  ,1) # Remove as much legacy as we can
+conf.set('HB_NO_OT_SHAPE_FALLBACK'    ,1) # Remove as much legacy as we can
+conf.set('NDEBUG'                     ,1) # No debug
 configure_file(output: 'config.h', configuration: conf)
 
 build_summary = {
