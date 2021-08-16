@@ -2,7 +2,7 @@ hb_version_h = configure_file(
                command: [find_program('gen-hb-version.py'), meson.project_version(), '@OUTPUT@', '@INPUT@'],
                input: 'hb-version.h.in',
                output: 'hb-version.h',
-               install: true,
+               install: false,
                install_dir: join_paths(get_option('includedir'), meson.project_name()))
 
 # Base and default-included sources and headers
@@ -399,7 +399,7 @@ libharfbuzz = library('harfbuzz', hb_sources,
   cpp_args: cpp_args + extra_hb_cpp_args,
   soversion: hb_so_version,
   version: version,
-  install: true,
+  install: false,
   darwin_versions: darwin_versions,
   link_language: libharfbuzz_link_language,
 )
@@ -423,7 +423,7 @@ libharfbuzz_subset = library('harfbuzz-subset', hb_subset_sources,
   cpp_args: cpp_args + extra_hb_cpp_args,
   soversion: hb_so_version,
   version: version,
-  install: true,
+  install: false,
   darwin_versions: darwin_versions,
   link_language: 'c',
 )
@@ -448,7 +448,7 @@ if have_icu and not have_icu_builtin
     cpp_args: cpp_args + extra_hb_cpp_args,
     soversion: hb_so_version,
     version: version,
-    install: true,
+    install: false,
     darwin_versions: darwin_versions,
     # ICU links to stdc++ anyway so the default linker is good
     # link_language: 'c',
