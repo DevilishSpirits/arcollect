@@ -62,7 +62,12 @@ destdir_target = custom_target('destdir',
 	depend_files: destdir_depend_files,
 	build_by_default: false,
 )
-destdir_prefix = destdir_target.full_path()+get_option('prefix')
+destdir_prefix = destdir_target.full_path()#+get_option('prefix')
+# FIXME This is a workaround for Windows build
+# TODO Checkout exact Meson behavior
+if get_option('prefix')[0] == '/'
+	destdir_prefix += get_option('prefix')
+endif
 
 # destdir_md5sum
 # This target run md5sum on DESTDIR (destdir_target)
@@ -223,8 +228,10 @@ if candle_prog.found() and light_prog.found() and enable_native_progs
 	# Configuration
 	wix_conf = configuration_data()
 	wix_conf.merge_from(config_h)
-	wix_conf.set('built_arcollect_exe',destdir_prefix/get_option('bindir')/arcollect_exe.full_path().split('/\\')[-1])
-	wix_conf.set('built_webext_adder_exe',destdir_prefix/get_option('libexecdir')/webext_adder_exe.full_path().split('/\\')[-1])
+	arcollect_exe_basename    = arcollect_exe.full_path().split('/')[-1].split('\\')[-1]
+	webext_adder_exe_basename = webext_adder_exe.full_path().split('/')[-1].split('\\')[-1]
+	wix_conf.set('built_arcollect_exe',destdir_prefix/get_option('bindir')/arcollect_exe_basename)
+	wix_conf.set('built_webext_adder_exe',destdir_prefix/get_option('libexecdir')/webext_adder_exe_basename)
 	wix_conf.set('built_mozilla_manifest',webext_appmanifest_firefox_windows_full_path) # webext_appmanifest_firefox_windows
 	wix_conf.set('copying_rtf_path',copying_rtf.full_path())
 	
