@@ -162,6 +162,7 @@ Arcollect::db::artwork::artwork(Arcollect::db::artwork_id art_id) :
 	data_version(-2),
 	art_id(art_id)
 {
+	db_sync();
 }
 std::shared_ptr<Arcollect::db::artwork> &Arcollect::db::artwork::query(Arcollect::db::artwork_id art_id)
 {
