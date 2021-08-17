@@ -198,6 +198,17 @@ bool Arcollect::gui::main(void)
 	Uint32 loader_start_ticks = SDL_GetTicks();
 	decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending_count;
 	static decltype(Arcollect::db::artwork_loader::done) main_done;
+	// Try to load requested artworks into VRAM
+	for (auto &artwork: Arcollect::db::artwork_loader::pending_main) {
+		auto iter = main_done.find(artwork);
+		if (iter != main_done.end()) {
+			std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,iter->second.get()));
+			artwork->texture_loaded(text);
+			main_done.erase(iter);
+			if (SDL_GetTicks()-render_start_ticks > 40)
+				break;
+		}
+	}
 	// Append pending_main to pending_thread and steal list of loaded artworks
 	{
 		using namespace Arcollect::db; // To shorten lines
