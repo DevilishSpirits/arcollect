@@ -117,7 +117,7 @@ static void write_sql_file(const char* sql_file_path, const std::string_view &va
 			case STRING_IN: {
 				cpp << sql_file[i];
 				// Check for string end (and not an escape)
-				if (sql_file[i-1] != '\\') {
+				if ((sql_file[i] == '\'')&&(sql_file[i-1] != '\\')) {
 					state = NORMAL;
 					wasblank = false;
 					needblank = false;
