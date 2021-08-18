@@ -33,14 +33,10 @@ project('libpng', version: '1.6.37')
 
 #include(GNUInstallDirs)
 
-
-
-
 cc = meson.get_compiler('c')
-zlib_dep = dependency('zlib')
+zlib_dep = dependency('zlib', method: 'system')
 m_dep = cc.find_library('m', required: false)
 # needed packages
-
 
 # Many more configuration options could be added here
 #option(PNG_HARDWARE_OPTIMIZATIONS "Enable hardware optimizations" ON)

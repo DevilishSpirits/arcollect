@@ -190,7 +190,7 @@ foreach check : check_optional_deps
   endif
 endforeach
 
-zlib_dep = dependency('zlib', required: false, fallback: ['zlib', 'zlib_dep'])
+zlib_dep = dependency('zlib', method: 'system')
 if zlib_dep.found()
   conf.set('FT_CONFIG_OPTION_SYSTEM_ZLIB', 1)
   deps += [zlib_dep]
