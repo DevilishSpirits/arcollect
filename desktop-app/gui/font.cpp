@@ -67,22 +67,52 @@ FT_Face Arcollect::gui::font::query_face(Uint32 font_size)
 	} else FT_Activate_Size(iter->second);
 	return face;
 }
-void Arcollect::gui::font::Renderable::append_text(const std::string_view& text, SDL::Point &cursor, int wrap_width, Uint32 font_size, SDL_Color color)
+
+Arcollect::gui::font::Elements& Arcollect::gui::font::Elements::operator<<(const std::string_view &string)
 {
 	typedef std::codecvt<char32_t,char/*char8_t*/,std::mbstate_t> codecvt_t;
 	// Convert the string in UTF-32
 	std::u32string codepoints;
-	codepoints.resize(text.size());
+	codepoints.resize(string.size());
 	static const codecvt_t &codecvt = std::use_facet<codecvt_t>(std::locale());
 	const char/*char8_t*/* trash8;
 	char32_t* utf32_end;
 	std::mbstate_t codecvt_state;
-	codecvt.in(codecvt_state,&*(text.begin()),&*(text.end()),trash8,&*(codepoints.begin()),&*(codepoints.end()),utf32_end);
+	codecvt.in(codecvt_state,&*(string.begin()),&*(string.end()),trash8,&*(codepoints.begin()),&*(codepoints.end()),utf32_end);
 	codepoints.resize(std::distance(codepoints.data(),utf32_end));
-	return append_text(codepoints,cursor,wrap_width,font_size,color);
+	return operator<<(codepoints);
 }
-void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& text, SDL::Point &cursor, int wrap_width, Uint32 font_size, SDL_Color color)
+
+/** Current text attributes
+ *
+ * This structure is passed to append_text() and other functions and
+ * is stored in a local variable of Renderable() constructor.
+ */
+struct Arcollect::gui::font::Renderable::RenderingState {
+	/** Current cursor position
+	 *
+	 * It's the "pen" in FreeType2 vocabulary.
+	 */
+	SDL::Point cursor;
+	/** Text wrap_width
+	 *
+	 * It is set to a large value when no wrapping is wanted.
+	 */
+	const int wrap_width;
+	/** Attribute iterator
+	 *
+	 * This is an iterator to the Arcollect::gui::font::Elements::attributes.
+	 * It is incremented when needed by
+	 * Arcollect::gui::font::Renderable::append_text_run().
+	 */
+	decltype(Elements::attributes)::const_iterator attrib_iter;
+};
+void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::text_runs)::value_type& text_run, RenderingState &state)
 {
+	// Extract parameters
+	const auto            font_size = text_run.first;
+	const std::u32string_view& text = text_run.second;
+	SDL::Point              &cursor = state.cursor;
 	// Create the buffer
 	hb_buffer_t *buf = hb_buffer_create();
 	hb_buffer_pre_allocate(buf,text.size());
@@ -108,21 +138,30 @@ void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& te
 	auto clusteri_line_end = text.find(U'\n'); // To break at \n
 	// Process glyphs
 	for (unsigned int i = 0; i < glyph_count; i++) {
+		// Extract rendering parameters
+		if (state.attrib_iter->end <= i)
+			++state.attrib_iter;
+		const bool     &justify = state.attrib_iter->justify;
+		const SDL_Color  &color = state.attrib_iter->color;
+		
 		hb_glyph_info_t &glyph_info = glyph_infos[i];
 		glyph_pos[i].x_advance >>= 6;
 		glyph_pos[i].y_advance >>= 6;
 		// Wrap text (but not if we already started a new_line, the cluster won't fit anyway)
-		if ((((cursor.x + glyph_pos[i].x_advance) > wrap_width) && (glyph_info.cluster != glyph_infos[glyphi_line_start].cluster))) {
+		if ((((cursor.x + glyph_pos[i].x_advance) > state.wrap_width) && (glyph_info.cluster != glyph_infos[glyphi_line_start].cluster))) {
 			// Search backward to a safe cluster and char to wrap
-			bool nobreak_found = true;
 			unsigned int i_newline;
-			for (i_newline = i; i_newline && nobreak_found; i_newline--)
-				for (unsigned int char_i = glyph_infos[i_newline].cluster; char_i >= glyph_infos[i_newline-1].cluster; char_i--)
-					if ((text[char_i] == U' ')||(text[char_i] == U'\t')) {
-						nobreak_found = false;
-						break;
-					}
-			// Replace glyphs
+			for (i_newline = i; i_newline; i_newline--) {
+				auto char_i = glyph_infos[i_newline].cluster;
+				if ((text[char_i] == U' ')||(text[char_i] == U'\t')) {
+					break;
+				}
+			}
+			// Justify text
+			if (justify) {
+				// TODO 
+			}
+			// Move glyphs on the newline
 			cursor.x = 0;
 			for (i_newline++; i_newline < i; i_newline++) {
 				glyphs[glyph_base+i_newline].position.x  = cursor.x;
@@ -131,11 +170,14 @@ void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& te
 			}
 			// Move the cursor
 			cursor.y += line_spacing;
+			
+			glyphi_line_start = i;
 		} else if (glyph_info.cluster >= clusteri_line_end) {
 			// We are on a line break '\n'
 			cursor.x = -glyph_pos[i].x_advance;
 			cursor.y += line_spacing;
 			clusteri_line_end = text.find(U'\n',clusteri_line_end+1); // Find the next line break
+			glyphi_line_start = i;
 		}
 		// Don't render blanks codepoints
 		if (!((text[glyph_info.cluster] == U' ')
@@ -158,44 +200,16 @@ void Arcollect::gui::font::Renderable::append_text(const std::u32string_view& te
 	// Cleanups
 	hb_buffer_destroy(buf);
 }
-Arcollect::gui::font::Renderable::Renderable(const Elements& elements) : Renderable(elements,2147483647)
-{
-}
 Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_width) :
 	result_size{0,0}
 {
-	SDL::Point cursor{0,0};
-	FontSize font_size = elements.initial_height;
-	SDL_Color color    = elements.initial_color;
-	for (const Element& element: elements) {
-		switch (element.index()) {
-			case ELEMENT_STRING: {
-				append_text(std::get<std::string>(element),cursor,wrap_width,font_size,color);
-			} break;
-			case ELEMENT_STRING_VIEW: {
-				append_text(std::get<std::string_view>(element),cursor,wrap_width,font_size,color);
-			} break;
-			case ELEMENT_FONT_SIZE: {
-				font_size = std::get<FontSize>(element);
-			} break;
-			case ELEMENT_COLOR: {
-				color = std::get<SDL_Color>(element);
-			} break;
-		}
-	}
-}
-static inline Arcollect::gui::font::Elements ArcollectRenderableconstcharstarHelper(const char* text, int font_size)
-{
-	Arcollect::gui::font::Elements elements;
-	elements << std::string_view(text);
-	elements.initial_height = font_size;
-	return elements;
-}
-Arcollect::gui::font::Renderable::Renderable(const char* text, int font_size) : Renderable(ArcollectRenderableconstcharstarHelper(text,font_size))
-{
-}
-Arcollect::gui::font::Renderable::Renderable(const char* text, int font_size, Uint32 wrap_width) : Renderable(ArcollectRenderableconstcharstarHelper(text,font_size),wrap_width)
-{
+	RenderingState state {
+		{0,0},// cursor
+		wrap_width,
+		elements.attributes.begin(),
+	};
+	for (const auto& text_run: elements.text_runs)
+		append_text_run(text_run,state);
 }
 void Arcollect::gui::font::Renderable::render_tl(int x, int y)
 {

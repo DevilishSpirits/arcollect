@@ -14,7 +14,7 @@ void Arcollect::gui::modal::render_titlebar(SDL::Rect target, int window_width)
 	static std::unique_ptr<Arcollect::gui::font::Renderable> cached_render;
 	static SDL::Point topleft_corner;
 	if (!cached_render) {
-		cached_render = std::make_unique<Arcollect::gui::font::Renderable>("Arcollect " ARCOLLECT_VERSION_STR,target.h-2*title_border);
+		cached_render = std::make_unique<Arcollect::gui::font::Renderable>(Arcollect::gui::font::Elements(U"Arcollect "s ARCOLLECT_VERSION_STR,target.h-2*title_border));
 		topleft_corner.x = target.x+title_border;
 		topleft_corner.y = target.y+title_border;
 	}

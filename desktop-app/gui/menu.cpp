@@ -174,11 +174,6 @@ void Arcollect::gui::menu::popup_context(const std::vector<std::shared_ptr<menu_
 	popup_context_count++;
 }
 
-Arcollect::gui::menu_item_simple_label::menu_item_simple_label(const char* label, std::function<void()> onclick) :
-	text_line(label,14),
-	onclick(onclick)
-{
-}
 Arcollect::gui::menu_item_simple_label::menu_item_simple_label(const font::Elements& elements, std::function<void()> onclick) :
 	text_line(elements),
 	onclick(onclick)

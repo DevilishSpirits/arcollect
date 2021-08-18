@@ -247,6 +247,12 @@ bool Arcollect::gui::main(void)
 	// Redraws debugging
 	if (debug_redraws) {
 		Uint32 final_ticks = SDL_GetTicks();
+		static constexpr SDL_Color   idle_color{255,255,255,255};
+		static constexpr SDL_Color  event_color{255,255, 0 ,255};
+		static constexpr SDL_Color render_color{ 0 ,255,255,255};
+		static constexpr SDL_Color loader_color{255, 0 , 0 ,255};
+		static constexpr SDL_Color  other_color{ 0 , 0 ,255,255};
+		static constexpr SDL_Color  total_color{255,255,255,255};
 		struct debug_sample {
 			Uint32   idle;
 			Uint32  event;
@@ -279,30 +285,44 @@ bool Arcollect::gui::main(void)
 				result.load_pending = std::max(load_pending,right.load_pending);
 				return result;
 			}
-			static inline void draw_time_bar(SDL::Rect &time_bar, Uint32 var, Uint8 r, Uint8 g, Uint8 b) {
+			static inline void draw_time_bar(SDL::Rect &time_bar, Uint32 var, const SDL_Color &color) {
 				time_bar.w  = var;
-				renderer->SetDrawColor(r,g,b,255);
+				renderer->SetDrawColor(color.r,color.g,color.b,color.a);
 				renderer->FillRect(time_bar);
 				time_bar.x += var;
 			}
 			void draw_time_bar(SDL::Rect time_bar) {
-				draw_time_bar(time_bar,event ,255,255,0  );
-				draw_time_bar(time_bar,render,0  ,255,255);
-				draw_time_bar(time_bar,loader,255,0  ,0  );
-				draw_time_bar(time_bar,other ,0  ,0  ,255);
+				draw_time_bar(time_bar,event ,event_color);
+				draw_time_bar(time_bar,render,render_color);
+				draw_time_bar(time_bar,loader,loader_color);
+				draw_time_bar(time_bar,other ,other_color);
 			}
 			std::string print(void) {
 				return "	Idle  : " + std::to_string(idle  ) + "ms\n"
-				+ "	Event : " + std::to_string(event ) + "ms\n"
-				+ "	Render: " + std::to_string(render) + "ms\n"
-				+ "	Loader: " + std::to_string(loader) + "ms " + std::to_string(load_pending) + " artworks pending\n"
-				+ "	Other : " + std::to_string(other ) + "ms"
+				+      "	Event : " + std::to_string(event ) + "ms\n"
+				+      "	Render: " + std::to_string(render) + "ms\n"
+				+      "	Loader: " + std::to_string(loader) + "ms " + std::to_string(load_pending) + " artworks pending\n"
+				+      "	Other : " + std::to_string(other ) + "ms"
 					#ifdef WITH_XDG
 					+ " (D-Bus)\n"
 					#else
 					+ "\n"
 					#endif
 				+ "	Total = " + std::to_string(frame ) + "ms/"+std::to_string(1000.f/frame)+"FPS\n"
+				;
+			}
+			void print(Arcollect::gui::font::Elements &elements) {
+				elements <<   idle_color << U"	Idle  : "sv << std::to_string(idle  ) << U"ms\n"sv
+				         <<  event_color << U"	Event : "sv << std::to_string(event ) << U"ms\n"sv
+				         << render_color << U"	Render: "sv << std::to_string(render) << U"ms\n"sv
+				         << loader_color << U"	Loader: "sv << std::to_string(loader) << U"ms "sv << std::to_string(load_pending) << U" artworks pending\n"sv
+				         <<  other_color << U"	Other : "sv << std::to_string(other ) << U"ms "sv
+				         #ifdef WITH_XDG
+				         	" (D-Bus)\n"
+				         #else
+				         	"\n"
+				         	#endif
+				         <<  total_color << U"	Total = "sv << std::to_string(frame ) << U"ms/"sv << std::to_string(1000.f/frame) << U"FPS\n"sv
 				;
 			}
 		};
@@ -323,18 +343,25 @@ bool Arcollect::gui::main(void)
 		for (const debug_sample &sample: last_second_samples)
 			maximums = maximums.max(sample);
 		
-		std::string stats = "Tick: " + std::to_string(final_ticks) + "\n"
-			+ "Frame stats:\n"+ frame_sample.print()
-			+ "Maximums (last 3 seconds):\n"+ maximums.print()
-			+ "\n"
-			//+ "animation_running:" + (saved_animation_running ? "y" : "n")
-			+ "Image memory usage: " + std::to_string(Arcollect::db::artwork_loader::image_memory_usage >> 20) +" MiB"
-		;
-		std::cerr << stats << std::endl;
-		// Render debug window
-		Arcollect::gui::font::Renderable stats_text(stats.c_str(),14,800);
-		static constexpr const SDL::Point stats_text_tl{5,20};
-		SDL::Rect debug_box_dstrect{0,0,stats_text.size().x+5+stats_text_tl.x,stats_text.size().y+5+stats_text_tl.y};
+		std::cerr << "Tick: " << final_ticks << "\nFrame stats:\n" << frame_sample.print()
+			<< "Maximums (last 3 seconds):\n" << maximums.print()
+			<< "\n"
+			//<< "animation_running:" << (saved_animation_running ? "y" : "n") << "\n"
+			<< "Image memory usage: " << std::to_string(Arcollect::db::artwork_loader::image_memory_usage >> 20) <<" MiB"
+			<< std::endl;
+		// Generate debug window text
+		Arcollect::gui::font::Elements stats_elements;
+		//stats_elements.initial_height() = 14;
+		stats_elements << U"Tick: "sv << std::to_string(final_ticks) << U"\nFrame stats:\n"sv;
+		frame_sample.print(stats_elements);
+		stats_elements << U"Maximums (last 3 seconds):\n"sv;
+		maximums.print(stats_elements);
+		stats_elements << U"Image memory usage: "sv << std::to_string(Arcollect::db::artwork_loader::image_memory_usage >> 20) << U" MiB"sv;
+		
+		// Render debug window text
+		Arcollect::gui::font::Renderable stats_text(stats_elements,800);
+		static constexpr SDL::Point stats_text_tl{5,20};
+		SDL::Rect debug_box_dstrect{0,0,stats_text.size().x+10+stats_text_tl.x,stats_text.size().y+5+stats_text_tl.y};
 		renderer->SetDrawColor(0,0,0,224);
 		renderer->FillRect(debug_box_dstrect);
 		stats_text.render_tl(stats_text_tl);

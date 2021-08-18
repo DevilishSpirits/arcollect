@@ -152,17 +152,13 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	render_rect.y += box_padding;
 	render_rect.w -= 2*box_padding;
 	render_rect.h -= 2*box_padding;
-	// Render title text
+	// Render text
 	// TODO Cache this
-	Arcollect::gui::font::Renderable title_line(artwork.title().c_str(),font_height,render_rect.w);
-	title_line.render_tl(render_rect.x,render_rect.y);
-	// Render description text
-	// TODO Cache this
-	font_height /= 4;
-	if (font_height < min_desc_font_height)
-		font_height = min_desc_font_height;
-	Arcollect::gui::font::Renderable desc_par(artwork.desc().c_str(),font_height,rect.w);
-	desc_par.render_tl(render_rect.x,render_rect.y + title_line.size().y + 4);
+	Arcollect::gui::font::Elements elements;
+	elements << Arcollect::gui::font::FontSize(font_height  ) << artwork.title() << U"\n"s
+	         << Arcollect::gui::font::FontSize(font_height/4) << artwork.desc();
+	Arcollect::gui::font::Renderable desc_renderable(elements,render_rect.w);
+	desc_renderable.render_tl(render_rect.x,render_rect.y);
 }
 
 void Arcollect::gui::view_slideshow::render(void)
@@ -195,7 +191,7 @@ void Arcollect::gui::view_slideshow::render(void)
 					// Shape text if not made already
 					if (!text_renderable) {
 						Arcollect::gui::font::Elements elements = viewport.artwork->query_font_elements();
-						elements.initial_height = Arcollect::config::writing_font_size;
+						elements.initial_height() = Arcollect::config::writing_font_size;
 						text_renderable = std::make_unique<Arcollect::gui::font::Renderable>(elements,rect.w-border-border);
 					}
 					// Render text
@@ -208,11 +204,10 @@ void Arcollect::gui::view_slideshow::render(void)
 					renderer->FillRect(progress_bar);
 				} break;
 				case db::artwork::ARTWORK_TYPE_UNKNOWN: {
-					static const std::string main_msg(" artwork type is not supported.");
 					Arcollect::gui::font::Elements unknown_artwork_elements;
-					unknown_artwork_elements.initial_height = 22;
-					unknown_artwork_elements.initial_color  = {255,255,0,255};
-					unknown_artwork_elements << std::string_view(viewport.artwork->mimetype()) << (SDL_Color){255,255,255,255} << std::string_view(main_msg);
+					unknown_artwork_elements.initial_height() = 22;
+					unknown_artwork_elements.initial_color()  = {255,255,0,255};
+					unknown_artwork_elements << std::string_view(viewport.artwork->mimetype()) << (SDL_Color){255,255,255,255} << U" artwork type is not supported."sv;
 					Arcollect::gui::font::Renderable unknown_artwork_text_cache(unknown_artwork_elements);
 					unknown_artwork_text_cache.render_tl(rect.x+(rect.w-unknown_artwork_text_cache.size().x)/2,rect.y+(rect.h-unknown_artwork_text_cache.size().y)/2);
 				} break;
@@ -220,7 +215,7 @@ void Arcollect::gui::view_slideshow::render(void)
 	} else {
 		static std::unique_ptr<Arcollect::gui::font::Renderable> no_artwork_text_cache;
 		if (!no_artwork_text_cache)
-			no_artwork_text_cache = std::make_unique<Arcollect::gui::font::Renderable>("There is no artwork to show",22);
+			no_artwork_text_cache = std::make_unique<Arcollect::gui::font::Renderable>(Arcollect::gui::font::Elements(U"There is no artwork to show"s,22));
 		no_artwork_text_cache->render_tl(rect.x+(rect.w-no_artwork_text_cache->size().x)/2,rect.y+(rect.h-no_artwork_text_cache->size().y)/2);
 	}
 	//render_info_incard();

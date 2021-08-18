@@ -68,10 +68,8 @@ Arcollect::gui::view_vgrid &Arcollect::gui::background_vgrid = ::background_vgri
 static void delete_art(void);
 static void confirm_delete_art(void)
 {
-	Arcollect::gui::font::Elements really_delete_elements;
-	really_delete_elements << std::string("I really want to delete this artwork");
-	really_delete_elements.initial_color  = {255,0,0,255};
-	really_delete_elements.initial_height = 14;
+	Arcollect::gui::font::Elements really_delete_elements(U"I really want to delete this artwork"s,14);
+	really_delete_elements.initial_color()  = {255,0,0,255};
 	Arcollect::gui::menu::popup_context({
 		std::make_shared<Arcollect::gui::menu_item_simple_label>(really_delete_elements,::delete_art)
 	},{0,Arcollect::gui::window_borders::title_height});
@@ -120,13 +118,11 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 	}
 	std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override {
 		if (viewport.artwork) {
-			Arcollect::gui::font::Elements delete_elements;
-			delete_elements << std::string("Delete artwork");
-			delete_elements.initial_color  = {255,0,0,255};
-			delete_elements.initial_height = 14;
+			Arcollect::gui::font::Elements delete_elements{U"Delete artwork"s,14};
+			delete_elements.initial_color() = {255,0,0,255};
 			return {
 				#ifdef ARTWORK_HAS_OPEN_URL
-				std::make_shared<Arcollect::gui::menu_item_simple_label>("Browse...",::open_in_browser),
+				std::make_shared<Arcollect::gui::menu_item_simple_label>(U"Browse..."s,::open_in_browser),
 				#endif
 				std::make_shared<Arcollect::gui::menu_item_simple_label>(delete_elements,confirm_delete_art),
 			};

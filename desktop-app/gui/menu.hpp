@@ -91,8 +91,11 @@ namespace Arcollect {
 				void event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location) override;
 				void render(SDL::Rect target) override;
 				std::function<void()> onclick;
-				menu_item_simple_label(const char* label, std::function<void()> onclick);
 				menu_item_simple_label(const font::Elements& elements, std::function<void()> onclick);
+				menu_item_simple_label(std::u32string&& label, std::function<void()> onclick)
+					: menu_item_simple_label(font::Elements(std::move(label),14),onclick) {}
+				menu_item_simple_label(const std::u32string_view& label, std::function<void()> onclick)
+					: menu_item_simple_label(std::u32string(label),onclick) {}
 		};
 	}
 }

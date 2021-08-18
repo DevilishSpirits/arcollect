@@ -175,7 +175,7 @@ static void set_rating(Arcollect::config::Rating new_rating)
 	Arcollect::db_filter::set_rating(new_rating);
 }
 Arcollect::gui::rating_selector_menu::rating_selector_menu(void) :
-	text_line("Rating",14)
+	text_line(font::Elements(U"Rating"s,14))
 {
 	selector.has_kid = true;
 	selector.has_mature = true;
