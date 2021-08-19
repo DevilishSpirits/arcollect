@@ -89,7 +89,8 @@ namespace Arcollect {
 			 *
 			 * This flag does not affect text alignment behavior.
 			 *
-			 * \todo Honor text align.
+			 * \warning The justification require the use of wrap_width when creating
+			 *          the #Arcollect::gui::font::Renderable.
 			 */
 			struct Justify {
 				bool value;

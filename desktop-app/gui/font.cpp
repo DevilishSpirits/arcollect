@@ -160,7 +160,34 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 			}
 			// Justify text
 			if (justify) {
-				// TODO 
+				// Count the number of spaces in the line
+				unsigned int space_count = 0;
+				for (auto j = i_newline-1; j > glyphi_line_start; j--) {
+					auto char_j = glyph_infos[j].cluster;
+					if ((text[char_j] == U' ')||(text[char_j] == U'\t')||(glyph_char == 0x00A0/*nbsp*/))
+						space_count++;
+				}
+				// Avoid division by zero
+				if (!space_count)
+					space_count = 1;
+				// Compute pixel delta
+				int glyph_id_delta = glyph_base+space_count+1;
+				unsigned int space_current = 0;
+				int right_free_space = state.wrap_width - glyph_pos[i_newline-1].x_advance;
+				if (i_newline == i)
+					// We are breaking on a space, i_newline point to an non existing char
+					right_free_space -= glyphs[glyph_base+i_newline-1].position.x;
+				else right_free_space -= glyphs[glyph_base+i_newline].position.x;
+				int pixel_delta = 0;
+				// Move glyphs
+				for (auto j = glyphi_line_start; j < i_newline; j++) {
+					auto char_j = glyph_infos[j].cluster;
+					if ((text[char_j] == U' ')||(text[char_j] == U'\t')||(glyph_char == 0x00A0/*nbsp*/)) {
+						space_current++;
+						glyph_id_delta--;
+						pixel_delta = right_free_space*space_current/space_count;
+					} else glyphs[glyph_id_delta+j].position.x += pixel_delta;
+				}
 			}
 			// Move glyphs on the newline
 			cursor.x = 0;
@@ -176,6 +203,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 			
 			// Skip the current char if it's a space
 			if ((glyph_char == U' ')||(glyph_char == U'\t')) {
+				glyphi_line_start++;
 				glyph_base--;
 				continue;
 			}
@@ -206,6 +234,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 	}
 	// Cleanups
 	hb_buffer_destroy(buf);
+	glyphs.shrink_to_fit();
 }
 Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_width) :
 	result_size{0,0}
