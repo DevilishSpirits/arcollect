@@ -192,6 +192,7 @@ void Arcollect::gui::view_slideshow::render(void)
 					if (!text_renderable) {
 						Arcollect::gui::font::Elements elements = viewport.artwork->query_font_elements();
 						elements.initial_height() = Arcollect::config::writing_font_size;
+						elements.initial_justify() = true;
 						text_renderable = std::make_unique<Arcollect::gui::font::Renderable>(elements,rect.w-border-border);
 					}
 					// Render text
