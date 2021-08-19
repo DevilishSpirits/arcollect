@@ -147,6 +147,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 		hb_glyph_info_t &glyph_info = glyph_infos[i];
 		glyph_pos[i].x_advance >>= 6;
 		glyph_pos[i].y_advance >>= 6;
+		const char32_t glyph_char  = text[glyph_info.cluster];
 		// Wrap text (but not if we already started a new_line, the cluster won't fit anyway)
 		if ((((cursor.x + glyph_pos[i].x_advance) > state.wrap_width) && (glyph_info.cluster != glyph_infos[glyphi_line_start].cluster))) {
 			// Search backward to a safe cluster and char to wrap
@@ -172,6 +173,12 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 			cursor.y += line_spacing;
 			
 			glyphi_line_start = i;
+			
+			// Skip the current char if it's a space
+			if ((glyph_char == U' ')||(glyph_char == U'\t')) {
+				glyph_base--;
+				continue;
+			}
 		} else if (glyph_info.cluster >= clusteri_line_end) {
 			// We are on a line break '\n'
 			cursor.x = -glyph_pos[i].x_advance;
@@ -180,11 +187,11 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 			glyphi_line_start = i;
 		}
 		// Don't render blanks codepoints
-		if (!((text[glyph_info.cluster] == U' ')
-		 ||(text[glyph_info.cluster] == U'\t')
-		 ||(text[glyph_info.cluster] == U'\r')
-		 ||(text[glyph_info.cluster] == U'\n')
-		 ||(text[glyph_info.cluster] == 0x00A0)) // nbsp
+		if (!((glyph_char == U' ')
+		 ||(glyph_char == U'\t')
+		 ||(glyph_char == U'\r')
+		 ||(glyph_char == U'\n')
+		 ||(glyph_char == 0x00A0)) // nbsp
 		 ) {
 			// Emplace the new char
 			auto &glyph = Glyph::query(glyph_info.codepoint,font_size);
