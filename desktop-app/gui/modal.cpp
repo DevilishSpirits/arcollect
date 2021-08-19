@@ -7,8 +7,10 @@ extern SDL::Renderer *renderer;
 void Arcollect::gui::modal::render_titlebar(SDL::Rect target, int window_width)
 {
 	// Render icon
+	#if 0
 	SDL::Rect icon_rect{target.x,target.y,target.h,target.h};
-	// TODO renderer->Copy(arcollect_icon,NULL,&icon_rect);
+	renderer->Copy(TODO,NULL,&icon_rect);
+	#endif
 	// Render title
 	const int title_border = target.h/4;
 	static std::unique_ptr<Arcollect::gui::font::Renderable> cached_render;

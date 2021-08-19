@@ -240,7 +240,7 @@ bool Arcollect::gui::main(void)
 		} while ((SDL_GetTicks()-render_start_ticks < 50) && main_done.size());
 	}
 	// Unload artworks if exceeding image_memory_limit
-	while (Arcollect::db::artwork_loader::image_memory_usage>>20 > Arcollect::config::image_memory_limit) {
+	while (Arcollect::db::artwork_loader::image_memory_usage>>20 > static_cast<std::size_t>(Arcollect::config::image_memory_limit)) {
 		Arcollect::db::artwork& artwork = *--Arcollect::db::artwork::last_rendered.end();
 		artwork.texture_unload();
 	}

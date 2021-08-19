@@ -207,7 +207,7 @@ void Arcollect::db::artwork::db_sync(void)
 		std::unique_ptr<SQLite3::stmt> stmt;
 		database->prepare("SELECT art_title, art_desc, art_source, art_width, art_height, art_rating, art_mimetype FROM artworks WHERE art_artid = ?;",stmt); // TODO Error checking
 		stmt->bind(1,art_id);
-		if (auto code = stmt->step() == SQLITE_ROW) {
+		if (stmt->step() == SQLITE_ROW) {
 			art_title  = column_string_default(stmt,0);
 			art_desc   = column_string_default(stmt,1);
 			art_source = stmt->column_string(2);
@@ -245,7 +245,6 @@ void Arcollect::db::artwork::db_sync(void)
 			} else artwork_type = ARTWORK_TYPE_UNKNOWN;
 			
 			data_version = Arcollect::data_version;
-		} else {
 		}
 		
 		linked_accounts.clear();

@@ -28,7 +28,6 @@ std::vector<std::unique_ptr<Arcollect::db::artwork_loader>> Arcollect::db::artwo
 
 void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 {
-	const bool debug = Arcollect::debug::is_on("artwork-loader");
 	while (!stop) {
 		// Find an artwork to load
 		std::shared_ptr<Arcollect::db::artwork> artwork;

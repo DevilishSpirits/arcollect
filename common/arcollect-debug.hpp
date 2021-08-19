@@ -34,7 +34,7 @@ namespace Arcollect {
 		
 		/** Check if a debug flag is on
 		 */
-		static bool is_on(const std::string_view &debug_flag) {
+		inline bool is_on(const std::string_view &debug_flag) {
 			return all_flag || (flags.find(debug_flag) != flags.end());
 		}
 	}

@@ -136,7 +136,6 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	// Adjust rect
 	const auto box_height = rect.h/5;
 	static const auto min_title_font_height = 14;
-	static const auto min_desc_font_height = 7;
 	auto font_height = box_height/3;
 	if (font_height < min_title_font_height)
 		font_height = min_title_font_height;

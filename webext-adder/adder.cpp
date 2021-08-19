@@ -162,16 +162,16 @@ struct new_artwork {
 	const char* art_mimetype;
 	sqlite_int64 art_postdate;
 	sqlite_int64 art_id;
-	const char* data;
 	const char* thumbnail;
-	static constexpr char* default_art_mimetype = "image/*";
+	const char* data;
+	static constexpr char default_art_mimetype[] = "image/*";
 	new_artwork(rapidjson::Value::ConstValueIterator iter) : 
 		art_title(json_string(iter,"title")),
 		art_desc(json_string(iter,"desc")),
 		art_source(json_string(iter,"source")),
 		art_rating(json_int64(iter,"rating",0)),
-		art_postdate(json_int64(iter,"postdate",0)),
 		art_mimetype(json_string(iter,"mimetype",default_art_mimetype)),
+		art_postdate(json_int64(iter,"postdate",0)),
 		art_id(-1),
 		thumbnail(json_string(iter,"thumbnail")),
 		data(iter->operator[]("data").GetString())
