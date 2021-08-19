@@ -17,14 +17,14 @@
 #include "account.hpp"
 #include "db.hpp"
 #include <arcollect-paths.hpp>
+#include "../art-reader/art-reader.hpp"
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::account>> accounts_pool;
-extern SDL_Surface* IMG_Load(const char* path);
 
 Arcollect::db::account::account(Arcollect::db::account_id arcoid) :
 	arcoid(arcoid)
 {
 	const std::filesystem::path path = Arcollect::path::account_avatars / std::to_string(arcoid);
-	SDL::Surface *surf = (SDL::Surface*)IMG_Load(path.string().c_str());
+	SDL::Surface *surf = art_reader::image(path);
 	icon.reset(SDL::Texture::CreateFromSurface(renderer,surf));
 	delete surf;
 }
