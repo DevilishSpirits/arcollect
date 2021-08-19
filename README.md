@@ -6,7 +6,7 @@ This personal project aim to fulfill my needs of artwork collection management a
 
 It's goal is limited to easily browse and save artworks, it won't help you to discover new artworks or make any recommendations. No one can judge what's good or not better than you.
 
-Under the hood, the application is powered with C++17 by the [SDL2](https://www.libsdl.org/), [SQLite3](https://www.sqlite.org/) for metadata storage, [OpenImageIO](https://openimageio.readthedocs.org/) for image loading, [LittleCMS](https://littlecms.com/) for color management, [FreeType2](https://www.freetype.org/) for font rendering, [HarfBuzz](https://harfbuzz.github.io/) for text shaping and many other components listed under `THIRD-PARTY.md`.
+Under the hood, the application is powered with C++20 by the [SDL2](https://www.libsdl.org/), [SQLite3](https://www.sqlite.org/) for metadata storage, [OpenImageIO](https://openimageio.readthedocs.org/) for image loading, [LittleCMS](https://littlecms.com/) for color management, [FreeType2](https://www.freetype.org/) for font rendering, [HarfBuzz](https://harfbuzz.github.io/) for text shaping and many other components listed under `THIRD-PARTY.md`.
 
 This application respect your privacy and will never judge you.
 

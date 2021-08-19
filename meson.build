@@ -7,7 +7,7 @@ project('arcollect', 'cpp',
 	version: '0.23',
 	meson_version: '>=0.59.0',
 	default_options: [
-		'cpp_std=c++17',
+		'cpp_std=c++20',
 		#'cpp_rtti=false',
 		'default_library=static', # For subprojects
 	])
@@ -85,6 +85,7 @@ config_h_inc = include_directories('.')
 if enable_native_progs
 	# Query C++ features
 	cpp_required_features = {
+		# C++20 features
 		# C++17 features
 		'__cpp_fold_expressions'       : '>=201603',
 		'__cpp_lib_filesystem'         : '>=201703',
