@@ -96,6 +96,44 @@ namespace Arcollect {
 				bool value;
 				Arcollect_gui_font_element_wrapper_boilerplate(Justify)
 			};
+			/** Alignment option
+			 *
+			 * \warning Alignment require the use of wrap_width when creating the
+			 *          the #Arcollect::gui::font::Renderable.
+			 *
+			 * \todo Altough the API is text-direction aware. The implementation isn't
+			 *       yet. #START is an alias for #LEFT and #END an alias for #RIGHT.
+			 *
+			 * \see Justification is handled separately, see #Justify.
+			 */
+			enum class Align {
+				/** Align to the start of the line
+				 *
+				 * This is the default alignment option and take account of text
+				 * direction (when supported).
+				 *
+				 * This is equivalent to #LEFT in LTR and #RIGHT in RTL.
+				 */
+				START,
+				/** Align to the end of the line
+				 *
+				 * This is equivalent to #RIGHT in LTR and #LEFT in RTL.
+				 */
+				END,
+				/** Align to the left
+				 *
+				 * In most case you will prefer #START that is text-direction aware.
+				 */
+				LEFT,
+				/** Align to the centr
+				 */
+				CENTER,
+				/** Align to the right
+				 *
+				 * In most case you will prefer #END that is text-direction aware.
+				 */
+				RIGHT,
+			};
 			/** Arcollect FreeType2 render flags
 			 */
 			static constexpr auto ft_flags = 0;
@@ -128,6 +166,9 @@ namespace Arcollect {
 						 * attribute start.
 						 */
 						decltype(hb_glyph_info_t::cluster) end;
+						/** Alignment
+						 */
+						Align alignment;
 						/** Justification flag
 						 */
 						Justify justify;
@@ -195,6 +236,13 @@ namespace Arcollect {
 					FontSize  &initial_height(void) {
 						return text_runs[0].first;
 					}
+					/** Initial alignment
+					 * \return A reference to the alignment of the text beginning.
+					 * \warning The reference can be invalidated by operator<<().
+					 */
+					Align     &initial_alignment(void) {
+						return attributes[0].alignment;
+					}
 					/** Initial justification
 					 * \return A reference to the justification of the text beginning.
 					 * \warning The reference can be invalidated by operator<<().
@@ -216,6 +264,14 @@ namespace Arcollect {
 					 */
 					Elements& operator<<(Justify justify) {
 						push_attribute().justify = justify;
+						return *this;
+					}
+					/** Change alignment
+					 *
+					 * The current line alignment is changed.
+					 */
+					Elements& operator<<(Align alignment) {
+						push_attribute().alignment = alignment;
 						return *this;
 					}
 					/** Change color
@@ -273,6 +329,7 @@ namespace Arcollect {
 					Elements(std::u32string &&string, FontSize font_size = normal_font_size) :
 						attributes{{static_cast<decltype(Attributes::end)>(string.size()),
 						// Initial attributes
+						Align::LEFT,        // Alignment
 						false,              // Justification
 						{255,255,255,255}}, // Color
 					},text_runs{{font_size,std::move(string)}} {}
@@ -395,6 +452,13 @@ namespace Arcollect {
 					 */
 					std::vector<GlyphData> glyphs;
 					struct RenderingState;
+					/** Realign text
+					 * \param align           The alignment to use
+					 * \param i_start         The index of the first glyph to align
+					 * \param i_end           The index of the last glyph to align (excluded)
+					 * \param remaining_space The free space left on the line
+					 */
+					void align_glyphs(Align align, unsigned int i_start, unsigned int i_end, int remaining_space);
 					/** Append a text run
 					 */
 					void append_text_run(const decltype(Elements::text_runs)::value_type& text_run, RenderingState &state);
