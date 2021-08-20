@@ -158,7 +158,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 	// Create the buffer
 	hb_buffer_t *buf = hb_buffer_create();
 	hb_buffer_pre_allocate(buf,text.size());
-	hb_buffer_add_utf32(buf,reinterpret_cast<const uint32_t*>(text.data()),text.size(),0,-1);
+	hb_buffer_add_utf32(buf,reinterpret_cast<const uint32_t*>(text.data()),text.size(),0,text.size());
 	// FIXME Auto-detect better values
 	hb_buffer_set_direction(buf, HB_DIRECTION_LTR);
 	hb_buffer_set_script(buf, HB_SCRIPT_LATIN);
