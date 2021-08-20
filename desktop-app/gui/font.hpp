@@ -338,6 +338,17 @@ namespace Arcollect {
 					 * Create an empty #Elements
 					 */
 					Elements(void) : Elements(U""s) {}
+					
+					/** Parameter pack builder
+					 * \param args Parameter pack
+					 *
+					 * Create a new #Elements by operator<<() all items of the parameter
+					 * pack.
+					 */
+					template <typename ... Args>
+					static Elements build(Args... args) {
+						return (Elements() << ... << args);
+					}
 			};
 			
 			/** Cached glyph
