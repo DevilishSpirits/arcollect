@@ -20,6 +20,7 @@
 #include "../config.hpp"
 #include "../gui/font.hpp"
 #include <cstddef>
+#include <filesystem>
 #include <list>
 #include <memory>
 #include <unordered_map>
@@ -120,6 +121,20 @@ namespace Arcollect {
 				 * The artwork is pushed onto the artwork loader stack.
 				 */
 				void queue_for_load(void);
+				/** Get artwork (thumbnail) path
+				 * \return The path to the artwork itself (ARTWORK_TYPE_IMAGE) or a
+				 *         thumbnail.
+				 */
+				std::filesystem::path image_path(void) const {
+					std::filesystem::path base_path = Arcollect::path::artwork_pool / std::to_string(art_id);
+					switch (artwork_type) {
+						case ARTWORK_TYPE_IMAGE:
+							return base_path;
+						default:
+							return base_path += std::filesystem::path(".thumbnail");
+					}
+					
+				}
 				/** Load the image in a SDL::Surface
 				 * \return A surface containing the artwork
 				 * 
