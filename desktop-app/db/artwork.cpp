@@ -51,15 +51,7 @@ void Arcollect::db::artwork::queue_for_load(void)
 }
 SDL::Surface *Arcollect::db::artwork::load_surface(void) const
 {
-	switch (artwork_type) {
-		case ARTWORK_TYPE_IMAGE: {
-			return art_reader::image(Arcollect::path::artwork_pool / std::to_string(art_id));
-		} break;
-		default: {
-			// Load the thumbnail
-			return art_reader::image(Arcollect::path::artwork_pool / (std::to_string(art_id)+".thumbnail"));
-		} break;
-	}
+	return art_reader::image(image_path());
 }
 void Arcollect::db::artwork::texture_loaded(std::unique_ptr<SDL::Texture> &texture)
 {

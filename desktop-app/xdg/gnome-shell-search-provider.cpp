@@ -83,7 +83,7 @@ static DBusHandlerResult GetResultMetas(DBus::Connection &conn, DBusMessage *mes
 			add_dbus_dict_sv(result,"id",id);
 			add_dbus_dict_sv(result,"name",artwork->title().c_str());
 			add_dbus_dict_sv(result,"description",artwork->desc().c_str());
-			add_dbus_dict_sv(result,"gicon",(Arcollect::path::artwork_pool / std::string(id)).string().c_str());
+			add_dbus_dict_sv(result,"gicon",artwork->image_path().string().c_str());
 			results.close_container(result);
 		}
 	}
