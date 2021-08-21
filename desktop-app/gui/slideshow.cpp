@@ -123,7 +123,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			);
 			return {
 				#ifdef ARTWORK_HAS_OPEN_URL
-				std::make_shared<Arcollect::gui::menu_item_simple_label>(U"Browse..."s,::open_in_browser),
+				std::make_shared<Arcollect::gui::menu_item_simple_label>(U"Browse…"s,::open_in_browser),
 				#endif
 				std::make_shared<Arcollect::gui::menu_item_simple_label>(delete_elements,confirm_delete_art),
 			};
