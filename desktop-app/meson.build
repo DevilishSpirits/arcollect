@@ -18,6 +18,7 @@ deskapp_srcs = [
 	'db/artwork.cpp',
 	'db/artwork-loader.cpp',
 	'db/db.cpp',
+	'db/artwork-collection.cpp',
 	'db/filter.cpp',
 	'db/search.cpp',
 	'gui/about.cpp',

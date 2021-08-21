@@ -17,7 +17,7 @@
 #pragma once
 #include "../sdl2-hpp/SDL.hpp"
 #include "../db/artwork.hpp"
-#include "artwork-collection.hpp"
+#include "../db/artwork-collection.hpp"
 namespace Arcollect {
 	namespace gui {
 		/** View for an artwork
@@ -43,7 +43,7 @@ namespace Arcollect {
 			 *
 			 * This is an optionnal iterator for user code.
 			 */
-			std::unique_ptr<artwork_collection::iterator> iter;
+			std::unique_ptr<db::artwork_collection::iterator> iter;
 			
 			/** Render the artwork in the viewport
 			 * \param displacement Global displacement added to each corners

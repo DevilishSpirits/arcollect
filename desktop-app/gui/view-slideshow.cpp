@@ -19,7 +19,7 @@
 #include "../db/account.hpp"
 #include <math.h>
 
-void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
+void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<artwork_collection> &new_collection)
 {
 	collection = new_collection;
 	auto new_collection_iterator = new_collection->begin();
@@ -125,14 +125,14 @@ void Arcollect::gui::view_slideshow::scroll_text(int line_delta)
 void Arcollect::gui::view_slideshow::set_collection_iterator(const artwork_collection::iterator &iter)
 {
 	if (iter != collection->end()) {
-		collection_iterator = std::make_unique<artwork_collection::iterator>(iter);
-		viewport.artwork = **collection_iterator;
+		collection_iterator = iter;
+		viewport.artwork = db::artwork::query(*collection_iterator);
 		resize(rect);
 	} else viewport.artwork = NULL;
 }
 void Arcollect::gui::view_slideshow::render_info_incard(void)
 {
-	Arcollect::db::artwork &artwork = ***collection_iterator;
+	Arcollect::db::artwork &artwork = *db::artwork::query(*collection_iterator);
 	// Adjust rect
 	const auto box_height = rect.h/5;
 	static const auto min_title_font_height = 14;
@@ -164,15 +164,15 @@ void Arcollect::gui::view_slideshow::render(void)
 {
 	if (viewport.artwork) {
 		// Preload previous artwork
-		if (*collection_iterator != collection->begin()) {
-			(**--*collection_iterator).query_texture();
-			++*collection_iterator;
+		if (collection_iterator != collection->begin()) {
+			db::artwork::query(*--collection_iterator)->query_texture();
+			++collection_iterator;
 		}
 		// Preload next artwork
-		++*collection_iterator;
-		if (*collection_iterator != collection->end())
-			(***collection_iterator).query_texture();
-		--*collection_iterator;
+		++collection_iterator;
+		if (collection_iterator != collection->end())
+			db::artwork::query(*collection_iterator)->query_texture();
+		--collection_iterator;
 		// Resize is size is unknow
 			switch (viewport.artwork->artwork_type) {
 				case db::artwork::ARTWORK_TYPE_IMAGE: {
@@ -279,34 +279,34 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
 				case SDL_SCANCODE_PAGEDOWN:
 				case SDL_SCANCODE_RIGHT: {
 					if (viewport.artwork) {
-						++*collection_iterator;
-						if (*collection_iterator != collection->end()) {
-							target_artwork = viewport.artwork = **collection_iterator;
+						++collection_iterator;
+						if (collection_iterator != collection->end()) {
+							target_artwork = viewport.artwork = db::artwork::query(*collection_iterator);
 							resize(rect);
-						} else --*collection_iterator; // Rewind
+						} else --collection_iterator; // Rewind
 					}
 				} break;
 				case SDL_SCANCODE_AC_BACK:
 				case SDL_SCANCODE_PAGEUP:
 				case SDL_SCANCODE_LEFT: {
 					if (viewport.artwork) {
-						if (*collection_iterator != collection->begin()) {
-							target_artwork = viewport.artwork = *--*collection_iterator;
+						if (collection_iterator != collection->begin()) {
+							target_artwork = viewport.artwork = db::artwork::query(*--collection_iterator);
 							resize(rect);
 						}
 					}
 				} break;
 				case SDL_SCANCODE_HOME: {
 					if (viewport.artwork) {
-						collection_iterator = std::make_unique<gui::artwork_collection::iterator>(collection->begin());
-						target_artwork = viewport.artwork = **collection_iterator;
+						collection_iterator = collection->begin();
+						target_artwork = viewport.artwork = db::artwork::query(*collection_iterator);
 						resize(rect);
 					}
 				} break;
 				case SDL_SCANCODE_END: {
 					if (viewport.artwork) {
-						collection_iterator = std::make_unique<gui::artwork_collection::iterator>(collection->end());
-						target_artwork = viewport.artwork = *--*collection_iterator;
+						collection_iterator = collection->end();
+						target_artwork = viewport.artwork = db::artwork::query(*--collection_iterator);
 						resize(rect);
 					}
 				} break;

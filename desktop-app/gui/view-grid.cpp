@@ -18,10 +18,8 @@
 #include "views.hpp"
 #include "../db/account.hpp"
 #include "../db/db.hpp"
-void Arcollect::gui::view_vgrid::set_collection(std::shared_ptr<gui::artwork_collection> &new_collection)
+void Arcollect::gui::view_vgrid::set_collection(std::shared_ptr<artwork_collection> &new_collection)
 {
-	left_iter = std::make_unique<gui::artwork_collection::iterator>(new_collection->begin());
-	right_iter = std::make_unique<gui::artwork_collection::iterator>(new_collection->begin());
 	collection = new_collection;
 	flush_layout();
 }
@@ -33,8 +31,8 @@ void Arcollect::gui::view_vgrid::flush_layout(void)
 	// Destroy current layout
 	viewports.clear();
 	// Reset scrolling
-	left_iter = std::make_unique<gui::artwork_collection::iterator>(collection->begin());
-	right_iter = std::make_unique<gui::artwork_collection::iterator>(collection->begin());
+	left_iter = collection->begin();
+	right_iter = collection->begin();
 	left_y = 0;
 	right_y = 0;
 	// Force viewport regeneration
@@ -153,7 +151,7 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	while ((left_y > scroll_target - artwork_height) && !layout_invalid && new_line_left(left_y - artwork_height - artwork_margin.y));
 	// Create right viewports if needed
 	// NOTE! right_y is offset by minus one row
-	while ((right_y < scroll_target + rect.h + artwork_height) && !layout_invalid && (*right_iter != end_iter) && new_line_right(right_y));
+	while ((right_y < scroll_target + rect.h + artwork_height) && !layout_invalid && (right_iter != end_iter) && new_line_right(right_y));
 	// Stop scrolling if bottom is hit
 	if (scroll_target + rect.h > right_y)
 		scroll_target = right_y - rect.h;
@@ -162,13 +160,13 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 		scroll_target = 0;
 	// Drop left viewports if too much
 	while ((left_y < scroll_origin - 2 * artwork_height)&&(left_y < scroll_target - 2 * artwork_height)) {
-		*left_iter += viewports.front().size();
+		left_iter += viewports.front().size();
 		viewports.pop_front();
 		left_y += artwork_height + artwork_margin.y;
 	}
 	// Drop right viewports if too much
 	while ((right_y > scroll_origin + rect.h + 2 * artwork_height)&&(right_y > scroll_target + rect.h + 2 * artwork_height)) {
-		*right_iter -= viewports.back().size();
+		right_iter -= viewports.back().size();
 		viewports.pop_back();
 		right_y -= artwork_height + artwork_margin.y;
 	}
@@ -182,14 +180,14 @@ bool Arcollect::gui::view_vgrid::new_line_left(int y)
 	int free_space = rect.w-2*artwork_margin.x;
 	std::vector<artwork_viewport> &new_viewports = viewports.emplace_front();
 	// Generate viewports
-	while (*left_iter != begin_iter) {
-		--*left_iter;
-		if (!new_line_check_fit(free_space,y,new_viewports,*left_iter))
+	while (left_iter != begin_iter) {
+		--left_iter;
+		if (!new_line_check_fit(free_space,y,new_viewports,left_iter))
 			break;
 	}
 	// Rollback 
-	if (*left_iter != begin_iter)
-		++*left_iter;
+	if (left_iter != begin_iter)
+		++left_iter;
 	// Place viewport horizontally
 	if (new_viewports.size()) {
 		new_line_place_horizontal_r(free_space,new_viewports);
@@ -206,9 +204,9 @@ bool Arcollect::gui::view_vgrid::new_line_right(int y)
 	int free_space = rect.w-2*artwork_margin.x;
 	std::vector<artwork_viewport> &new_viewports = viewports.emplace_back();
 	// Generate viewports
-	while (*right_iter != end_iter) {
-		if (new_line_check_fit(free_space,y,new_viewports,*right_iter))
-			++*right_iter;
+	while (right_iter != end_iter) {
+		if (new_line_check_fit(free_space,y,new_viewports,right_iter))
+			++right_iter;
 		else break; // Line is full, break
 	}
 	// Place viewport horizontally
@@ -225,7 +223,7 @@ bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std:
 {
 	// Compute width
 	SDL::Point size;
-	std::shared_ptr<db::artwork> artwork = *iter;
+	std::shared_ptr<db::artwork> artwork = db::artwork::query(*iter);
 	if (!artwork->QuerySize(size)) {
 		// Size is unknow, stop for now. Will flush_layout() on next redraw.
 		layout_invalid = true;

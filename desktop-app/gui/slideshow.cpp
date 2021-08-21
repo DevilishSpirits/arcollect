@@ -16,7 +16,7 @@
  */
 #include "../db/filter.hpp"
 #include "../db/search.hpp"
-#include "artwork-collections.hpp"
+#include "../db/artwork-collections.hpp"
 #include "menu.hpp"
 #include "search-osd.hpp"
 #include "slideshow.hpp"
@@ -137,7 +137,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			slideshow_filter_version = Arcollect::db_filter::version;
 			// Regenerate the stmt
 			std::unique_ptr<SQLite3::stmt> stmt = dynamic_update_background_func();
-			Arcollect::gui::update_background(stmt,dynamic_update_background_collection);
+			Arcollect::gui::update_background(std::move(stmt),dynamic_update_background_collection);
 		}
 		Arcollect::gui::view_slideshow::render();
 	}
@@ -156,16 +156,10 @@ static void open_in_browser(void)
 
 Arcollect::gui::view_slideshow &Arcollect::gui::background_slideshow = ::background_slideshow;
 
-void Arcollect::gui::update_background(Arcollect::db::artwork_id artid)
-{
-	std::shared_ptr<Arcollect::gui::artwork_collection> collection = std::make_shared<Arcollect::gui::artwork_collection_single>(artid);
-	background_slideshow.set_collection(collection);
-	background_vgrid.set_collection(collection);
-}
-void Arcollect::gui::update_background(std::unique_ptr<SQLite3::stmt> &stmt, bool collection)
+void Arcollect::gui::update_background(std::unique_ptr<SQLite3::stmt> &&stmt, bool collection)
 {
 	if (collection) {
-		std::shared_ptr<Arcollect::gui::artwork_collection> new_collection = std::make_shared<Arcollect::gui::artwork_collection_sqlite>(stmt);
+		std::shared_ptr<Arcollect::db::artwork_collection> new_collection = std::make_shared<Arcollect::db::artwork_collection_sqlite>(std::move(stmt));
 		background_slideshow.set_collection(new_collection);
 		background_vgrid.set_collection(new_collection);
 	} else if (stmt->step() == SQLITE_ROW)

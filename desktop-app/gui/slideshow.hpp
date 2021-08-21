@@ -33,9 +33,6 @@ namespace Arcollect {
 		extern view_slideshow &background_slideshow;
 		extern view_vgrid     &background_vgrid;
 		/** Update the background image
-		 */
-		void update_background(db::artwork_id artid);
-		/** Update the background image
 		 * \param stmt       A ready SQLite3 statement that yield one column with
 		 *                   the artwork id to show.
 		 * \param collection If true, pull all images and set a slideshow, else only
@@ -48,7 +45,7 @@ namespace Arcollect {
 		 *
 		 * It is used to make the background responsive to the context.
 		 */
-		void update_background(std::unique_ptr<SQLite3::stmt> &stmt, bool collection);
+		void update_background(std::unique_ptr<SQLite3::stmt> &&stmt, bool collection);
 		/** Update the background image
 		 * \param stmt_gen   An stmt generator
 		 *

@@ -15,9 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #pragma once
+#include "../db/artwork-collection.hpp"
 #include "animation.hpp"
 #include "artwork-viewport.hpp"
-#include "artwork-collection.hpp"
 #include "font.hpp"
 #include "modal.hpp"
 #include <list>
@@ -28,14 +28,16 @@ namespace Arcollect {
 		
 		class view: public modal {
 			protected:
-				std::shared_ptr<gui::artwork_collection> collection;
+				std::shared_ptr<db::artwork_collection> collection;
 			public:
-				inline std::shared_ptr<gui::artwork_collection> get_collection(void) const {
+				// For convenience
+				using artwork_collection = db::artwork_collection;
+				inline std::shared_ptr<artwork_collection> get_collection(void) const {
 					return collection;
 				}
 				/** Set the collection
 				 */
-				virtual void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) = 0;
+				virtual void set_collection(std::shared_ptr<artwork_collection> &new_collection) = 0;
 				/** Called upon viewport resize
 				 */
 				virtual void resize(SDL::Rect rect) = 0;
@@ -90,7 +92,7 @@ namespace Arcollect {
 				void scroll_text(int line_delta);
 				
 				bool size_know = false;
-				std::unique_ptr<artwork_collection::iterator> collection_iterator;
+				db::artwork_collection::iterator collection_iterator;
 				std::unique_ptr<font::Renderable> title_text_cache;
 			public:
 				/** Artwork to target
@@ -102,7 +104,7 @@ namespace Arcollect {
 				 * to "remember" the last artwork when you erase search.
 				 */
 				std::shared_ptr<db::artwork> target_artwork;
-				void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) override;
+				void set_collection(std::shared_ptr<artwork_collection> &new_collection) override;
 				void resize(SDL::Rect rect) override;
 				void set_collection_iterator(const artwork_collection::iterator &iter);
 				void render(void) override;
@@ -180,8 +182,8 @@ namespace Arcollect {
 				 * Used to known when to call new_line_right()
 				 */
 				int right_y = 0;
-				std::unique_ptr<artwork_collection::iterator> left_iter;
-				std::unique_ptr<artwork_collection::iterator> right_iter;
+				db::artwork_collection::iterator left_iter;
+				db::artwork_collection::iterator right_iter;
 				
 				/** Viewports array
 				 *
@@ -207,7 +209,7 @@ namespace Arcollect {
 				 *
 				 * This function also append the artwork if it does fit
 				 */
-				bool new_line_check_fit(int &free_space, int y, std::vector<artwork_viewport> &new_viewports, artwork_collection::iterator &iter);
+				bool new_line_check_fit(int &free_space, int y, std::vector<artwork_viewport> &new_viewports, db::artwork_collection::iterator &iter);
 				
 				/** Create a new line in the top
 				 * \param y Distance from the logical top
@@ -220,7 +222,7 @@ namespace Arcollect {
 				 */
 				bool new_line_right(int y);
 			public:
-				void set_collection(std::shared_ptr<gui::artwork_collection> &new_collection) override;
+				void set_collection(std::shared_ptr<artwork_collection> &new_collection) override;
 				void resize(SDL::Rect rect) override;
 				/** Flush and rebuild viewports
 				 *
