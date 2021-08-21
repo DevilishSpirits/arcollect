@@ -20,6 +20,7 @@ deskapp_srcs = [
 	'db/db.cpp',
 	'db/filter.cpp',
 	'db/search.cpp',
+	'gui/about.cpp',
 	'gui/artwork-viewport.cpp',
 	'gui/first-run.cpp',
 	'gui/font.cpp',

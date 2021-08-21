@@ -46,6 +46,16 @@ config_h.set('ARCOLLECT_VERSION',meson.project_version())
 config_h.set('ARCOLLECT_WEBSITE','https://github.com/DevilishSpirits/arcollect')
 config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
 config_h.set('WITH_XDG',with_xdg ? '1' : '0')
+config_h.set('CPP_STD',get_option('cpp_std').to_upper())
+if (cpp.get_id() == 'gcc')
+	config_h.set('CXX_COMPILER_TITLE','GCC '+cpp.version())
+elif (cpp.get_id() == 'clang')or(cpp.get_id() == 'clang-cl')
+	config_h.set('CXX_COMPILER_TITLE','LLVM Clang '+cpp.version())
+elif (cpp.get_id() == 'msvc')
+	config_h.set('CXX_COMPILER_TITLE','Microsoft Visual Studio '+cpp.version())
+else
+	config_h.set(cpp.get_id()+' C++ compiler '+cpp.version())
+endif
 
 # D-Bus stuff
 config_h.set('ARCOLLECT_DBUS_NAME','me.d-spirits.arcollect')
