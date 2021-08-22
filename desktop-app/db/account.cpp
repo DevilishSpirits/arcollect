@@ -17,7 +17,7 @@
 #include "account.hpp"
 #include "db.hpp"
 #include <arcollect-paths.hpp>
-#include "../art-reader/art-reader.hpp"
+#include "../art-reader/image.hpp"
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::account>> accounts_pool;
 
 Arcollect::db::account::account(Arcollect::db::account_id arcoid) :

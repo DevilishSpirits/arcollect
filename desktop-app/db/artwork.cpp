@@ -18,7 +18,7 @@
 #include "artwork-loader.hpp"
 #include "account.hpp"
 #include "db.hpp"
-#include "../art-reader/art-reader.hpp"
+#include "../art-reader/image.hpp"
 #include <arcollect-paths.hpp>
 #include <arcollect-sqls.hpp>
 #include <iostream>
