@@ -72,6 +72,7 @@ function save_artwork()
 	// Show that we are saving the artwork
 	save_buttondiv.onclick = null;
 	save_buttondiv.text = 'Saving...';
+	save_buttondiv.style = 'cursor:progress;'
 	
 	let highlights = document.getElementsByClassName('highlight');
 	/** Normalize source URL
@@ -194,9 +195,11 @@ function save_artwork()
 	// Submit
 	arcollect_submit(submit_json).then(function() {
 		save_buttondiv.text = 'Saved';
+		save_buttondiv.style = 'cursor:default;'
 	}).catch(function(reason) {
 		save_buttondiv.onclick = save_artwork;
 		save_buttondiv.text = 'Retry to save in Arcollect';
+		save_buttondiv.style = ''
 		console.error('Failed to save in Arcollect ! '+reason);
 		alert('Failed to save in Arcollect ! '+reason);
 	});
