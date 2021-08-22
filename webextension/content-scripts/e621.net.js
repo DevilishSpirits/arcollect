@@ -42,6 +42,7 @@ function save_artwork()
 	saveButtonA.onclick = null;
 	saveButtonA.text = 'Saving...';
 	saveButtonA.className = "button btn-warn";
+	saveButtonA.style = 'cursor:progress;';
 	
 	/** Normalize source URL
 	 *
@@ -140,10 +141,12 @@ function save_artwork()
 	arcollect_submit(submit_json).then(function() {
 		saveButtonA.text = 'Saved';
 		saveButtonA.className = 'button btn-success';
+		saveButtonA.style = 'cursor:default;';
 	}).catch(function(reason) {
 		saveButtonA.onclick = save_artwork;
 		saveButtonA.text = 'Retry to save in Arcollect';
 		saveButtonA.className = 'button btn-danger';
+		saveButtonA.style = 'cursor:pointer;';
 		console.log('Failed to save in Arcollect ! '+reason);
 		alert('Failed to save in Arcollect ! '+reason);
 	});
@@ -155,6 +158,7 @@ function make_save_ui() {
 	saveButtonA = document.createElement("a");
 	saveButtonA.text = "Save in Arcollect";
 	saveButtonA.className = "button btn-warn";
+	saveButtonA.style = 'cursor:pointer;';
 	saveButtonA.onclick = save_artwork;
 	
 	let saveButtondiv = document.createElement("div");
