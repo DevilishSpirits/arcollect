@@ -14,6 +14,7 @@ deskapp_deps = [
 deskapp_srcs = [
 	'config.cpp',
 	'art-reader/image.cpp',
+	'art-reader/text.cpp',
 	'db/account.cpp',
 	'db/artwork.cpp',
 	'db/artwork-loader.cpp',

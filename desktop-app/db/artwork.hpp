@@ -104,11 +104,6 @@ namespace Arcollect {
 				std::unique_ptr<SDL::Texture> text;
 				gui::font::Elements artwork_text_elements;
 				std::list<std::reference_wrapper<artwork>>::iterator last_rendered_iterator;
-				union {
-					enum {
-						ARTWORK_TYPE_TEXT_PLAIN,
-					} text;
-				} artwork_subtype;
 			public:
 				/** Return wether texture is loaded
 				 * \return true is the texture in loaded in memory

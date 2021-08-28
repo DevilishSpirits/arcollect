@@ -19,6 +19,7 @@
 #include "account.hpp"
 #include "db.hpp"
 #include "../art-reader/image.hpp"
+#include "../art-reader/text.hpp"
 #include <arcollect-paths.hpp>
 #include <arcollect-sqls.hpp>
 #include <iostream>
@@ -109,14 +110,7 @@ const Arcollect::gui::font::Elements &Arcollect::db::artwork::query_font_element
 	if (artwork_text_elements.empty()) {
 		// Load the artwork
 		const std::filesystem::path path = Arcollect::path::artwork_pool / std::to_string(art_id);
-		switch (artwork_subtype.text) {
-			case artwork_subtype.ARTWORK_TYPE_TEXT_PLAIN: {
-				// TODO Use charset from the MIME type. Assume all UTF-8 for now.
-				std::string file_content;
-				std::getline(std::ifstream(path),file_content,'\0');
-				artwork_text_elements << std::move(file_content);
-			} break;
-		}
+		artwork_text_elements = art_reader::text(path,mimetype());
 	}
 	return artwork_text_elements;
 }
@@ -221,19 +215,13 @@ void Arcollect::db::artwork::db_sync(void)
 			 &&(art_mimetype[4] == 'e')
 			 &&(art_mimetype[5] == '/'))
 				artwork_type = ARTWORK_TYPE_IMAGE;
-			else if ((art_mimetype.size() >= 10)
+			else if ((art_mimetype.size() >= 5)
 			 &&(art_mimetype[0] == 't')
 			 &&(art_mimetype[1] == 'e')
 			 &&(art_mimetype[2] == 'x')
 			 &&(art_mimetype[3] == 't')
-			 &&(art_mimetype[4] == '/')
-			 &&(art_mimetype[5] == 'p')
-			 &&(art_mimetype[6] == 'l')
-			 &&(art_mimetype[7] == 'a')
-			 &&(art_mimetype[8] == 'i')
-			 &&(art_mimetype[9] == 'n')) {
+			 &&(art_mimetype[4] == '/')) {
 				artwork_type = ARTWORK_TYPE_TEXT;
-				artwork_subtype.text = artwork_subtype.ARTWORK_TYPE_TEXT_PLAIN;
 			} else artwork_type = ARTWORK_TYPE_UNKNOWN;
 			
 			data_version = Arcollect::data_version;
