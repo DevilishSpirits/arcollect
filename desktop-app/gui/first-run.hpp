@@ -21,9 +21,9 @@ namespace Arcollect {
 	namespace gui {
 		class first_run: public modal {
 			std::unique_ptr<Arcollect::gui::font::Renderable> render_cache;
-			int cache_window_width;
-			bool event(SDL::Event &e) override;
-			void render() override;
+			int cache_window_width = -10;
+			bool event(SDL::Event &e, SDL::Rect target) override;
+			void render(SDL::Rect target) override;
 		};
 		extern first_run first_run_modal;
 	}

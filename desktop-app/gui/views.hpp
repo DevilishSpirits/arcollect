@@ -107,7 +107,7 @@ namespace Arcollect {
 				void set_collection(std::shared_ptr<artwork_collection> &new_collection) override;
 				void resize(SDL::Rect rect) override;
 				void set_collection_iterator(const artwork_collection::iterator &iter);
-				void render(void) override;
+				void render(SDL::Rect target) override;
 				void render_titlebar(SDL::Rect target, int window_width) override;
 				/** Render some info in the bottom of the window
 				 *
@@ -121,7 +121,7 @@ namespace Arcollect {
 				 *
 				 */
 				void render_info_incard(void);
-				bool event(SDL::Event &e) override;
+				bool event(SDL::Event &e, SDL::Rect target) override;
 				
 				// Convenience
 				static constexpr auto ARTWORK_TYPE_UNKNOWN = db::artwork::ARTWORK_TYPE_UNKNOWN;
@@ -236,9 +236,9 @@ namespace Arcollect {
 				 * \param mousepos The mouse position.
 				 */
 				artwork_viewport *get_pointed(SDL::Point mousepos);
-				void render(void) override;
+				void render(SDL::Rect target) override;
 				void render_viewport_hover(const artwork_viewport& viewport);
-				bool event(SDL::Event &e) override;
+				bool event(SDL::Event &e, SDL::Rect target) override;
 		};
 	}
 }

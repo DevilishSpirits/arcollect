@@ -34,8 +34,8 @@ namespace Arcollect {
 				void text_changed(void);
 				void pop(void);
 			public:
-				bool event(SDL::Event &e) override;
-				void render(void) override;
+				bool event(SDL::Event &e, SDL::Rect target) override;
+				void render(SDL::Rect target) override;
 				void render_titlebar(SDL::Rect target, int window_width) override;
 				void push(void);
 		};

@@ -25,9 +25,9 @@ namespace Arcollect {
 			private:
 				std::unique_ptr<Arcollect::gui::font::Renderable> render_cache;
 				int cache_window_width;
-				bool event(SDL::Event &e) override;
+				bool event(SDL::Event &e, SDL::Rect target) override;
 				std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override;
-				void render() override;
+				void render(SDL::Rect target) override;
 			public:
 				static void show(void);
 		};

@@ -20,7 +20,7 @@
 
 Arcollect::gui::search_osd Arcollect::gui::search_osd_modal;
 
-bool Arcollect::gui::search_osd::event(SDL::Event &e)
+bool Arcollect::gui::search_osd::event(SDL::Event &e, SDL::Rect target)
 {
 	switch (e.type) {
 		case SDL_WINDOWEVENT: {
@@ -65,7 +65,7 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e)
 		} return false;
 	}
 }
-void Arcollect::gui::search_osd::render(void)
+void Arcollect::gui::search_osd::render(SDL::Rect target)
 {
 	SDL::Point screen_size;
 	renderer->GetOutputSize(screen_size);

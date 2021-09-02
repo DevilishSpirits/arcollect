@@ -160,7 +160,7 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	desc_renderable.render_tl(render_rect.x,render_rect.y);
 }
 
-void Arcollect::gui::view_slideshow::render(void)
+void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 {
 	if (viewport.artwork) {
 		// Preload previous artwork
@@ -236,7 +236,7 @@ void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int windo
 		title_text_cache->render_tl(target.x+title_border+target.h,target.y+title_border);
 	}
 }
-bool Arcollect::gui::view_slideshow::event(SDL::Event &e)
+bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 {
 	// STOP READING CODE!!! You might not understand some weird syntax.
 	// There's a 'README BEFORE READING CODE!!!' in top Arcollect::gui::view_slideshow declaration.

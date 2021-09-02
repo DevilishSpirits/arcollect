@@ -72,8 +72,8 @@ namespace Arcollect {
 				SDL::Point padding{8,4};
 				std::vector<std::shared_ptr<menu_item>> menu_items;
 				
-				bool event(SDL::Event &e) override;
-				void render(void) override;
+				bool event(SDL::Event &e, SDL::Rect target) override;
+				void render(SDL::Rect target) override;
 				int get_menu_item_at(SDL::Point cursor);
 				int hovered_cell = -1;
 				

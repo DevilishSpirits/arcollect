@@ -17,10 +17,8 @@
 #include "menu.hpp"
 extern SDL::Renderer *renderer;
 
-void Arcollect::gui::menu::render(void)
+void Arcollect::gui::menu::render(SDL::Rect target)
 {
-	SDL::Point screen_size;
-	renderer->GetOutputSize(screen_size);
 	// Compute menu_size
 	SDL::Rect menu_rect{0,0,0,0};
 	const int menu_items_count = static_cast<int>(menu_items.size());
@@ -36,23 +34,23 @@ void Arcollect::gui::menu::render(void)
 	// Compute real menu_rect
 	if (anchor_bot && anchor_top) {
 		menu_rect.y =                  anchor_distance.y;
-		menu_rect.h =  screen_size.y - anchor_distance.y;
+		menu_rect.h =  target.h - anchor_distance.y;
 	} else if (anchor_bot && !anchor_top)
-		menu_rect.y =  screen_size.y - anchor_distance.y - menu_rect.h;
+		menu_rect.y =  target.h - anchor_distance.y - menu_rect.h;
 	 else if (!anchor_bot &&  anchor_top)
 		menu_rect.y =                  anchor_distance.y;
 	else// if (!anchor_bot && !anchor_top) {
-		menu_rect.y = (screen_size.y - menu_rect.h)/2;
+		menu_rect.y = (target.h - menu_rect.h)/2;
 		
 	if (anchor_right && anchor_left) {
 		menu_rect.x =                  anchor_distance.x;
-		menu_rect.w =  screen_size.x - anchor_distance.x;
+		menu_rect.w =  target.w - anchor_distance.x;
 	} else if (anchor_right && !anchor_left)
-		menu_rect.x =  screen_size.x - anchor_distance.x - menu_rect.w;
+		menu_rect.x =  target.w - anchor_distance.x - menu_rect.w;
 	 else if (!anchor_right &&  anchor_left)
 		menu_rect.x =                  anchor_distance.x;
 	else// if (!anchor_right && !anchor_left) {
-		menu_rect.x = (screen_size.x - menu_rect.w)/2;
+		menu_rect.x = (target.w - menu_rect.w)/2;
 	
 	// Render background
 	renderer->SetDrawColor(0,0,0,192);
@@ -90,7 +88,7 @@ void Arcollect::gui::menu::render(void)
 	}
 }
 
-bool Arcollect::gui::menu::event(SDL::Event &e)
+bool Arcollect::gui::menu::event(SDL::Event &e, SDL::Rect target)
 {
 	bool propagate; // Propagate event to other modals
 	bool broadcast = false; // Broadcast event to all items
@@ -137,7 +135,7 @@ int Arcollect::gui::menu::get_menu_item_at(SDL::Point cursor)
 
 class popup_menu: public Arcollect::gui::menu {
 	public:
-		bool event(SDL::Event &e) override {
+		bool event(SDL::Event &e, SDL::Rect target) override {
 			bool result;
 			bool will_pop = false;
 			switch (e.type) {
@@ -157,7 +155,7 @@ class popup_menu: public Arcollect::gui::menu {
 					result = false;
 				} break; // This modal grab all events
 			}
-			result &= Arcollect::gui::menu::event(e);
+			result &= Arcollect::gui::menu::event(e,target);
 			if (will_pop)
 				for (auto iter = Arcollect::gui::modal_stack.begin(); iter != Arcollect::gui::modal_stack.end(); ++iter) 
 					if (&Arcollect::gui::modal_get(iter) == this) {

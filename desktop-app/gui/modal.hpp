@@ -32,15 +32,17 @@ namespace Arcollect {
 			public:
 				/** Handle an event
 				 * \param e The event
+				 * \param target The rendering target
 				 * \return Weather propagate event to the next element in the stack.
 				 *         True to propagate the event.
 				 */
-				virtual bool event(SDL::Event &e) = 0;
+				virtual bool event(SDL::Event &e, SDL::Rect target) = 0;
 				/** Render the object
+				 * \param target The rendering target
 				 *
 				 * Render the object on the screen
 				 */
-				virtual void render() = 0;
+				virtual void render(SDL::Rect target) = 0;
 				/** Render the title bar
 				 * \param target       The rendering rect target
 				 * \param window_width The window width for information

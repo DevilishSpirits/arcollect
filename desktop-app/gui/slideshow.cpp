@@ -30,7 +30,7 @@ static unsigned int slideshow_filter_version;
 
 static class background_vgrid: public Arcollect::gui::view_vgrid {
 	Arcollect::gui::artwork_viewport *mousedown_viewport;
-	bool event(SDL::Event &e) override {
+	bool event(SDL::Event &e, SDL::Rect target) override {
 		switch (e.type) {
 			case SDL_MOUSEBUTTONDOWN: {
 				mousedown_viewport = get_pointed({e.button.x,e.button.y});
@@ -59,7 +59,7 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 		} break;
 			default:break;
 		}
-		return Arcollect::gui::view_vgrid::event(e);
+		return Arcollect::gui::view_vgrid::event(e,target);
 	}
 } background_vgrid;
 
@@ -88,7 +88,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 		viewport.artwork->open_url();
 	}
 	#endif
-	bool event(SDL::Event &e) override {
+	bool event(SDL::Event &e, SDL::Rect target) override {
 		switch (e.type) {
 			case SDL_KEYUP: {
 				switch (e.key.keysym.scancode) {
@@ -114,7 +114,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			} break;
 			default:break;
 		};
-		return Arcollect::gui::view_slideshow::event(e);
+		return Arcollect::gui::view_slideshow::event(e,target);
 	}
 	std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override {
 		if (viewport.artwork) {
@@ -129,7 +129,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			};
 		} else return {};
 	};
-	void render(void) override {
+	void render(SDL::Rect target) override {
 		// Regenerate collection on-demand
 		if (dynamic_update_background_func && ((slideshow_data_version != Arcollect::data_version)||(slideshow_filter_version != Arcollect::db_filter::version))) {
 			// Update version
@@ -139,7 +139,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			std::unique_ptr<SQLite3::stmt> stmt = dynamic_update_background_func();
 			Arcollect::gui::update_background(std::move(stmt),dynamic_update_background_collection);
 		}
-		Arcollect::gui::view_slideshow::render();
+		Arcollect::gui::view_slideshow::render(target);
 	}
 } background_slideshow;
 

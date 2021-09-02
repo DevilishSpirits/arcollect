@@ -50,7 +50,7 @@ void Arcollect::gui::view_vgrid::resize(SDL::Rect rect)
 	this->rect = rect;
 	flush_layout();
 }
-void Arcollect::gui::view_vgrid::render(void)
+void Arcollect::gui::view_vgrid::render(SDL::Rect target)
 {
 	// Check if we need to rebuild the layout
 	if ((data_version != Arcollect::data_version)|| layout_invalid) {
@@ -97,7 +97,7 @@ void Arcollect::gui::view_vgrid::render_viewport_hover(const artwork_viewport& v
 		caption_account.render_tl(rect.x+(rect.w-caption_account.size().x)/2,caption_title_y+caption_title.size().y+8);
 	}
 }
-bool Arcollect::gui::view_vgrid::event(SDL::Event &e)
+bool Arcollect::gui::view_vgrid::event(SDL::Event &e, SDL::Rect target)
 {
 	switch (e.type) {
 		case SDL_KEYDOWN: {

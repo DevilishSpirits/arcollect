@@ -29,7 +29,7 @@ void Arcollect::gui::about_window::show(void)
 }
 
 Arcollect::gui::about_window Arcollect::gui::about_window_modal;
-bool Arcollect::gui::about_window::event(SDL::Event &e) {
+bool Arcollect::gui::about_window::event(SDL::Event &e, SDL::Rect target) {
 	switch (e.type) {
 		case SDL_MOUSEBUTTONUP:
 		case SDL_KEYUP: {
@@ -39,15 +39,11 @@ bool Arcollect::gui::about_window::event(SDL::Event &e) {
 	}
 	return true;
 }
-void Arcollect::gui::about_window::render()
+void Arcollect::gui::about_window::render(SDL::Rect target)
 {
-	// Render title
-	SDL::Point window_size;
-	renderer->GetOutputSize(window_size);
-	
 	// About text
 	std::unique_ptr<Arcollect::gui::font::Renderable> cached_renderable;
-	if ((cache_window_width != window_size.x)||!render_cache) {
+	if ((cache_window_width != target.w)||!render_cache) {
 		using namespace Arcollect::gui::font;
 		Elements elements;
 		elements << Align::CENTER
@@ -61,10 +57,10 @@ void Arcollect::gui::about_window::render()
 			   "It use and bundle third-party dependencies released under another licenses\n"
 			   "Links to projects websites are available in the top bar menu.\n"
 		;
-		render_cache = std::make_unique<Arcollect::gui::font::Renderable>(elements,window_size.x-window_size.x/10);
-		cache_window_width = window_size.x;
+		render_cache = std::make_unique<Arcollect::gui::font::Renderable>(elements,target.w-target.w/10);
+		cache_window_width = target.w;
 	}
-	SDL::Point welcome_text_dst{window_size.x/20,(window_size.y-render_cache->size().y)/2};
+	SDL::Point welcome_text_dst{target.w/20,(target.h-render_cache->size().y)/2};
 	renderer->SetDrawColor(0,0,0,128);
 	renderer->FillRect();
 	render_cache->render_tl(welcome_text_dst);

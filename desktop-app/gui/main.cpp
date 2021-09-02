@@ -158,13 +158,16 @@ bool Arcollect::gui::main(void)
 	Uint32 new_ticks = SDL_GetTicks();
 	Arcollect::gui::time_framedelta = Arcollect::gui::time_now-new_ticks;
 	Arcollect::gui::time_now = new_ticks;
+	// Get window size
+	SDL::Rect window_rect{0,0};
+	renderer->GetOutputSize(window_rect.w,window_rect.h);
 	// Handle event
 	Uint32 event_start_ticks = SDL_GetTicks();
 	while (has_event) {
 		if (Arcollect::gui::window_borders::event(e)) {
 			// Propagate event to modals
 			auto iter = Arcollect::gui::modal_stack.rbegin();
-			while (Arcollect::gui::modal_get(iter).event(e))
+			while (Arcollect::gui::modal_get(iter).event(e,window_rect))
 				++iter;
 		}
 		if (e.type == SDL_QUIT)
@@ -192,7 +195,7 @@ bool Arcollect::gui::main(void)
 		renderer->SetDrawColor(0,0,0,128);
 		renderer->FillRect();
 		// Render
-		Arcollect::gui::modal_get(iter).render();
+		Arcollect::gui::modal_get(iter).render(window_rect);
 	}
 	Arcollect::gui::window_borders::render();
 	Uint32 loader_start_ticks = SDL_GetTicks();
