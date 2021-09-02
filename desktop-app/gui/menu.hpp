@@ -48,6 +48,7 @@ namespace Arcollect {
 		class menu: public modal {
 			protected:
 				std::vector<SDL::Rect> menu_rects;
+			public:
 				/** Anchor distance
 				 *
 				 * Each direction have a special meaning depending on which anchor is 
@@ -63,7 +64,6 @@ namespace Arcollect {
 				 * is centered
 				 */
 				SDL::Point anchor_distance;
-			public:
 				bool anchor_top;
 				bool anchor_left;
 				bool anchor_bot;
