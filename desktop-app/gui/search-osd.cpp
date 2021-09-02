@@ -92,7 +92,7 @@ void Arcollect::gui::search_osd::push(void)
 	text = saved_text = Arcollect::gui::get_current_search();
 	text_changed();
 	SDL_StartTextInput();
-	also_pop_grid_after = &modal_stack.back().get() != &Arcollect::gui::background_vgrid;
+	also_pop_grid_after = &modal_back() != &Arcollect::gui::background_vgrid;
 	if (also_pop_grid_after)
 		modal_stack.push_back(Arcollect::gui::background_vgrid); // Force display of background_vgrid
 	modal_stack.push_back(*this);

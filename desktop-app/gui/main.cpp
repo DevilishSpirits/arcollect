@@ -38,7 +38,7 @@ SDL_Window    *window;
 extern SDL::Renderer *renderer;
 SDL::Renderer *renderer;
 extern cmsHPROFILE    cms_screenprofile;
-std::vector<std::reference_wrapper<Arcollect::gui::modal>> Arcollect::gui::modal_stack;
+std::vector<Arcollect::gui::modal_stack_variant> Arcollect::gui::modal_stack;
 
 bool debug_redraws;
 bool debug_icc_profile;
@@ -164,7 +164,7 @@ bool Arcollect::gui::main(void)
 		if (Arcollect::gui::window_borders::event(e)) {
 			// Propagate event to modals
 			auto iter = Arcollect::gui::modal_stack.rbegin();
-			while (iter->get().event(e))
+			while (Arcollect::gui::modal_get(iter).event(e))
 				++iter;
 		}
 		if (e.type == SDL_QUIT)
@@ -192,7 +192,7 @@ bool Arcollect::gui::main(void)
 		renderer->SetDrawColor(0,0,0,128);
 		renderer->FillRect();
 		// Render
-		iter.get().render();
+		Arcollect::gui::modal_get(iter).render();
 	}
 	Arcollect::gui::window_borders::render();
 	Uint32 loader_start_ticks = SDL_GetTicks();

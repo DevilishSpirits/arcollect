@@ -200,7 +200,7 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 							// Don't pop if there is a context menu
 							if (Arcollect::gui::menu::popup_context_count == 0) {
 								// Pop menu
-								std::vector<std::shared_ptr<menu_item>> menu = Arcollect::gui::modal_stack.back().get().top_menu();
+								std::vector<std::shared_ptr<menu_item>> menu = Arcollect::gui::modal_back().top_menu();
 								for (auto& item: topbar_menu_items)
 									menu.emplace_back(item);
 								Arcollect::gui::menu::popup_context(menu,{title_button_width,title_height},true,false,false,true);
@@ -237,7 +237,7 @@ void Arcollect::gui::window_borders::render(void)
 		SDL::Rect modal_bar{0,0,window_size.x-TITLEBTN_N*title_button_width,Arcollect::gui::window_borders::title_height};
 		renderer->SetDrawColor(0,0,0,128);
 		renderer->FillRect(modal_bar);
-		modal_stack.back().get().render_titlebar(modal_bar,window_size.x);
+		modal_back().render_titlebar(modal_bar,window_size.x);
 		// Draw buttons background over title if it overflow
 		SDL::Rect title_button_area{modal_bar.w,0,TITLEBTN_N*title_button_width,Arcollect::gui::window_borders::title_height};
 		renderer->SetDrawColor(0,0,0,128);

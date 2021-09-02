@@ -18,6 +18,7 @@
 #include "sdl2-hpp/SDL.hpp"
 #include <functional>
 #include <memory>
+#include <variant>
 #include <vector>
 namespace Arcollect {
 	namespace gui {
@@ -57,6 +58,33 @@ namespace Arcollect {
 				virtual ~modal(void) = default;
 		};
 		
-		extern std::vector<std::reference_wrapper<modal>> modal_stack;
+		using modal_stack_variant = std::variant<
+			std::reference_wrapper<modal>,
+			std::unique_ptr<modal>,
+			std::shared_ptr<modal>
+		>;
+		extern std::vector<modal_stack_variant> modal_stack;
+		
+		inline modal& modal_get(modal_stack_variant &value) {
+			switch (value.index()) {
+				case 0:return std::get<std::reference_wrapper<modal>>(value);
+				case 1:return *std::get<std::unique_ptr<modal>>(value);
+				case 2:return *std::get<std::shared_ptr<modal>>(value);
+				default:return *reinterpret_cast<modal*>(NULL);
+			}
+		}
+		inline modal& modal_get(decltype(modal_stack)::iterator &iter) {
+			return modal_get(*iter);
+		}
+		inline modal& modal_get(decltype(modal_stack)::reverse_iterator &iter) {
+			return modal_get(*iter);
+		}
+		inline modal& modal_front(void) {
+			return modal_get(modal_stack.front());
+		}
+		inline modal& modal_back(void) {
+			return modal_get(modal_stack.back());
+		}
 	}
 }
+

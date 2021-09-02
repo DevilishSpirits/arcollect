@@ -138,22 +138,33 @@ int Arcollect::gui::menu::get_menu_item_at(SDL::Point cursor)
 class popup_menu: public Arcollect::gui::menu {
 	public:
 		bool event(SDL::Event &e) override {
-			if (e.type == SDL_MOUSEBUTTONUP)
-				Arcollect::gui::modal_stack.pop_back();
-			Arcollect::gui::menu::event(e);
+			bool result;
+			bool will_pop = false;
 			switch (e.type) {
 				case SDL_WINDOWEVENT: {
 					// Propagate window events
-				} return true;
+					result = true;
+				} break;
 				case SDL_QUIT: {
-					delete this;
-				} return true;
+					will_pop = true;
+					result = true;
+				} break;
 				case SDL_MOUSEBUTTONUP: {
-					delete this;
-				} return false;
+					will_pop = true;
+					result = false;
+				} break;
 				default: {
-				} return false; // This modal grab all events
+					result = false;
+				} break; // This modal grab all events
 			}
+			result &= Arcollect::gui::menu::event(e);
+			if (will_pop)
+				for (auto iter = Arcollect::gui::modal_stack.begin(); iter != Arcollect::gui::modal_stack.end(); ++iter) 
+					if (&Arcollect::gui::modal_get(iter) == this) {
+						Arcollect::gui::modal_stack.erase(iter);
+						break;
+					}
+			return result;
 		}
 		~popup_menu(void) {
 			popup_context_count--;
@@ -170,7 +181,7 @@ void Arcollect::gui::menu::popup_context(const std::vector<std::shared_ptr<menu_
 	new_popup_menu->anchor_bot = anchor_bot;
 	new_popup_menu->anchor_right = anchor_right;
 	new_popup_menu->menu_items = menu_items;
-	Arcollect::gui::modal_stack.push_back(*new_popup_menu);
+	Arcollect::gui::modal_stack.push_back(std::unique_ptr<modal>(new_popup_menu));
 	popup_context_count++;
 }
 
