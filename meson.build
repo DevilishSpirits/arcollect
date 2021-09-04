@@ -53,9 +53,9 @@ if (cpp.get_id() == 'gcc')
 elif (cpp.get_id() == 'clang')or(cpp.get_id() == 'clang-cl')
 	config_h.set('CXX_COMPILER_TITLE','LLVM Clang '+cpp.version())
 elif (cpp.get_id() == 'msvc')
-	config_h.set('CXX_COMPILER_TITLE','Microsoft Visual Studio '+cpp.version())
+	config_h.set('CXX_COMPILER_TITLE','MSVC '+cpp.version())
 else
-	config_h.set(cpp.get_id()+' C++ compiler '+cpp.version())
+	config_h.set('CXX_COMPILER_TITLE',cpp.get_id()+' C++ compiler '+cpp.version())
 endif
 
 # D-Bus stuff
