@@ -67,7 +67,7 @@ bool Arcollect::gui::about_window::event(SDL::Event &e, SDL::Rect target) {
 		case SDL_KEYUP: {
 			Arcollect::gui::modal_stack.pop_back();
 			about_window_modal_shown = false;
-		} break;
+		} return false;
 	}
 	return true;
 }
