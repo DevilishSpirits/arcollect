@@ -20,6 +20,7 @@
 #include "artwork-viewport.hpp"
 #include "font.hpp"
 #include "modal.hpp"
+#include "scrolling-text.hpp"
 #include <list>
 #include <vector>
 namespace Arcollect {
@@ -87,9 +88,7 @@ namespace Arcollect {
 				void zoomat(float delta, SDL::Point point);
 				
 				// ARTWORK_TYPE_TEXT stuff
-				std::unique_ptr<gui::font::Renderable> text_renderable;
-				animation::scrolling<int> text_scroll;
-				void scroll_text(int line_delta);
+				scrolling_text text_display;
 				
 				bool size_know = false;
 				db::artwork_collection::iterator collection_iterator;

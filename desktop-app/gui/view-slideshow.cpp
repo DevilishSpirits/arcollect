@@ -38,35 +38,41 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 	this->rect = rect;
 	size_know = false;
 	if (viewport.artwork) {
-		// Reset cached text render
-		text_renderable.reset();
-		// Preserve aspect ratio
-		SDL::Point art_size;
-		if (!viewport.artwork->QuerySize(art_size))
-			return; // Art is queued for load, wait a little bit.
-		size_know = true;
-		
-		int height_for_width = art_size.y*rect.w/art_size.x;
-		if (height_for_width > rect.h) {
-			// Perform width for height size
-			int width_for_height = art_size.x*rect.h/art_size.y;
-			rect.x += (rect.w-width_for_height)/2;
-			rect.w = width_for_height;
-		} else {
-			// Perform height for width size
-			rect.y += (rect.h-height_for_width)/2;
-			rect.h = height_for_width;
+		switch (viewport.artwork->artwork_type) {
+			case db::artwork::ARTWORK_TYPE_IMAGE: {
+				// Preserve aspect ratio
+				SDL::Point art_size;
+				if (!viewport.artwork->QuerySize(art_size))
+					return; // Art is queued for load, wait a little bit.
+				size_know = true;
+				
+				int height_for_width = art_size.y*rect.w/art_size.x;
+				if (height_for_width > rect.h) {
+					// Perform width for height size
+					int width_for_height = art_size.x*rect.h/art_size.y;
+					rect.x += (rect.w-width_for_height)/2;
+					rect.w = width_for_height;
+				} else {
+					// Perform height for width size
+					rect.y += (rect.h-height_for_width)/2;
+					rect.h = height_for_width;
+				}
+				// Set viewport
+				viewport_animation.val_origin = viewport_animation.val_target = rect;
+				viewport_delta.x = rect.x;
+				viewport_delta.y = rect.y;
+				artwork_zoom1.x = rect.w;
+				artwork_zoom1.y = rect.h;
+				viewport_zoom = rect.w/(float)art_size.x;
+			} break;
+			case db::artwork::ARTWORK_TYPE_TEXT: {
+				text_display.set_static_elements(viewport.artwork->query_font_elements());
+			} break;
+			case db::artwork::ARTWORK_TYPE_UNKNOWN: {
+			} break;
 		}
-		// Set viewport
-		viewport_animation.val_origin = viewport_animation.val_target = rect;
 		// Reset cached title render
 		title_text_cache.reset();
-		
-		viewport_delta.x = rect.x;
-		viewport_delta.y = rect.y;
-		artwork_zoom1.x = rect.w;
-		artwork_zoom1.y = rect.h;
-		viewport_zoom = rect.w/(float)art_size.x;
 	}
 }
 void Arcollect::gui::view_slideshow::update_zoom(void)
@@ -109,19 +115,6 @@ void Arcollect::gui::view_slideshow::zoomat(float delta, SDL::Point point)
 	update_zoom();
 }
 
-void Arcollect::gui::view_slideshow::scroll_text(int line_delta)
-{
-	if (text_renderable) {
-		int border = rect.w/10;
-		auto target = text_scroll.val_target;
-		target += line_delta*Arcollect::config::writing_font_size;
-		if (target > text_renderable->size().y - rect.h + border + border)
-			target = text_renderable->size().y - rect.h + border + border;
-		else if (target < 0)
-			target = 0;
-		text_scroll = target;
-	}
-}
 void Arcollect::gui::view_slideshow::set_collection_iterator(const artwork_collection::iterator &iter)
 {
 	if (iter != collection->end()) {
@@ -184,25 +177,8 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 						viewport.render({0,0});
 					}
 				} break;
-				case db::artwork::ARTWORK_TYPE_TEXT: {
-					int current_scroll = text_scroll;
-					int border = rect.w/10;
-					// Shape text if not made already
-					if (!text_renderable) {
-						Arcollect::gui::font::Elements elements = viewport.artwork->query_font_elements();
-						elements.initial_height() = Arcollect::config::writing_font_size;
-						elements.initial_justify() = true;
-						text_renderable = std::make_unique<Arcollect::gui::font::Renderable>(elements,rect.w-border-border);
-					}
-					// Render text
-					int max_scroll = text_renderable->size().y - rect.h + border + border;
-					text_renderable->render_tl(border,border-current_scroll);
-					// Render progress bar
-					SDL::Rect progress_bar{rect.x,rect.y,current_scroll*rect.w/max_scroll,Arcollect::config::writing_font_size/8};
-					progress_bar.y += rect.h-progress_bar.h;
-					renderer->SetDrawColor(128,128,128,255);
-					renderer->FillRect(progress_bar);
-				} break;
+				case db::artwork::ARTWORK_TYPE_TEXT:
+					return text_display.render(target);
 				case db::artwork::ARTWORK_TYPE_UNKNOWN: {
 					Arcollect::gui::font::Elements unknown_artwork_elements;
 					unknown_artwork_elements.initial_height() = 22;
@@ -242,7 +218,6 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 	// There's a 'README BEFORE READING CODE!!!' in top Arcollect::gui::view_slideshow declaration.
 	SDL::Point cursorpos;
 	auto mouse_state = SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
-	const auto text_scroll_speed = 5;
 	switch (e.type) {
 		case SDL_KEYDOWN: {
 			switch (e.key.keysym.scancode) {
@@ -253,9 +228,8 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 							case ARTWORK_TYPE_IMAGE: {
 								zoomat(+.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
 							} break;
-							case ARTWORK_TYPE_TEXT: {
-								scroll_text(-text_scroll_speed);
-							} break;
+							case ARTWORK_TYPE_TEXT:
+								return text_display.event(e,target);
 						}
 				} break;
 				case SDL_SCANCODE_DOWN: { // Zoom-out
@@ -265,9 +239,8 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 							case ARTWORK_TYPE_IMAGE: {
 								zoomat(-.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
 							} break;
-							case ARTWORK_TYPE_TEXT: {
-								scroll_text(+text_scroll_speed);
-							} break;
+							case ARTWORK_TYPE_TEXT:
+								return text_display.event(e,target);
 						}
 				} break;
 				default:break;
@@ -322,9 +295,8 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 						SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
 						zoomat(e.wheel.y*.1f,cursorpos);
 					} break;
-					case ARTWORK_TYPE_TEXT: {
-						scroll_text(-e.wheel.y*text_scroll_speed);
-					} break;
+					case ARTWORK_TYPE_TEXT:
+						return text_display.event(e,target);
 				}
 		} break;
 		case SDL_MOUSEMOTION: {
