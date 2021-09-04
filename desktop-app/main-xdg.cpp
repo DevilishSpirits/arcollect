@@ -38,7 +38,6 @@
 #include <unistd.h>
 #include <vector>
 
-static volatile bool dbus_continue = true;
 static Uint32 last_dbus_activity = SDL_GetTicks();
 
 // WARNING! Each sigio_watch_list has a matching sigio_watch_pollfd at same index
@@ -160,7 +159,7 @@ int main(int argc, char *argv[])
 	// Run GUI main-loop
 	if ((argc < 2)|| std::strcmp(argv[1],"--dbus-service"))
 		Arcollect::gui::start(argc,argv);
-	while ((dbus_continue && ((SDL_GetTicks()-last_dbus_activity) < 10000)) || Arcollect::gui::enabled) {
+	while ((((SDL_GetTicks()-last_dbus_activity) < 10000)) || Arcollect::gui::enabled) {
 		// Process timeouts
 		Uint32 timeout_timestamp = SDL_GetTicks();
 		int next_timeout = 10000-(SDL_GetTicks()-last_dbus_activity); // D-Bus service timeout
@@ -216,6 +215,5 @@ int main(int argc, char *argv[])
 			last_dbus_activity = SDL_GetTicks();
 		}
 	}
-	dbus_continue = false;
 	return 0;
 }
