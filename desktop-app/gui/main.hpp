@@ -14,6 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+/** \file desktop-app/gui/main.hpp
+ *  \brief Splitted main-loop
+ *
+ * The "real" Arcollect main-loop is splitted in multiple functions to allow
+ * platform dependant loops like the D-Bus one and ease testing.
+ *
+ * To make things simple, here is the generic main `desktop-app/main.cpp` :
+ * \include{lineno} desktop-app/main.cpp
+ */
 #pragma once
 namespace Arcollect {
 	namespace gui {

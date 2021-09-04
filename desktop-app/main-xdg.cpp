@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-/** \file main.cpp
+/** \file main-xdg.cpp
  *  \brief Implementation of main() with XDG integration
  *
  * The XDG integration allow Arcollect to run in background listening for D-Bus
