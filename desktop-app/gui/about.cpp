@@ -87,7 +87,11 @@ void Arcollect::gui::about_window::render(SDL::Rect target)
 			   CPP_STD_STR " ⸱ " CXX_COMPILER_TITLE_STR " ⸱ SDL2 ⸱ SQLite3 ⸱ OpenImageIO ⸱ LittleCMS ⸱ FreeType2 ⸱ HarfBuzz ⸱ Many other…\n"
 			   "\n"
 			   "Arcollect is licensed under the GNU General Public License version 3 (GPL-3) or later.\n"
+			   #if HAS_SDL_OPENURL
 			   "The top bar menu contain links to projects websites and a copy of the GPL-3.\n"
+			   #else
+			   "The top bar menu contain a copy of the GPL-3.\n"
+			   #endif
 			   "\n"
 			   "It use and bundle third-party dependencies released under another licenses.\n"
 			   "This copy of Arcollect also embed copies of " ABOUT_EMBEDED_DEPENDENCIES_STR "."
@@ -101,11 +105,14 @@ void Arcollect::gui::about_window::render(SDL::Rect target)
 	render_cache->render_tl(welcome_text_dst);
 }
 
+#if HAS_SDL_OPENURL
 static void open_github(void) {
 	SDL_OpenURL(ARCOLLECT_WEBSITE_STR);
 }
+#endif
 static void open_gpl3(void);
 
+#if HAS_SDL_OPENURL
 static void open_sdl2(void) {
 	SDL_OpenURL("https://www.libsdl.org/");
 }
@@ -121,18 +128,22 @@ static void open_freetype2(void) {
 static void open_harfbuzz(void) {
 	SDL_OpenURL("https://harfbuzz.github.io/");
 }
+#endif
 
 std::vector<std::shared_ptr<Arcollect::gui::menu_item>> Arcollect::gui::about_window::top_menu(void)
 {
 	return {
+		#if HAS_SDL_OPENURL
 		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"Arcollect"s,open_github),
+		#endif
 		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"GPL-3 license"s,open_gpl3),
+		#if HAS_SDL_OPENURL
 		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"SDL2"s,open_sdl2),
 		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"OpenImageIO"s,open_oiio),
 		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"LittleCMS"s,open_lcms2),
 		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"FreeType2"s,open_freetype2),
 		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"HarfBuzz"s,open_harfbuzz),
-		
+		#endif
 	};
 };
 

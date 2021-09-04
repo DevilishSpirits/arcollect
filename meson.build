@@ -45,6 +45,7 @@ config_h = configuration_data()
 config_h.set('ARCOLLECT_VERSION',meson.project_version())
 config_h.set('ARCOLLECT_WEBSITE','https://github.com/DevilishSpirits/arcollect')
 config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
+config_h.set('HAS_SDL_OPENURL','1') # TODO Probe that
 config_h.set('WITH_XDG',with_xdg ? '1' : '0')
 config_h.set('CPP_STD',get_option('cpp_std').to_upper())
 if (cpp.get_id() == 'gcc')

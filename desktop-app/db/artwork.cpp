@@ -312,7 +312,9 @@ std::size_t Arcollect::db::artwork::image_memory(void)
 	return SDL_BYTESPERPIXEL(format)*sizeof(Uint8)*art_size.x*art_size.y; // Assume 8-bits RGBA
 }
 
+#ifdef ARTWORK_HAS_OPEN_URL
 void Arcollect::db::artwork::open_url(void)
 {
 	SDL_OpenURL(source().c_str());
 }
+#endif

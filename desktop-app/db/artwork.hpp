@@ -26,7 +26,9 @@
 #include <unordered_map>
 #include <vector>
 
-#define ARTWORK_HAS_OPEN_URL
+#if HAS_SDL_OPENURL
+	#define ARTWORK_HAS_OPEN_URL
+#endif
 
 extern SDL::Renderer *renderer;
 namespace Arcollect {
