@@ -200,7 +200,17 @@ int main(int argc, char *argv[])
 					if (flags)
 						dbus_watch_handle(sigio_watch_list[i],flags);
 				} else sigio_watch_pollfd[i].events = 0; // Disable the watch
-		} else perror("poll() on D-Bus files failed");
+		} else switch (errno) {
+			case EINTR: {
+				// Make SIGINT stop Arcollect even if the D-Bus timeout is not elapsed.
+				// Because I don't want to smash Ctrl+C too long please :sob:
+				if (!Arcollect::gui::enabled)
+					last_dbus_activity = -10000;
+			} break;
+			default: {
+				perror("poll() on D-Bus files failed");
+			} break;
+		}
 		while (dbus_connection_get_dispatch_status(conn) == DBUS_DISPATCH_DATA_REMAINS) {
 			conn.dispatch();
 			last_dbus_activity = SDL_GetTicks();
