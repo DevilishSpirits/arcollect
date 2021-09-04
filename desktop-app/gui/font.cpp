@@ -202,6 +202,9 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 					break;
 				}
 			}
+			// TODO Handle when we can't break on a space (this code avoid a SEGFAULTs)
+			if (!i_newline)
+				break;
 			// Justify/align text
 			int right_free_space = state.wrap_width - glyph_pos[i_newline-1].x_advance;
 			if (i_newline == i)
