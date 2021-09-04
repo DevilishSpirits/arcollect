@@ -9,43 +9,6 @@ packages_conf.set('MESON_SOURCE_ROOT', meson.project_source_root())
 
 sh_prog = find_program('sh', required: false, native: true)
 
-# Track application dependencies
-system_dependencies = []
-static_dependencies = []
-if enable_native_progs
-	# TODO Add sdl2 when no longer using a special branch
-	native_progs_deps = ['OpenImageIO','lcms2','freetype2','harfbuzz','sqlite3','libcurl']
-	if with_xdg
-		native_progs_deps += 'dbus-1'
-	endif
-	foreach dep_name: native_progs_deps
-		dep = dependency(dep_name, required: false)
-		if dep.found()
-			if dep.type_name() == 'internal'
-				static_dependencies += dep_name
-			else
-				system_dependencies += dep_name
-			endif
-		endif
-	endforeach
-endif
-
-# TODO if 'OpenImageIO' in static_dependencies
-#endif
-
-if (host_machine.system() == 'windows') and (system_dependencies.length() > 0)
-	# TODO Scan the whole dependency tree
-	deps = static_dependencies+system_dependencies
-	warning('You are linking to DLLs!. You should reconfigure with --force-fallback-for='+','.join(deps))
-endif
-
-foreach dep: system_dependencies
-	summary(dep,true , section: 'Using system dependencies (NO if embeded)', bool_yn: true)
-endforeach
-foreach dep: static_dependencies
-	summary(dep,false, section: 'Using system dependencies (NO if embeded)', bool_yn: true)
-endforeach
-	
 # DESTDIR target
 # This special target run `meson compile` to a DESTDIR
 destdir_depends = []

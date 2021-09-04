@@ -17,6 +17,7 @@
 #include "about.hpp"
 #include "menu.hpp"
 #include "scrolling-text.hpp"
+#include <dependency-report.hpp>
 #include <config.h>
 
 extern SDL::Renderer *renderer;
@@ -88,8 +89,8 @@ void Arcollect::gui::about_window::render(SDL::Rect target)
 			   "Arcollect is licensed under the GNU General Public License version 3 (GPL-3) or later.\n"
 			   "The top bar menu contain links to projects websites and a copy of the GPL-3.\n"
 			   "\n"
-			   "It use and bundle third-party dependencies released under another licenses\n"
-			   "Links to projects websites are available in the top bar menu.\n"
+			   "It use and bundle third-party dependencies released under another licenses.\n"
+			   "This copy of Arcollect also embed copies of " ABOUT_EMBEDED_DEPENDENCIES_STR "."
 		;
 		render_cache = std::make_unique<Arcollect::gui::font::Renderable>(elements,target.w-target.w/10);
 		cache_window_width = target.w;
