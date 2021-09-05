@@ -183,7 +183,7 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 					Arcollect::gui::font::Elements unknown_artwork_elements;
 					unknown_artwork_elements.initial_height() = 22;
 					unknown_artwork_elements.initial_color()  = {255,255,0,255};
-					unknown_artwork_elements << std::string_view(viewport.artwork->mimetype()) << (SDL_Color){255,255,255,255} << U" artwork type is not supported."sv;
+					unknown_artwork_elements << std::string_view(viewport.artwork->mimetype()) << (SDL::Color){255,255,255,255} << U" artwork type is not supported."sv;
 					Arcollect::gui::font::Renderable unknown_artwork_text_cache(unknown_artwork_elements);
 					unknown_artwork_text_cache.render_tl(rect.x+(rect.w-unknown_artwork_text_cache.size().x)/2,rect.y+(rect.h-unknown_artwork_text_cache.size().y)/2);
 				} break;

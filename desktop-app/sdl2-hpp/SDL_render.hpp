@@ -37,6 +37,9 @@ namespace SDL {
 		inline int SetDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
 			return SDL_SetRenderDrawColor((SDL_Renderer*)this,r,g,b,a);
 		}
+		int SetDrawColor(SDL::Color color) {
+			return SetDrawColor(color.r,color.g,color.b,color.a);
+		}
 		inline int DrawLine(int x1, int y1, int x2, int y2) {
 			return SDL_RenderDrawLine((SDL_Renderer*)this,x1,y1,x2,y2);
 		};

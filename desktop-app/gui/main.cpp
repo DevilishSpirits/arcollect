@@ -250,12 +250,12 @@ bool Arcollect::gui::main(void)
 	// Redraws debugging
 	if (debug_redraws) {
 		Uint32 final_ticks = SDL_GetTicks();
-		static constexpr SDL_Color   idle_color{255,255,255,255};
-		static constexpr SDL_Color  event_color{255,255, 0 ,255};
-		static constexpr SDL_Color render_color{ 0 ,255,255,255};
-		static constexpr SDL_Color loader_color{255, 0 , 0 ,255};
-		static constexpr SDL_Color  other_color{ 0 , 0 ,255,255};
-		static constexpr SDL_Color  total_color{255,255,255,255};
+		static constexpr SDL::Color   idle_color = 0xFFFFFFff; // White
+		static constexpr SDL::Color  event_color = 0xFFFF00ff; // Yellow
+		static constexpr SDL::Color render_color = 0x00FFFFff; // Cyan
+		static constexpr SDL::Color loader_color = 0xFF0000ff; // Red
+		static constexpr SDL::Color  other_color = 0x0000FFff; // Blue
+		static constexpr SDL::Color  total_color = 0xFFFFFFff; // White
 		struct debug_sample {
 			Uint32   idle;
 			Uint32  event;
@@ -288,7 +288,7 @@ bool Arcollect::gui::main(void)
 				result.load_pending = std::max(load_pending,right.load_pending);
 				return result;
 			}
-			static inline void draw_time_bar(SDL::Rect &time_bar, Uint32 var, const SDL_Color &color) {
+			static inline void draw_time_bar(SDL::Rect &time_bar, Uint32 var, const SDL::Color &color) {
 				time_bar.w  = var;
 				renderer->SetDrawColor(color.r,color.g,color.b,color.a);
 				renderer->FillRect(time_bar);

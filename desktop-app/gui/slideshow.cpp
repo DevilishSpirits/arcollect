@@ -119,7 +119,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 	std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override {
 		if (viewport.artwork) {
 			auto delete_elements = Arcollect::gui::font::Elements::build(
-				SDL_Color{255,0,0,255},Arcollect::gui::font::FontSize(14),U"Delete artwork"sv
+				SDL::Color{255,0,0,255},Arcollect::gui::font::FontSize(14),U"Delete artwork"sv
 			);
 			return {
 				#ifdef ARTWORK_HAS_OPEN_URL

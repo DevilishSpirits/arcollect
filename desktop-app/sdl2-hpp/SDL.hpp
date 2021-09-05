@@ -17,6 +17,7 @@ namespace SDL {
 }
 
 #define WITHIN_SDL2_HPP
+#include "SDL_pixels.hpp"
 #include "SDL_error.hpp"
 #include "SDL_rect.hpp"
 #include "SDL_event.hpp"

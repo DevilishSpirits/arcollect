@@ -53,7 +53,7 @@ Arcollect::gui::font::Glyph::~Glyph(void) {
 	delete text;
 }
 
-void Arcollect::gui::font::Glyph::render(int origin_x, int origin_y, SDL_Color color) const
+void Arcollect::gui::font::Glyph::render(int origin_x, int origin_y, SDL::Color color) const
 {
 	SDL::Rect rect = coordinates;
 	rect.x += origin_x;
@@ -186,7 +186,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 			++state.attrib_iter;
 		const Align  &alignment = state.attrib_iter->alignment;
 		const bool     &justify = state.attrib_iter->justify;
-		const SDL_Color  &color = state.attrib_iter->color;
+		const SDL::Color  &color = state.attrib_iter->color;
 		
 		hb_glyph_info_t &glyph_info = glyph_infos[i];
 		glyph_pos[i].x_advance >>= 6;

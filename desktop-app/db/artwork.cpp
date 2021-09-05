@@ -161,14 +161,14 @@ int Arcollect::db::artwork::render(const SDL::Rect *dstrect)
 			placeholder_rect.h -= border*2;
 			placeholder_rect.w -= border*(1+max_bar_count);
 			placeholder_rect.w /= max_bar_count;
-			const SDL_Color bar_colors[] = {
-				{0,0,0,0},
-				{128,128,128,255},
-				{0,255,0,255},
-				{0,255,0,255},
+			const SDL::Color bar_colors[] = {
+				{0x000000FF},
+				{0x808080FF},
+				{0x00ff00FF},
+				{0x00ff00FF},
 			};
 			for (auto i = bar_count; i; i--) {
-				const SDL_Color &color = bar_colors[bar_count];
+				const SDL::Color &color = bar_colors[bar_count];
 				renderer->SetDrawColor((color.r+(rand()%256))/2,(color.g+(rand()%256))/2,(color.b+(rand()%256))/2,64);
 				renderer->FillRect(placeholder_rect);
 				renderer->SetDrawColor(color.r,color.g,color.b,128);

@@ -48,7 +48,7 @@ namespace Arcollect {
 		 * 
 		 * \code
 		 * Arcollect::gui::font::Elements elements;
-		 * elements << U"Some text\n"sv << FontSize(42) << SDL_Color(255,0,0,255)
+		 * elements << U"Some text\n"sv << FontSize(42) << SDL::Color(255,0,0,255)
 		 * << U"Big RED text!"sv;
 		 * // Here we wrap text at 1373px width.
 		 * Arcollect::gui::font::Renderable renderable(elements,1373);
@@ -174,7 +174,7 @@ namespace Arcollect {
 						Justify justify;
 						/** Current glyph color
 						 */
-						SDL_Color color;
+						SDL::Color color;
 					};
 					/** List of #Arcollect::gui::font::Elements::Attributes
 					 *
@@ -254,7 +254,7 @@ namespace Arcollect {
 					 * \return A reference to the color of the text beginning.
 					 * \warning The reference can be invalidated by operator<<().
 					 */
-					SDL_Color &initial_color(void) {
+					SDL::Color &initial_color(void) {
 						return attributes[0].color;
 					}
 					
@@ -278,7 +278,7 @@ namespace Arcollect {
 					 *
 					 * The color change is immediate.
 					 */
-					Elements& operator<<(SDL_Color color) {
+					Elements& operator<<(SDL::Color color) {
 						push_attribute().color = color;
 						return *this;
 					}
@@ -397,17 +397,17 @@ namespace Arcollect {
 				 * \param origin_y The cursor Y position
 				 * \param color    The color to render
 				 *
-				 * render(int,int,SDL_Color) wrapper for SDL::Point
+				 * render(int,int,SDL::Color) wrapper for SDL::Point
 				 */
-				void render(int origin_x, int origin_y, SDL_Color color) const;
+				void render(int origin_x, int origin_y, SDL::Color color) const;
 				/** Render the glyph
 				 * \param origin The cursor position
 				 * \param color  The cursor position
 				 * \param color    The color to render
 				 *
-				 * render(int,int,SDL_Color) wrapper for SDL::Point
+				 * render(int,int,SDL::Color) wrapper for SDL::Point
 				 */
-				inline void render(SDL::Point origin, SDL_Color color) const {
+				void render(SDL::Point origin, SDL::Color color) const {
 					return render(origin.x,origin.y,color);
 				}
 				// Glyph cache
@@ -448,7 +448,7 @@ namespace Arcollect {
 					struct GlyphData {
 						SDL::Point position;
 						Glyph     *glyph;
-						SDL_Color  color;
+						SDL::Color  color;
 						inline GlyphData& operator=(const GlyphData& other) {
 							position = other.position;
 							glyph = other.glyph;
@@ -456,7 +456,7 @@ namespace Arcollect {
 							return *this;
 						}
 						GlyphData(void) = default;
-						inline GlyphData(SDL::Point position, Glyph &glyph, SDL_Color color)
+						inline GlyphData(SDL::Point position, Glyph &glyph, SDL::Color color)
 						: position(position), glyph(&glyph), color(color) {}
 					};
 					/** Glyph storage result

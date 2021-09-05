@@ -47,8 +47,8 @@ Arcollect::art_reader::Charset Arcollect::art_reader::mime_extract_charset(const
 
 Arcollect::gui::font::Elements Arcollect::art_reader::text(const std::filesystem::path &path, const std::string_view &mime)
 {
-	constexpr SDL_Color Y{255,255, 0 ,255}; // Yellow
-	constexpr SDL_Color W{255,255,255,255}; // White
+	constexpr SDL::Color Y{0xFFFF00ff}; // Yellow
+	constexpr SDL::Color W{0xFFFFFFff}; // White
 	// Load artwork
 	std::string file_content;
 	std::getline(std::ifstream(path),file_content,'\0');
