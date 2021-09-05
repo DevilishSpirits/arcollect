@@ -6,22 +6,23 @@ cmake = import('cmake')
 subproj_opts = cmake.subproject_options()
 subproj_opts.add_cmake_defines({
 	'BUILD_SHARED_LIBS': false,
-	'SDL_AUDIO'     : false,
-	'SDL_VIDEO'     : true,
-	'SDL_RENDER'    : true,
-	'SDL_EVENTS'    : true,
-	'SDL_JOYSTICK'  : true,  # If disabled, cause link failures
-	'SDL_HAPTIC'    : false,
-	'SDL_POWER'     : false,
-	'SDL_THREADS'   : false,
-	'SDL_TIMERS'    : true,  # For SDL_GetTicks()
-	'SDL_FILE'      : true,
-	'SDL_LOADSO'    : true,
-	'SDL_CPUINFO'   : false,
-	'SDL_FILESYSTEM': false,
-	'SDL_SENSOR'    : false,
-	'SDL_STATIC_PIC': true,
-	'SDL_LOCALE'    : false,
+	'SDL_AUDIO'        : false,
+	'SDL_VIDEO'        : true,
+	'SDL_RENDER'       : true,
+	'SDL_EVENTS'       : true,
+	'SDL_JOYSTICK'     : true,  # If disabled, cause link failures
+	'SDL_HAPTIC'       : false,
+	'SDL_POWER'        : false,
+	'SDL_THREADS'      : false,
+	'SDL_TIMERS'       : true,  # For SDL_GetTicks()
+	'SDL_FILE'         : true,
+	'SDL_LOADSO'       : true,
+	'SDL_CPUINFO'      : false,
+	'SDL_FILESYSTEM'   : false,
+	'SDL_SENSOR'       : false,
+	'SDL_STATIC_PIC'   : true,
+	'SDL_LOCALE'       : false,
+	'WAYLAND_LIBDECOR' : false, # FIXME Add a hard depend on libdecor currently
 })
 dep_sdl2 = [
 	cc.find_library('dl', required: false),
