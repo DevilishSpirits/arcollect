@@ -183,21 +183,20 @@ void Arcollect::gui::menu::popup_context(const std::vector<std::shared_ptr<menu_
 	popup_context_count++;
 }
 
-Arcollect::gui::menu_item_simple_label::menu_item_simple_label(const font::Elements& elements, std::function<void()> onclick) :
-	text_line(elements),
-	onclick(onclick)
+Arcollect::gui::menu_item_label::menu_item_label(const font::Elements& elements) :
+	text_line(elements)
 {
 }
-SDL::Point Arcollect::gui::menu_item_simple_label::size(void)
+SDL::Point Arcollect::gui::menu_item_label::size(void)
 {
 	return text_line.size();
 }
 
-void Arcollect::gui::menu_item_simple_label::render(SDL::Rect target)
+void Arcollect::gui::menu_item_label::render(SDL::Rect target)
 {
 	text_line.render_tl(target.x+(target.w-text_line.size().x)/2,target.y+(target.h-text_line.size().y)/2);
 }
-void Arcollect::gui::menu_item_simple_label::event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location)
+void Arcollect::gui::menu_item_label::event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location)
 {
 	switch (e.type) {
 		case SDL_MOUSEBUTTONDOWN: {
@@ -207,7 +206,7 @@ void Arcollect::gui::menu_item_simple_label::event(SDL::Event &e, const SDL::Rec
 		case SDL_MOUSEBUTTONUP: {
 			SDL::Point mouse_pos{e.button.x,e.button.y};
 			if (pressed && mouse_pos.InRect(event_location))
-				onclick();
+				clicked();
 		} break;
 		default: break;
 	}

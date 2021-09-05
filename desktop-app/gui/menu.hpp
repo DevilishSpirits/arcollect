@@ -81,17 +81,33 @@ namespace Arcollect {
 				static unsigned int popup_context_count;
 		};
 		
-		class menu_item_simple_label: public menu_item {
+		/** Menu item that show a label and can be clicked
+		 */
+		class menu_item_label: public menu_item {
 			private:
 				bool pressed = false;
 			protected:
 				Arcollect::gui::font::Renderable text_line;
 			public:
+				virtual void clicked(void) = 0;
 				SDL::Point size(void) override;
 				void event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location) override;
 				void render(SDL::Rect target) override;
+				menu_item_label(const font::Elements& elements);
+		};
+		
+		class menu_item_simple_label: public menu_item_label {
+			private:
+				bool pressed = false;
+			protected:
+				Arcollect::gui::font::Renderable text_line;
+			public:
 				std::function<void()> onclick;
-				menu_item_simple_label(const font::Elements& elements, std::function<void()> onclick);
+				void clicked(void) override {
+					return onclick();
+				}
+				menu_item_simple_label(const font::Elements& elements, std::function<void()> onclick)
+					: menu_item_label(elements), onclick(onclick) {}
 				menu_item_simple_label(std::u32string&& label, std::function<void()> onclick)
 					: menu_item_simple_label(font::Elements(std::move(label),14),onclick) {}
 				menu_item_simple_label(const std::u32string_view& label, std::function<void()> onclick)
