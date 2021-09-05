@@ -105,46 +105,24 @@ void Arcollect::gui::about_window::render(SDL::Rect target)
 	render_cache->render_tl(welcome_text_dst);
 }
 
-#if HAS_SDL_OPENURL
-static void open_github(void) {
-	SDL_OpenURL(ARCOLLECT_WEBSITE_STR);
-}
-#endif
 static void open_gpl3(void);
-
-#if HAS_SDL_OPENURL
-static void open_sdl2(void) {
-	SDL_OpenURL("https://www.libsdl.org/");
-}
-static void open_oiio(void) {
-	SDL_OpenURL("https://openimageio.org/");
-}
-static void open_lcms2(void) {
-	SDL_OpenURL("https://www.littlecms.com/");
-}
-static void open_freetype2(void) {
-	SDL_OpenURL("https://www.freetype.org/");
-}
-static void open_harfbuzz(void) {
-	SDL_OpenURL("https://harfbuzz.github.io/");
-}
-#endif
 
 std::vector<std::shared_ptr<Arcollect::gui::menu_item>> Arcollect::gui::about_window::top_menu(void)
 {
-	return {
+	static const/* TODO constexpr */ std::vector<std::shared_ptr<Arcollect::gui::menu_item>> result{
 		#if HAS_SDL_OPENURL
-		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"Arcollect"s,open_github),
+		Arcollect::gui::menu_item_simple_link::make_shared(U"Arcollect"sv,ARCOLLECT_WEBSITE_STR),
 		#endif
 		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"GPL-3 license"s,open_gpl3),
 		#if HAS_SDL_OPENURL
-		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"SDL2"s,open_sdl2),
-		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"OpenImageIO"s,open_oiio),
-		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"LittleCMS"s,open_lcms2),
-		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"FreeType2"s,open_freetype2),
-		std::make_shared<Arcollect::gui::menu_item_simple_label>(U"HarfBuzz"s,open_harfbuzz),
+		Arcollect::gui::menu_item_simple_link::make_shared(U"SDL2"sv,"https://www.libsdl.org/"),
+		Arcollect::gui::menu_item_simple_link::make_shared(U"OpenImageIO"sv,"https://openimageio.org/"),
+		Arcollect::gui::menu_item_simple_link::make_shared(U"LittleCMS"sv,"https://www.littlecms.com/"),
+		Arcollect::gui::menu_item_simple_link::make_shared(U"FreeType2"sv,"https://www.freetype.org/"),
+		Arcollect::gui::menu_item_simple_link::make_shared(U"HarfBuzz"sv,"https://harfbuzz.github.io/"),
 		#endif
 	};
+	return result;
 };
 
 // License texts
