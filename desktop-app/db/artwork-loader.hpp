@@ -26,10 +26,54 @@
 #include <OpenImageIO/imageio.h>
 namespace Arcollect {
 	namespace db {
-		/** Asynchronous artwork loading utility
+		/** Asynchronous artwork loading system (read this before hacking on it!)
 		 *
-		 * Artwork are usully heavy. Their loading from the disk is offloaded to a
-		 * background thread. The public part is used like a namespace.
+		 * It's one of the most complex parts of Arcollect that is partly entangled
+		 * with Arcollect::db::artwork and Arcollect::gui::main().
+		 *
+		 * This part is the magic behind Arcollect::db::artwork::queue_for_load().
+		 *
+		 * It's goal is to "make artwork loads fast". Multithreading help to exploit
+		 * full system resources but there is an artwork loading ordering strategy
+		 * that truly give this feeling of artworks that load fast.
+		 * We must also limit the number of simultaneously loaded artworks.
+		 *
+		 * To implement our loading strategy, we use multiple queues :
+		 * * Arcollect::db::artwork_loader::pending_main that collect which artworks
+		 *   which artworks was missing to render the previous frame.
+		 * * Arcollect::db::artwork_loader::pending_thread_first that is the
+		 *   priority queue. It's replaced with the content of
+		 *   Arcollect::db::artwork_loader::pending_main at each frame.
+		 * * Arcollect::db::artwork_loader::pending_thread_second is a persistent
+		 *   queue of which artworks was requested.
+		 * * Arcollect::db::artwork_loader::done contain artwork SDL::Surface that
+		 *   Arcollect::gui::main() will transform into SDL::Texture.
+		 *
+		 * Arcollect::db::artwork_loader::pending_thread_second allows Arcollect to
+		 * load recently requested artworks in background even if they wasn't
+		 * rendered in the last frame (it was the old technic that was slightly
+		 * improved with #1652459). Artworks in this queue have a per artwork
+		 * timeout that is reset each time the artwork is requested.
+		 *
+		 * To implement this, there is Arcollect::db::artwork::LoadState that list
+		 * all possibles states of loading, read it. It is set by multiple functions
+		 * to track load progress and avoid things like loading multiple times the
+		 * artwork (an artwork can be in all queues and handled by multiple threads
+		 * simultaneously!).
+		 *
+		 * The first state change is made by the first call to
+		 * Arcollect::db::artwork::queue_for_load() that queue the artwork into
+		 * Arcollect::db::artwork_loader::pending_main, then
+		 * Arcollect::gui::main() move things into
+		 * Arcollect::db::artwork_loader::pending_thread_first and 
+		 * Arcollect::db::artwork_loader::pending_thread_second (the later only if
+		 * the artworks is no).
+		 * A thread will pick up the artwork and mark it as being processed so other
+		 * workers will skip it. Once loaded and color managed, the #SDL::Surface is
+		 * pushed into Arcollect::db::artwork_loader::done and
+		 * Arcollect::gui::main() load it into an SDL::Texture (this must be done
+		 * in the main thread) and call Arcollect::db::artwork::texture_loaded().
+		 * The artwork is now loaded.
 		 */
 		class artwork_loader: private std::thread {
 			private:
