@@ -29,7 +29,7 @@ static const char* dbus_introspection =
 "	</interface>\n"
 "	<interface name=\"org.freedesktop.Application\">\n"
 "		<method name=\"Activate\">\n"
-"			<arg type=\"a{sv}\" name='platform_data\" direction=\"in\"/>\n"
+"			<arg type=\"a{sv}\" name=\"platform_data\" direction=\"in\"/>\n"
 "		</method>\n"
 "	</interface>\n"
 "	<interface name=\"org.freedesktop.DBus.Peer\">\n"
