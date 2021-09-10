@@ -1,4 +1,4 @@
-project('libjpeg-turbo', 'c', version : '2.1.0', license : 'bsd-like')
+project('libjpeg-turbo', 'c', version : '2.1.1', license : 'bsd-like')
 
 python = import('python').find_installation()
 
