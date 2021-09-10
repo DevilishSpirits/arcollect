@@ -1,5 +1,5 @@
 # Striped down version from the WrapDB
-project('sqlite', 'c', version: '3.35.5')
+project('sqlite', 'c', version: '3.36.0')
 
 thread_dep = dependency('threads')
 cc = meson.get_compiler('c')
