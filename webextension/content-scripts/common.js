@@ -130,6 +130,7 @@ function arcollect_submit(json_object)
 				'reject': reject,
 			};
 			// Send message
+			console.log('arcollect_submit',json_object)
 			arcollect__port.postMessage(json_object);
 		}
 	);

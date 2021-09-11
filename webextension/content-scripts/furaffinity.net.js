@@ -190,7 +190,6 @@ function save_artwork()
 	};
 	if (artworkMIME.startsWith('text/'))
 		submit_json['artworks'][0]['thumbnail'] = submissionImg.src;
-	console.log('arcollect_submit('+JSON.stringify(submit_json)+')')
 	
 	// Submit
 	arcollect_submit(submit_json).then(function() {

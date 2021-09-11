@@ -135,7 +135,6 @@ function save_artwork()
 		'art_acc_links': art_acc_links,
 		'art_tag_links': art_tag_links,
 	};
-	console.log('arcollect_submit('+JSON.stringify(submit_json)+')')
 	
 	// Submit
 	arcollect_submit(submit_json).then(function() {

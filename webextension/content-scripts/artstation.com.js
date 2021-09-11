@@ -119,7 +119,6 @@ function artstation_save_artwork(saveButtonA)
 		'art_acc_links': art_acc_links,
 		'art_tag_links': art_tag_links,
 	};
-	console.log('arcollect_submit('+JSON.stringify(submit_json)+')')
 	
 	// Submit
 	arcollect_submit(submit_json).then(function() {
