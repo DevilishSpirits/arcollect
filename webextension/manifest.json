@@ -21,7 +21,6 @@
 		"js": ["content-scripts/common.js","content-scripts/deviantart.com.js"]
 	}],
 	"permissions": [
-		"https://www.artstation.com/artwork/*",
 		"nativeMessaging"
 	],
 	"browser_specific_settings": {
