@@ -34,6 +34,17 @@ var transactions = {};
  */
 var next_transaction_id = 0;
 
+/** Answer a content-script request
+ * \param answer The JSON to answer
+ *
+ * The routing is assured by `transaction_id` inside.
+ */
+function reply_to_content_script(answer) {
+	let transaction_id = answer.transaction_id;
+	transactions[transaction_id](answer);
+	delete transactions[transaction_id];
+}
+
 /** Cached native-messaging port
  *
  * Cached result of webext_adder_port() for his internal use only. 
@@ -46,14 +57,7 @@ function webext_adder_port() {
 	if (webext_adder_port_cache === null) {
 		webext_adder_port_cache = browser.runtime.connectNative('arcollect_webext_adder');
 		
-		webext_adder_port_cache.onMessage.addListener(function(msg) {
-			// Get the transaction id
-			let transaction_id = msg['transaction_id'];
-			// Relay msg
-			transactions[transaction_id](msg);
-			// Delete transaction
-			delete transactions[transaction_id];
-		});
+		webext_adder_port_cache.onMessage.addListener(reply_to_content_script);
 		
 		webext_adder_port_cache.onDisconnect.addListener(function(port) {
 			// Reset webext_adder_port_cache
