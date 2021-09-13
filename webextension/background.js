@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+/** \file webextension/background.js
+ *  \brief Webextension background main script
+ */
 
 /** List of running transactions
  *
@@ -31,8 +34,14 @@ var transactions = {};
  */
 var next_transaction_id = 0;
 
-// Etablish connection with the native application on demand
+/** Cached native-messaging port
+ *
+ * Cached result of webext_adder_port() for his internal use only. 
+ */
 var webext_adder_port_cache = null;
+/** Get the webext-adder native-messaging port and connect on demand
+ * \return The [`runtime.Port`](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/runtime/Port) to the webext-adder
+ */
 function webext_adder_port() {
 	if (webext_adder_port_cache === null) {
 		webext_adder_port_cache = browser.runtime.connectNative('arcollect_webext_adder');
