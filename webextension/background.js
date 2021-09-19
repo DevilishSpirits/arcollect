@@ -41,8 +41,10 @@ var next_transaction_id = 0;
  */
 function reply_to_content_script(answer) {
 	let transaction_id = answer.transaction_id;
-	transactions[transaction_id](answer);
-	delete transactions[transaction_id];
+	if (transactions.hasOwnProperty(transaction_id)) {
+		transactions[transaction_id](answer);
+		delete transactions[transaction_id];
+	} else console.error('reply_to_content_script(): transaction_id is unknown.',answer);
 }
 
 /** Cached native-messaging port
