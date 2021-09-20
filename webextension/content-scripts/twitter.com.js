@@ -28,7 +28,7 @@
  *
  * Twitter use this as a root for modal windows
  */
-var layersDiv = null;
+var layersDiv = document.getElementById('layers');
 
 /** Save the artwork
  */
@@ -97,5 +97,24 @@ function make_twitter_photo_save_button() {
 	new_button.onclick = make_twitter_photo_save_button_clicked;
 }
 
-layersDiv = document.getElementById('layers');
-new MutationObserver(make_twitter_photo_save_button).observe(layersDiv,{'childList': true});
+/** Called when we found `<div id="layers">`
+ *
+ * This function perform some actions which require a valid #layersDiv and is
+ * called when it is found.
+ */
+function gotLayersDiv() {
+	// Observe the child list
+	new MutationObserver(make_twitter_photo_save_button).observe(layersDiv,{'childList': true});
+}
+
+if (layersDiv == null) {
+	// `<div id="layers">` is not created, poll for it's creation
+	document.firstElementChild.onmousemove = function() {
+		layersDiv = document.getElementById('layers');
+		if (layersDiv != null) {
+			// Found `<div id="layers">`!
+			gotLayersDiv();
+			document.firstElementChild.onmousemove = null;
+		}
+	}
+} else gotLayersDiv();
