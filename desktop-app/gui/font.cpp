@@ -149,6 +149,7 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 	 */
 	decltype(Elements::attributes)::const_iterator attrib_iter;
 };
+#include <iostream>
 void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::text_runs)::value_type& text_run, RenderingState &state)
 {
 	// Extract parameters
@@ -202,6 +203,13 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 					break;
 				}
 			}
+			if (!i_newline)
+				for (i_newline = i; i_newline; i_newline--) {
+					auto char_i = glyph_infos[i_newline].cluster;
+					if ((text[char_i] == U':')||(text[char_i] == U'/')||(text[char_i] == U'\\')||(text[char_i] == U'.')||(text[char_i] == U',')||(text[char_i] == U';')) {
+						break;
+					}
+				}
 			// TODO Handle when we can't break on a space (this code avoid a SEGFAULTs)
 			if (!i_newline)
 				break;
