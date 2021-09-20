@@ -19,6 +19,18 @@ Currently these platforms are supported :
 * **[FurAffinity](https://www.furaffinity.net/)** - You have a `Save in Arcollect` button below the artwork.
 * **[Twitter](https://twitter.com/)** - Click on the photo you want to save and `Save in Arcollect` button appear in the bottom. Support is still buggy.
 
+## About privacy
+Arcollect by itself does not collect any data or statistics, it is not a spyware. Only your artworks and settings are stored inside your personal folder and stay there.
+
+When saving artworks, Arcollect must download them and does not hide himself to the platforms, it fill the [`User-Agent`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent). But unless you are using [Tor Browser](https://www.torproject.org/) for legitimate reasons, it's okay.
+
+### Webextension permissions
+The webextension require some permissions to works:
+
+* [Access your data for X website](https://support.mozilla.org/en-US/kb/permission-request-messages-firefox-extensions#w_access-your-data-for-named-site) -- To extract artwork, metadata and insert the *Save in Arcollect* button.
+* [Exchange messages with programs other than Firefox](https://support.mozilla.org/en-US/kb/permission-request-messages-firefox-extensions#w_exchange-messages-with-programs-other-than-firefox) (`nativeMessaging`) -- This external program is the `webext-adder` that insert artworks into your collection.
+* [Access browser activity during navigation](https://support.mozilla.org/en-US/kb/permission-request-messages-firefox-extensions#w_access-browser-activity-during-navigation) (`webRequestBlocking`) -- To listen for Twitter API activity.
+
 ## Contributing
 I am open to contributions but keep in mind that this is a personal project, not a community driven thing. Arcollect mostly have what I use and can do with time, but it is built with extensibility and platform agnostism in mind.
 
@@ -30,6 +42,7 @@ Please, keep things simple and cross-patform, you have C++, a modern SDL and a b
 Recent Linux distributions and Microsoft Windows with Firefox are supported.
 
 I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.15) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.15#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
+The Windows MSI is not signed and Microsoft SmartScreen filter incorrectly flag it as hazardous, you must insist to download the file, then open MSI file properties, check *Unblock* in the bottom and *Ok*. The MSI should now works.
 
 If you want to build the software yourself, grab the source code, install Meson (>0.59.0), dbus on UNIX-like, SQLite, FreeType2, Harfbuzz, OpenImageIO, lcms2 and libcurl. CMake is also required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
 
