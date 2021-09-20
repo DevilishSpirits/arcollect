@@ -98,7 +98,11 @@ browser.runtime.onConnect.addListener(function(port) {
 		let transaction_id = msg['transaction_id'] + ' ' +next_transaction_id++;
 		msg['transaction_id'] = transaction_id
 		transactions[transaction_id] = port.postMessage;
+		// Process trough platform specific post-processor
+		if (msg.platform == 'twitter.com')
+			msg = twitter_post_process_submit(msg);
 		// Post message
-		webext_adder_port().postMessage(msg);
+		if (msg != null)
+			webext_adder_port().postMessage(msg);
 	});
 });

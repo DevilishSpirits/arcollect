@@ -17,6 +17,7 @@ Currently these platforms are supported :
 * **[DeviantArt](https://www.deviantart.com/)** - You have a `Save in Arcollect` button below the artwork. Support is limited.
 * **[e621](https://e621.net/)**/**[e926](https://e926.net)** - You have a `Save in Arcollect` button below the artwork.
 * **[FurAffinity](https://www.furaffinity.net/)** - You have a `Save in Arcollect` button below the artwork.
+* **[Twitter](https://twitter.com/)** - Click on the photo you want to save and `Save in Arcollect` button appear in the bottom. Support is still buggy.
 
 ## Contributing
 I am open to contributions but keep in mind that this is a personal project, not a community driven thing. Arcollect mostly have what I use and can do with time, but it is built with extensibility and platform agnostism in mind.

@@ -5,7 +5,7 @@
 	"homepage_url": "@ARCOLLECT_WEBSITE@",
 	"version": "@ARCOLLECT_VERSION@",
 	"background": {
-		"scripts": ["background.js"]
+		"scripts": ["background.js","twitter.js"]
 	},
 	"content_scripts": [{
 		"matches": ["https://www.artstation.com/*"],
@@ -19,14 +19,20 @@
 	},{
 		"matches": ["https://www.deviantart.com/*/art/*"],
 		"js": ["content-scripts/common.js","content-scripts/deviantart.com.js"]
+	},{
+		"matches": ["https://twitter.com/*"],
+		"js": ["content-scripts/common.js","content-scripts/twitter.com.js"]
 	}],
 	"permissions": [
+		"https://twitter.com/*",
+		"webRequest",
+		"webRequestBlocking",
 		"nativeMessaging"
 	],
 	"browser_specific_settings": {
 		"gecko": {
 			"id": "@ARCOLLECT_MOZILLA_WEBEXT_ID@",
-			"strict_min_version": "52.0a1"
+			"strict_min_version": "57.0a1"
 		}
 	}
 }

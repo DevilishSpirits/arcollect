@@ -8,6 +8,7 @@ webext_zip_depends      = []
 webext_srcs = [
 	'manifest.json',
 	'background.js',
+	'twitter.js',
 ]
 webext_content_scripts = [
 	'common.js',
@@ -15,6 +16,7 @@ webext_content_scripts = [
 	'deviantart.com.js',
 	'e621.net.js',
 	'furaffinity.net.js',
+	'twitter.com.js',
 ]
 python_copy_command = [find_program('python3'),'-c','import shutil\nimport sys\nshutil.copyfile(sys.argv[1],sys.argv[2])\n','@INPUT@','@OUTPUT@']
 subdir('content-scripts')
