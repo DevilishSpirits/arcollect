@@ -8,12 +8,12 @@
 		"mimetype": "image/jpeg",
 		"data":"https://d.furaffinity.net/art/tanraak/1466323999/1466323885.tanraak_brep3.jpg"
 	},{
-		"title":"Lounging by the Pool",
-		"desc":"\n                    Whoops, looks like it wasn't just rubber that I was turning into a normal rubber creature, I went all the way into a pooltoy!  At least now I get to look natural as I lay by the pool, might have to go in for a float later.\n\nAnother wonderful piece I got from  angrboda\n                                            \n                            \n                            If you like what I do here please consider supporting me on the patreon or subscribestar! We could definitely use a lot of help when it comes to funding things like book covers, comics, and game graphics and a little bit goes a long way! Not only do you support me and my projects but there are also plenty of rewards that you can sign up for as well!\n\nhttp://www.patreon.com/Serathin\nhttps://subscribestar.adult/serathin\n\nI also have a store where you can by books, comics, and other stuff:  https://smilodonstudio.com/store                        \n                                    ",
-		"source":"https://www.furaffinity.net/view/41800339/",
-		"rating":18,
-		"mimetype": "image/jpeg",
-		"data":"https://d.furaffinity.net/art/serathin/1620508334/1620508334.serathin_serathin2.jpg"
+		"title": "goo time",
+		"desc": "\n                    sketch for garrus\n====================\nwork © skdaffle\nFuraffinity | Twitter | Deviantart | Patreon\nCommission Info\n \n                                    ",
+		"source": "https://www.furaffinity.net/view/31316794/",
+		"rating": 18,
+		"mimetype": "image/png",
+		"data": "https://d.furaffinity.net/art/skdaffle/1556210470/1556210470.skdaffle_garruscomm39.png"
 	}],
 	"accounts":[{
 		"id":"tanraak",
@@ -21,10 +21,10 @@
 		"url":"https://www.furaffinity.net/user/tanraak/",
 		"icon":"https://a.furaffinity.net/1619129231/tanraak.gif"
 	},{
-		"id":"serathin",
-		"name":"Serathin",
-		"url":"https://www.furaffinity.net/user/serathin/",
-		"icon":"https://a.furaffinity.net/1589910759/serathin.gif"
+		"id": "skdaffle",
+		"name": "skdaffle",
+		"url": "https://www.furaffinity.net/user/skdaffle/",
+		"icon": "https://a.furaffinity.net/1629479446/skdaffle.gif"
 	}],
 	"tags":[{
 		"id":"bat",
@@ -33,52 +33,21 @@
 	},{
 		"id":"male",
 		"title":"Male"
-	},{
-		"id":"Pooltoy"
-	},{
-		"id":"Serathin"
-	},{
-		"id":"rubber"
-	},{
-		"id":"inflatable"
-	},{
-		"id":"speedo"
 	}],
 	"art_acc_links":[{
 		"account":"tanraak",
 		"artwork":"https://www.furaffinity.net/view/20321200/",
 		"link":"account"
 	},{
-		"account":"serathin",
-		"artwork":"https://www.furaffinity.net/view/41800339/",
-		"link":"account"
+		"account": "skdaffle",
+		"artwork": "https://www.furaffinity.net/view/31316794/",
+		"link": "account"
 	}],
 	"art_tag_links":[{
 		"artwork":"https://www.furaffinity.net/view/20321200/",
 		"tag":"bat"
 	},{
 		"artwork":"https://www.furaffinity.net/view/20321200/",
-		"tag":"male"
-	},{
-		"artwork":"https://www.furaffinity.net/view/41800339/",
-		"tag":"Pooltoy"
-	},{
-		"artwork":"https://www.furaffinity.net/view/41800339/",
-		"tag":"Serathin"
-	},{
-		"artwork":"https://www.furaffinity.net/view/41800339/",
-		"tag":"rubber"
-	},{
-		"artwork":"https://www.furaffinity.net/view/41800339/",
-		"tag":"inflatable"
-	},{
-		"artwork":"https://www.furaffinity.net/view/41800339/",
-		"tag":"male"
-	},{
-		"artwork":"https://www.furaffinity.net/view/41800339/",
-		"tag":"speedo"
-	},{
-		"artwork":"https://www.furaffinity.net/view/41800339/",
 		"tag":"male"
 	}]
 }
