@@ -35,7 +35,6 @@ var layersDiv = document.getElementById('layers');
 function save_twitter_artwork(button, text_button, submit_json, retry_to_save)
 {
 	text_button.innerHTML = 'Saving...';
-	console.log(submit_json);
 	arcollect_submit(submit_json).then(function() {
 		text_button.innerHTML = 'Saved';
 	}).catch(function(reason) {
