@@ -18,6 +18,7 @@
 #include "db.hpp"
 #include "filter.hpp"
 #include "search.hpp"
+#include "sorting.hpp"
 #include <cctype>
 #include <sstream>
 
@@ -246,13 +247,15 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 {
 	Arcollect::db::search_do_search_struct src;
 	const char* where_its_wrong = Arcollect::db::search::tokenize(search,Arcollect::db::search_do_search_callback,&src);
+	const auto sorting_mode = Arcollect::db::sorting::RANDOM;
+	const auto &sorting_impl = Arcollect::db::sorting::implementations(sorting_mode);
 	if (where_its_wrong)
 		return where_its_wrong;
 	// Manually generate a TOK_EOL
 	if (Arcollect::db::search_do_search_callback(TOK_EOL,{},&src))
 		; // TODO Error reporting
 	
-	query << "SELECT art_artid,"+Arcollect::db::artid_randomizer+" AS art_order FROM artworks WHERE " << Arcollect::db_filter::get_sql() << " AND (0";
+	query << "SELECT art_artid"+sorting_impl.sql_select_and_from+" WHERE " << Arcollect::db_filter::get_sql() << " AND (0";
 	// Title OR match
 	if (src.tags.positive_matches.size() || src.tags.negative_matches.size() || src.accounts.positive_matches.size() || src.accounts.negative_matches.size()) {
 		// Note: will be followed by a tag matching
@@ -342,7 +345,7 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 		query << " AND (instr(" << match.first << ",lower(?)) != 1)";
 		query_bindings.emplace_back(match.second);
 	}
-	query << ") ORDER BY art_order;";
+	query << ") " << sorting_impl.sql_trailer;
 	return NULL;
 }
 bool Arcollect::db::search::build_stmt(const char* search, std::unique_ptr<SQLite3::stmt> &stmt)

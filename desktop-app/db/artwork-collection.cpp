@@ -16,6 +16,7 @@
  */
 #include "artwork-collection.hpp"
 #include "db.hpp"
+#include "sorting.hpp"
 Arcollect::db::artwork_collection::artwork_collection(void)
 {
 	while (!need_entries(4096));
