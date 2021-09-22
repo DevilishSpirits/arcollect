@@ -67,10 +67,10 @@ bool Arcollect::gui::scrolling_text::event(SDL::Event &e, SDL::Rect target)
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_UP: {
 					scroll_text(-text_scroll_speed,target);
-				} break;
+				} return false;
 				case SDL_SCANCODE_DOWN: {
 					scroll_text(+text_scroll_speed,target);
-				} break;
+				} return false;
 				default:break;
 			}
 		} break;
