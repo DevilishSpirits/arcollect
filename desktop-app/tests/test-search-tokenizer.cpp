@@ -4,9 +4,6 @@
 #include <sstream>
 #include <utility>
 
-extern SDL::Renderer *renderer;
-SDL::Renderer *renderer;
-
 using namespace Arcollect::db::search; // To avoid very long namespace writes...
 
 #define BLANK(blank)           {TOK_BLANK     ,blank}
