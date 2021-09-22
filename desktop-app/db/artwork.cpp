@@ -336,6 +336,7 @@ void Arcollect::db::artwork::nuke_image_cache(void)
 	Arcollect::db::artwork_loader::pending_thread_first.clear();
 	Arcollect::db::artwork_loader::pending_thread_second.clear();
 	Arcollect::db::artwork_loader::done.clear();
+	Arcollect::db::artwork_loader::image_memory_usage = 0;
 	// Restart threads
 	Arcollect::db::artwork_loader::start();
 }
