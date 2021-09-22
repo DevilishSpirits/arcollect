@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <filesystem>
+#include <string_view>
 #include "../sdl2-hpp/SDL.hpp"
 namespace Arcollect {
 	namespace art_reader {
@@ -22,5 +23,18 @@ namespace Arcollect {
 		 * \return A surface with pixels data, or NULL on error
 		 */
 		SDL::Surface *image(const std::filesystem::path &path);
+		
+		/** Set screen ICC profile
+		 * \param icc_profile The ICC profile to read
+		 *
+		 * Replace the screen ICC profile.
+		 */
+		void set_screen_icc_profile(const std::string_view& icc_profile);
+		/** Set screen ICC profile
+		 * \param icc_profile The window to extract ICC profile from
+		 *
+		 * Replace the screen ICC profile.
+		 */
+		void set_screen_icc_profile(SDL_Window *window);
 	};
 }

@@ -16,14 +16,47 @@
  */
 #include "image.hpp"
 #include "../config.hpp"
+#include "../db/artwork.hpp"
 #define CMSREGISTER // Remove warnings about 'register' keyword
 #include <iostream>
 #include "lcms2.h"
 #include <OpenImageIO/imageio.h>
 extern bool debug_icc_profile;
 // FIXME This as global is bad
-extern cmsHPROFILE    cms_screenprofile;
-cmsHPROFILE cms_screenprofile = NULL; // Filled in Arcollect::gui::init()
+cmsHPROFILE cms_screenprofile = NULL;
+
+void Arcollect::art_reader::set_screen_icc_profile(SDL_Window *window)
+{
+	size_t icc_profile_size;
+	char* icc_profile_data = static_cast<char*>(SDL_GetWindowICCProfile(window,&icc_profile_size));
+	if (icc_profile_data) {
+		Arcollect::art_reader::set_screen_icc_profile(std::string_view(icc_profile_data,icc_profile_size));
+		SDL_free(icc_profile_data);
+	} else Arcollect::art_reader::set_screen_icc_profile(std::string_view());
+}
+void Arcollect::art_reader::set_screen_icc_profile(const std::string_view& icc_profile)
+{
+	Arcollect::db::artwork::nuke_image_cache();
+	// Swap profiles
+	cmsCloseProfile(cms_screenprofile);
+	if (icc_profile.empty()) {
+		std::cerr << "Removed screen ICC profile. Color management disabled." << std::endl;
+		cms_screenprofile = NULL;
+	} else {
+		cms_screenprofile = cmsOpenProfileFromMem(icc_profile.data(),icc_profile.size());
+		if (debug_icc_profile) {
+			char description[64];
+			char manufacturer[64];
+			char model[64];
+			char copyright[64];
+			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoDescription,cmsNoLanguage,cmsNoCountry,description,sizeof(description));
+			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoManufacturer,cmsNoLanguage,cmsNoCountry,manufacturer,sizeof(manufacturer));
+			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoModel,cmsNoLanguage,cmsNoCountry,model,sizeof(model));
+			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoCopyright,cmsNoLanguage,cmsNoCountry,copyright,sizeof(copyright));
+			std::cerr << "Setting screen ICC profile for " << manufacturer << " " << model << " (" << copyright << "): " << description << std::endl;
+		}
+	}
+}
 
 SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 {

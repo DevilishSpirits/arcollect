@@ -16,6 +16,7 @@
  */
 #include "main.hpp"
 #include "../config.hpp"
+#include "../art-reader/image.hpp"
 #include "../db/artwork-loader.hpp"
 #include "../db/db.hpp"
 #include "../db/filter.hpp"
@@ -31,18 +32,17 @@
 #include <arcollect-sqls.hpp>
 #include <iostream>
 #include <vector>
-#include <lcms2.h>
 
 extern SDL_Window    *window;
 SDL_Window    *window;
 extern SDL::Renderer *renderer;
 SDL::Renderer *renderer;
-extern cmsHPROFILE    cms_screenprofile;
 std::vector<Arcollect::gui::modal_stack_variant> Arcollect::gui::modal_stack;
 
 bool debug_redraws;
 bool debug_icc_profile;
 static std::unique_ptr<SQLite3::stmt> preload_artworks_stmt;
+static int window_screen_index;
 
 bool Arcollect::gui::enabled = false;
 
@@ -80,23 +80,7 @@ int Arcollect::gui::init(void)
 		return 1;
 	}
 	// Load ICC profile
-	size_t icc_profile_size;
-	void  *icc_profile_data = SDL_GetWindowICCProfile(window,&icc_profile_size);
-	if (icc_profile_data) {
-		cms_screenprofile = cmsOpenProfileFromMem(icc_profile_data,icc_profile_size);
-		SDL_free(icc_profile_data);
-		if (debug_icc_profile) {
-			char description[64];
-			char manufacturer[64];
-			char model[64];
-			char copyright[64];
-			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoDescription,cmsNoLanguage,cmsNoCountry,description,sizeof(description));
-			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoManufacturer,cmsNoLanguage,cmsNoCountry,manufacturer,sizeof(manufacturer));
-			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoModel,cmsNoLanguage,cmsNoCountry,model,sizeof(model));
-			cmsGetProfileInfoASCII(cms_screenprofile,cmsInfoCopyright,cmsNoLanguage,cmsNoCountry,copyright,sizeof(copyright));
-			std::cerr << "Using screen ICC profile for " << manufacturer << " " << model << " (" << copyright << "): " << description << std::endl;
-		}
-	} else std::cerr << "No screen ICC profile found, color management disabled" << std::endl;
+	Arcollect::art_reader::set_screen_icc_profile(window);
 	// Set custom borders
 	Arcollect::gui::window_borders::init(window);
 	// Prepare preload_artworks stmt
@@ -105,9 +89,6 @@ int Arcollect::gui::init(void)
 	
 	// Init background
 	Arcollect::gui::update_background(true);
-	
-	// Start artwork_loader
-	Arcollect::db::artwork_loader::start();
 	
 	return 0;
 }
@@ -140,6 +121,7 @@ void Arcollect::gui::start(int argc, char** argv)
 	
 	Arcollect::gui::time_now = SDL_GetTicks();
 	Arcollect::gui::enabled = true;
+	window_screen_index =  SDL_GetWindowDisplayIndex(window);
 }
 static Uint32 loop_end_ticks;
 bool Arcollect::gui::main(void)
@@ -184,6 +166,12 @@ bool Arcollect::gui::main(void)
 			while (preload_artworks_stmt->step() == SQLITE_ROW)
 				Arcollect::db::artwork::query(preload_artworks_stmt->column_int64(0))->queue_for_load();
 		}
+	}
+	// Check for screen change
+	int current_window_screen_index = SDL_GetWindowDisplayIndex(window);
+	if (window_screen_index != current_window_screen_index) {
+		Arcollect::art_reader::set_screen_icc_profile(window);
+		window_screen_index = current_window_screen_index;
 	}
 	Uint32 render_start_ticks = SDL_GetTicks();
 	// Render frame
