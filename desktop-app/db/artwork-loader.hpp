@@ -141,6 +141,12 @@ namespace Arcollect {
 				/** Shutdown the background thread
 				 */
 				static void shutdown(void);
+				
+				/** Shutdown and wait for background threads terminations
+				 */
+				static void shutdown_sync(void) {
+					Arcollect::db::artwork_loader::threads.clear();
+				}
 		};
 	}
 }
