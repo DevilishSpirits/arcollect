@@ -242,6 +242,13 @@ namespace Arcollect {
 				 * load since a while but are still queued for render.
 				 */
 				Uint32 last_render_timestamp = 0;
+				
+				/** Clear image cache
+				 *
+				 * This function destroy everything in image caches.
+				 * It is used when changing screens ICC profile.
+				 */
+				static void nuke_image_cache(void);
 		};
 	}
 }

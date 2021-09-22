@@ -318,3 +318,24 @@ void Arcollect::db::artwork::open_url(void)
 	SDL_OpenURL(source().c_str());
 }
 #endif
+
+void Arcollect::db::artwork::nuke_image_cache(void)
+{
+	// Shutdown threads
+	Arcollect::db::artwork_loader::shutdown_sync();
+	// Unload images
+	for (auto &art: artworks_pool) {
+		Arcollect::db::artwork& artwork = *(art.second);
+		artwork.text.reset();
+		artwork.load_state = Arcollect::db::artwork::UNLOADED;
+	}
+	// Clear various buffers
+	// Note: Loader threads are not running so we don't need to take the mutex
+	last_rendered.clear();
+	Arcollect::db::artwork_loader::pending_main.clear();
+	Arcollect::db::artwork_loader::pending_thread_first.clear();
+	Arcollect::db::artwork_loader::pending_thread_second.clear();
+	Arcollect::db::artwork_loader::done.clear();
+	// Restart threads
+	Arcollect::db::artwork_loader::start();
+}
