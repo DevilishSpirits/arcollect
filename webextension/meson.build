@@ -5,8 +5,10 @@ webext_zip_cmds = [
 ]
 webext_zip_depend_files = []
 webext_zip_depends      = []
-webext_srcs = [
+webext_conf_srcs = [
 	'manifest.json',
+]
+webext_srcs = [
 	'background.js',
 	'twitter.js',
 ]
@@ -21,6 +23,10 @@ webext_content_scripts = [
 python_copy_command = [find_program('python3'),'-c','import shutil\nimport sys\nshutil.copyfile(sys.argv[1],sys.argv[2])\n','@INPUT@','@OUTPUT@']
 subdir('content-scripts')
 foreach file: webext_srcs
+	webext_zip_cmds += file
+	webext_zip_depends += custom_target(file, command: python_copy_command, input: file, output: file)
+endforeach
+foreach file: webext_conf_srcs
 	webext_zip_cmds += file
 	webext_zip_depend_files += configure_file(output: file, input: file, configuration: config_h)
 endforeach
