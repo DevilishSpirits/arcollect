@@ -16,7 +16,10 @@
  */
 #include "search-osd.hpp"
 #include "slideshow.hpp"
+#include "menu.hpp"
 #include "window-borders.hpp"
+#include "../db/artwork-collections.hpp"
+#include "../db/search.hpp"
 
 Arcollect::gui::search_osd Arcollect::gui::search_osd_modal;
 
@@ -104,3 +107,35 @@ void Arcollect::gui::search_osd::pop(void)
 	if (also_pop_grid_after)
 		modal_stack.pop_back();
 }
+void Arcollect::gui::search_osd::db_delete(void)
+{
+	if (!text.empty()) {
+		std::unique_ptr<SQLite3::stmt> stmt;
+		Arcollect::db::search::build_stmt(text.c_str(),stmt);
+		Arcollect::db::artwork_collection_sqlite(std::move(stmt)).db_delete();
+	}
+}
+static void do_delete_arts(void)
+{
+	Arcollect::gui::search_osd_modal.db_delete();
+}
+static void confirm_delete_arts(void)
+{
+	Arcollect::gui::font::Elements really_delete_elements(U"I really want to delete all listed artworks"s,14);
+	really_delete_elements.initial_color()  = {255,0,0,255};
+	Arcollect::gui::menu::popup_context({
+		std::make_shared<Arcollect::gui::menu_item_simple_label>(really_delete_elements,::do_delete_arts)
+	},{0,Arcollect::gui::window_borders::title_height});
+}
+
+std::vector<std::shared_ptr<Arcollect::gui::menu_item>> Arcollect::gui::search_osd::top_menu(void)
+{
+	if (!text.empty()) {
+		auto delete_elements = Arcollect::gui::font::Elements::build(
+			SDL::Color{255,0,0,255},Arcollect::gui::font::FontSize(14),U"Delete all listed artworks"sv
+		);
+		return {
+			std::make_shared<Arcollect::gui::menu_item_simple_label>(delete_elements,confirm_delete_arts),
+		};
+	} else return {};
+};

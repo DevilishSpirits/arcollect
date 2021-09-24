@@ -37,7 +37,14 @@ namespace Arcollect {
 				bool event(SDL::Event &e, SDL::Rect target) override;
 				void render(SDL::Rect target) override;
 				void render_titlebar(SDL::Rect target, int window_width) override;
+				std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override;
 				void push(void);
+				
+				/** Delete all artworks in the search
+				 *
+				 * This is not an innocent function !
+				 */
+				void db_delete(void);
 		};
 		extern search_osd search_osd_modal;
 	}

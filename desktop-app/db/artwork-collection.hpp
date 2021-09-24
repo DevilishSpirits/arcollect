@@ -133,6 +133,12 @@ namespace Arcollect {
 				}
 				artwork_collection(void);
 				virtual ~artwork_collection(void) = default;
+				
+				/** Delete all artworks in this collection
+				 *
+				 * This is not an innocent function !
+				 */
+				int db_delete(void);
 		};
 	}
 }
