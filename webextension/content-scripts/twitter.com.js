@@ -81,7 +81,7 @@ function make_twitter_photo_save_button() {
 	 *
 	 * The bar that allows you to reply, retweet, like and share.
 	 */
-	let buttons_bar = main_pane.querySelector('div[role=group]');
+	let buttons_bar = main_pane.querySelector('div[role=group]:not([aria-roledescription="carousel"])');
 	/** Save in Arcollect button
 	 */
 	let new_button = buttons_bar.childNodes[0].cloneNode(deep = true);
