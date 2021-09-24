@@ -71,11 +71,11 @@ function arcollect_download_to_base64(url)
  * \return The tag in a normalized form
  *
  * Perform tag normalization, replacing everything that is not a letter or a
- * digit with '-' and force lowercase.
+ * digit or a question/exclamation marks with '-' and force lowercase.
  */
 function arcollect_normalize_tag(tag)
 {
-	return tag.match(/(\p{L}|\p{N})+/gu).join('-').toLowerCase();
+	return tag.match(/(\p{L}|\p{N}|\?|!)+/gu).join('-').toLowerCase();
 }
 String.prototype.arcollect_tag = function() {
 	return arcollect_normalize_tag(this)
