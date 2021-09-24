@@ -78,7 +78,8 @@ function twitter_handle_user(user) {
 		icon_url = user[image_url_properties[i]];
 		break;
 	}
-	console.error('Failed to extract avatar from this account',user);
+	if (icon_url == null)
+		console.error('Failed to extract avatar from this account',user);
 	// Search for user id
 	let id = null;
 	const id_properties = [
@@ -90,7 +91,8 @@ function twitter_handle_user(user) {
 		id = parseInt(user[id_properties[i]]);
 		break;
 	}
-	console.error('Failed to extract user id from this account',user);
+	if (id == null)
+		console.error('Failed to extract user id from this account',user);
 	// Create account entry
 	if ((icon_url != null)&&(id != null)) {
 		twitter_accounts_cache[id] = {
