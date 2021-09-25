@@ -3,7 +3,7 @@ directory = libjpeg-turbo-2.1.1
 source_url = https://sourceforge.net/projects/libjpeg-turbo/files/2.1.1/libjpeg-turbo-2.1.1.tar.gz
 source_filename = libjpeg-turbo-2.1.1.tar.gz
 source_hash = b76aaedefb71ba882cbad4e9275b30c2ae493e3195be0a099425b5c6b99bd510
-patch_directory = libjpeg-turbo-2.1.1
+patch_directory = libjpeg-turbo
 
 [provide]
 dependency_names = libjpeg

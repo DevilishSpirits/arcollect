@@ -3,7 +3,7 @@ directory = lcms2-2.12
 source_url = https://freefr.dl.sourceforge.net/project/lcms/lcms/2.12/lcms2-2.12.tar.gz
 source_filename = lcms2-2.12.tar.gz
 source_hash = 18663985e864100455ac3e507625c438c3710354d85e5cbb7cd4043e11fe10f5
-patch_directory = lcms2-2.12
+patch_directory = lcms2
 
 [provide]
 lcms2 = lcms2_dep
