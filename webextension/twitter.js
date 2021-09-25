@@ -235,7 +235,7 @@ function twitter_post_process_submit(json) {
 		const cached_account = twitter_accounts_cache[id];
 		if (cached_account == null) {
 				console.warn('Twitter account',id,'is not in cache');
-				reply_to_content_script({'transaction_id': json.transaction_id, 'success': false, 'reason': 'An account is not in cache, open a the tweet in a new tab or reload the page.'});
+				reply_to_content_script({'transaction_id': json.transaction_id, 'success': false, 'reason': 'An account is not in cache, hover over all mentions and accounts in the tweet, open it in a new tab or reload the page.'});
 				return null;
 		} else json.accounts.push(cached_account);
 	}
