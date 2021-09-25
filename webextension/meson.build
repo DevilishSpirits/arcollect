@@ -17,6 +17,7 @@ webext_content_scripts = [
 	'artstation.com.js',
 	'deviantart.com.js',
 	'e621.net.js',
+	'e621.net-keyboard_shortcuts.js',
 	'furaffinity.net.js',
 	'twitter.com.js',
 ]

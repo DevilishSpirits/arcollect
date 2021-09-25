@@ -17,6 +17,9 @@
 		"matches": ["https://e621.net/posts/*","https://e926.net/posts/*"],
 		"js": ["content-scripts/common.js","content-scripts/e621.net.js"]
 	},{
+		"matches": ["https://e621.net/static/keyboard_shortcuts","https://e926.net/static/keyboard_shortcuts"],
+		"js": ["content-scripts/common.js","content-scripts/e621.net-keyboard_shortcuts.js"]
+	},{
 		"matches": ["https://www.deviantart.com/*/art/*"],
 		"js": ["content-scripts/common.js","content-scripts/deviantart.com.js"]
 	},{
