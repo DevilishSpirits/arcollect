@@ -172,4 +172,16 @@ function make_save_ui() {
 	imageDownloadLink.parentNode.insertBefore(saveButtondiv,imageDownloadLink.nextElementSibling);
 }
 
+/** e621.net document.onkeypress handler
+ */
+function e621_document_onkeypress(e)
+{
+	if ((e.shiftKey && (e.key.toLowerCase() == 's')))
+		save_artwork();
+	else return true;
+	// Handled key
+	return false;
+}
+
+document.onkeypress = e621_document_onkeypress;
 make_save_ui();
