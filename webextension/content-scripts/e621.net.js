@@ -22,6 +22,10 @@
  * informations we would expect from other art platforms.
  */
 
+/** Global unwrapped Danbooru object
+ */
+var Danbooru = window.wrappedJSObject.Danbooru;
+
 /** Download button <div> element
  *
  * It is used to place the "Save in Arcollect" button
@@ -43,6 +47,7 @@ function save_artwork()
 	saveButtonA.text = 'Saving...';
 	saveButtonA.className = "button btn-warn";
 	saveButtonA.style = 'cursor:progress;';
+	Danbooru.notice('Saving...');
 	
 	/** Normalize source URL
 	 *
@@ -141,6 +146,7 @@ function save_artwork()
 		saveButtonA.text = 'Saved';
 		saveButtonA.className = 'button btn-success';
 		saveButtonA.style = 'cursor:default;';
+		Danbooru.notice('Saved in Arcollect');
 	}).catch(function(reason) {
 		saveButtonA.onclick = save_artwork;
 		saveButtonA.text = 'Retry to save in Arcollect';
