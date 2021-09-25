@@ -82,18 +82,22 @@ function make_twitter_photo_save_button() {
 	 * The bar that allows you to reply, retweet, like and share.
 	 */
 	let buttons_bar = main_pane.querySelector('div[role=group]:not([aria-roledescription="carousel"])');
-	/** Save in Arcollect button
-	 */
-	let new_button = buttons_bar.childNodes[0].cloneNode(deep = true);
-	// Remove the icon if any
-	let button_svg = new_button.querySelector('svg')
-	if (button_svg != null)
-		button_svg.parentNode.remove()
-	// Set text
-	new_button.querySelector("[data-testid=app-text-transition-container]").innerHTML = "Save in Arcollect";
-	// Append the button
-	buttons_bar.appendChild(new_button);
-	new_button.onclick = make_twitter_photo_save_button_clicked;
+	// Ensure we don't make multiple buttons
+	if (!buttons_bar.hasOwnProperty('save_in_arcollect_btn')) {
+		/** Save in Arcollect button
+		 */
+		let new_button = buttons_bar.childNodes[0].cloneNode(deep = true);
+		// Remove the icon if any
+		let button_svg = new_button.querySelector('svg')
+		if (button_svg != null)
+			button_svg.parentNode.remove()
+		// Set text
+		new_button.querySelector("[data-testid=app-text-transition-container]").innerHTML = "Save in Arcollect";
+		// Append the button
+		buttons_bar.appendChild(new_button);
+		new_button.onclick = make_twitter_photo_save_button_clicked;
+		buttons_bar.save_in_arcollect_btn = new_button;
+	}
 }
 
 /** Called when we found `<div id="layers">`
