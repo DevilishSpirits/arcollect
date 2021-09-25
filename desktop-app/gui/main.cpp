@@ -39,6 +39,8 @@ extern SDL::Renderer *renderer;
 SDL::Renderer *renderer;
 std::vector<Arcollect::gui::modal_stack_variant> Arcollect::gui::modal_stack;
 
+#include "sqlite-busy-handler.cpp"
+
 bool debug_redraws;
 bool debug_icc_profile;
 static std::unique_ptr<SQLite3::stmt> preload_artworks_stmt;
@@ -90,6 +92,8 @@ int Arcollect::gui::init(void)
 	// Init background
 	Arcollect::gui::update_background(true);
 	
+	// Setup database
+	sqlite3_busy_handler((sqlite3*)Arcollect::database.get(),Arcollect::sqlite_busy::handler,NULL);
 	return 0;
 }
 void Arcollect::gui::start(int argc, char** argv)
