@@ -51,21 +51,13 @@ dep_tiff  = dependency('libtiff-4')
 robin_map_dep = dependency('robin-map')
 subdir('src')
 
-boost_fs = cpp.find_library('boost_filesystem', required: false)
-if not boost_fs.found()
-	boost_fs = cpp.find_library('boost_filesystem-mt', required: false)
-endif
-boost_thread = cpp.find_library('boost_thread', required: false)
-if not boost_thread.found()
-	boost_thread = cpp.find_library('boost_thread-mt', required: false)
-endif
+boost_deps = dependency('boost', version: '>=1.53', modules: ['filesystem', 'thread'], static: true)
 
 oiio_deps = [
 	dep_fmt,
 	dep_imath,
 	dep_tiff,
-	boost_fs,
-	boost_thread,
+	boost_deps,
 	cpp.find_library('dl', required: false),
 	cpp.find_library('Bcrypt', required: false), # FIXME What boost::filesystem does with BCrypt ???
 ]
