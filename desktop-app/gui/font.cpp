@@ -148,8 +148,12 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 	 * Arcollect::gui::font::Renderable::append_text_run().
 	 */
 	decltype(Elements::attributes)::const_iterator attrib_iter;
+	/** Number of clusters wrote in previous text runs
+	 *
+	 * It is required to keep track of attrib_iter indexes
+	 */
+	unsigned int text_run_cluster_offset;
 };
-#include <iostream>
 void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::text_runs)::value_type& text_run, RenderingState &state)
 {
 	// Extract parameters
@@ -182,17 +186,16 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 	auto clusteri_line_end = text.find(U'\n'); // To break at \n
 	// Process glyphs
 	for (unsigned int i = 0; i < glyph_count; i++) {
-		// Extract rendering parameters
-		if (state.attrib_iter->end <= i)
-			++state.attrib_iter;
-		const Align  &alignment = state.attrib_iter->alignment;
-		const bool     &justify = state.attrib_iter->justify;
-		const SDL::Color  &color = state.attrib_iter->color;
-		
 		hb_glyph_info_t &glyph_info = glyph_infos[i];
 		glyph_pos[i].x_advance >>= 6;
 		glyph_pos[i].y_advance >>= 6;
 		const char32_t glyph_char  = text[glyph_info.cluster];
+		// Extract rendering parameters
+		if (state.attrib_iter->end <= glyph_info.cluster + state.text_run_cluster_offset)
+			++state.attrib_iter;
+		const Align  &alignment = state.attrib_iter->alignment;
+		const bool     &justify = state.attrib_iter->justify;
+		const SDL::Color  &color = state.attrib_iter->color;
 		// Wrap text (but not if we already started a new_line, the cluster won't fit anyway)
 		if ((((cursor.x + glyph_pos[i].x_advance) > state.wrap_width) && (glyph_info.cluster != glyph_infos[glyphi_line_start].cluster))) {
 			// Search backward to a safe cluster and char to wrap
@@ -294,9 +297,9 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 	}
 	// Align the rest
 	align_glyphs(state.attrib_iter->alignment,glyph_base+glyphi_line_start+skiped_glyph_count,glyph_count,state.wrap_width - cursor.x);
-	// Cleanups
+	// Cleanups and late updates
 	hb_buffer_destroy(buf);
-	glyphs.shrink_to_fit();
+	state.text_run_cluster_offset += glyph_count;
 }
 Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_width) :
 	result_size{0,0}
@@ -305,9 +308,11 @@ Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_
 		{0,0},// cursor
 		wrap_width,
 		elements.attributes.begin(),
+		0,// text_run_cluster_offset
 	};
 	for (const auto& text_run: elements.text_runs)
 		append_text_run(text_run,state);
+	glyphs.shrink_to_fit();
 }
 void Arcollect::gui::font::Renderable::render_tl(int x, int y)
 {
