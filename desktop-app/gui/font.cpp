@@ -284,7 +284,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 			cursor.y += line_spacing;
 			clusteri_line_end = text.find(U'\n',clusteri_line_end+1); // Find the next line break
 			glyphi_line_start = i;
-			skiped_glyph_count = 0;
+			skiped_glyph_count = -1; // Will be incremented back a few lines later
 		}
 		// Don't render blanks codepoints
 		if (!((glyph_char == U' ')
