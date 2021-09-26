@@ -1,6 +1,7 @@
 #pragma once
 #include <sqlite3.h>
 #include <string>
+#include <string_view>
 #include <memory>
 
 namespace SQLite3 {
@@ -35,6 +36,9 @@ namespace SQLite3 {
 		}
 		inline int bind(int column, const char* text, int size = -1, void(*dtor)(void*) = NULL) {
 			return sqlite3_bind_text((sqlite3_stmt*)this,column,text,size,dtor);
+		}
+		inline int bind(int column, const std::string_view& text, void(*dtor)(void*) = NULL) {
+			return bind(column,text.data(),text.size(),dtor);
 		}
 		inline int bind_null(int column) {
 			return sqlite3_bind_null((sqlite3_stmt*)this,column);
