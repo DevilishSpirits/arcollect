@@ -84,6 +84,7 @@ function twitter_handle_user(user) {
 	let id = null;
 	const id_properties = [
 		'id',
+		'id_str',
 		'user_id',
 	];
 	for (i in id_properties)
