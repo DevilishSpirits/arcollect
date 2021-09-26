@@ -41,8 +41,6 @@ std::vector<Arcollect::gui::modal_stack_variant> Arcollect::gui::modal_stack;
 
 #include "sqlite-busy-handler.cpp"
 
-bool debug_redraws;
-bool debug_icc_profile;
 static std::unique_ptr<SQLite3::stmt> preload_artworks_stmt;
 static int window_screen_index;
 
@@ -55,9 +53,6 @@ Uint32 Arcollect::gui::time_framedelta;
 
 int Arcollect::gui::init(void)
 {
-	// Sample debug flags
-	debug_redraws = Arcollect::debug::is_on("redraws");
-	debug_icc_profile = Arcollect::debug::is_on("icc-profile");
 	// Init SDL
 	SDL::Hint::SetRenderScaleQuality(SDL::Hint::RENDER_SCALE_QUALITY_BEST);
 	if (SDL::Init(SDL::INIT_VIDEO)) {
@@ -240,7 +235,7 @@ bool Arcollect::gui::main(void)
 		artwork.texture_unload();
 	}
 	// Redraws debugging
-	if (debug_redraws) {
+	if (Arcollect::debug.redraws) {
 		Uint32 final_ticks = SDL_GetTicks();
 		static constexpr SDL::Color   idle_color = 0xFFFFFFff; // White
 		static constexpr SDL::Color  event_color = 0xFFFF00ff; // Yellow

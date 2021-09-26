@@ -21,16 +21,32 @@
 #include <windows.h>
 #include <stdio.h>
 #endif
-const std::string Arcollect::debug::env = []{
-	const char* env_value = std::getenv("ARCOLLECT_DEBUG");
-	if (env_value)
-		return std::string(env_value);
-	else return std::string();
-}();
 
-const std::unordered_set<std::string_view> Arcollect::debug::flags = []{
-	std::unordered_set<std::string_view> debug_flags;
-	if (!Arcollect::debug::env.empty()) {
+Arcollect::Debug Arcollect::debug;
+Arcollect::Debug::iterator Arcollect::Debug::end_ptr;
+
+void Arcollect::Debug::turn_on_flag(const std::string_view& flag_name)
+{
+	using namespace std::literals::string_view_literals;
+	if (flag_name == "all"sv) {
+		for (Flag &flag: *this)
+			flag.on = true;
+		return;
+	} else for (Flag &flag: *this)
+		if (flag.name == flag_name) {
+			flag.on = true;
+			return;
+		}
+	// Flag not found!
+	std::cerr << "Unknown debug flag \"" << flag_name << "\"\n";
+}
+Arcollect::Debug::Debug(void)
+{
+	// Set end_ptr
+	end_ptr = reinterpret_cast<Arcollect::Debug::iterator>(&reinterpret_cast<char*>(this)[sizeof(Arcollect::debug)]);
+	// Read env
+	const char* env_value = std::getenv("ARCOLLECT_DEBUG");
+	if (env_value) {
 		#ifdef _WIN32
 		// Init debug console
 		AllocConsole();
@@ -38,27 +54,22 @@ const std::unordered_set<std::string_view> Arcollect::debug::flags = []{
 		std::cerr.clear(); // Reset the stream to apply the redirection
 		#endif
 		// Tokenize the string
-		const char* start = Arcollect::debug::env.c_str();
+		const char* start = env_value;
 		const char* current;
 		for (current = start; *current; current++) {
 			if (*current == ',') {
-				if (*start != ',') {
-					// New token
-					debug_flags.emplace(start,std::distance(start,current));
-				}
-				start = current+1;
+				if (*start != ',')
+					turn_on_flag(std::string_view(start,std::distance(start,current)));
+				start = current + 1;
 			}
 		}
 		// Insert last flag if any
 		if (*start)
-			debug_flags.emplace(start,std::distance(start,current));
+			turn_on_flag(std::string_view(start,std::distance(start,current)));
 		// Log
 		std::cerr << "Arcollect debug flags:";
-		for (const std::string_view &flag: debug_flags)
-			std::cerr << ' ' << flag;
-		std::cerr << "." << std::endl;
+		for (const Flag &flag: *this)
+			std::cerr << (flag.on ? "\n\tON : " : "\n\tOFF: ") << flag.name	;
+		std::cerr << std::endl;
 	}
-	return debug_flags;
-}();
-
-const bool Arcollect::debug::all_flag = Arcollect::debug::is_on("all");
+}

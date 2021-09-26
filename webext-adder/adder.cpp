@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <optional>
 #include <vector>
+#include <arcollect-debug.hpp>
 #include <arcollect-paths.hpp>
 #include <arcollect-sqls.hpp>
 #include <rapidjson/document.h>
@@ -298,15 +299,13 @@ map_type json_parse_objects(rapidjson::Document &json_dom, const char* json_key,
 	return new_objects;
 }
 
-extern bool debug;
-
 static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 {
-	if (debug)
+	if (Arcollect::debug.webext_adder)
 		std::cerr << "JSON parsed. Reading DOM..." << std::endl;
 	// Get some constants platform
 	const std::string platform = json_dom["platform"].GetString();
-	if (debug)
+	if (Arcollect::debug.webext_adder)
 		std::cerr << "Platform: " << platform << std::endl;
 	// Parse the DOM
 	std::unordered_map<std::string_view,new_artwork> new_artworks = json_parse_objects<decltype(new_artworks)>(json_dom,"artworks",
@@ -334,7 +333,7 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 			new_art_tag_links.emplace_back(link_iter);
 	});
 	// Debug the transaction
-	if (debug) {
+	if (Arcollect::debug.webext_adder) {
 		std::cerr << new_artworks.size() << " artwork(s) :" << std::endl;
 		for (auto& artwork : new_artworks)
 			std::cerr << "\t\"" << artwork.second.art_title << "\" (" << artwork.second.art_source << ")\n" << std::endl;
@@ -364,7 +363,7 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 		default:
 			return "Failed to begin database transaction: " + std::string(db->errmsg());
 	}
-	if (debug)
+	if (Arcollect::debug.webext_adder)
 		std::cerr << "Started SQLite transaction" << std::endl;
 	// INSERT INTO artworks
 	std::unique_ptr<SQLite3::stmt> insert_stmt;
@@ -587,7 +586,7 @@ std::string handle_json_dom(rapidjson::Document &json_dom)
 	const char* transaction_id = NULL;
 	if (json_dom.HasMember("transaction_id") && json_dom["transaction_id"].IsString()) {
 		transaction_id = json_dom["transaction_id"].GetString();
-		if (debug)
+		if (Arcollect::debug.webext_adder)
 			std::cerr << "transaction_id set to \"" << transaction_id << "\"" << std::endl;
 	}
 	// Perform addition

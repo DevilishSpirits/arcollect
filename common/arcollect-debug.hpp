@@ -14,28 +14,61 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-#include <string>
 #include <string_view>
-#include <unordered_set>
 namespace Arcollect {
-	namespace debug {
-		/** Value of $ARCOLLECT_DEBUG environment variable
-		 */
-		extern const std::string env;
-		/** Value of debug flags on
-		 */
-		extern const std::unordered_set<std::string_view> flags;
-		/** Wheater all debug flags are raised
+	/** Debugging pseudo class
+	 *
+	 * This is a singleton class to ease debug flag readings.
+	 * \warning **This class use black magic!**
+	 *          It must ONLY contain Arcollect::Debug::Flag because it is used as
+	 *          a Arcollect::Debug::Flag[]!
+	 *          The cause may hurt your sensibility.
+	 */
+	extern struct Debug {
+		struct Flag {
+			/** The debug flag name
+			 */
+			const std::string_view name;
+			/** If the flag is raised
+			 */
+			bool on = false;
+			/** Convenience 
+			 *
+			 */
+			operator bool(void) const {
+				return on;
+			}
+			constexpr Flag(const std::string_view& name) : name(name) {}
+		};
+		using iterator = Flag*;
+		/** The value of end()
 		 *
-		 * This boolean is true when the 'all' debug flag is set and cause all flags
-		 * to be raised.
+		 * #Debug is a singleton anyway.
 		 */
-		extern const bool all_flag;
-		
-		/** Check if a debug flag is on
+		static iterator end_ptr;
+		/** Return an iterator to all debug #Flag
+		 * \return Something fast to compute...
 		 */
-		inline bool is_on(const std::string_view &debug_flag) {
-			return all_flag || (flags.find(debug_flag) != flags.end());
+		iterator begin(void) {
+			// No. This is not a dream.
+			return reinterpret_cast<iterator>(this);
 		}
-	}
+		/** Return the end of begin()
+		 * \return Litterally #end_ptr.
+		 */
+		iterator end(void) {
+			// I am really doing this.
+			return end_ptr;
+		}
+		/** Turn on a debugging flag by name.
+		 * \param flag_name The flag name
+		 */
+		void turn_on_flag(const std::string_view& flag_name);
+		Debug(void);
+		
+		Flag icc_profile{"icc-profile"};
+		Flag redraws{"redraws"};
+		Flag search{"search"};
+		Flag webext_adder{"webext-adder"};
+	} debug;
 }

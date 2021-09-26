@@ -20,9 +20,8 @@
 #define CMSREGISTER // Remove warnings about 'register' keyword
 #include <iostream>
 #include "lcms2.h"
+#include <arcollect-debug.hpp>
 #include <OpenImageIO/imageio.h>
-extern bool debug_icc_profile;
-// FIXME This as global is bad
 cmsHPROFILE cms_screenprofile = NULL;
 
 void Arcollect::art_reader::set_screen_icc_profile(SDL_Window *window)
@@ -44,7 +43,7 @@ void Arcollect::art_reader::set_screen_icc_profile(const std::string_view& icc_p
 		cms_screenprofile = NULL;
 	} else {
 		cms_screenprofile = cmsOpenProfileFromMem(icc_profile.data(),icc_profile.size());
-		if (debug_icc_profile) {
+		if (Arcollect::debug.icc_profile) {
 			char description[64];
 			char manufacturer[64];
 			char model[64];
@@ -97,11 +96,11 @@ SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 	// Get image profile
 	cmsHPROFILE image_profile = NULL;
 	const OIIO::ParamValue *icc_profile = spec.find_attribute("ICCProfile");
-	if (debug_icc_profile)
+	if (Arcollect::debug.icc_profile)
 		std::cerr << path << ":";
 	if (icc_profile) {
 		image_profile = cmsOpenProfileFromMem(icc_profile->data(),icc_profile->datasize());
-		if (debug_icc_profile) {
+		if (Arcollect::debug.icc_profile) {
 			std::cerr << " embed ICC profile ";
 			if (image_profile) {
 				char description[64];
@@ -134,21 +133,21 @@ SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 		static GammaTriplet gamma2_4(2.4);
 		
 		auto color_space = spec.get_string_attribute("oiio:ColorSpace","no");
-		if (debug_icc_profile)
+		if (Arcollect::debug.icc_profile)
 			std::cerr << " OIIO report " << color_space << " color-space.";
 		if (color_space == "Linear") {
-			if (debug_icc_profile)
+			if (Arcollect::debug.icc_profile)
 				std::cerr << " sRGB with gamma=1.";
 			image_profile = cmsCreateRGBProfile(&D65,&sRGBPrimaries,gamma1_0);
 		}
 		else if (color_space == "Rec709") {
-			if (debug_icc_profile)
+			if (Arcollect::debug.icc_profile)
 				std::cerr << " sRGB with gamma=2.4.";
 			image_profile = cmsCreateRGBProfile(&D65,&sRGBPrimaries,gamma2_4);
 		}
 		// TODO else if (color_space == "ACES")
 		else if (color_space == "AdobeRGB") {
-			if (debug_icc_profile)
+			if (Arcollect::debug.icc_profile)
 				std::cerr << " Use AdobeRGB.";
 			image_profile = cmsCreateRGBProfile(&D65,&AdobeRGBPrimaries,gamma2_2);
 		}
@@ -157,24 +156,24 @@ SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 	}
 	if (!image_profile) {
 		// Fallback to sRGB
-		if (debug_icc_profile)
+		if (Arcollect::debug.icc_profile)
 			std::cerr << " Fallback to sRGB.";
 		image_profile = cmsCreate_sRGBProfile();
 	}
 	if (cms_screenprofile) {
 		cmsHTRANSFORM hTransform = cmsCreateTransform(image_profile,cms_pixel_format,cms_screenprofile,cms_pixel_format,Arcollect::config::littlecms_intent,Arcollect::config::littlecms_flags);
 		if (hTransform) {
-			if (debug_icc_profile)
+			if (Arcollect::debug.icc_profile)
 				std::cerr << " Colors are managed.";
 			for (int y = 0; y < spec.height; y++) {
 				char* pixels = static_cast<char*>(surface->pixels) + y*surface->pitch;
 				cmsDoTransform(hTransform,pixels,pixels,spec.width);
 			}
 			cmsDeleteTransform(hTransform);
-		} else if (debug_icc_profile)
+		} else if (Arcollect::debug.icc_profile)
 			std::cerr << " cmsCreateTransform() failed!";
 	}
-	if (debug_icc_profile)
+	if (Arcollect::debug.icc_profile)
 		std::cerr << std::endl;
 	cmsCloseProfile(image_profile);
 	return surface;

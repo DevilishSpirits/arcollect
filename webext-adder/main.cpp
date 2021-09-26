@@ -24,7 +24,6 @@
 
 std::string handle_json_dom(rapidjson::Document &json_dom);
 extern const std::string user_agent;
-bool debug;
 std::unique_ptr<SQLite3::sqlite3> db;
 
 int main(int argc, char *argv[])
@@ -40,8 +39,7 @@ int main(int argc, char *argv[])
 	// TODO Handle SIGTERM
 	#endif
 	// Check for debug mode
-	debug = Arcollect::debug::is_on("webext-adder");
-	if (debug) {
+	if (Arcollect::debug.webext_adder) {
 		std::cerr << "Arcollect web extension adder debugging on" << std::endl;
 	}
 	// Main-loop
@@ -51,14 +49,14 @@ int main(int argc, char *argv[])
 		// Read the JSON
 		uint32_t data_len;
 		std::cin.read(reinterpret_cast<char*>(&data_len),sizeof(data_len));
-		if (debug)
+		if (Arcollect::debug.webext_adder)
 			std::cerr << "Got a JSON of " << data_len << " chars. Reading..." << std::endl;
 		// Quit on empty message
 		if (data_len == 0)
 			return 0;
 		json_string.resize(data_len);
 		std::cin.read(json_string.data(),data_len);
-		if (debug)
+		if (Arcollect::debug.webext_adder)
 			std::cerr << "JSON is loaded. Parsing..." << std::endl;
 		// Parse the JSON
 		rapidjson::Document json_dom;
@@ -69,7 +67,7 @@ int main(int argc, char *argv[])
 		}
 		std::string transaction_result = handle_json_dom(json_dom);
 		// Send transaction_result
-		if (debug)
+		if (Arcollect::debug.webext_adder)
 			std::cerr << transaction_result << std::endl;
 		data_len = transaction_result.size();
 		std::cout.write(reinterpret_cast<char*>(&data_len),sizeof(data_len));
