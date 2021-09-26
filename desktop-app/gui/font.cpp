@@ -99,6 +99,18 @@ Arcollect::gui::font::Elements& Arcollect::gui::font::Elements::operator<<(const
 	return operator<<(codepoints);
 }
 
+void Arcollect::gui::font::Renderable::add_rect(const SDL::Rect &rect, SDL::Color color)
+{
+	const auto left  = rect.x;
+	const auto top   = rect.y;
+	const auto right = rect.x + rect.w;
+	const auto bot   = rect.y + rect.h;
+	add_line({left ,top},{right,top},color);
+	add_line({right,top},{right,bot},color);
+	add_line({right,bot},{left ,bot},color);
+	add_line({left ,bot},{left ,top},color);
+}
+
 void Arcollect::gui::font::Renderable::align_glyphs(Align align, unsigned int i_start, unsigned int i_end, int remaining_space)
 {
 	// Handle align
@@ -313,9 +325,14 @@ Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_
 	for (const auto& text_run: elements.text_runs)
 		append_text_run(text_run,state);
 	glyphs.shrink_to_fit();
+	lines.shrink_to_fit();
 }
 void Arcollect::gui::font::Renderable::render_tl(int x, int y)
 {
 	for (const GlyphData& glyph: glyphs)
 		glyph.glyph->render(glyph.position.x + x, glyph.position.y + y, glyph.color);
+	for (const LineData& line: lines) {
+		renderer->SetDrawColor(line.color);
+		renderer->DrawLine(line.p0.x + x, line.p0.y + y,line.p1.x + x, line.p1.y + y);
+	}
 }

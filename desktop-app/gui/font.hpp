@@ -462,6 +462,35 @@ namespace Arcollect {
 					/** Glyph storage result
 					 */
 					std::vector<GlyphData> glyphs;
+					/** Line data
+					 */
+					struct LineData {
+						/** First point
+						 */
+						SDL::Point p0;
+						/** Second point
+						 */
+						SDL::Point p1;
+						/** Line color
+						 */
+						SDL::Color color;
+					};
+					/** Lines storage result
+					 */
+					std::vector<LineData> lines;
+					/** Append a rectangle in #lines
+					 * \param rect  The rectangle
+					 * \param color Rectangle color
+					 */
+					void add_line(SDL::Point p0, SDL::Point p1, SDL::Color color) {
+						lines.emplace_back(LineData{p0,p1,color});
+					}
+					/** Append a rectangle in #lines
+					 * \param rect  The rectangle
+					 * \param color Rectangle color
+					 */
+					void add_rect(const SDL::Rect &rect, SDL::Color color);
+					
 					struct RenderingState;
 					/** Realign text
 					 * \param align           The alignment to use
