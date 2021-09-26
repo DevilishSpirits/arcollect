@@ -30,6 +30,12 @@
  */
 var layersDiv = document.getElementById('layers');
 
+/** IntervalID for make_twitter_photo_save_button()
+ *
+ * Used when button creation fail because Twitter hasn't made the full HTML yet.
+ */
+var make_twitter_photo_save_button_intervalID = null;
+
 /** Save the artwork
  */
 function save_twitter_artwork(button, text_button, submit_json, retry_to_save)
@@ -82,8 +88,11 @@ function make_twitter_photo_save_button() {
 	 * The bar that allows you to reply, retweet, like and share.
 	 */
 	let buttons_bar = main_pane.querySelector('div[role=group]:not([aria-roledescription="carousel"])');
-	// Ensure we don't make multiple buttons
-	if (!buttons_bar.hasOwnProperty('save_in_arcollect_btn')) {
+	if (buttons_bar == null)
+		// Retry if the buttons_bar isn't made yet
+		make_twitter_photo_save_button_intervalID = window.setInterval(make_twitter_photo_save_button,100);
+	else if (!buttons_bar.hasOwnProperty('save_in_arcollect_btn')) {
+		// Ensure we don't make multiple buttons
 		/** Save in Arcollect button
 		 */
 		let new_button = buttons_bar.childNodes[0].cloneNode(deep = true);
@@ -97,6 +106,11 @@ function make_twitter_photo_save_button() {
 		buttons_bar.appendChild(new_button);
 		new_button.onclick = make_twitter_photo_save_button_clicked;
 		buttons_bar.save_in_arcollect_btn = new_button;
+		
+		if (make_twitter_photo_save_button_intervalID != null) {
+			clearInterval(make_twitter_photo_save_button_intervalID);
+			make_twitter_photo_save_button_intervalID = null;
+		}
 	}
 }
 
