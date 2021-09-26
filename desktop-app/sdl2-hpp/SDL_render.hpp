@@ -43,7 +43,7 @@ namespace SDL {
 		inline int DrawLine(int x1, int y1, int x2, int y2) {
 			return SDL_RenderDrawLine((SDL_Renderer*)this,x1,y1,x2,y2);
 		};
-		inline int DrawLine(const SDL_Point p1, const SDL_Point p2) {
+		inline int DrawLine(const SDL::Point p1, const SDL::Point p2) {
 			return SDL_RenderDrawLine((SDL_Renderer*)this,p1.x,p1.y,p2.x,p2.y);
 		};
 		inline int DrawPoint(int x, int y) {

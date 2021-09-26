@@ -4,11 +4,9 @@
 #endif
 namespace SDL {
 	struct Rect;
-	struct Point {
-		int x;
-		int y;
+	struct Point: public SDL_Point {
 		inline bool InRect(const SDL::Rect &rect) const {
-			return SDL_PointInRect((const SDL_Point*)this,(const SDL_Rect*)&rect) == SDL_TRUE;
+			return SDL_PointInRect(this,(const SDL_Rect*)&rect) == SDL_TRUE;
 		}
 		SDL::Point operator+(const SDL::Point& right) const {
 			return {x+right.x,y+right.y};
@@ -16,8 +14,20 @@ namespace SDL {
 		SDL::Point operator-(const SDL::Point& right) const {
 			return {x+right.x,y+right.y};
 		}
-		operator SDL_Point&() {
-			return *((SDL_Point*)this);
+		SDL::Point &operator+=(const SDL::Point& right) {
+			x += right.x;
+			y += right.y;
+			return *this;
+		}
+		SDL::Point &operator-=(const SDL::Point& right) {
+			x -= right.x;
+			y -= right.y;
+			return *this;
+		}
+		SDL::Point &operator/=(int value) {
+			x /= value;
+			y /= value;
+			return *this;
 		}
 	};
 	struct FPoint {
