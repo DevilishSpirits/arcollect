@@ -28,6 +28,8 @@ static FT_Library ft_library;
 
 const Arcollect::gui::font::FontSize Arcollect::gui::font::FontSize::normal(12);
 
+bool debug_font = false; // TODO Make a debugging flag for this
+
 Arcollect::gui::font::Glyph::Glyph(hb_codepoint_t glyphid, int font_size)
 {
 	FT_Face face = query_face(font_size);
@@ -256,6 +258,10 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 						space_current++;
 						glyph_id_delta--;
 						pixel_delta = right_free_space*space_current/space_count;
+						if (debug_font) {
+							const auto &last_pos = glyphs[glyph_id_delta+j].position;
+							add_line(last_pos,{last_pos.x,last_pos.y+font_size},{255,0,0,255});
+						}
 					} else glyphs[glyph_id_delta+j].position.x += pixel_delta;
 				}
 			} else align_glyphs(alignment,glyph_base+glyphi_line_start+skiped_glyph_count,glyph_base+i_newline+1,right_free_space);
@@ -324,6 +330,8 @@ Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_
 	};
 	for (const auto& text_run: elements.text_runs)
 		append_text_run(text_run,state);
+	if (debug_font)
+		add_rect({0,0,result_size.x,result_size.y},{255,255,255,128});
 	glyphs.shrink_to_fit();
 	lines.shrink_to_fit();
 }
