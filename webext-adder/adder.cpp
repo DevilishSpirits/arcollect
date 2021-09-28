@@ -79,7 +79,9 @@ static std::optional<std::string> data_saveto(const char* data_string, std::file
 		fclose(file);
 		
 		if (curl_res != CURLE_OK) {
-			result = std::string(curl_errorbuffer);
+			if (curl_errorbuffer[0])
+				result = std::string(curl_errorbuffer);
+			else result = std::string(curl_easy_strerror(curl_res));
 			std::filesystem::remove(target);
 		}
 		curl_easy_cleanup(easyhandle);
