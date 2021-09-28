@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Usage: webext-adder-test.py $XDG_DATA_HOME test_set...
+# Usage: webext-adder-test.py $XDG_DATA_HOME test_payload test_set...
 from importlib.util import module_from_spec, spec_from_file_location
 from os import path
 from subprocess import Popen,PIPE
@@ -10,13 +10,13 @@ import json
 import os
 import requests
 import shutil
-from struct import pack, unpack
+from struct import unpack
 import sys
 
 # Open test sets
 test_sets  = []
 test_count = 0
-for test_set_path in sys.argv[2:]:
+for test_set_path in sys.argv[3:]:
 	test_set = json.load(open(test_set_path,'r'))
 	test_count += db_check.test_count(test_set)
 	test_sets.append(test_set)
@@ -35,19 +35,14 @@ print('1..'+str(test_count))
 
 # Feed webext-adder
 print('# Feeding webext-adder')
-webext_adder_input = bytes()
-for test_set in test_sets:
-	json_data = json.dumps(test_set).encode('utf-8')
-	webext_adder_input += pack('I',len(json_data))
-	webext_adder_input += json_data
-
 webext_adder_prog = os.environ['ARCOLLECT_WEBEXT_ADDER_PATH']
-stdout = Popen(webext_adder_prog,stdin=PIPE,stdout=PIPE).communicate(input=webext_adder_input)[0]
+stdout = Popen(webext_adder_prog,stdin=PIPE,stdout=PIPE).communicate(input=open(sys.argv[2],'rb').read())[0]
 stdout = BytesIO(stdout) # Wrap in a stream
+print('# Feeded webext-adder')
 
 webext_success = True
 test_num = 0
-for test_set_path in sys.argv[2:]:
+for test_set_path in sys.argv[3:]:
 	test_num += 1
 	# Read the JSON
 	stdout_json = json.loads(stdout.read(unpack('I',stdout.read(4))[0]).decode('utf-8'))
