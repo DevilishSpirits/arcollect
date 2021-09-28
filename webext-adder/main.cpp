@@ -20,9 +20,8 @@
 #include <iostream>
 #include <arcollect-db-open.hpp>
 #include <arcollect-debug.hpp>
-#include <rapidjson/document.h>
 
-std::string handle_json_dom(rapidjson::Document &json_dom);
+std::string process_json(char* begin, char* const end);
 extern const std::string user_agent;
 std::unique_ptr<SQLite3::sqlite3> db;
 
@@ -56,16 +55,7 @@ int main(int argc, char *argv[])
 			return 0;
 		json_string.resize(data_len);
 		std::cin.read(json_string.data(),data_len);
-		if (Arcollect::debug.webext_adder)
-			std::cerr << "JSON is loaded. Parsing..." << std::endl;
-		// Parse the JSON
-		rapidjson::Document json_dom;
-		if (json_dom.ParseInsitu(json_string.data()).HasParseError()) {
-			// FIXME Try to give more informations
-			std::cerr << "JSON parse error." << std::endl;
-			return 1;
-		}
-		std::string transaction_result = handle_json_dom(json_dom);
+		std::string transaction_result = process_json(&*json_string.begin(),&*json_string.end());
 		// Send transaction_result
 		if (Arcollect::debug.webext_adder)
 			std::cerr << transaction_result << std::endl;

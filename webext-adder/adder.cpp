@@ -16,6 +16,7 @@
  */
 #include <curl/curl.h>
 #include <config.h>
+#include <stdexcept>
 #include <iostream>
 #include <fstream>
 #include <functional>
@@ -25,53 +26,39 @@
 #include <arcollect-debug.hpp>
 #include <arcollect-paths.hpp>
 #include <arcollect-sqls.hpp>
-#include <rapidjson/document.h>
 #include "base64.hpp"
+#include "wtf_json_parser-string_view.hpp"
+#include "json_escaper.hpp"
+using namespace std::literals::string_view_literals;
 
 extern std::unique_ptr<SQLite3::sqlite3> db;
 extern const std::string user_agent;
 
 const std::string user_agent = "Arcollect/" ARCOLLECT_VERSION_STR " curl/" + std::string(curl_version_info(CURLVERSION_NOW)->version);
-/** RapidJSON helper to add integers
- * \param iter           Iterator to the object
- * \param key            The key to read
- * \param default_value  The value if the key does not exist
- * \return default_value is the key doesn't exist or it's string value
- */
-static sqlite_int64 json_int64(rapidjson::Value::ConstValueIterator iter, const char* key, sqlite_int64 default_value)
-{
-	auto& object = *iter;
-	if (object.HasMember(key)) {
-		return object[key].GetInt64();
-	} else return default_value;
-}
-/** RapidJSON helper to add strings
- * \param iter Iterator to the object
- * \param key  The key to read
- * \return NULL is the key doesn't exist or it's string value
- */
-static const char* json_string(rapidjson::Value::ConstValueIterator iter, const char* key, const char* default_value = NULL)
-{
-	auto& object = *iter;
-	if (object.HasMember(key) && object[key].IsString()) {
-		return object[key].GetString();
-	} else return default_value;
-}
 
-static std::optional<std::string> data_saveto(const char* data_string, std::filesystem::path target, const char* referer)
+/** Process base64 or https:// "data" fields
+ * \param data_string The data string (base64 or https:// link)
+ * \param target      Destination file
+ * \param referer     Referer to use.
+ * \warning `data_string` and `referer` must be NUL-terminated!
+ *          The code ensure that with json_read_string_nul_terminate().
+ */
+static std::optional<std::string> data_saveto(const std::string_view& data_string, const std::filesystem::path& target, const std::string_view &referer)
 {
+	constexpr static char https_prefix[] = {'h','t','t','p','s',':','/','/'}; // "https://" without the '\0'
+	static_assert(sizeof(https_prefix) == sizeof(int64_t));
 	// Check for "https://" schema
-	const static char https_prefix[] = {'h','t','t','p','s',':','/','/'}; // "https://" without the '\0'
-	if (strncmp(https_prefix,data_string,sizeof(https_prefix)) == 0) {
+	// Note: https_prefix is 64bits, I compare the string by casting to an int64_t
+	if ((data_string.size() > sizeof(int64_t))&&(*reinterpret_cast<const int64_t*>(data_string.data()) == *reinterpret_cast<const int64_t*>(https_prefix))) {
 		// TODO Error handling
 		char curl_errorbuffer[CURL_ERROR_SIZE];
 		std::optional<std::string> result;
 		FILE* file = fopen(target.string().c_str(),"wb");
 		auto easyhandle = curl_easy_init(); 
-		curl_easy_setopt(easyhandle,CURLOPT_URL,data_string);
+		curl_easy_setopt(easyhandle,CURLOPT_URL,data_string.data());
 		curl_easy_setopt(easyhandle,CURLOPT_WRITEDATA,file);
 		curl_easy_setopt(easyhandle,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS);
-		curl_easy_setopt(easyhandle,CURLOPT_REFERER,referer);
+		curl_easy_setopt(easyhandle,CURLOPT_REFERER,referer.data());
 		curl_easy_setopt(easyhandle,CURLOPT_USERAGENT,user_agent.c_str());
 		curl_easy_setopt(easyhandle,CURLOPT_ERRORBUFFER,curl_errorbuffer);
 		
@@ -90,7 +77,7 @@ static std::optional<std::string> data_saveto(const char* data_string, std::file
 		// Assume base64 encoding
 		// TODO Decode in-place
 		std::string binary;
-		macaron::Base64::Decode(data_string,binary);
+		macaron::Base64::Decode(data_string.data(),binary);
 		std::ofstream(target) << binary;
 		return std::nullopt;
 	}
@@ -117,18 +104,9 @@ struct platform_id {
 	int bind(std::unique_ptr<SQLite3::stmt> &stmt, int col) const {
 		if (IsInt64())
 			return stmt->bind(col,platid_int);
-		else return stmt->bind(col,platid_str.data());
+		else return stmt->bind(col,platid_str);
 	}
 	
-	platform_id(const rapidjson::GenericValue<rapidjson::UTF8<>> &value) {
-		if (value.IsInt64()) {
-			platid_int = value.GetInt64();
-			platid_str = std::to_string(platid_int);
-		} else {
-			platid_int = -1;
-			platid_str = value.GetString();
-		}
-	}
 	bool operator==(const platform_id& other) const {
 		if (IsInt64() && other.IsInt64())
 			return platid_int == other.platid_int;
@@ -139,6 +117,9 @@ struct platform_id {
 			return std::to_string(platid_int) == other.platid_str;
 		else //if (!IsInt64() && other.IsInt64() implied
 			return platid_str == std::to_string(other.platid_int);
+	}
+	bool empty(void) const {
+		return platid_str.empty();
 	}
 };
 namespace std {
@@ -157,88 +138,316 @@ std::ostream &operator<<(std::ostream &left, const platform_id &right) {
 	return left;
 }
 
-struct new_artwork {
-	const char* art_title;
-	const char* art_desc;
-	const char* art_source;
-	sqlite_int64 art_rating;
-	const char* art_mimetype;
-	sqlite_int64 art_postdate;
-	sqlite_int64 art_id;
-	const char* thumbnail;
-	const char* data;
-	static constexpr char default_art_mimetype[] = "image/*";
-	new_artwork(rapidjson::Value::ConstValueIterator iter) : 
-		art_title(json_string(iter,"title")),
-		art_desc(json_string(iter,"desc")),
-		art_source(json_string(iter,"source")),
-		art_rating(json_int64(iter,"rating",0)),
-		art_mimetype(json_string(iter,"mimetype",default_art_mimetype)),
-		art_postdate(json_int64(iter,"postdate",0)),
-		art_id(-1),
-		thumbnail(json_string(iter,"thumbnail")),
-		data(iter->operator[]("data").GetString())
-	{
+struct JSONParsingError: public std::runtime_error {
+	static std::string make_near(char* iter, char* end) {
+		if (std::distance(iter,end) > 8)
+			end = iter + 8;
+		return std::string("Near ")+std::string(iter,std::distance(iter,end));
+	}
+	JSONParsingError(const std::string& message, char* iter, char* end) :
+		std::runtime_error(make_near(iter,end)+": "+message) {}
+};
+
+static void json_read_string(Arcollect::json::ObjHave have, std::string_view &out, const std::string& debug_string, char*& iter, char* const end)
+{
+	using namespace Arcollect::json;
+	if (have == ObjHave::NULL_LITTERALLY)
+		return; /* Cope fine with NULL */
+	if (have != ObjHave::STRING)
+		throw JSONParsingError(debug_string+" must be a string.",iter,end);
+	if (!read_string(out,iter,end))
+		throw JSONParsingError("Error while reading "+debug_string+" string, syntax error.",iter,end);
+}
+static void json_read_string_nul_terminate(Arcollect::json::ObjHave have, std::string_view &out, const std::string& debug_string, char*& iter, char* const end)
+{
+	json_read_string(have,out,debug_string,iter,end);
+	*const_cast<char*>(out.data() + out.size()) = '\0';
+}
+static sqlite_int64 json_read_int(Arcollect::json::ObjHave have, const std::string& debug_string, char*& iter, char* const end)
+{
+	using namespace Arcollect::json;
+	sqlite_int64 out;
+	if ((have != ObjHave::NUMBER)|| !is_integral_number(iter,end))
+		throw JSONParsingError(debug_string+" must be an integral number.",iter,end);
+	if (!read_number(out,iter,end))
+		throw JSONParsingError("Error while reading "+debug_string+" integral number, syntax error.",iter,end);
+	return out;
+}
+
+static void read_platform_id(Arcollect::json::ObjHave have, platform_id &out, const std::string& debug_string, char*& iter, char* const end)
+{
+	using namespace Arcollect::json;
+	switch (have) {
+		case ObjHave::NUMBER: {
+			if (!read_number<decltype(out.platid_int)>(out.platid_int,iter,end))
+				throw JSONParsingError("Error while reading "+debug_string+" id as number.",iter,end);
+			out.platid_str = std::to_string(out.platid_int);
+		} break;
+		case ObjHave::STRING: {
+			out.platid_int = -1;
+			if (!read_string(out.platid_str,iter,end))
+				throw JSONParsingError("Error while reading "+debug_string+" id as string.",iter,end);
+		} break;
+		default:
+			throw JSONParsingError(debug_string+" id must be an integral or a string.",iter,end);
+	}
+	
+}
+
+template <typename T>
+struct ForEachObjectSwitch {
+	using map_type = std::unordered_map<std::string_view,T>;
+	const map_type map;
+	struct Iteration {
+		char*& iter;
+		char* const end_iter;
+		const map_type &map;
+		struct iterator {
+			char*& iter;
+			char* const end;
+			const map_type &map;
+			struct ret_type {
+				T key;
+				Arcollect::json::ObjHave have;
+			} ret;
+			iterator& operator++(void) {
+				using namespace Arcollect::json;
+				std::string_view key_name;
+				typename map_type::const_iterator map_iter;
+				// Loop until we find a key we knows
+				while (1) {
+					// Check what we have
+					ret.have = Arcollect::json::read_object_keyval(key_name,iter,end);
+					// On end or error, return
+					if (ret.have == ObjHave::WTF)
+						throw JSONParsingError("syntax error at object \""+std::string(key_name)+"\" value.",iter,end);
+					if (ret.have == ObjHave::OBJECT_CLOSE)
+						return *this;
+					// Try to find which key is used
+					map_iter = map.find(key_name);
+					if (map_iter != map.end()) {
+						ret.key = map_iter->second;
+						return *this;
+					} else if (!skip_value(static_cast<Have>(ret.have),iter,end))
+						throw JSONParsingError("failed to skip \""+std::string(key_name)+"\", JSON syntax error.",iter,end);
+				}
+			}
+			constexpr bool operator!=(const iterator&) const {
+				return ret.have != Arcollect::json::ObjHave::OBJECT_CLOSE;
+			}
+			constexpr const ret_type& operator*(void) const {
+				return ret;
+			}
+		};
+		iterator begin() {
+			return ++iterator{iter,end_iter,map};
+		}
+		iterator end() {
+			return iterator{iter,end_iter,map};
+		}
 	};
+	ForEachObjectSwitch(std::initializer_list<typename map_type::value_type> init) : map(init) {}
+	Iteration operator()(char*& iter, char* const end) const {
+		return Iteration{iter,end,map};
+	}
+};
+
+struct new_artwork {
+	std::string_view art_title;
+	std::string_view art_desc;
+	std::string_view art_source;
+	sqlite_int64     art_rating   = 0;
+	std::string_view art_mimetype = "image/*"sv;
+	sqlite_int64     art_postdate = 0;
+	sqlite_int64     art_id = -1;
+	std::string_view thumbnail;
+	std::string_view data;
+	
+	new_artwork(char*& iter, char* const end) {
+		enum class Artworks {
+			title,
+			desc,
+			source,
+			rating,
+			mimetype,
+			postdate,
+			thumbnail,
+			data,
+		};
+		static const ForEachObjectSwitch<Artworks> artworks_switch{
+			{"title"    ,Artworks::title},
+			{"desc"     ,Artworks::desc},
+			{"source"   ,Artworks::source},
+			{"rating"   ,Artworks::rating},
+			{"mimetype" ,Artworks::mimetype},
+			{"postdate" ,Artworks::postdate},
+			{"thumbnail",Artworks::thumbnail},
+			{"data"     ,Artworks::data},
+		};
+		for (auto entry: artworks_switch(iter,end))
+			switch (entry.key) {
+				case Artworks::title: {
+					json_read_string(entry.have,art_title,"\"artworks\":[{\"title\"",iter,end);
+				} break;
+				case Artworks::desc: {
+					json_read_string(entry.have,art_desc,"\"artworks\":[{\"desc\"",iter,end);
+				} break;
+				case Artworks::source: {
+					// NUL-terminate because it is the "referer" param in data_saveto()
+					json_read_string_nul_terminate(entry.have,art_source,"\"artworks\":[{\"source\"",iter,end);
+				} break;
+				case Artworks::rating: {
+					art_rating = json_read_int(entry.have,"\"artworks\":[{\"rating\"",iter,end);
+				} break;
+				case Artworks::mimetype: {
+					json_read_string(entry.have,art_mimetype,"\"artworks\":[{\"mimetype\"",iter,end);
+				} break;
+				case Artworks::postdate: {
+					art_postdate = json_read_int(entry.have,"\"artworks\":[{\"postdate\"",iter,end);
+				} break;
+				case Artworks::thumbnail: {
+					// NUL-terminate because it is the "data_string" param in data_saveto()
+					json_read_string_nul_terminate(entry.have,thumbnail,"\"artworks\":[{\"thumbnail\"",iter,end);
+				} break;
+				case Artworks::data: {
+					// NUL-terminate because it is the "data_string" param in data_saveto()
+					json_read_string_nul_terminate(entry.have,data,"\"artworks\":[{\"data\"",iter,end);
+				} break;
+		}
+	}
 };
 
 struct new_account {
-	platform_id  acc_platid;
-	const char*  acc_name;
-	const char*  acc_title;
-	const char*  acc_url;
+	platform_id      acc_platid;
+	std::string_view acc_name;
+	std::string_view acc_title;
+	std::string_view acc_url;
 	
-	sqlite_int64 acc_arcoid;
-	const char* icon_data;
-	new_account(rapidjson::Value::ConstValueIterator iter) : 
-		acc_platid(iter->operator[]("id")),
-		acc_name(json_string(iter,"name")),
-		acc_title(json_string(iter,"title")),
-		acc_url(json_string(iter,"url")),
-		acc_arcoid(-1),
-		icon_data(iter->operator[]("icon").GetString())
-	{
-	};
+	sqlite_int64 acc_arcoid = -1;
+	std::string_view icon_data;
+	
+	new_account(char*& iter, char* const end) {
+		enum class Accounts {
+			id,
+			name,
+			title,
+			url,
+			icon,
+		};
+		static const ForEachObjectSwitch<Accounts> accounts_switch{
+			{"id"   ,Accounts::id},
+			{"name" ,Accounts::name},
+			{"title",Accounts::title},
+			{"url"  ,Accounts::url},
+			{"icon" ,Accounts::icon},
+		};
+		for (auto entry: accounts_switch(iter,end))
+			switch (entry.key) {
+				case Accounts::id: {
+					read_platform_id(entry.have,acc_platid,"\"accounts\":[{\"id\"",iter,end);
+				} break;
+				case Accounts::name: {
+					json_read_string(entry.have,acc_name,"\"accounts\":[{\"name\"",iter,end);
+				} break;
+				case Accounts::title: {
+					json_read_string(entry.have,acc_title,"\"accounts\":[{\"title\"",iter,end);
+				} break;
+				case Accounts::url: {
+					json_read_string_nul_terminate(entry.have,acc_url,"\"accounts\":[{\"url\"",iter,end);
+				} break;
+				case Accounts::icon: {
+					json_read_string_nul_terminate(entry.have,icon_data,"\"accounts\":[{\"icon\"",iter,end);
+				} break;
+			}
+	}
 };
 
 struct new_tag {
-	platform_id  tag_platid;
-	const char*  tag_title;
-	const char*  tag_kind;
+	platform_id      tag_platid;
+	std::string_view tag_title;
+	std::string_view tag_kind;
+	sqlite_int64 tag_arcoid = -1;
 	
-	sqlite_int64 tag_arcoid;
-	
-	new_tag(rapidjson::Value::ConstValueIterator iter) : 
-		tag_platid(iter->operator[]("id")),
-		tag_title(json_string(iter,"title")),
-		tag_kind(json_string(iter,"kind")),
-		tag_arcoid(-1)
-	{
-	};
+	new_tag(char*& iter, char* const end) {
+		enum class Tags {
+			id,
+			title,
+			kind,
+		};
+		static const ForEachObjectSwitch<Tags> tags_switch{
+			{"id"   ,Tags::id},
+			{"title",Tags::title},
+			{"kind" ,Tags::kind},
+		};
+		for (auto entry: tags_switch(iter,end))
+			switch (entry.key) {
+				case Tags::id: {
+					read_platform_id(entry.have,tag_platid,"\"tags\":[{\"id\"",iter,end);
+				} break;
+				case Tags::title: {
+					json_read_string(entry.have,tag_title,"\"tags\":[{\"title\"",iter,end);
+				} break;
+				case Tags::kind: {
+					json_read_string(entry.have,tag_kind,"\"tags\":[{\"kind\"",iter,end);
+				} break;
+			}
+	}
 };
 
 struct new_art_acc_link {
-	platform_id  acc_platid;
-	const char*  art_source;
-	const char*  artacc_link;
+	platform_id      acc_platid;
+	std::string_view art_source;
+	std::string_view artacc_link;
 	
-	new_art_acc_link(rapidjson::Value::ConstValueIterator iter) : 
-		acc_platid(iter->operator[]("account")),
-		art_source(json_string(iter,"artwork")),
-		artacc_link(json_string(iter,"link"))
-	{
-	};
+	new_art_acc_link(char*& iter, char* const end) {
+		enum class ArtAccLinks {
+			artwork,
+			account,
+			link,
+		};
+		static const ForEachObjectSwitch<ArtAccLinks> art_acc_links_switch{
+			{"artwork",ArtAccLinks::artwork},
+			{"account",ArtAccLinks::account},
+			{"link"   ,ArtAccLinks::link},
+		};
+		for (auto entry: art_acc_links_switch(iter,end))
+			switch (entry.key) {
+				case ArtAccLinks::artwork: {
+					json_read_string(entry.have,art_source,"\"art_acc_links\":[{\"artwork\"",iter,end);
+				} break;
+				case ArtAccLinks::account: {
+					read_platform_id(entry.have,acc_platid,"\"art_acc_links\":[{\"account\"",iter,end);
+				} break;
+				case ArtAccLinks::link: {
+					json_read_string(entry.have,artacc_link,"\"art_acc_links\":[{\"link\"",iter,end);
+				} break;
+			}
+	}
 };
 
 struct new_art_tag_link {
-	platform_id  tag_platid;
-	const char*  art_source;
+	platform_id      tag_platid;
+	std::string_view art_source;
 	
-	new_art_tag_link(rapidjson::Value::ConstValueIterator iter) : 
-		tag_platid(iter->operator[]("tag")),
-		art_source(json_string(iter,"artwork"))
-	{
-	};
+	new_art_tag_link(char*& iter, char* const end) {
+		enum class ArtTagLinks {
+			artwork,
+			tag,
+		};
+		static const ForEachObjectSwitch<ArtTagLinks> art_tag_links_switch{
+			{"artwork",ArtTagLinks::artwork},
+			{"tag"    ,ArtTagLinks::tag},
+		};
+		for (auto entry: art_tag_links_switch(iter,end))
+			switch (entry.key) {
+				case ArtTagLinks::artwork: {
+					json_read_string(entry.have,art_source,"\"art_tag_links\":[{\"artwork\"",iter,end);
+				} break;
+				case ArtTagLinks::tag: {
+					read_platform_id(entry.have,tag_platid,"\"art_tag_links\":[{\"tag\"",iter,end);
+				} break;
+			}
+	}
 };
 
 std::unique_ptr<SQLite3::stmt> find_artwork_stmt;
@@ -248,7 +457,7 @@ sqlite_int64 find_artwork(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_
 	if ((iter == new_artworks.end())||(iter->second.art_id < 0)) {
 		// TODO Error checkings
 		find_artwork_stmt->reset();
-		find_artwork_stmt->bind(1,url.data());
+		find_artwork_stmt->bind(1,url);
 		find_artwork_stmt->step();
 		return find_artwork_stmt->column_int64(0);
 	} else return iter->second.art_id;
@@ -278,64 +487,132 @@ sqlite_int64 find_tag(std::unique_ptr<SQLite3::sqlite3> &db, std::unordered_map<
 	} else return iter->second.tag_arcoid;
 }
 
-
-template <typename map_type>
-map_type json_parse_objects(rapidjson::Document &json_dom, const char* json_key, std::function<void(map_type&,rapidjson::Value::ConstValueIterator)> do_emplace)
+static std::optional<std::string> do_add(char* iter, char* const end, std::string_view &transaction_id)
 {
-	map_type new_objects;
-	if (json_dom.HasMember(json_key)) {
-		auto &json_array = json_dom[json_key];
-		if (!json_array.IsArray()) {
-			std::cerr << "\"" << json_key << "\" must be an array" << std::endl;
-			std::exit(1);
-		}
-		
-		for (rapidjson::Value::ConstValueIterator iter = json_array.Begin(); iter != json_array.End(); ++iter) {
-			if (!iter->IsObject()) {
-				std::cerr << "\"" << json_key << "\" elements must be objects" << std::endl;
-				std::exit(1);
-			}
-			do_emplace(new_objects,iter);
-		}
-	}
-	return new_objects;
-}
-
-static std::optional<std::string> do_add(rapidjson::Document &json_dom)
-{
+	using namespace Arcollect::json;
+	std::string_view platform;
+	std::unordered_map<std::string_view,new_artwork> new_artworks;
+	std::unordered_map<platform_id,new_account> new_accounts;
+	std::unordered_map<platform_id,new_tag> new_tags;
+	std::vector<new_art_acc_link> new_art_acc_links;
+	std::vector<new_art_tag_link> new_art_tag_links;
 	if (Arcollect::debug.webext_adder)
-		std::cerr << "JSON parsed. Reading DOM..." << std::endl;
-	// Get some constants platform
-	const std::string platform = json_dom["platform"].GetString();
-	if (Arcollect::debug.webext_adder)
-		std::cerr << "Platform: " << platform << std::endl;
-	// Parse the DOM
-	std::unordered_map<std::string_view,new_artwork> new_artworks = json_parse_objects<decltype(new_artworks)>(json_dom,"artworks",
-		[](decltype(new_artworks)& new_artworks, rapidjson::Value::ConstValueIterator art_iter) {
-			new_artworks.emplace(std::string_view(art_iter->operator[]("source").GetString()),art_iter);
-	});
+		std::cerr << "Parsing JSON..." << std::endl;
+	// Read root
+	if (what_i_have(iter,end) != Have::OBJECT)
+		return "Invalid JSON, expected a root object.";
 	
-	std::unordered_map<platform_id,new_account> new_accounts = json_parse_objects<decltype(new_accounts)>(json_dom,"accounts",
-		[](decltype(new_accounts)& new_accounts, rapidjson::Value::ConstValueIterator acc_iter) {
-			new_accounts.emplace(acc_iter->operator[]("id"),acc_iter);
-	});
-	
-	std::unordered_map<platform_id,new_tag> new_tags = json_parse_objects<decltype(new_tags)>(json_dom,"tags",
-		[](decltype(new_tags)& new_tags, rapidjson::Value::ConstValueIterator tag_iter) {
-			new_tags.emplace(tag_iter->operator[]("id"),tag_iter);
-	});
-	
-	std::vector<new_art_acc_link> new_art_acc_links = json_parse_objects<decltype(new_art_acc_links)>(json_dom,"art_acc_links",
-		[](decltype(new_art_acc_links)& new_art_acc_links, rapidjson::Value::ConstValueIterator link_iter) {
-			new_art_acc_links.emplace_back(link_iter);
-	});
-	
-	std::vector<new_art_tag_link> new_art_tag_links = json_parse_objects<decltype(new_art_tag_links)>(json_dom,"art_tag_links",
-		[](decltype(new_art_tag_links)& new_art_tag_links, rapidjson::Value::ConstValueIterator link_iter) {
-			new_art_tag_links.emplace_back(link_iter);
-	});
+	// Parse JSONs
+	enum class Root {
+		transaction_id,
+		platform,
+		artworks,
+		accounts,
+		tags,
+		art_acc_links,
+		art_tag_links,
+	};
+	static const ForEachObjectSwitch<Root> root_switch{
+		{"transaction_id",Root::transaction_id},
+		{"platform"      ,Root::platform},
+		{"artworks"      ,Root::artworks},
+		{"accounts"      ,Root::accounts},
+		{"tags"          ,Root::tags},
+		{"art_acc_links" ,Root::art_acc_links},
+		{"art_tag_links" ,Root::art_tag_links},
+	};
+	for (auto entry: root_switch(iter,end))
+		switch (entry.key) {
+			case Root::transaction_id: {
+				json_read_string(entry.have,transaction_id,"\"transaction_id\"",iter,end);
+			} break;
+			case Root::platform: {
+				json_read_string(entry.have,platform,"\"platform\"",iter,end);
+			} break;
+			case Root::artworks: {
+				if (entry.have != ObjHave::ARRAY)
+					return "\"artworks\" must be an array.";
+				for (ArrHave have: Arcollect::json::Array(iter,end)) {
+					if (have != ArrHave::OBJECT)
+						return "\"artworks\" elements must be objects.";
+					
+					new_artwork artwork(iter,end);
+					
+					if (artwork.art_source.empty())
+						return "\"artworks\" objects must have a \"source\".";
+					if (artwork.data.empty())
+						return "\"artworks\" objects must have \"data\".";
+					
+					new_artworks.emplace(artwork.art_source,artwork);
+				}
+			} break;
+			case Root::accounts: {
+				if (entry.have != ObjHave::ARRAY)
+					return "\"accounts\" must be an array.";
+				for (ArrHave have: Arcollect::json::Array(iter,end)) {
+					if (have != ArrHave::OBJECT)
+						return "\"accounts\" elements must be objects.";
+					
+					new_account account(iter,end);
+					
+					if (account.acc_platid.empty())
+						return "\"accounts\" objects must have an \"id\".";
+					if (account.acc_url.empty())
+						return "\"accounts\" objects must have an \"url\".";
+					
+					new_accounts.emplace(account.acc_platid,account);
+				};
+			} break;
+			case Root::tags: {
+				if (entry.have != ObjHave::ARRAY)
+					return "\"tags\" must be an array.";
+				for (ArrHave have: Arcollect::json::Array(iter,end)) {
+					if (have != ArrHave::OBJECT)
+						return "\"tags\" elements must be objects.";
+					
+					new_tag tag(iter,end);
+					
+					if (tag.tag_platid.empty())
+						return "\"tags\" objects must have an \"id\".";
+					
+					new_tags.emplace(tag.tag_platid,tag);
+				};
+			} break;
+			case Root::art_acc_links: {
+				if (entry.have != ObjHave::ARRAY)
+					return "\"art_acc_links\" must be an array.";
+				for (ArrHave have: Arcollect::json::Array(iter,end)) {
+					if (have != ArrHave::OBJECT)
+						return "\"art_acc_links\" elements must be objects.";
+						
+					auto &link = new_art_acc_links.emplace_back(iter,end);
+					
+					if (link.acc_platid.empty())
+						return "\"art_acc_links\" objects must have a \"tag\".";
+					if (link.art_source.empty())
+						return "\"art_acc_links\" objects must have an \"artwork\".";
+				};
+			} break;
+			case Root::art_tag_links: {
+				if (entry.have != ObjHave::ARRAY)
+					return "\"art_tag_links\" must be an array.";
+				for (ArrHave have: Arcollect::json::Array(iter,end)) {
+					if (have != ArrHave::OBJECT)
+						return "\"art_tag_links\" elements must be objects.";
+						
+					auto &link = new_art_tag_links.emplace_back(iter,end);
+					
+					if (link.art_source.empty())
+						return "\"art_acc_links\" objects must have an \"artwork\".";
+					if (link.tag_platid.empty())
+						return "\"art_acc_links\" objects must have a \"tag\".";
+				};
+			} break;
+		}
 	// Debug the transaction
-	if (Arcollect::debug.webext_adder) {
+	// TODO Enable that with another flag?
+	if (0 && Arcollect::debug.webext_adder) {
+		std::cerr << "Platform: " << platform << std::endl;
 		std::cerr << new_artworks.size() << " artwork(s) :" << std::endl;
 		for (auto& artwork : new_artworks)
 			std::cerr << "\t\"" << artwork.second.art_title << "\" (" << artwork.second.art_source << ")\n" << std::endl;
@@ -375,7 +652,7 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 	}
 	for (auto& artwork : new_artworks) {
 		insert_stmt->bind(1,artwork.second.art_title);
-		insert_stmt->bind(2,platform.c_str());
+		insert_stmt->bind(2,platform);
 		insert_stmt->bind(3,artwork.second.art_desc);
 		insert_stmt->bind(4,artwork.second.art_source);
 		insert_stmt->bind(5,artwork.second.art_rating);
@@ -390,7 +667,7 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 				auto saveto_res = data_saveto(artwork.second.data,Arcollect::path::artwork_pool / std::to_string(artwork.second.art_id),artwork.second.art_source);
 				if (saveto_res)
 					return saveto_res;
-				if (artwork.second.thumbnail) {
+				if (!artwork.second.thumbnail.empty()) {
 					saveto_res = data_saveto(artwork.second.thumbnail,Arcollect::path::artwork_pool / (std::to_string(artwork.second.art_id)+".thumbnail"),artwork.second.art_source);
 				if (saveto_res)
 					return saveto_res;
@@ -416,7 +693,7 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 		std::exit(1);
 	}
 	for (auto& account : new_accounts) {
-		get_account_stmt->bind(1,platform.c_str());
+		get_account_stmt->bind(1,platform);
 		account.second.acc_platid.bind(get_account_stmt,2);
 		switch (get_account_stmt->step()) {
 			case SQLITE_ROW: {
@@ -426,7 +703,7 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 			case SQLITE_DONE: {
 				// User does not exist, create it
 				account.second.acc_platid.bind(insert_stmt,1);
-				insert_stmt->bind(2,platform.c_str());
+				insert_stmt->bind(2,platform);
 				insert_stmt->bind(3,account.second.acc_name);
 				insert_stmt->bind(4,account.second.acc_title);
 				insert_stmt->bind(5,account.second.acc_url);
@@ -465,7 +742,7 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 		std::exit(1);
 	}
 	for (auto& tag : new_tags) {
-		get_tag_stmt->bind(1,platform.c_str());
+		get_tag_stmt->bind(1,platform);
 		tag.second.tag_platid.bind(get_tag_stmt,2);
 		switch (get_tag_stmt->step()) {
 			case SQLITE_ROW: {
@@ -475,7 +752,7 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 			case SQLITE_DONE: {
 				// User does not exist, create it
 				tag.second.tag_platid.bind(insert_stmt,1);
-				insert_stmt->bind(2,platform.c_str());
+				insert_stmt->bind(2,platform);
 				insert_stmt->bind(3,tag.second.tag_title);
 				insert_stmt->bind(4,tag.second.tag_kind);
 				switch (insert_stmt->step()) {
@@ -540,59 +817,16 @@ static std::optional<std::string> do_add(rapidjson::Document &json_dom)
 	return std::nullopt;
 }
 
-static std::string escape_json(const char* input)
+std::string process_json(char* begin, char* const end)
 {
-	std::string output;
-	for (;*input;input++)
-		switch (*input) {
-			case '\\':output += "\\\\";break;
-			case '"' :output += "\\\'";break;
-			case '\0':output += "\\u0000";break;
-			case 0x01:output += "\\u0001";break;
-			case 0x02:output += "\\u0002";break;
-			case 0x03:output += "\\u0003";break;
-			case 0x04:output += "\\u0004";break;
-			case 0x05:output += "\\u0005";break;
-			case 0x06:output += "\\u0006";break;
-			case 0x07:output += "\\u0007";break;
-			case '\b':output += "\\b";break;
-			case '\t':output += "\\t";break;
-			case '\n':output += "\\n";break;
-			case 0x0B:output += "\\u000B";break;
-			case 0x0C:output += "\\u000C";break;
-			case '\r':output += "\\r";break;
-			case 0x0E:output += "\\u000E";break;
-			case 0x0F:output += "\\u000F";break;
-			case 0x11:output += "\\u0011";break;
-			case 0x12:output += "\\u0012";break;
-			case 0x13:output += "\\u0013";break;
-			case 0x14:output += "\\u0014";break;
-			case 0x15:output += "\\u0015";break;
-			case 0x16:output += "\\u0016";break;
-			case 0x17:output += "\\u0017";break;
-			case 0x18:output += "\\u0018";break;
-			case 0x19:output += "\\u0019";break;
-			case 0x1A:output += "\\u001A";break;
-			case 0x1B:output += "\\u001B";break;
-			case 0x1C:output += "\\u001C";break;
-			case 0x1D:output += "\\u001D";break;
-			case 0x1E:output += "\\u001E";break;
-			case 0x1F:output += "\\u001F";break;
-			default  :output += *input;break;
-		}
-	return output;
-}
-std::string handle_json_dom(rapidjson::Document &json_dom)
-{
-	// Get the transaction_id
-	const char* transaction_id = NULL;
-	if (json_dom.HasMember("transaction_id") && json_dom["transaction_id"].IsString()) {
-		transaction_id = json_dom["transaction_id"].GetString();
-		if (Arcollect::debug.webext_adder)
-			std::cerr << "transaction_id set to \"" << transaction_id << "\"" << std::endl;
-	}
+	std::string_view transaction_id;
 	// Perform addition
-	std::optional<std::string> reason = do_add(json_dom);
+	std::optional<std::string> reason;
+	try {
+		reason = do_add(begin,end,transaction_id);
+	} catch (std::exception &e) {
+		reason = std::string(e.what());
+	}
 	// Destroy SELECT transactions to unlock the database
 	find_artwork_stmt.reset();
 	find_account_stmt.reset();
@@ -606,10 +840,10 @@ std::string handle_json_dom(rapidjson::Document &json_dom)
 	if (reason)
 		result_json += "false";
 	else result_json += "true";
-	if (transaction_id)
-		result_json += ",\"transaction_id\":\"" + escape_json(transaction_id) + "\"";
+	if (!transaction_id.empty())
+		result_json += ",\"transaction_id\":\"" + Arcollect::json::escape_string(transaction_id) + "\"";
 	if (reason) {
-		result_json += ",\"reason\":\"" + escape_json(reason->c_str()) + "\"";
+		result_json += ",\"reason\":\"" + Arcollect::json::escape_string(reason->c_str()) + "\"";
 		std::cerr << "Addition failed: " << *reason << std::endl;
 	}
 	
