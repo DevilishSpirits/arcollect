@@ -44,7 +44,7 @@ When adding artwork, send the plain artwork with this kind of JSON :
 ```
 The `platform` is the platform identifier, the root URL of the platform like `twitter.com`. 
 
-The `transaction_id` is a  string that is returned verbatim in the response to help the extension identify the tab destination. **Caution!** JSON escapes are not supported in this value, I still have to find how to espace or serialize JSON with RapidJSON.
+The `transaction_id` is a  string that is returned verbatim in the response to help the extension identify the tab destination.
 
 The `artwork` array contain objects you wants to add with some properties :
 * `title` is the artwork title.

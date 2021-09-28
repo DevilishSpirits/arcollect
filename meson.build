@@ -104,7 +104,6 @@ if enable_native_progs
 		'with_INIReader=true',
 		'distro_install=false',
 	])
-	dep_rapidjson = dependency('rapidjson')
 endif
 
 # Track dependencies
@@ -119,7 +118,6 @@ if enable_native_progs
 		'lcms2',
 		'libcurl',
 		'OpenImageIO',
-		'rapidjson',
 		'sdl2',
 		'sqlite3',
 	]
@@ -163,7 +161,6 @@ dep_fancy_name = {
 	'lcms2'            : 'LittleCMS',
 	'libcurl'             : 'curl',
 	'OpenImageIO'      : 'OpenImageIO',
-	'rapidjson'        : 'RapidJSON',
 	'roboto'           : 'Roboto',
 	'sdl2'             : 'SDL',
 	'sqlite3'          : 'SQLite',
@@ -177,7 +174,6 @@ dep_website = {
 	'lcms2'            : 'https://littlecms.com/',
 	'libcurl'             : 'https://curl.se/',
 	'OpenImageIO'      : 'https://openimageio.readthedocs.org/',
-	'rapidjson'        : 'https://rapidjson.org/',
 	'roboto'           : 'https://fonts.google.com/specimen/Roboto',
 	'sdl2'             : 'https://www.libsdl.org/',
 	'sqlite3'          : 'https://www.sqlite.org/',

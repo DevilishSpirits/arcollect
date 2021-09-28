@@ -2,7 +2,6 @@
 webext_adder_deps = [
 	common_dep,
 	dep_curl,
-	dep_rapidjson,
 	dep_sqlite3,
 ]
 webext_adder_srcs = [
