@@ -51,8 +51,8 @@ int main(int argc, char *argv[])
 		std::cin.read(reinterpret_cast<char*>(&data_len),sizeof(data_len));
 		if (Arcollect::debug.webext_adder)
 			std::cerr << "Got a JSON of " << data_len << " chars. Reading..." << std::endl;
-		// Quit on empty message
-		if (data_len == 0)
+		// Quit on EOF
+		if (std::cin.eof())
 			return 0;
 		json_string.resize(data_len);
 		std::cin.read(json_string.data(),data_len);
