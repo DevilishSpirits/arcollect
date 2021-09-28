@@ -32,3 +32,7 @@ if get_option('tests_online')
 		test('webext-adder-online-nsfw',webext_adder_test_prog, args: [meson.current_build_dir()/'tests-online-nsfw', online_nsfw_tests_payload, online_nsfw_tests], env: tests_env, depends: webext_adder_exe, protocol: 'tap', timeout: 600)
 	endif
 endif
+
+test_wtf_json_parser_exe = executable('test_wtf_json_parser', 'test_wtf_json_parser.cpp', build_by_default: false)
+test_wtf_json_parser_py = files('test_wtf_json_parser.py')
+test('wtf-json-parser',test_wtf_json_parser_py, args: [test_wtf_json_parser_exe,offline_tests,online_tests,online_nsfw_tests], protocol: 'tap')
