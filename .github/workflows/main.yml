@@ -118,18 +118,6 @@ jobs:
       - name: Install Debian package
         run: sudo dpkg -i arcollect.deb
         shell: bash
-      - name: Run `webext-adder-online` test
-        run: python3 webext-adder/tests/webext-adder-test.py webext-adder-online $(find -regex '.*\.[a-z]+.json' | grep -vF -e deviantart)
-        shell: bash
-        env:
-          ARCOLLECT_DEBUG: all
-          ARCOLLECT_WEBEXT_ADDER_PATH: /usr/libexec/arcollect-webext-adder
-      - name: Upload `webext-adder-online` XDG_DATA_HOME
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: webext-adder-online-ubuntu-20_04
-          path: webext-adder-online
       - name: Upload build dir
         if: always()
         uses: actions/upload-artifact@v2
