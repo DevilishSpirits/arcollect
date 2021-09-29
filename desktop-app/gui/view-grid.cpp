@@ -148,10 +148,10 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	
 	layout_invalid = false;
 	// Create left viewports if needed
-	while ((left_y > scroll_target - artwork_height) && !layout_invalid && new_line_left(left_y - artwork_height - artwork_margin.y));
+	while ((left_y > scroll_target - artwork_height) && new_line_left(left_y - artwork_height - artwork_margin.y));
 	// Create right viewports if needed
 	// NOTE! right_y is offset by minus one row
-	while ((right_y < scroll_target + rect.h + artwork_height) && !layout_invalid && (right_iter != end_iter) && new_line_right(right_y));
+	while ((right_y < scroll_target + rect.h + artwork_height) && (right_iter != end_iter) && new_line_right(right_y));
 	// Stop scrolling if bottom is hit
 	if (scroll_target + rect.h > right_y)
 		scroll_target = right_y - rect.h;
@@ -225,9 +225,9 @@ bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std:
 	SDL::Point size;
 	std::shared_ptr<db::artwork> artwork = db::artwork::query(*iter);
 	if (!artwork->QuerySize(size)) {
-		// Size is unknow, stop for now. Will flush_layout() on next redraw.
+		// Size is unknow, skip. Will flush_layout() on next redraw.
 		layout_invalid = true;
-		return false;
+		return true;
 	}
 	size.x *= artwork_height;
 	size.x /= size.y;
