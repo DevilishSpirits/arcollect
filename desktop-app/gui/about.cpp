@@ -64,8 +64,16 @@ void Arcollect::gui::about_window::show(void)
 Arcollect::gui::about_window Arcollect::gui::about_window_modal;
 bool Arcollect::gui::about_window::event(SDL::Event &e, SDL::Rect target) {
 	switch (e.type) {
-		case SDL_MOUSEBUTTONUP:
 		case SDL_KEYUP: {
+			switch (e.key.keysym.scancode) {
+				default:return false; // Ignore key
+				case SDL_SCANCODE_ESCAPE:
+				case SDL_SCANCODE_RETURN:
+				case SDL_SCANCODE_SPACE:
+					break; // Remove the overlay
+			}
+		} //falltrough;
+		case SDL_MOUSEBUTTONUP: {
 			Arcollect::gui::modal_stack.pop_back();
 			about_window_modal_shown = false;
 		} return false;
