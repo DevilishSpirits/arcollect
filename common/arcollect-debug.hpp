@@ -29,6 +29,9 @@ namespace Arcollect {
 			/** The debug flag name
 			 */
 			const std::string_view name;
+			/** The debug flag description
+			 */
+			const std::string_view desc;
 			/** If the flag is raised
 			 */
 			bool on = false;
@@ -38,7 +41,7 @@ namespace Arcollect {
 			operator bool(void) const {
 				return on;
 			}
-			constexpr Flag(const std::string_view& name) : name(name) {}
+			constexpr Flag(const std::string_view& name, const std::string_view& desc) : name(name), desc(desc) {}
 		};
 		using iterator = Flag*;
 		/** The value of end()
@@ -66,10 +69,10 @@ namespace Arcollect {
 		void turn_on_flag(const std::string_view& flag_name);
 		Debug(void);
 		
-		Flag fonts{"fonts"};
-		Flag icc_profile{"icc-profile"};
-		Flag redraws{"redraws"};
-		Flag search{"search"};
-		Flag webext_adder{"webext-adder"};
+		Flag fonts       {"fonts","       Debug text rendering"};
+		Flag icc_profile {"icc-profile"," Print color management informations."};
+		Flag redraws     {"redraws","     Display redraws and main-loop timings."};
+		Flag search      {"search","      Print SQL queries made the search engine."};
+		Flag webext_adder{"webext-adder","Debug the arcollect-webext-adder"};
 	} debug;
 }

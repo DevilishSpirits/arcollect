@@ -69,7 +69,7 @@ Arcollect::Debug::Debug(void)
 		// Log
 		std::cerr << "Arcollect debug flags:";
 		for (const Flag &flag: *this)
-			std::cerr << (flag.on ? "\n\tON : " : "\n\tOFF: ") << flag.name	;
+			std::cerr << (flag.on ? "\n\tON : " : "\n\tOFF: ") << flag.name << "  " << flag.desc;
 		std::cerr << std::endl;
 	}
 }
