@@ -66,6 +66,7 @@ namespace Arcollect {
 		void turn_on_flag(const std::string_view& flag_name);
 		Debug(void);
 		
+		Flag fonts{"fonts"};
 		Flag icc_profile{"icc-profile"};
 		Flag redraws{"redraws"};
 		Flag search{"search"};
