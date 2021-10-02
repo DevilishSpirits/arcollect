@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include <arcollect-debug.hpp>
 #include <arcollect-roboto.hpp>
 #include "font.hpp"
 #include <functional>
@@ -27,8 +28,6 @@ extern SDL::Renderer *renderer;
 static FT_Library ft_library;
 
 const Arcollect::gui::font::FontSize Arcollect::gui::font::FontSize::normal(12);
-
-bool debug_font = false; // TODO Make a debugging flag for this
 
 Arcollect::gui::font::Glyph::Glyph(hb_codepoint_t glyphid, int font_size)
 {
@@ -258,7 +257,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 						space_current++;
 						glyph_id_delta--;
 						pixel_delta = right_free_space*space_current/space_count;
-						if (debug_font) {
+						if (Arcollect::debug.fonts) {
 							const auto &last_pos = glyphs[glyph_id_delta+j].position;
 							add_line(last_pos,{last_pos.x,last_pos.y+font_size},{255,0,0,255});
 						}
@@ -330,7 +329,7 @@ Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_
 	};
 	for (const auto& text_run: elements.text_runs)
 		append_text_run(text_run,state);
-	if (debug_font)
+	if (Arcollect::debug.fonts)
 		add_rect({0,0,result_size.x,result_size.y},{255,255,255,128});
 	glyphs.shrink_to_fit();
 	lines.shrink_to_fit();
