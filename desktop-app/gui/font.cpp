@@ -300,7 +300,6 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 			}
 			// Skip the current char if it's a space
 			if ((glyph_char == U' ')||(glyph_char == U'\t')) {
-				glyphi_line_start++;
 				glyph_base--;
 				continue;
 			}
