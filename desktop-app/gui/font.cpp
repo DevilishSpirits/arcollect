@@ -137,6 +137,29 @@ void Arcollect::gui::font::Renderable::align_glyphs(Align align, unsigned int i_
 	// Realign
 	for (auto i = i_start; i < i_end; i++)
 		glyphs[i].position.x += remaining_space;
+	// Debug
+	if (Arcollect::debug.fonts) {
+		const SDL::Point& lgp = glyphs[i_start].position; // Left glyph position
+		const SDL::Point& ilgp{lgp.x-remaining_space,lgp.y}; // Initial left glyph position
+		const SDL::Point& rgp = glyphs[i_end-1].position; // Right glyph position
+		constexpr SDL::Color color{{255,0,0,128}};
+		constexpr int length = 8; // Length of small things
+		// Draw a 'A'
+		constexpr int A_height = length/2;
+		constexpr int A_width  = A_height/2;
+		add_line({ilgp.x-A_width,ilgp.y+A_height},{ilgp.x+  A_width,ilgp.y-A_height},color);
+		add_line({ilgp.x+A_width,ilgp.y-A_height},{ilgp.x+3*A_width,ilgp.y+A_height},color);
+		// Draw by how much we moved the text
+		add_line(ilgp,lgp,color);
+		// Draw the left limit
+		add_line(lgp,{lgp.x,lgp.y+length},color);
+		if (align == Align::CENTER) {
+			// Draw the right limit
+			add_line(rgp,{rgp.x+remaining_space,rgp.y},color);
+			add_line(rgp,{rgp.x,rgp.y+length},color);
+			add_line({rgp.x+remaining_space,rgp.y},{rgp.x+remaining_space,rgp.y+length},color);
+		}
+	}
 }
 /** Current text attributes
  *
