@@ -303,7 +303,7 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 		query <<" AND EXISTS ("
 			"SELECT 1 FROM art_acc_links"
 			" NATURAL JOIN accounts WHERE art_acc_links.art_artid = artworks.art_artid"
-			" AND accounts.acc_platid in (?";
+			" AND accounts.acc_name in (?";
 		query_bindings.emplace_back(src.accounts.positive_matches[0]);
 		for (decltype(src.accounts.positive_matches)::size_type i = 1; i < src.accounts.positive_matches.size(); i++) {
 			query << ",?";
@@ -315,7 +315,7 @@ const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &
 		query << " AND NOT EXISTS ("
 			"SELECT 1 FROM art_acc_links"
 			" NATURAL JOIN accounts WHERE art_acc_links.art_artid = artworks.art_artid"
-			" AND accounts.acc_platid in (?";
+			" AND accounts.acc_name in (?";
 		query_bindings.emplace_back(src.accounts.negative_matches[0]);
 		for (decltype(src.accounts.negative_matches)::size_type i = 1; i < src.accounts.negative_matches.size(); i++) {
 			query << ",?";
