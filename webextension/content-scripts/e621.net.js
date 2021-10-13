@@ -176,7 +176,12 @@ function make_save_ui() {
  */
 function e621_document_onkeypress(e)
 {
-	if ((e.shiftKey && (e.key.toLowerCase() == 's')))
+	const blacklisted_tag = [
+		'INPUT',
+		'SELECT',
+		'TEXTAREA',
+	].includes(document.activeElement.tagName);
+	if ((e.shiftKey && (e.key.toLowerCase() == 's') && !blacklisted_tag))
 		save_artwork();
 	else return true;
 	// Handled key
