@@ -123,11 +123,20 @@ function save_artwork()
 	if (description != null) // #artist-commentary doesn't necessarily exists
 		description = description.getElementsByClassName('original-artist-commentary')[0].textContent;
 	
+	/** Extract title
+	 */
+	let title;
+	let pool_names = document.getElementsByClassName('pool-name')
+	if (pool_names.length > 0) {
+		let pool_link = document.getElementsByClassName('pool-name')[0].children[0];
+		title = pool_link.text.split(' ').slice(1,-2).join(' ')+' ('+pool_link.title+')'
+	} else title = document.title;
+	
 	// Build the JSON
 	submit_json = {
 		'platform': 'e621.net',
 		'artworks': [{
-			'title': document.title,
+			'title': title,
 			'desc': description,
 			'source': source,
 			'rating': rating,
