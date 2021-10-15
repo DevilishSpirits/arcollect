@@ -332,7 +332,8 @@ namespace Arcollect {
 						Align::LEFT,        // Alignment
 						false,              // Justification
 						{255,255,255,255}}, // Color
-					},text_runs{{font_size,std::move(string)}} {}
+					},text_runs{{font_size,std::move(string)}},
+						must_push_new_attribute(string.empty()) {}
 					/** Default constructor
 					 *
 					 * Create an empty #Elements
