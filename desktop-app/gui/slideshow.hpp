@@ -32,6 +32,10 @@ namespace Arcollect {
 		 */
 		extern view_slideshow &background_slideshow;
 		extern view_vgrid     &background_vgrid;
+		/** Update the background collection
+		 * \param collection Collection
+		 */
+		void update_background(std::shared_ptr<Arcollect::db::artwork_collection> &new_collection);
 		/** Update the background image
 		 * \param stmt       A ready SQLite3 statement that yield one column with
 		 *                   the artwork id to show.

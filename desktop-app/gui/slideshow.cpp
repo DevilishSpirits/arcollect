@@ -156,6 +156,12 @@ static void open_in_browser(void)
 
 Arcollect::gui::view_slideshow &Arcollect::gui::background_slideshow = ::background_slideshow;
 
+void Arcollect::gui::update_background(std::shared_ptr<Arcollect::db::artwork_collection> &new_collection)
+{
+	background_slideshow.set_collection(new_collection);
+	background_vgrid.set_collection(new_collection);
+	dynamic_update_background_func = std::function<std::unique_ptr<SQLite3::stmt>(void)>();
+}
 void Arcollect::gui::update_background(std::unique_ptr<SQLite3::stmt> &&stmt, bool collection)
 {
 	if (collection) {
