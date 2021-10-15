@@ -111,3 +111,54 @@ int Arcollect::db::artwork_collection::db_delete(void)
 	Arcollect::local_data_version_changed();
 	return 0;
 }
+int Arcollect::db::artwork_collection::db_set_rating(Arcollect::config::Rating rating)
+{
+	int code;
+	if ((code = database->exec("BEGIN IMMEDIATE;")) != SQLITE_OK) {
+		switch (code) {
+			case SQLITE_BUSY: {
+				std::cerr << "Setting artworks rating, \"BEGIN IMMEDIATE;\" failed with SQLITE_BUSY. Another is writing on the database. Abort." << std::endl;
+			} return SQLITE_BUSY;
+			default: {
+				std::cerr << "Setting artworks rating, \"BEGIN IMMEDIATE;\" failed: " << database->errmsg() << ". Ignoring..." << std::endl;
+			} break;
+		}
+	}
+	std::unique_ptr<SQLite3::stmt> stmt;
+	
+	// Run all substeps from 'delete_artwork.sql'
+	if (database->prepare("UPDATE artworks SET art_rating = ? WHERE art_artid = ?;",stmt) != SQLITE_OK) {
+		std::cerr << "Setting artworks ratings, failed to prepare: " << database->errmsg() << ". Rollback." << std::endl;
+		database->exec("ROLLBACK;");
+		return SQLITE_ERROR;
+	}
+	if (stmt->bind(1,static_cast<sqlite_int64>(rating)) != SQLITE_OK) {
+		std::cerr << "Setting artworks ratings, failed to bind art_rating: " << database->errmsg() << ". Rollback." << std::endl;
+		database->exec("ROLLBACK;");
+		return SQLITE_ERROR;
+	}
+	for (artwork_id art_id: *this) {
+		if (stmt->bind(2,art_id) != SQLITE_OK) {
+			std::cerr << "Setting artworks ratings, failed to bind art_artid: " << database->errmsg() << ". Rollback." << std::endl;
+			database->exec("ROLLBACK;");
+			return SQLITE_ERROR;
+		}
+		if (stmt->step() != SQLITE_DONE) {
+			std::cerr << "Setting artworks ratings, failed to run substep: " << database->errmsg() << ". Rollback." << std::endl;
+			database->exec("ROLLBACK;"); // TODO Error checkings
+			return SQLITE_ERROR;
+		}
+		stmt->reset();
+	}
+	
+	// Commit changes
+	if (database->exec("COMMIT;") != SQLITE_OK) {
+		std::cerr << "Setting artworks ratings, failed to commit changes: " << database->errmsg() << ". Rollback." << std::endl;
+		database->exec("ROLLBACK;"); // TODO Error checkings
+		return SQLITE_ERROR;
+	}
+	std::cerr << "Artworks ratings sets" << std::endl;
+	// Update data_version
+	Arcollect::local_data_version_changed();
+	return 0;
+}

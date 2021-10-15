@@ -19,6 +19,7 @@
  */
 #pragma once
 #include "artwork.hpp"
+#include "../config.hpp"
 namespace Arcollect {
 	namespace db {
 		/** Artwork listing interface
@@ -139,6 +140,9 @@ namespace Arcollect {
 				 * This is not an innocent function !
 				 */
 				int db_delete(void);
+				/** Set rating of all artworks in this collection
+				 */
+				int db_set_rating(Arcollect::config::Rating rating);
 		};
 	}
 }
