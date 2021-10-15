@@ -28,6 +28,14 @@ namespace Arcollect {
 	 * This value is updated by update_data_version().
 	 */
 	extern sqlite_int64 data_version;
+	/** Arcollect's data_version
+	 * 
+	 * SQLite's `PRAGMA data_version;` is not incremented with changes made by the
+	 * local process.
+	 *
+	 * This value is incremented by local_data_version_changed().
+	 */
+	extern sqlite_int64 private_data_version;
 	
 	/** Signal a local change in the database
 	 * 
