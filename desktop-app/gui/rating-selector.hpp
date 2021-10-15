@@ -49,6 +49,7 @@ namespace Arcollect {
 				void event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location) override;
 				void render(SDL::Rect target) override;
 				rating_selector_menu(void);
+				rating_selector_menu(std::function<void(Arcollect::config::Rating)> onratingset, const Arcollect::gui::font::Elements &elements);
 		};
 	}
 }

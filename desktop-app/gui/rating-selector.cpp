@@ -170,18 +170,15 @@ void Arcollect::gui::rating_selector::event(SDL::Event &e, SDL::Rect target)
 	}
 }
 
-static void set_rating(Arcollect::config::Rating new_rating)
-{
-	Arcollect::db_filter::set_rating(new_rating);
-}
-Arcollect::gui::rating_selector_menu::rating_selector_menu(void) :
-	text_line(font::Elements(U"Rating"s,14))
+Arcollect::gui::rating_selector_menu::rating_selector_menu(std::function<void(Arcollect::config::Rating)> onratingset, const Arcollect::gui::font::Elements& elements) :
+	text_line(elements)
 {
 	selector.has_kid = true;
 	selector.has_mature = true;
 	selector.has_adult = true;
-	selector.onratingset = set_rating;
+	selector.onratingset = onratingset;
 }
+Arcollect::gui::rating_selector_menu::rating_selector_menu(void) : rating_selector_menu(Arcollect::db_filter::set_rating,font::Elements(U"Rating"s,14)) {}
 SDL::Point Arcollect::gui::rating_selector_menu::size(void)
 {
 	SDL::Point size = text_line.size();
