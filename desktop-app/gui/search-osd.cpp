@@ -15,10 +15,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 #include "search-osd.hpp"
+#include "edit-art.hpp"
 #include "slideshow.hpp"
 #include "menu.hpp"
 #include "window-borders.hpp"
 #include "../db/artwork-collections.hpp"
+#include "../db/filter.hpp"
 #include "../db/search.hpp"
 
 Arcollect::gui::search_osd Arcollect::gui::search_osd_modal;
@@ -52,8 +54,10 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e, SDL::Rect target)
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_ESCAPE: {
 					update_background(saved_text,true);
-				} //falltrough;
+					pop();
+				} break;
 				case SDL_SCANCODE_RETURN: {
+					update_background(text,true);
 					pop();
 				} break;
 				default: {
@@ -70,6 +74,10 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e, SDL::Rect target)
 }
 void Arcollect::gui::search_osd::render(SDL::Rect target)
 {
+	// Update upon local changes only
+	if ((private_data_version != Arcollect::private_data_version)||(filter_version != Arcollect::db_filter::version))
+		text_changed();
+	// Force render the title bar
 	SDL::Point screen_size;
 	renderer->GetOutputSize(screen_size);
 	render_titlebar({0,0,screen_size.x,Arcollect::gui::window_borders::title_height},screen_size.x);
@@ -82,13 +90,23 @@ void Arcollect::gui::search_osd::render_titlebar(SDL::Rect target, int window_wi
 }
 void Arcollect::gui::search_osd::text_changed(void)
 {
+	// Update GUI
 	const int title_border = window_borders::title_height/4;
 	const int font_height = window_borders::title_height-2*title_border;
 	const char* search_term = " ";
 	if (!text.empty())
 		search_term = text.c_str();
 	text_render = font::Renderable(search_term,font_height);
-	update_background(text,true);
+	
+	// Perform search
+	std::unique_ptr<SQLite3::stmt> stmt;
+	Arcollect::db::search::build_stmt(search_term,stmt);
+	collection = std::make_shared<Arcollect::db::artwork_collection_sqlite>(std::move(stmt));
+	Arcollect::gui::update_background(collection);
+	
+	// Update filter versions
+	private_data_version = Arcollect::private_data_version;
+	filter_version = Arcollect::db_filter::version;
 }
 void Arcollect::gui::search_osd::push(void)
 {
@@ -110,27 +128,13 @@ void Arcollect::gui::search_osd::db_delete(void)
 		Arcollect::db::artwork_collection_sqlite(std::move(stmt)).db_delete();
 	}
 }
-static void do_delete_arts(void)
-{
-	Arcollect::gui::search_osd_modal.db_delete();
-}
-static void confirm_delete_arts(void)
-{
-	Arcollect::gui::font::Elements really_delete_elements(U"I really want to delete all listed artworks"s,14);
-	really_delete_elements.initial_color()  = {255,0,0,255};
-	Arcollect::gui::menu::popup_context({
-		std::make_shared<Arcollect::gui::menu_item_simple_label>(really_delete_elements,::do_delete_arts)
-	},{0,Arcollect::gui::window_borders::title_height});
-}
 
 std::vector<std::shared_ptr<Arcollect::gui::menu_item>> Arcollect::gui::search_osd::top_menu(void)
 {
+	using Arcollect::gui::menu_item_simple_label;
 	if (!text.empty()) {
-		auto delete_elements = Arcollect::gui::font::Elements::build(
-			SDL::Color{255,0,0,255},Arcollect::gui::font::FontSize(14),U"Delete all listed artworks"sv
-		);
 		return {
-			std::make_shared<Arcollect::gui::menu_item_simple_label>(delete_elements,confirm_delete_arts),
+			std::make_shared<menu_item_simple_label>(U"Edit listed artworks…"s,std::bind(Arcollect::gui::popup_edit_art_metadata,collection)),
 		};
 	} else return {};
 };

@@ -17,6 +17,7 @@
 #pragma once
 #include "font.hpp"
 #include "modal.hpp"
+#include "../db/artwork-collection.hpp"
 #include <string>
 namespace Arcollect {
 	namespace gui {
@@ -27,6 +28,9 @@ namespace Arcollect {
 				font::Renderable text_render;
 				void text_changed(void);
 				void pop(void);
+				sqlite_int64 private_data_version;
+				unsigned int filter_version;
+				std::shared_ptr<Arcollect::db::artwork_collection> collection;
 			public:
 				bool event(SDL::Event &e, SDL::Rect target) override;
 				void render(SDL::Rect target) override;
