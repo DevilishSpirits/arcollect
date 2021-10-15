@@ -1,9 +1,11 @@
+/bzip2-*
 /curl-*
 /fmt-*
 /freetype-*
 /harfbuzz-*
 /Imath-*
 /inih-*
+/lcms2-*
 /libjpeg-*
 /libpng-*
 /oiio-*
