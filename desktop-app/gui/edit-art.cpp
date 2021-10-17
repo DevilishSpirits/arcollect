@@ -53,7 +53,7 @@ void Arcollect::gui::popup_edit_art_metadata(std::shared_ptr<Arcollect::db::artw
 	// Build GUI
 	const std::vector<std::shared_ptr<menu_item>> menu_items = {
 		std::make_shared<menu_item_simple_label>(delete_elements,[collection](){
-			Arcollect::gui::font::Elements really_delete_elements(U"I really want to delete all listed artworks"s,14);
+			Arcollect::gui::font::Elements really_delete_elements(U"I really want to delete the artworks"s,14);
 			really_delete_elements.initial_color()  = {255,0,0,255};
 			Arcollect::gui::menu::popup_context({
 				std::make_shared<Arcollect::gui::menu_item_simple_label>(really_delete_elements,[collection]() {
