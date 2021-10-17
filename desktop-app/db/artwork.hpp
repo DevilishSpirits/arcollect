@@ -206,12 +206,6 @@ namespace Arcollect {
 				void open_url(void);
 				#endif
 				
-				/** Delete an artwork
-				 *
-				 * This is not an innocent function !
-				 */
-				int db_delete(void);
-				
 				/** Estimate VRAM usage of this artwork
 				 *
 				 * It require the artwork to be loaded to work correctly. But it's fine
