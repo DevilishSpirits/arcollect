@@ -17,6 +17,7 @@
 #include "../db/filter.hpp"
 #include "../db/search.hpp"
 #include "../db/artwork-collections.hpp"
+#include "edit-art.hpp"
 #include "menu.hpp"
 #include "search-osd.hpp"
 #include "slideshow.hpp"
@@ -65,24 +66,12 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 
 Arcollect::gui::view_vgrid &Arcollect::gui::background_vgrid = ::background_vgrid;
 
-static void delete_art(void);
-static void confirm_delete_art(void)
-{
-	Arcollect::gui::font::Elements really_delete_elements(U"I really want to delete this artwork"s,14);
-	really_delete_elements.initial_color()  = {255,0,0,255};
-	Arcollect::gui::menu::popup_context({
-		std::make_shared<Arcollect::gui::menu_item_simple_label>(really_delete_elements,::delete_art)
-	},{0,Arcollect::gui::window_borders::title_height});
-}
 #ifdef ARTWORK_HAS_OPEN_URL
 static void open_in_browser(void);
 #endif
 
 static class background_slideshow: public Arcollect::gui::view_slideshow {
 	public:
-	void delete_art(void) {
-		viewport.artwork->db_delete();
-	}
 	#ifdef ARTWORK_HAS_OPEN_URL
 	void open_in_browser(void) {
 		viewport.artwork->open_url();
@@ -116,16 +105,18 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 		};
 		return Arcollect::gui::view_slideshow::event(e,target);
 	}
+	static void edit_art(background_slideshow *self) {
+		using namespace Arcollect::db;
+		std::shared_ptr<artwork_collection> collection = std::make_shared<artwork_collection_single>(self->viewport.artwork->art_id);
+		Arcollect::gui::popup_edit_art_metadata(collection);
+	}
 	std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override {
 		if (viewport.artwork) {
-			auto delete_elements = Arcollect::gui::font::Elements::build(
-				SDL::Color{255,0,0,255},Arcollect::gui::font::FontSize(14),U"Delete artwork"sv
-			);
 			return {
 				#ifdef ARTWORK_HAS_OPEN_URL
 				std::make_shared<Arcollect::gui::menu_item_simple_label>(U"Browse…"s,::open_in_browser),
 				#endif
-				std::make_shared<Arcollect::gui::menu_item_simple_label>(delete_elements,confirm_delete_art),
+				std::make_shared<Arcollect::gui::menu_item_simple_label>(U"Edit artwork…"s,std::bind(edit_art,this)),
 			};
 		} else return {};
 	};
@@ -143,10 +134,6 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 	}
 } background_slideshow;
 
-static void delete_art(void)
-{
-	background_slideshow.delete_art();
-}
 #ifdef ARTWORK_HAS_OPEN_URL
 static void open_in_browser(void)
 {
