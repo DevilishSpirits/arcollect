@@ -25,7 +25,7 @@ struct on_set_rating {
 	void operator()(Arcollect::config::Rating rating)
 	{
 		using namespace Arcollect::gui;
-		font::Elements elements(U"Mark all listed artworks as "s,14);
+		font::Elements elements(U"Mark artworks as "s,14);
 		switch (rating) {
 			case Arcollect::config::Rating::RATING_NONE: {
 				elements << SDL::Color(128,255,128,255) << U"Safe"sv;
