@@ -47,5 +47,17 @@ namespace Arcollect {
 					return find_artid_randomized(id,true);
 				}
 		};
+		/** Artwork collection bound to a single artwork
+		 */
+		class artwork_collection_single: public artwork_collection {
+			public:
+				/** Constructor
+				 * \param id The artwork id
+				 */
+				artwork_collection_single(artwork_id id)
+				{
+					cache_append(id);
+				}
+		};
 	}
 }
