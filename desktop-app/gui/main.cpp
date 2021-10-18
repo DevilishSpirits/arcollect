@@ -31,13 +31,11 @@
 #include <arcollect-debug.hpp>
 #include <arcollect-sqls.hpp>
 #include <iostream>
-#include <vector>
 
 extern SDL_Window    *window;
 SDL_Window    *window;
 extern SDL::Renderer *renderer;
 SDL::Renderer *renderer;
-std::vector<Arcollect::gui::modal_stack_variant> Arcollect::gui::modal_stack;
 
 #include "sqlite-busy-handler.cpp"
 
@@ -150,6 +148,16 @@ bool Arcollect::gui::main(void)
 			auto iter = Arcollect::gui::modal_stack.rbegin();
 			while (Arcollect::gui::modal_get(iter).event(e,window_rect))
 				++iter;
+			// Pop marked modals
+			for (auto iter = Arcollect::gui::modal_stack.begin(); iter != Arcollect::gui::modal_stack.end(); ++iter) {
+				auto &modal = Arcollect::gui::modal_get(iter);
+				if (modal.to_pop) {
+					modal.to_pop = false;
+					auto iter_copy = iter;
+					++iter;
+					Arcollect::gui::modal_stack.erase(iter_copy);
+				}
+			}
 		}
 		if (e.type == SDL_QUIT)
 			return false;

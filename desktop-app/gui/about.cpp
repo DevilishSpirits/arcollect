@@ -32,7 +32,7 @@ class about_project: public Arcollect::gui::scrolling_text {
 				} break;
 				case SDL_KEYUP: {
 					if (e.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
-						Arcollect::gui::modal_stack.pop_back();
+						to_pop = true;
 					propagate = false;
 				} break;
 				default:break;
@@ -74,7 +74,7 @@ bool Arcollect::gui::about_window::event(SDL::Event &e, SDL::Rect target) {
 			}
 		} //falltrough;
 		case SDL_MOUSEBUTTONUP: {
-			Arcollect::gui::modal_stack.pop_back();
+			to_pop = true;
 			about_window_modal_shown = false;
 		} return false;
 	}

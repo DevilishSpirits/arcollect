@@ -3,6 +3,7 @@
 #include <config.h>
 
 extern SDL::Renderer *renderer;
+std::list<Arcollect::gui::modal_stack_variant> Arcollect::gui::modal_stack;
 
 void Arcollect::gui::modal::render_titlebar(SDL::Rect target, int window_width)
 {

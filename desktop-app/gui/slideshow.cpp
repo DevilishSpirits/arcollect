@@ -40,14 +40,14 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 				if (mousedown_viewport && (mousedown_viewport == get_pointed({e.button.x,e.button.y}))) {
 					Arcollect::gui::background_slideshow.target_artwork = mousedown_viewport->artwork;
 					Arcollect::gui::background_slideshow.set_collection_iterator(*(mousedown_viewport->iter));
-					Arcollect::gui::modal_stack.pop_back();
+					to_pop = true;
 				}
 			} return false;
 		case SDL_KEYUP: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_RETURN:
 				case SDL_SCANCODE_ESCAPE: {
-					Arcollect::gui::modal_stack.pop_back();
+					to_pop = true;
 				} break;
 				case SDL_SCANCODE_AC_SEARCH:
 				case SDL_SCANCODE_FIND:

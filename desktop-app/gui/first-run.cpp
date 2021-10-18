@@ -25,7 +25,7 @@ bool Arcollect::gui::first_run::event(SDL::Event &e, SDL::Rect target) {
 		case SDL_KEYUP: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_RIGHT: {
-					Arcollect::gui::modal_stack.pop_back();
+					to_pop = true;
 					Arcollect::config::first_run = true;
 					render_cache.reset(); // Free some resources
 				} return true;

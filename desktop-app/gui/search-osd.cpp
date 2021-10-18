@@ -118,7 +118,7 @@ void Arcollect::gui::search_osd::push(void)
 void Arcollect::gui::search_osd::pop(void)
 {
 	SDL_StopTextInput();
-	modal_stack.pop_back();
+	to_pop = true;
 }
 void Arcollect::gui::search_osd::db_delete(void)
 {

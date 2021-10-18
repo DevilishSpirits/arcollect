@@ -137,18 +137,17 @@ class popup_menu: public Arcollect::gui::menu {
 	public:
 		bool event(SDL::Event &e, SDL::Rect target) override {
 			bool result;
-			bool will_pop = false;
 			switch (e.type) {
 				case SDL_WINDOWEVENT: {
 					// Propagate window events
 					result = true;
 				} break;
 				case SDL_QUIT: {
-					will_pop = true;
+					to_pop = true;
 					result = true;
 				} break;
 				case SDL_MOUSEBUTTONUP: {
-					will_pop = true;
+					to_pop = true;
 					result = false;
 				} break;
 				default: {
@@ -156,12 +155,6 @@ class popup_menu: public Arcollect::gui::menu {
 				} break; // This modal grab all events
 			}
 			result &= Arcollect::gui::menu::event(e,target);
-			if (will_pop)
-				for (auto iter = Arcollect::gui::modal_stack.begin(); iter != Arcollect::gui::modal_stack.end(); ++iter) 
-					if (&Arcollect::gui::modal_get(iter) == this) {
-						Arcollect::gui::modal_stack.erase(iter);
-						break;
-					}
 			return result;
 		}
 		~popup_menu(void) {

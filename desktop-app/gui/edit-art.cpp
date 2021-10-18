@@ -25,6 +25,7 @@ struct on_set_rating {
 	void operator()(Arcollect::config::Rating rating)
 	{
 		using namespace Arcollect::gui;
+		modal_back().to_pop = true;
 		font::Elements elements(U"Mark artworks as "s,14);
 		switch (rating) {
 			case Arcollect::config::Rating::RATING_NONE: {

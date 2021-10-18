@@ -17,6 +17,7 @@
 #pragma once
 #include "sdl2-hpp/SDL.hpp"
 #include <functional>
+#include <list>
 #include <memory>
 #include <variant>
 #include <vector>
@@ -30,6 +31,12 @@ namespace Arcollect {
 		 */
 		class modal {
 			public:
+				/** Pop flag
+				 *
+				 * Set to true when poping a #modal. This flag is reset by the main-loop
+				 * when it pop for real the #modal (just after event processing).
+				 */
+				bool to_pop = false;
 				/** Handle an event
 				 * \param e The event
 				 * \param target The rendering target
@@ -62,16 +69,14 @@ namespace Arcollect {
 		
 		using modal_stack_variant = std::variant<
 			std::reference_wrapper<modal>,
-			std::unique_ptr<modal>,
-			std::shared_ptr<modal>
+			std::unique_ptr<modal>
 		>;
-		extern std::vector<modal_stack_variant> modal_stack;
+		extern std::list<modal_stack_variant> modal_stack;
 		
 		inline modal& modal_get(modal_stack_variant &value) {
 			switch (value.index()) {
 				case 0:return std::get<std::reference_wrapper<modal>>(value);
 				case 1:return *std::get<std::unique_ptr<modal>>(value);
-				case 2:return *std::get<std::shared_ptr<modal>>(value);
 				default:return *reinterpret_cast<modal*>(NULL);
 			}
 		}
