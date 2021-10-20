@@ -7,7 +7,8 @@
 		"rating":18,
 		"mimetype": "image/jpeg",
 		"postdate": 1613453168,
-		"data":"https://static1.e621.net/data/78/13/78130ba71fb4297219f51ef1b5edc4f9.jpg"
+		"data":"https://static1.e621.net/data/78/13/78130ba71fb4297219f51ef1b5edc4f9.jpg",
+		"data.sha256": "e64e51c27fe8d3e27b3c3c4fd1d43c5b921719ed505c07b2b36da18f452151b8"
 	},{
 		"title":"#2621355 - e621",
 		"desc":null,
@@ -15,7 +16,8 @@
 		"rating":16,
 		"mimetype": "image/jpeg",
 		"postdate": 1613713384,
-		"data":"https://static1.e621.net/data/29/18/2918760b6c698982a22826e8349f746b.jpg"
+		"data":"https://static1.e621.net/data/29/18/2918760b6c698982a22826e8349f746b.jpg",
+		"data.sha256": "0ac3b3dd10fc94fcc3e63555b020cee726f495b135faa2939850f6d39845b5d4"
 	}],
 	"accounts":[{
 		"id":"nmvsolidus",
@@ -114,6 +116,9 @@
 		"id":"clothing",
 		"kind":null
 	},{
+		"id":"digitigrade",
+		"kind":null
+	},{
 		"id":"eyes-closed",
 		"kind":null
 	},{
@@ -171,6 +176,9 @@
 	},{
 		"artwork":"https://e621.net/posts/2617248",
 		"tag":"biceps"
+	},{
+		"artwork":"https://e621.net/posts/2617248",
+		"tag":"digitigrade"
 	},{
 		"artwork":"https://e621.net/posts/2617248",
 		"tag":"genitals"

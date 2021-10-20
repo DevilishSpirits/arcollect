@@ -6,14 +6,16 @@
 		"source":"https://www.furaffinity.net/view/20321200/",
 		"rating":16,
 		"mimetype": "image/jpeg",
-		"data":"https://d.furaffinity.net/art/tanraak/1466323999/1466323885.tanraak_brep3.jpg"
+		"data": "https://d.furaffinity.net/art/tanraak/1466323999/1466323885.tanraak_brep3.jpg",
+		"data.sha256": "059f407af58b048410b1ae1f386a58b0cc1bc78dd00dc90902f8788affa3ef24"
 	},{
 		"title": "goo time",
 		"desc": "\n                    sketch for garrus\n====================\nwork © skdaffle\nFuraffinity | Twitter | Deviantart | Patreon\nCommission Info\n \n                                    ",
 		"source": "https://www.furaffinity.net/view/31316794/",
 		"rating": 18,
 		"mimetype": "image/png",
-		"data": "https://d.furaffinity.net/art/skdaffle/1556210470/1556210470.skdaffle_garruscomm39.png"
+		"data": "https://d.furaffinity.net/art/skdaffle/1556210470/1556210470.skdaffle_garruscomm39.png",
+		"data.sha256": "ac5ec3b4c59a6a6ed2abd07ffb9a99f687c49304c40e67d74ad550caa2afdcaf"
 	}],
 	"accounts":[{
 		"id":"tanraak",

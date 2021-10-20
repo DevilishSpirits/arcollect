@@ -1,3 +1,4 @@
+import hashlib
 import json
 import sqlite3
 import os
@@ -38,7 +39,7 @@ def linecount_checks(test_num, db, test_sets):
 
 def test_count(test_set):
 	#result  = len(db_line_count_checks)      # DB line count coherency checks
-	result  = len(test_set['artworks'])      # DB artworks table check
+	result  = len(test_set['artworks'])*2    # DB artworks table check
 	result += len(test_set['accounts'])      # DB accounts table check
 	result += len(test_set['tags'])          # DB tags table check
 	result += len(test_set['art_acc_links']) # DB art_acc_links table check
@@ -79,6 +80,23 @@ def check_db(test_num, db, test_set):
 			else:
 				print('not ok',test_num,'- Checking artwork',artwork['source'],'#',', '.join(mismatchs))
 	
+	print('# Checking artworks SHA-256 checksums')
+	artworks_dir = os.environ['XDG_DATA_HOME']+'/arcollect/artworks/'
+	for artwork in test_set['artworks']:
+		test_num += 1
+		artwork_db = db.execute('SELECT art_artid FROM artworks where art_source = ?;',[artwork['source']]).fetchone()
+		
+		# Check if the artwork has been found
+		if artwork_db is None:
+			print('not ok',test_num,'- Check checksum of artwork',artwork['source'],'# Not found in database')
+		else:
+			expected_checksum = artwork['data.sha256']
+			computed_checksum = hashlib.sha256(open(artworks_dir+str(artwork_db[0]),'rb').read()).hexdigest()
+			
+			if expected_checksum == computed_checksum:
+				print('ok',test_num,'- Check checksum of artwork',artwork['source'])
+			else:
+				print('not ok',test_num,'- Check checksum of artwork',artwork['source'],'# Expected:',expected_checksum,' got:',computed_checksum)
 	# Check accounts
 	print('# Checking "accounts" table')
 	for account in test_set['accounts']:
