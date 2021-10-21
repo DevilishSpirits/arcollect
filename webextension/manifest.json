@@ -11,7 +11,7 @@
 		"matches": ["https://www.artstation.com/*"],
 		"js": ["content-scripts/common.js","content-scripts/artstation.com.js"]
 	},{
-		"matches": ["https://www.furaffinity.net/view/*"],
+		"matches": ["https://www.furaffinity.net/view/*","https://www.furaffinity.net/full/*"],
 		"js": ["content-scripts/common.js","content-scripts/furaffinity.net.js"]
 	},{
 		"matches": ["https://e621.net/posts/*","https://e926.net/posts/*"],

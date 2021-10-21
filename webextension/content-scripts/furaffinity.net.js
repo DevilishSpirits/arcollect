@@ -77,11 +77,9 @@ function save_artwork()
 	let highlights = document.getElementsByClassName('highlight');
 	/** Normalize source URL
 	 *
-	 * FurAffinity ignore the trailing '/' in the url. Add it if missing.
+	 * https://www.furaffinity.net/view/<id>/
 	 */
-	let source = window.location.origin+window.location.pathname;
-	if (source[source.length-1] != '/')
-		source += '/';
+	let source = 'https://www.furaffinity.net/view/'+window.location.pathname.split('/')[2]+'/';
 	
 	/** Extract the account
 	 *
