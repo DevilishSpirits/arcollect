@@ -1,4 +1,5 @@
 #pragma once
+#include <SDL_config.h>
 #include <SDL.h>
 namespace SDL {
 	constexpr const Uint32 INIT_TIMER          = SDL_INIT_TIMER;

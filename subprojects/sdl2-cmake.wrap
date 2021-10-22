@@ -1,5 +1,5 @@
 [wrap-file]
-directory = SDL-81ca5bcba26acc69627629643c56fe143e791f4b
-source_url = https://github.com/Cacodemon345/SDL/archive/81ca5bcba26acc69627629643c56fe143e791f4b.zip
-source_filename = SDL-81ca5bcba26acc69627629643c56fe143e791f4b.zip
-source_hash = b9d429337d8d79f694e0c2122acf185b1c77a19699d9e8b5d31947e3f4966353
+directory = SDL-007b5463e842bb90167be33d8ea62a8f182ab771
+source_url = https://github.com/libsdl-org/SDL/archive/007b5463e842bb90167be33d8ea62a8f182ab771.zip
+source_filename = SDL-007b5463e842bb90167be33d8ea62a8f182ab771.zip
+source_hash = 818e70cb730903e10c310b70c0f10d6987f3e2b930e30ff3099a91f88e742f7d
