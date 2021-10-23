@@ -26,12 +26,13 @@ const std::filesystem::path Arcollect::path::xdg_config_home = [](){
 const std::filesystem::path Arcollect::path::arco_data_home = [](){
 	// Compute the data home
 	std::filesystem::path data_home;
-	if (auto* xdg_home = std::getenv("XDG_DATA_HOME"); xdg_home && *xdg_home != '\0')
+	if (auto* arcollect_home = std::getenv("ARCOLLECT_DATA_HOME"); arcollect_home && *arcollect_home != '\0')
+		data_home = std::filesystem::path(arcollect_home);
+	else if (auto* xdg_home = std::getenv("XDG_DATA_HOME"); xdg_home && *xdg_home != '\0')
 		data_home = std::filesystem::path(xdg_home) / "arcollect";
 	else {
 		#if defined(_WIN32)
 		// Store in local AppData folder (same dir as config)
-		// FIXME FOLDERID_SavedPicturesLibrary ?
 		data_home = Arcollect::path::xdg_config_home;
 		#else // WITH_XDG
 		data_home = std::filesystem::path(std::getenv("HOME")) / ".local" / "share" / "arcollect";
