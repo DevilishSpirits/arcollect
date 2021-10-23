@@ -218,6 +218,7 @@ dependency_report_hpp = configure_file(output: 'dependency-report.hpp', configur
 if enable_native_progs
 	subdir('sqls')
 	subdir('common')
+	subdir('sqls/tests')
 	subdir('desktop-app')
 	subdir('webext-adder')
 endif
