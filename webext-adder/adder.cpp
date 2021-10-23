@@ -646,7 +646,7 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 		std::cerr << "Started SQLite transaction" << std::endl;
 	// INSERT INTO artworks
 	std::unique_ptr<SQLite3::stmt> insert_stmt;
-	if (db->prepare(Arcollect::db::sql::adder_insert_artwork.c_str(),insert_stmt)) {
+	if (db->prepare(Arcollect::db::sql::adder_insert_artwork,insert_stmt)) {
 		std::cerr << "Failed to prepare adder_insert_artwork.sql " << db->errmsg() << std::endl;
 		std::exit(1);
 	}
@@ -688,7 +688,7 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 		std::cerr << "Failed to prepare the get_account_stmt " << db->errmsg() << std::endl;
 		std::exit(1);
 	}
-	if (db->prepare(Arcollect::db::sql::adder_insert_account.c_str(),insert_stmt)) {
+	if (db->prepare(Arcollect::db::sql::adder_insert_account,insert_stmt)) {
 		std::cerr << "Failed to prepare adder_insert_account.sql " << db->errmsg() << std::endl;
 		std::exit(1);
 	}
@@ -737,7 +737,7 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 		std::cerr << "Failed to prepare the get_tag_stmt " << db->errmsg() << std::endl;
 		std::exit(1);
 	}
-	if (db->prepare(Arcollect::db::sql::adder_insert_tag.c_str(),insert_stmt)) {
+	if (db->prepare(Arcollect::db::sql::adder_insert_tag,insert_stmt)) {
 		std::cerr << "Failed to prepare adder_insert_tag.sql " << db->errmsg() << std::endl;
 		std::exit(1);
 	}

@@ -71,7 +71,7 @@ int Arcollect::db::artwork_collection::db_delete(void)
 	std::unique_ptr<SQLite3::stmt> stmt;
 	
 	// Run all substeps from 'delete_artwork.sql'
-	const char *zSql = Arcollect::db::sql::delete_artwork.c_str();
+	const char *zSql = Arcollect::db::sql::delete_artwork.data();
 	int substep = 0;
 	while (*zSql) {
 		substep++;

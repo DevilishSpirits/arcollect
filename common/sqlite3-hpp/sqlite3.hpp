@@ -97,10 +97,10 @@ namespace SQLite3 {
 		inline int prepare(const char *zSql, int nByte, SQLite3::stmt *&ppStmt, const char **pzTail = NULL) { return sqlite3_prepare_v2((::sqlite3*)this,zSql,nByte,(sqlite3_stmt**)&ppStmt,pzTail); }
 		inline int prepare(const char *zSql, int nByte, SQLite3::stmt *&ppStmt, const char *&pzTail) { return this->prepare(zSql,nByte,ppStmt,&pzTail); }
 		// std::string versions
-		inline int prepare(const std::string &Sql, SQLite3::stmt *&ppStmt, const char **pzTail = NULL) { return this->prepare(Sql.c_str(),Sql.length(),ppStmt,pzTail); }
-		inline int prepare(const std::string &Sql, SQLite3::stmt *&ppStmt, const char *&pzTail) { return this->prepare(Sql,ppStmt,&pzTail); }
+		inline int prepare(const std::string_view &Sql, SQLite3::stmt *&ppStmt, const char **pzTail = NULL) { return this->prepare(Sql.data(),Sql.length(),ppStmt,pzTail); }
+		inline int prepare(const std::string_view &Sql, SQLite3::stmt *&ppStmt, const char *&pzTail) { return this->prepare(Sql,ppStmt,&pzTail); }
 		// std::unique_ptr helper
-		inline int prepare(const std::string &Sql, std::unique_ptr<SQLite3::stmt> &ppStmt, const char **pzTail = NULL) {
+		inline int prepare(const std::string_view &Sql, std::unique_ptr<SQLite3::stmt> &ppStmt, const char **pzTail = NULL) {
 			SQLite3::stmt *stmt;
 			int code = this->prepare(Sql,stmt,pzTail);
 			if (code == SQLite3::OK)
@@ -117,6 +117,9 @@ namespace SQLite3 {
 		
 		int exec(const char *sql, int (*callback)(void*,int,char**,char**) = NULL, void *callback_data = NULL, char **errmsg = NULL) {
 			return sqlite3_exec((::sqlite3*)this,sql,callback,callback_data,errmsg);
+		}
+		int exec(const std::string_view &sql, int (*callback)(void*,int,char**,char**) = NULL, void *callback_data = NULL, char **errmsg = NULL) {
+			return exec(sql.data(),callback,callback_data,errmsg);
 		}
 		
 		int busy_timeout(int ms) {
