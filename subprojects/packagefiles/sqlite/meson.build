@@ -1,5 +1,5 @@
 # Striped down version from the WrapDB
-project('sqlite', 'c', version: '3.36.0')
+project('sqlite', 'c')
 
 thread_dep = dependency('threads')
 cc = meson.get_compiler('c')
@@ -62,6 +62,9 @@ foreach func: sqlite_have_funcs
 endforeach
 
 sqlite3_incdir = include_directories('.')
+
+sqlite3_version = cc.get_define('SQLITE_VERSION', include_directories: sqlite3_incdir, prefix: '#include <sqlite3.h>').strip('"')
+
 dep_sqlite3 = declare_dependency(link_with:
 	static_library('sqlite3', 'sqlite3.c', include_directories: sqlite3_incdir, c_args : sqlite_args, dependencies : [thread_dep, dl_dep, m_dep], install: false)
-,include_directories : sqlite3_incdir)
+,include_directories : sqlite3_incdir, version: sqlite3_version)
