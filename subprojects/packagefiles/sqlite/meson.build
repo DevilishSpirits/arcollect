@@ -44,6 +44,23 @@ sqlite_args = [
 	'-DSQLITE_USE_ALLOCA',
 	'-DSQLITE_THREADSAFE=0',
 ]
+
+sqlite_have_funcs = [
+	['-DHAVE_FDATASYNC=1'         ,'fdatasync'         ,'#include <unistd.h>'],
+	['-DHAVE_ISNAN=1'             ,'isnan'             ,'#include <math.h>'],
+	['-DHAVE_LOCALTIME_R=1'       ,'localtime_r'       ,'#include <time.h>'],
+	['-DHAVE_LOCALTIME_S=1'       ,'localtime_s'       ,'#include <time.h>'],
+	['-DHAVE_MALLOC_USABLE_SIZE=1','malloc_usable_size','#include <malloc.h>'],
+	['-DHAVE_STRCHRNUL=1'         ,'strchrnul'         ,'#include <string.h>'],
+	['-DHAVE_USLEEP=1'            ,'usleep'            ,'#include <unistd.h>'],
+	['-DHAVE_UTIME=1'             ,'utime'             ,'#include <utime.h>'],
+]
+foreach func: sqlite_have_funcs
+	if cc.has_function(func[1],prefix: func[2])
+		sqlite_args += func[0]
+	endif
+endforeach
+
 sqlite3_incdir = include_directories('.')
 dep_sqlite3 = declare_dependency(link_with:
 	static_library('sqlite3', 'sqlite3.c', include_directories: sqlite3_incdir, c_args : sqlite_args, dependencies : [thread_dep, dl_dep, m_dep], install: false)
