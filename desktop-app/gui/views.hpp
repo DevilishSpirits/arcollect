@@ -122,6 +122,27 @@ namespace Arcollect {
 				void render_info_incard(void);
 				bool event(SDL::Event &e, SDL::Rect target) override;
 				
+				/** Go to the first artwork
+				 *
+				 * Aka the home button
+				 */
+				void go_first(void);
+				/** Go to the previous artwork
+				 *
+				 * Aka the left arrow
+				 */
+				void go_prev(void);
+				/** Go to the next artwork
+				 *
+				 * Aka the right arrow
+				 */
+				void go_next(void);
+				/** Go to the last artwork
+				 *
+				 * Aka the end button
+				 */
+				void go_last(void);
+				
 				// Convenience
 				static constexpr auto ARTWORK_TYPE_UNKNOWN = db::artwork::ARTWORK_TYPE_UNKNOWN;
 				static constexpr auto ARTWORK_TYPE_IMAGE   = db::artwork::ARTWORK_TYPE_IMAGE;

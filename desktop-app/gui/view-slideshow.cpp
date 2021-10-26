@@ -212,6 +212,42 @@ void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int windo
 		title_text_cache->render_tl(target.x+title_border+target.h,target.y+title_border);
 	}
 }
+void Arcollect::gui::view_slideshow::go_first(void)
+{
+	if (viewport.artwork) {
+		collection_iterator = collection->begin();
+		target_artwork = viewport.artwork = db::artwork::query(*collection_iterator);
+		resize(rect);
+	}
+}
+void Arcollect::gui::view_slideshow::go_prev(void)
+{
+	if (viewport.artwork) {
+		if (collection_iterator != collection->begin()) {
+			target_artwork = viewport.artwork = db::artwork::query(*--collection_iterator);
+			resize(rect);
+		}
+	}
+}
+void Arcollect::gui::view_slideshow::go_next(void)
+{
+	if (viewport.artwork) {
+		++collection_iterator;
+		if (collection_iterator != collection->end()) {
+			target_artwork = viewport.artwork = db::artwork::query(*collection_iterator);
+			resize(rect);
+		} else --collection_iterator; // Rewind
+	}
+}
+void Arcollect::gui::view_slideshow::go_last(void)
+{
+	if (viewport.artwork) {
+		collection_iterator = collection->end();
+		target_artwork = viewport.artwork = db::artwork::query(*--collection_iterator);
+		resize(rect);
+	}
+}
+
 bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 {
 	// STOP READING CODE!!! You might not understand some weird syntax.
@@ -251,37 +287,18 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 				case SDL_SCANCODE_AC_FORWARD:
 				case SDL_SCANCODE_PAGEDOWN:
 				case SDL_SCANCODE_RIGHT: {
-					if (viewport.artwork) {
-						++collection_iterator;
-						if (collection_iterator != collection->end()) {
-							target_artwork = viewport.artwork = db::artwork::query(*collection_iterator);
-							resize(rect);
-						} else --collection_iterator; // Rewind
-					}
+					go_next();
 				} break;
 				case SDL_SCANCODE_AC_BACK:
 				case SDL_SCANCODE_PAGEUP:
 				case SDL_SCANCODE_LEFT: {
-					if (viewport.artwork) {
-						if (collection_iterator != collection->begin()) {
-							target_artwork = viewport.artwork = db::artwork::query(*--collection_iterator);
-							resize(rect);
-						}
-					}
+					go_prev();
 				} break;
 				case SDL_SCANCODE_HOME: {
-					if (viewport.artwork) {
-						collection_iterator = collection->begin();
-						target_artwork = viewport.artwork = db::artwork::query(*collection_iterator);
-						resize(rect);
-					}
+					go_first();
 				} break;
 				case SDL_SCANCODE_END: {
-					if (viewport.artwork) {
-						collection_iterator = collection->end();
-						target_artwork = viewport.artwork = db::artwork::query(*--collection_iterator);
-						resize(rect);
-					}
+					go_last();
 				} break;
 				default:break;
 			}
