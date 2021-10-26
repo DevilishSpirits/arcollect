@@ -631,7 +631,7 @@ namespace Arcollect {
 		template <typename IterT>
 		constexpr bool skip_object(IterT &iter, const IterT end)
 		{
-			Have have;
+			Have have = Have::WTF; // Because C++17 require initialization
 			do {
 				have = what_i_have(iter,end);
 				// Check for object close
@@ -656,7 +656,7 @@ namespace Arcollect {
 		template <typename IterT>
 		constexpr bool skip_array(IterT &iter, const IterT end)
 		{
-			Have have;
+			Have have = Have::WTF; // Because C++17 require initialization
 			do {
 				// Handle the case when we have a comma on the road
 				have = what_i_have(iter,end);
