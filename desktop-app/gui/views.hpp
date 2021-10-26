@@ -109,12 +109,17 @@ namespace Arcollect {
 					 */
 					CLICK_NEXT,
 				};
+				ClickArea clicking_area = CLICK_NONE;
 				/** Get the action to do on click
 				 * \param rect     The rendering rect
 				 * \param position The mouse position
 				 * \return The action to do on click
 				 */
 				ClickArea click_area(const SDL::Rect &rect, SDL::Point position);
+				/** Render the click area UI
+				 * \param area The area to render
+				 */
+				void render_click_area(const SDL::Rect &target, ClickArea area, const SDL::Color &backdrop);
 			public:
 				/** Artwork to target
 				 *

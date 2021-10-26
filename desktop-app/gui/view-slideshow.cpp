@@ -19,6 +19,8 @@
 #include "../db/account.hpp"
 #include <math.h>
 
+extern SDL_Window *window;
+
 void Arcollect::gui::view_slideshow::set_collection(std::shared_ptr<artwork_collection> &new_collection)
 {
 	collection = new_collection;
@@ -152,6 +154,39 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	Arcollect::gui::font::Renderable desc_renderable(elements,render_rect.w);
 	desc_renderable.render_tl(render_rect.x,render_rect.y);
 }
+void Arcollect::gui::view_slideshow::render_click_area(const SDL::Rect &target, ClickArea area, const SDL::Color &backdrop)
+{
+	const auto border_limit = std::max(rect.w/32,16);
+	switch (area) {
+		case CLICK_NONE:break;
+		case CLICK_PREV: {
+			SDL::Rect rect{target.x,target.y + (target.h-border_limit)/2,border_limit,border_limit};
+			// Draw arrow
+			const SDL::Point arrow{border_limit/8,border_limit/4};
+			const auto center = rect.x + rect.w/2;
+			const auto middle = rect.y + rect.h/2;
+			renderer->SetDrawColor(255,255,255,255);
+			renderer->DrawLine(center+arrow.x,middle-arrow.y,center-arrow.x,middle);
+			renderer->DrawLine(center-arrow.x,middle,center+arrow.x,middle+arrow.y);
+			// Draw backdrop
+			renderer->SetDrawColor(backdrop);
+			renderer->FillRect(rect);
+		} break;
+		case CLICK_NEXT: {
+			SDL::Rect rect{target.x + target.w - border_limit,target.y + (target.h-border_limit)/2,border_limit,border_limit};
+			// Draw arrow
+			const SDL::Point arrow{border_limit/8,border_limit/4};
+			const auto center = rect.x + rect.w/2;
+			const auto middle = rect.y + rect.h/2;
+			renderer->SetDrawColor(255,255,255,255);
+			renderer->DrawLine(center-arrow.x,middle-arrow.y,center+arrow.x,middle);
+			renderer->DrawLine(center+arrow.x,middle,center-arrow.x,middle+arrow.y);
+			// Draw backdrop
+			renderer->SetDrawColor(backdrop);
+			renderer->FillRect(rect);
+		} break;
+	}
+}
 
 void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 {
@@ -188,6 +223,13 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 					unknown_artwork_text_cache.render_tl(rect.x+(rect.w-unknown_artwork_text_cache.size().x)/2,rect.y+(rect.h-unknown_artwork_text_cache.size().y)/2);
 				} break;
 			}
+		// Render click UI
+		SDL::Point mouse_pos;
+		auto mouse_clicking = SDL_GetMouseState(&mouse_pos.x,&mouse_pos.y) & SDL_BUTTON(1);
+		ClickArea hover_area = click_area(target,mouse_pos);
+		SDL::Color click_ui_backdrop = mouse_clicking && (hover_area == clicking_area)
+			? SDL::Color{16,16,16,192} : SDL::Color{128,128,128,128};
+		render_click_area(target,hover_area,click_ui_backdrop);
 	} else {
 		static std::unique_ptr<Arcollect::gui::font::Renderable> no_artwork_text_cache;
 		if (!no_artwork_text_cache)
@@ -210,6 +252,12 @@ void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int windo
 		if (!title_text_cache)
 			title_text_cache = std::make_unique<font::Renderable>(viewport.artwork->title().c_str(),target.h-2*title_border);
 		title_text_cache->render_tl(target.x+title_border+target.h,target.y+title_border);
+		// Render clicks UI
+		// TODO Modify the prototype to include this information
+		renderer->GetOutputSize(target.w,target.h);
+		constexpr SDL::Color click_ui_backdrop{0,0,0,128};
+		render_click_area(target,CLICK_PREV,click_ui_backdrop);
+		render_click_area(target,CLICK_NEXT,click_ui_backdrop);
 	}
 }
 void Arcollect::gui::view_slideshow::go_first(void)
@@ -327,7 +375,7 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 				}
 		} break;
 		case SDL_MOUSEMOTION: {
-			if (mouse_state & SDL_BUTTON(1)) {
+			if ((mouse_state & SDL_BUTTON(1))&&(clicking_area == CLICK_NONE)) {
 				viewport_delta.x += e.motion.xrel;
 				viewport_delta.y += e.motion.yrel;
 				update_zoom();
@@ -337,16 +385,23 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 		} break;
 		case SDL_MOUSEBUTTONUP: {
 			if (e.button.button & SDL_BUTTON(1)) {
-				switch (click_area(target,{e.button.x,e.button.y})) {
-					case CLICK_NONE:break;
-					case CLICK_PREV: {
-						go_prev();
-					} break;
-					case CLICK_NEXT: {
-						go_next();
-					} break;
-				}
+				ClickArea clickup_area = click_area(target,{e.button.x,e.button.y});
+				if (clickup_area == clicking_area)
+					switch (clickup_area) {
+						case CLICK_NONE:break;
+						case CLICK_PREV: {
+							go_prev();
+						} break;
+						case CLICK_NEXT: {
+							go_next();
+						} break;
+					}
 			}
+			clicking_area = CLICK_NONE;
+		} break;
+		case SDL_MOUSEBUTTONDOWN: {
+			if (e.button.button & SDL_BUTTON(1))
+				clicking_area = click_area(target,{e.button.x,e.button.y});
 		} break;
 		// Only called for Arcollect::gui::background_slideshow
 		case SDL_WINDOWEVENT: {
