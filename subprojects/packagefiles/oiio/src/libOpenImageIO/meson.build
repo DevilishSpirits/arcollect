@@ -146,9 +146,7 @@ libOpenImageIO_srcs = [
 
 OpenImageIO_Util_deps = [
 	oiio_plugins,
-	dep_fmt,
-	dep_imath,
-	dep_tiff,
-	robin_map_dep,
+	oiio_deps,
+	cpp.find_library('dl', required: false),
 ]
 OpenImageIO = static_library('OpenImageIO', libOpenImageIO_srcs, dependencies: OpenImageIO_Util_deps, include_directories: include_directories('../include'))

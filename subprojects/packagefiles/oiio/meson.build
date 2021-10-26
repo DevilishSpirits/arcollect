@@ -5,7 +5,6 @@ project('OpenImageIO', 'cpp', 'c', version: '2.2.18.0')
 
 cpp = meson.get_compiler('cpp')
 
-#project (HOMEPAGE_URL "https://openimageio.org")
 #set (PROJ_NAME OIIO)    # short name, caps
 
 #option (EMBEDPLUGINS "Embed format plugins in libOpenImageIO" ON)
@@ -22,44 +21,29 @@ cpp = meson.get_compiler('cpp')
 #    add_definitions ("-DOIIO_TEXTURE_SIMD_BATCH_WIDTH=${TEX_BATCH_SIZE}")
 #endif ()
 
-#if (NOT BUILD_OIIOUTIL_ONLY)
-#    add_subdirectory (src/libOpenImageIO)
-#endif ()
-
-#add_subdirectory (src/include)
-#add_subdirectory (src/fonts)
-
 #if (NUKE_FOUND)
 #    add_subdirectory (src/nuke/txReader)
 #    add_subdirectory (src/nuke/txWriter)
 #endif ()
-
-## generate the config file from the template in the binary dir
-#configure_package_config_file ("${PROJECT_SOURCE_DIR}/src/cmake/Config.cmake.in"
-#        "${OIIO_PROJECT_CONFIG}"
-#        INSTALL_DESTINATION "${OIIO_CONFIG_INSTALL_DIR}")
-
-## generate the config file from the template in the binary dir
-#install (FILES "${OIIO_PROJECT_CONFIG}" "${OIIO_VERSION_CONFIG}"
-#        DESTINATION "${OIIO_CONFIG_INSTALL_DIR}")
 
 add_project_arguments('-DOIIO_STATIC_DEFINE', language: 'cpp')
 
 dep_fmt   = dependency('fmt')
 dep_imath = dependency('Imath')
 dep_tiff  = dependency('libtiff-4')
-robin_map_dep = dependency('robin-map')
-subdir('src')
-
-boost_deps = dependency('boost', version: '>=1.53', modules: ['filesystem', 'thread'], static: true)
-
+dep_robin_map = dependency('robin-map')
+dep_boost = dependency('boost', version: '>=1.53', modules: ['filesystem', 'thread'], default_options: [
+	'-DBOOST_FILESYSTEM_NO_DEPRECATED=true',
+	'-DBOOST_FILESYSTEM_DISABLE_BCRYPT=true',
+])
 oiio_deps = [
 	dep_fmt,
 	dep_imath,
 	dep_tiff,
-	boost_deps,
-	cpp.find_library('dl', required: false),
-	cpp.find_library('Bcrypt', required: false), # FIXME What boost::filesystem does with BCrypt ???
+	dep_robin_map,
+	dep_boost,
 ]
+
+subdir('src')
 
 dep_oiio = declare_dependency(link_with: OpenImageIO, include_directories: include_directories('src/include'), dependencies: oiio_deps, compile_args: '-DOIIO_STATIC_DEFINE')

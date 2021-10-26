@@ -17,6 +17,7 @@ libOpenImageIO_Util_srcs = [
 	'xxhash.cpp',
 ]
 OpenImageIO_Util_deps = [
+	dep_boost,
 	dep_imath,
 	dep_fmt,
 ]
