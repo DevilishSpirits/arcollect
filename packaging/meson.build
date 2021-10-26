@@ -51,15 +51,16 @@ endif
 pkgbuild_depends = ['\'xdg-utils\'']
 pkgbuild_depends_list = {
 	# 'dependency_name': 'ArchLinux package name'
+	'boost'            : 'boost',
 	'curl'             : 'curl',
 	'dbus-1'           : 'dbus',
+	'freetype2'        : 'freetype2',
+	'harfbuzz'         : 'harfbuzz',
+	'inih'             : 'libINIReader.so',
 	'lcms2'            : 'lcms2',
 	'OpenImageIO'      : 'openimageio',
 	'sdl2'             : 'sdl2',
-	'freetype2'        : 'freetype2',
-	'harfbuzz'         : 'harfbuzz',
 	'sqlite3'          : 'sqlite',
-	'inih'             : 'libINIReader.so',
 }
 foreach dep_name, package_name: pkgbuild_depends_list
 	if dep_name in system_dependencies
@@ -100,22 +101,44 @@ ar_prog  = find_program('ar', required: false, native: true)
 if apt_prog.found() and dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found() and sh_prog.found()
 	# Get the "Architecture:" field using dpkg-achitecture
 	dpkg_architecture_run = run_command(dpkg_architecture_prog,'-q','DEB_HOST_ARCH', check: true)
+	deb_system_dependencies = system_dependencies
+	deb_skip_dependencies = []
 	
 	debian_depends = ['libc6', 'libstdc++6', 'xdg-utils']
 	debian_depends_list = {
 		# 'dependency_name': ['Debian -dev package name','package-regex'[0-9\-\.]*]
-		'libcurl'          : ['libcurl4-openssl-dev'    ,'libcurl4'],
 		'dbus-1'           : ['libdbus-1-dev'           ,'libdbus-1'],
-		'lcms2'            : ['liblcms2-dev'            ,'liblcms2'],
-		'OpenImageIO'      : ['libopenimageio-dev'      ,'libopenimageio'],
-		'sdl2'             : ['libsdl2-dev'             ,'libsdl2'],
 		'freetype2'        : ['libfreetype-dev'         ,'libfreetype'],
 		'harfbuzz'         : ['libharfbuzz-dev'         ,'libharfbuzz[0-9a-z]+'],
-		'sqlite3'          : ['libsqlite3-dev'          ,'libsqlite3'],
 		'inih'             : ['libinih-dev'             ,'libinireader'],
+		'lcms2'            : ['liblcms2-dev'            ,'liblcms2'],
+		'libcurl'          : ['libcurl4-openssl-dev'    ,'libcurl4'],
+		'OpenImageIO'      : ['libopenimageio-dev'      ,'libopenimageio'],
+		'sdl2'             : ['libsdl2-dev'             ,'libsdl2'],
+		'sqlite3'          : ['libsqlite3-dev'          ,'libsqlite3'],
 	}
+	# Boost
+	if 'boost' in deb_system_dependencies
+		# Detect Boost version
+		deb_boostver = dependency('boost').version().split('.')
+		deb_boostver = deb_boostver[0]+'.'+deb_boostver[1] # Debian only keeps major.minor
+		# Add boost libs
+		deb_boostlibs = [
+			#'boost-filesystem', # See below
+			'boost-thread',
+		]
+		foreach boostlib: deb_boostlibs
+			deb_system_dependencies += boostlib
+			dep_name = 'lib'+boostlib+deb_boostver
+			debian_depends_list += {boostlib: [dep_name+'-dev',dep_name]}
+		endforeach
+		# We have a straying 'boost' in deb_system_dependencies, we put a random dep
+		# on it to avoid configuration breakage
+		dep_name = 'libboost-filesystem'+deb_boostver
+		debian_depends_list += {'boost': [dep_name+'-dev',dep_name]}
+	endif
 	# Detect non-dev package name
-	foreach dep: system_dependencies
+	foreach dep: deb_system_dependencies
 		pkg_name = debian_depends_list[dep]
 		result = run_command(sh_prog,'-c','\''+apt_prog.full_path()+'\' show \''+pkg_name[0]+'\' | grep -F \'Depends:\' -m 1 | exec grep -oE \''+pkg_name[1]+'[0-9\.-]*(\ |$)\' -m 1')
 		if result.returncode() == 0
@@ -127,7 +150,7 @@ if apt_prog.found() and dpkg_architecture_prog.found() and tar_prog.found() and 
 	
 	if enable_native_progs
 		foreach dep_name, package_name: debian_depends_list
-			if dep_name in system_dependencies
+			if dep_name in deb_system_dependencies
 				if config_h.has('ARCOLLECT_VERREQ_'+dep_name)
 					debian_depends += package_name+' ('+config_h.get('ARCOLLECT_VERREQ_'+dep_name,'')+')'
 				else

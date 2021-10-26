@@ -33,8 +33,8 @@ dep_imath = dependency('Imath')
 dep_tiff  = dependency('libtiff-4')
 dep_robin_map = dependency('robin-map')
 dep_boost = dependency('boost', version: '>=1.53', modules: ['filesystem', 'thread'], default_options: [
-	'-DBOOST_FILESYSTEM_NO_DEPRECATED=true',
-	'-DBOOST_FILESYSTEM_DISABLE_BCRYPT=true',
+	'BOOST_FILESYSTEM_NO_DEPRECATED=true',
+	'BOOST_FILESYSTEM_DISABLE_BCRYPT=true',
 ])
 oiio_deps = [
 	dep_fmt,

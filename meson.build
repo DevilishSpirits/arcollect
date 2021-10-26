@@ -65,6 +65,7 @@ config_h.set('ARCOLLECT_DBUS_PATH','/')
 # Version requirements
 # These are centralized here. Update README.md if you change things there.
 #config_h.set('ARCOLLECT_VERREQ_sdl2','>=2.0.x') # TODO Switch back to an SDL release when the ICC profile patch get released
+config_h.set('ARCOLLECT_VERREQ_boost','>=1.53') # Keep in sync with OIIO needs! # FIXME Should we use the recommend version?
 config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
 
 foreach key: config_h.keys()
@@ -124,6 +125,12 @@ if enable_native_progs
 	if with_xdg
 		native_progs_deps += 'dbus-1'
 	endif
+	if dependency('OpenImageIO', required: false).type_name() == 'internal'
+		native_progs_deps += [
+			'boost',
+			# TODO Add all dependencies
+		]
+	endif
 	foreach dep_name: native_progs_deps
 		dep = dependency(dep_name, required: false)
 		if dep.found()
@@ -154,6 +161,7 @@ endforeach
 # Generate dependencies informations
 dep_fancy_name = {
 	'base64'           : 'Base64.h',
+	'boost'            : 'Boost',
 	'dbus-1'           : 'D-Bus',
 	'freetype2'        : 'FreeType2',
 	'harfbuzz'         : 'HarfBuzz',
@@ -167,6 +175,7 @@ dep_fancy_name = {
 }
 dep_website = {
 	'base64'           : 'https://gist.github.com/tomykaira/f0fd86b6c73063283afe550bc5d77594',
+	'boost'            : 'https://www.boost.org/',
 	'dbus-1'           : 'https://www.freedesktop.org/wiki/Software/dbus/',
 	'freetype2'        : 'https://www.freetype.org',
 	'harfbuzz'         : 'https://harfbuzz.github.io/',
