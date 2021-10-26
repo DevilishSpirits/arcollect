@@ -21,15 +21,12 @@ void Arcollect::gui::menu::render(SDL::Rect target)
 {
 	// Compute menu_size
 	SDL::Rect menu_rect{0,0,0,0};
-	const int menu_items_count = static_cast<int>(menu_items.size());
-	menu_rects.resize(menu_items_count);
-	for (auto i = 0; i < menu_items_count; i++) {
-		SDL::Point size = menu_items[i]->size();
-		menu_rects[i].h = size.y;
+	for (auto& menu_pair: menu_items) {
+		SDL::Point size = menu_pair.first->size();
+		menu_pair.second.h = size.y;
 		menu_rect.h += size.y + 1 + 2*padding.y;
 		menu_rect.w  = std::max(menu_rect.w,size.x);
 	}
-	menu_rect.w += 2*padding.y;
 	
 	// Compute real menu_rect
 	if (anchor_bot && anchor_top) {
@@ -60,31 +57,32 @@ void Arcollect::gui::menu::render(SDL::Rect target)
 	
 	// Render cells
 	SDL::Rect current_rect{menu_rect.x+padding.x,menu_rect.y+padding.y,menu_rect.w-2*padding.x,0};
-	for (auto i = 0; i < menu_items_count; i++) {
+	for (auto& menu_pair: menu_items) {
+		SDL::Rect &rect = menu_pair.second;
 		// Compute rect and render
-		current_rect.h = menu_rects[i].h;
-		menu_rects[i] = current_rect;
-		menu_items[i]->render(current_rect);
+		current_rect.h = rect.h;
+		rect = current_rect;
+		menu_pair.first->render(current_rect);
 		// Enlarge rect
-		menu_rects[i].x -= padding.x;
-		menu_rects[i].y -= padding.y;
-		menu_rects[i].w += padding.x*2;
-		menu_rects[i].h += padding.y*2;
+		rect.x -= padding.x;
+		rect.y -= padding.y;
+		rect.w += padding.x*2;
+		rect.h += padding.y*2;
 		// Move current_rect
-		current_rect.y += menu_rects[i].h + 1;
+		current_rect.y += rect.h + 1;
 	}
 	
 	// Render separators
 	renderer->SetDrawColor(128,128,128,255);
-	for (auto i = 1; i < menu_items_count; i++) {
-		const SDL::Rect &rect = menu_rects[i];
+	for (auto& menu_pair: menu_items) {
+		const SDL::Rect &rect = menu_pair.second;
 		renderer->DrawLine(rect.x + padding.x, rect.y - 1, rect.x + rect.w - padding.x, rect.y - 1);
 	}
 	
 	// Render hovered cell
 	if (hovered_cell > -1) {
 		renderer->SetDrawColor(255,255,255,128);
-		renderer->FillRect(menu_rects[hovered_cell]);
+		renderer->FillRect(menu_items[hovered_cell].second);
 	}
 }
 
@@ -107,27 +105,31 @@ bool Arcollect::gui::menu::event(SDL::Event &e, SDL::Rect target)
 	if (broadcast) {
 		// Pass event to all cells
 		// Note: menu_rects[i].x and menu_rects[i].w are the same everywhere
-		SDL::Rect render_location{menu_rects[0].x + padding.x,menu_rects[0].y,menu_rects[0].w - 2*padding.x,0};
-		for (decltype(menu_items)::size_type i = 0; i < menu_items.size(); i++) {
-			render_location.h = menu_rects[i].h - 2*padding.x;
-			menu_items[i]->event(e,menu_rects[i],render_location);
-			render_location.y += menu_rects[i].h;
+		const auto& menu_rect0 = menu_items[0].second;
+		SDL::Rect render_location{menu_rect0.x + padding.x,menu_rect0.y,menu_rect0.w - 2*padding.x,0};
+		for (auto& menu_pair: menu_items) {
+			const SDL::Rect &rect =  menu_pair.second;
+			render_location.h = rect.h - 2*padding.x;
+			menu_pair.first->event(e,rect,render_location);
+			render_location.y +=  rect.h;
 		}
-	} else if (hovered_cell > -1)
+	} else if (hovered_cell > -1) {
+		const SDL::Rect &hovered_cell_rect = menu_items[hovered_cell].second;
 		// Pass event to the hovered_cell
-		menu_items[hovered_cell]->event(e,menu_rects[hovered_cell],{
-			menu_rects[hovered_cell].x + padding.x,
-			menu_rects[hovered_cell].y + padding.y,
-			menu_rects[hovered_cell].w - 2*padding.x,
-			menu_rects[hovered_cell].h - 2*padding.y,
+		menu_items[hovered_cell].first->event(e,hovered_cell_rect,{
+			hovered_cell_rect.x + padding.x,
+			hovered_cell_rect.y + padding.y,
+			hovered_cell_rect.w - 2*padding.x,
+			hovered_cell_rect.h - 2*padding.y,
 		});
+	}
 	
 	return propagate;
 }
 int Arcollect::gui::menu::get_menu_item_at(SDL::Point cursor)
 {
-	for (auto i = 0; i < static_cast<int>(menu_rects.size()); i++)
-		if (cursor.InRect(menu_rects[i]))
+	for (int i = 0; i < static_cast<int>(menu_items.size()); i++)
+		if (cursor.InRect(menu_items[i].second))
 			return i;
 	// No match found
 	return -1;
@@ -171,7 +173,8 @@ void Arcollect::gui::menu::popup_context(const std::vector<std::shared_ptr<menu_
 	new_popup_menu->anchor_left = anchor_left;
 	new_popup_menu->anchor_bot = anchor_bot;
 	new_popup_menu->anchor_right = anchor_right;
-	new_popup_menu->menu_items = menu_items;
+	for (auto& menu_item: menu_items)
+		new_popup_menu->append_menu_item(menu_item);
 	Arcollect::gui::modal_stack.push_back(std::unique_ptr<modal>(new_popup_menu));
 	popup_context_count++;
 }

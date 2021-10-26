@@ -48,7 +48,7 @@ namespace Arcollect {
 		
 		class menu: public modal {
 			protected:
-				std::vector<SDL::Rect> menu_rects;
+				std::vector<std::pair<std::shared_ptr<menu_item>,SDL::Rect>> menu_items;
 			public:
 				/** Anchor distance
 				 *
@@ -71,7 +71,9 @@ namespace Arcollect {
 				bool anchor_right;
 				
 				SDL::Point padding{8,4};
-				std::vector<std::shared_ptr<menu_item>> menu_items;
+				void append_menu_item(std::shared_ptr<menu_item> item) {
+					menu_items.emplace_back(std::move(item),SDL::Rect());
+				}
 				
 				bool event(SDL::Event &e, SDL::Rect target) override;
 				void render(SDL::Rect target) override;
