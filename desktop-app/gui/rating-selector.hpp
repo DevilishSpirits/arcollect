@@ -21,12 +21,18 @@ namespace Arcollect {
 	namespace gui {
 		class rating_selector {
 			protected:
+				/** No selected rating value
+				 *
+				 * This value is out of the Arcollect::config::Rating enum and mean that
+				 * we aren't hovering/selecting/etc a rating.
+				 */
+				static constexpr auto NO_RATING = static_cast<Arcollect::config::Rating>(-1);
 				/** General rect tool
 				 * \param rect The target rectangle. It get resized to the right width and flushed rright
 				 * \return A rect suitable to 
 				 */
 				SDL::Rect rect_tool(SDL::Rect &rect);
-				Arcollect::config::Rating hover_rating;
+				Arcollect::config::Rating hover_rating = NO_RATING;
 			public:
 				bool has_kid;
 				bool has_mature;

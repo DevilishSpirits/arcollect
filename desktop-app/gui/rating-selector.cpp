@@ -31,11 +31,11 @@ Arcollect::config::Rating Arcollect::gui::rating_selector::pointed_rating(SDL::R
 {
 	// Check for if mouse is outside the cell for all sides but left
 	if ((cursor.y < target.y)||(cursor.y > target.y+target.h)||(cursor.x > target.x+target.w))
-		return static_cast<Arcollect::config::Rating>(-1);
+		return NO_RATING;
 	// Check if cursor is outside left
 	rect_tool(target);
 	if (cursor.x < target.x)
-		return static_cast<Arcollect::config::Rating>(-1);
+		return NO_RATING;
 	// We are on an item, detect which one
 	cursor.x -= target.h;
 	if (has_kid) {
