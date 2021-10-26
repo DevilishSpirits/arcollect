@@ -93,6 +93,28 @@ namespace Arcollect {
 				bool size_know = false;
 				db::artwork_collection::iterator collection_iterator;
 				std::unique_ptr<font::Renderable> title_text_cache;
+				
+				enum ClickArea {
+					/** Do nothing
+					 */
+					CLICK_NONE,
+					/** Go to the previous artwork
+					 *
+					 * Call go_prev() on click.
+					 */
+					CLICK_PREV,
+					/** Go to the next artwork
+					 *
+					 * Call go_next() on click.
+					 */
+					CLICK_NEXT,
+				};
+				/** Get the action to do on click
+				 * \param rect     The rendering rect
+				 * \param position The mouse position
+				 * \return The action to do on click
+				 */
+				ClickArea click_area(const SDL::Rect &rect, SDL::Point position);
 			public:
 				/** Artwork to target
 				 *

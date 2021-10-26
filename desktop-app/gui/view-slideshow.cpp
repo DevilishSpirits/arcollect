@@ -247,7 +247,17 @@ void Arcollect::gui::view_slideshow::go_last(void)
 		resize(rect);
 	}
 }
-
+Arcollect::gui::view_slideshow::ClickArea Arcollect::gui::view_slideshow::click_area(const SDL::Rect &rect, SDL::Point position)
+{
+	const auto border_limit = rect.w/32;
+	position.x -= rect.x;
+	position.y -= rect.y;
+	if (position.x < border_limit)
+		return CLICK_PREV;
+	else if (position.x > rect.w - border_limit)
+		return CLICK_NEXT;
+	return CLICK_NONE;
+}
 bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 {
 	// STOP READING CODE!!! You might not understand some weird syntax.
@@ -323,6 +333,19 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 				update_zoom();
 				// Skip animation
 				viewport_animation.val_origin = viewport_animation.val_target;
+			}
+		} break;
+		case SDL_MOUSEBUTTONUP: {
+			if (e.button.button & SDL_BUTTON(1)) {
+				switch (click_area(target,{e.button.x,e.button.y})) {
+					case CLICK_NONE:break;
+					case CLICK_PREV: {
+						go_prev();
+					} break;
+					case CLICK_NEXT: {
+						go_next();
+					} break;
+				}
 			}
 		} break;
 		// Only called for Arcollect::gui::background_slideshow
