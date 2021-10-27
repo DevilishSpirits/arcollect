@@ -61,7 +61,7 @@ else
 endif
 
 # D-Bus stuff
-config_h.set('ARCOLLECT_DBUS_NAME','me.d-spirits.arcollect')
+config_h.set('ARCOLLECT_DBUS_NAME','me.d_spirits.arcollect')
 config_h.set('ARCOLLECT_DBUS_PATH','/')
 
 # Version requirements

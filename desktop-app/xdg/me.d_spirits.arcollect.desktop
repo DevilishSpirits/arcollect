@@ -1,10 +1,9 @@
 [Desktop Entry]
 Type=Application
-Version=1.5
+Version=1.1
 Name=Arcollect
-Encoding=UTF-8
 Comment=Your personal visual artwork library.
 DBusActivatable=true
 Exec=arcollect
 Terminal=false
-Categories=2DGraphics;Amusement;RasterGraphics:Viewer
+Categories=Graphics;2DGraphics;Amusement;RasterGraphics;Viewer
