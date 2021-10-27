@@ -24,6 +24,7 @@ struct on_set_rating {
 	std::shared_ptr<Arcollect::db::artwork_collection> collection;
 	void operator()(Arcollect::config::Rating rating)
 	{
+		std::shared_ptr<Arcollect::db::artwork_collection> &arts_to_set = collection;
 		using namespace Arcollect::gui;
 		modal_back().to_pop = true;
 		font::Elements elements(U"Mark artworks as "s,14);
@@ -38,8 +39,8 @@ struct on_set_rating {
 				elements << SDL::Color(255,128,128,255) << U"Adult"sv;
 			} break;
 		}
-		menu::popup_context({std::make_shared<menu_item_simple_label>(elements,[this,rating](){
-			collection->db_set_rating(rating);
+		menu::popup_context({std::make_shared<menu_item_simple_label>(elements,[arts_to_set,rating](){
+			arts_to_set->db_set_rating(rating);
 		})},{0,Arcollect::gui::window_borders::title_height});
 		// FIXME Dirty hack to counter the next pop
 		menu::popup_context({std::make_shared<menu_item_simple_label>(U""s,[](){})},{0,-256});
