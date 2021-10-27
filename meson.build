@@ -32,7 +32,9 @@ if with_xdg.auto()
 	]
 		# With are not on a XDG platform
 	elif not dep_dbus.found()
-		warning('XDG integration disabled due to missing D-Bus library')
+		message('If you are using Linux, *BSD or alike, you likely wants XDG integration (desktop icon, ...).')
+		message('The blacklist based detection *will* output false positive on uncommon systems.')
+		error('XDG integration require D-Bus (you can disable it with -Dwith_xdg=disabled)')
 	else # XDG test passed
 		with_xdg = true
 	endif
