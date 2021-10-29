@@ -77,6 +77,13 @@ bool Arcollect::gui::scrolling_text::event(SDL::Event &e, SDL::Rect target)
 		case SDL_MOUSEWHEEL: {
 			scroll_text(-e.wheel.y*text_scroll_speed,target);
 		} return false;
+		case SDL_MOUSEMOTION: {
+			if (e.motion.state & SDL_BUTTON(1)) {
+				// Scroll text on left-click drag
+				scroll.val_target -= e.motion.yrel;
+				scroll_text(0,target);
+			}
+		} return false;
 	}
 	return true;
 }
