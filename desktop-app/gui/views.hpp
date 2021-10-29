@@ -94,6 +94,17 @@ namespace Arcollect {
 				db::artwork_collection::iterator collection_iterator;
 				std::unique_ptr<font::Renderable> title_text_cache;
 				
+				enum ClickState {
+					/** Button is hovered
+					 */
+					CLICK_HOVER,
+					/** Button is pressed
+					 */
+					CLICK_PRESSED,
+					/** Topbar is hovered and the UI is displayed
+					 */
+					CLICK_UI_VIEW,
+				};
 				enum ClickArea {
 					/** Do nothing
 					 */
@@ -119,7 +130,7 @@ namespace Arcollect {
 				/** Render the click area UI
 				 * \param area The area to render
 				 */
-				void render_click_area(const SDL::Rect &target, ClickArea area, const SDL::Color &backdrop);
+				void render_click_area(const SDL::Rect &target, ClickArea area, ClickState state);
 			public:
 				/** Artwork to target
 				 *

@@ -154,36 +154,50 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	Arcollect::gui::font::Renderable desc_renderable(elements,render_rect.w);
 	desc_renderable.render_tl(render_rect.x,render_rect.y);
 }
-void Arcollect::gui::view_slideshow::render_click_area(const SDL::Rect &target, ClickArea area, const SDL::Color &backdrop)
+void Arcollect::gui::view_slideshow::render_click_area(const SDL::Rect &target, ClickArea area, ClickState state)
 {
+	const auto colors = [](ClickState state) -> std::pair<SDL::Color,SDL::Color> {
+		switch (state) {
+			case CLICK_HOVER:
+				return {SDL::Color{128,128,128,128},SDL::Color{255,255,255,255}};
+			case CLICK_PRESSED:
+				return {SDL::Color{ 16, 16, 16,192},SDL::Color{128,128,128,255}};
+			case CLICK_UI_VIEW:
+			default:
+				return {SDL::Color{  0,  0,  0,128},SDL::Color{255,255,255,128}};
+		}
+	}(state);
+	const SDL::Color &back_color = colors.first;
+	const SDL::Color &line_color = colors.second;
+	
 	const auto border_limit = std::max(rect.w/32,16);
 	switch (area) {
 		case CLICK_NONE:break;
 		case CLICK_PREV: {
 			SDL::Rect rect{target.x,target.y + (target.h-border_limit)/2,border_limit,border_limit};
+			// Draw backdrop
+			renderer->SetDrawColor(back_color);
+			renderer->FillRect(rect);
 			// Draw arrow
 			const SDL::Point arrow{border_limit/8,border_limit/4};
 			const auto center = rect.x + rect.w/2;
 			const auto middle = rect.y + rect.h/2;
-			renderer->SetDrawColor(255,255,255,255);
+			renderer->SetDrawColor(line_color);
 			renderer->DrawLine(center+arrow.x,middle-arrow.y,center-arrow.x,middle);
 			renderer->DrawLine(center-arrow.x,middle,center+arrow.x,middle+arrow.y);
-			// Draw backdrop
-			renderer->SetDrawColor(backdrop);
-			renderer->FillRect(rect);
 		} break;
 		case CLICK_NEXT: {
 			SDL::Rect rect{target.x + target.w - border_limit,target.y + (target.h-border_limit)/2,border_limit,border_limit};
+			// Draw backdrop
+			renderer->SetDrawColor(back_color);
+			renderer->FillRect(rect);
 			// Draw arrow
 			const SDL::Point arrow{border_limit/8,border_limit/4};
 			const auto center = rect.x + rect.w/2;
 			const auto middle = rect.y + rect.h/2;
-			renderer->SetDrawColor(255,255,255,255);
+			renderer->SetDrawColor(line_color);
 			renderer->DrawLine(center-arrow.x,middle-arrow.y,center+arrow.x,middle);
 			renderer->DrawLine(center+arrow.x,middle,center-arrow.x,middle+arrow.y);
-			// Draw backdrop
-			renderer->SetDrawColor(backdrop);
-			renderer->FillRect(rect);
 		} break;
 	}
 }
@@ -227,9 +241,9 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 		SDL::Point mouse_pos;
 		auto mouse_clicking = SDL_GetMouseState(&mouse_pos.x,&mouse_pos.y) & SDL_BUTTON(1);
 		ClickArea hover_area = click_area(target,mouse_pos);
-		SDL::Color click_ui_backdrop = mouse_clicking && (hover_area == clicking_area)
-			? SDL::Color{16,16,16,192} : SDL::Color{128,128,128,128};
-		render_click_area(target,hover_area,click_ui_backdrop);
+		ClickState click_state = mouse_clicking && (hover_area == clicking_area)
+			? CLICK_PRESSED : CLICK_HOVER;
+		render_click_area(target,hover_area,click_state);
 	} else {
 		static std::unique_ptr<Arcollect::gui::font::Renderable> no_artwork_text_cache;
 		if (!no_artwork_text_cache)
@@ -255,9 +269,8 @@ void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int windo
 		// Render clicks UI
 		// TODO Modify the prototype to include this information
 		renderer->GetOutputSize(target.w,target.h);
-		constexpr SDL::Color click_ui_backdrop{0,0,0,128};
-		render_click_area(target,CLICK_PREV,click_ui_backdrop);
-		render_click_area(target,CLICK_NEXT,click_ui_backdrop);
+		render_click_area(target,CLICK_PREV,CLICK_UI_VIEW);
+		render_click_area(target,CLICK_NEXT,CLICK_UI_VIEW);
 	}
 }
 void Arcollect::gui::view_slideshow::go_first(void)
