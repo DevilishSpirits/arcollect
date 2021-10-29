@@ -388,12 +388,20 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 				}
 		} break;
 		case SDL_MOUSEMOTION: {
-			if ((mouse_state & SDL_BUTTON(1))&&(clicking_area == CLICK_NONE)) {
-				viewport_delta.x += e.motion.xrel;
-				viewport_delta.y += e.motion.yrel;
-				update_zoom();
-				// Skip animation
-				viewport_animation.val_origin = viewport_animation.val_target;
+			if ((clicking_area == CLICK_NONE)) {
+				if (mouse_state & SDL_BUTTON(2)) {
+					// Middle-click for zoom-pan
+					zoomat(e.motion.yrel*-.01f,{e.motion.x,e.motion.y});
+					// Skip animation
+					viewport_animation.val_origin = viewport_animation.val_target;
+				} else if ((mouse_state & SDL_BUTTON(1))) {
+					// Left-lick is handled to ease usage on drawing tablet
+					viewport_delta.x += e.motion.xrel;
+					viewport_delta.y += e.motion.yrel;
+					update_zoom();
+					// Skip animation
+					viewport_animation.val_origin = viewport_animation.val_target;
+				}
 			}
 		} break;
 		case SDL_MOUSEBUTTONUP: {
