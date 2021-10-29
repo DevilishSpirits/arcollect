@@ -28,6 +28,7 @@ class about_project: public Arcollect::gui::scrolling_text {
 			bool propagate = true;
 			switch (e.type) {
 				case SDL_MOUSEBUTTONUP: {
+					to_pop = (e.button.button != SDL_BUTTON(1));
 					propagate = false;
 				} break;
 				case SDL_KEYUP: {
