@@ -57,7 +57,7 @@ If you want to build the software yourself, grab the source code, install Meson 
 	#ninja install -C build
 ```
 
-Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge dependencies to build and run. Most are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. This does have some limits. After installing Meson 0.59.0 (at least) from PyPI, things should works out-of-the-box and does on GitHub Actions Ubuntu 20.04 and Windows 2019 VM. Ubuntu 18.04 might works with Clang (`CC=clang CXX=clang++ meson build ...`) if you insist. I won't complexify the program to support older systems.
+Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge dependencies to build and run. Most are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. This does have some limits. After installing Meson 0.59.0 (at least) from PyPI, things should works out-of-the-box and does on GitHub Actions Ubuntu 20.04 and Windows 2019 VMs. It won't builds on Ubuntu 18.04 due to outdated GCC and Clang. I won't complexify the program to support older systems.
 
 ## Tests
 Arcollect have many tests and most notably fully automated "real-life" tests that start a program controlled web-browser. Tests requiring network access are not enabled by default. You can enable them with this set of `meson` options :
