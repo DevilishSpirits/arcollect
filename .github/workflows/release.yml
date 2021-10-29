@@ -35,7 +35,7 @@ jobs:
       - name: Install Mozilla's web-ext with npm
         run: sudo npm install -g web-ext
       - name: Setup project
-        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dbuildtype=release -Denable_webextension=false -Dlto=true
+        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dbuildtype=release -Denable_webextension=false -Db_lto=true
       - name: Build project
         run: ninja -C build
       - name: Test project
@@ -62,7 +62,7 @@ jobs:
       - name: Install Meson
         run: pip install meson ninja
       - name: Configure project
-        run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,robin-map,roboto,sdl2,harfbuzz,sqlite3,boost -Denable_webextension=false -Dcpp_link_args=-static -Dc_link_args=-static -Dbuildtype=release -Dlto=true -Dstrip=true
+        run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,robin-map,roboto,sdl2,harfbuzz,sqlite3,boost -Denable_webextension=false -Dcpp_link_args=-static -Dc_link_args=-static -Dbuildtype=release -Db_lto=true -Dstrip=true
       - name: Build project
         run: ninja -C build
       - name: Generate MSI
@@ -85,7 +85,7 @@ jobs:
       - uses: BSFishy/meson-build@v1.0.3
         with:
           action: build
-          setup-options: -Denable_native_progs=false # Disable C++ code
+          setup-options: -Denable_native_progs=false -Dwith_xdg=disabled # Disable C++ code
           meson-version: 0.59.0
       - uses: actions/upload-artifact@v2
         with:
