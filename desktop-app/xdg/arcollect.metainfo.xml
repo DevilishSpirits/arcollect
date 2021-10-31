@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+	<id>@ARCOLLECT_DBUS_NAME@</id>
+	<name>Arcollect</name>
+	<summary>@ARCOLLECT_SUMMARY@</summary>
+	<metadata_license>CC-BY-SA-4.0</metadata_license>
+	<project_license>GPL-3.0-or-later</project_license>
+	<categories>
+		@APPSTREAM_categories@
+	</categories>
+	<url type="homepage">@ARCOLLECT_WEBSITE@</url>
+	<developer_name>DevilishSpirits</developer_name>
+	<provides>
+		<dbus type="session">@ARCOLLECT_DBUS_NAME@</dbus>
+		<binary>arcollect</binary>
+	</provides>
+	<description>
+		<p>You may want to save some artworks you find on the net. Right-click and save picture works but is not very convenient, forget the artwork source and classification is complicated.</p>
+		<p>Arcollect aim to fulfill my needs of artwork collection management and to ease it&apos;s creation, browsing and growth that I do in a one click thanks to the web-extension which put a Save in Arcollect button on artwork pages. Metadata like the source, account, tags and the rating are also saved.</p>
+		<p>It&apos;s goal is limited to easily browse and save artworks, it won&apos;t help you to discover new artworks or make any recommendations. No one can judge what&apos;s good or not better than you.</p>
+		<p>Arcollect respect your privacy and will never judge you.</p>
+	</description>
+	<content_rating type="oars-1.0">
+		<!-- Might be fully Intense if the user wants. But we don't judge that. -->
+		<content_attribute id="social-info">mild</content_attribute>
+	</content_rating>
+	<launchable type="desktop-id">@ARCOLLECT_DBUS_NAME@.desktop</launchable>
+</component>
