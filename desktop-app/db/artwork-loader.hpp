@@ -15,15 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #pragma once
-#include "artwork.hpp"
-#include <arcollect-paths.hpp>
+#include "download.hpp"
 #include <condition_variable>
 #include <mutex>
 #include <thread>
 #include <memory>
-#include <unordered_map>
+#include <unordered_set>
 #include <vector>
-#include <OpenImageIO/imageio.h>
 namespace Arcollect {
 	namespace db {
 		/** Asynchronous artwork loading system (read this before hacking on it!)
@@ -99,7 +97,7 @@ namespace Arcollect {
 				 *
 				 * It is only used by the main thread.
 				 */
-				static std::vector<std::shared_ptr<Arcollect::db::artwork>> pending_main;
+				static std::vector<std::shared_ptr<Arcollect::db::download>> pending_main;
 				/** Pending artwork list (thread side)
 				 *
 				 * This vector contain the list of artworks to load in first place.
@@ -107,7 +105,7 @@ namespace Arcollect {
 				 * It is used by the loading thread, the main thread regulary move the
 				 * #pending_main content into.
 				 */
-				static std::vector<std::shared_ptr<Arcollect::db::artwork>> pending_thread_first;
+				static std::vector<std::shared_ptr<Arcollect::db::download>> pending_thread_first;
 				/** Pending artwork list (thread side)
 				 *
 				 * This vector contain the list of pending artworks to load.
@@ -116,13 +114,13 @@ namespace Arcollect {
 				 * empty. The main thread regulary append the #pending_main content
 				 * into this list (as opposed to move into in for #pending_thread_first).
 				 */
-				static std::vector<std::shared_ptr<Arcollect::db::artwork>> pending_thread_second;
+				static std::vector<std::shared_ptr<Arcollect::db::download>> pending_thread_second;
 				/** Loaded artwork surface list
 				 *
 				 * This vector contain the list of loaded surfaces. The main thread will
 				 * then load surfaces into textures.
 				 */
-				static std::unordered_map<std::shared_ptr<Arcollect::db::artwork>,std::unique_ptr<SDL::Surface>> done;
+				static std::unordered_set<std::shared_ptr<Arcollect::db::download>> done;
 				static std::condition_variable condition_variable;
 				
 				/** Estimation of VRAM usage of artworks in bytes

@@ -183,12 +183,14 @@ bool Arcollect::gui::main(void)
 	// Check for DB updates
 	sqlite_int64 data_version_snapshot = Arcollect::data_version;
 	if (data_version_snapshot != Arcollect::update_data_version()) {
+		/* TODO Restore this behavior
 		// Query artworks to preload
 		if (preload_artworks_stmt) {
 			preload_artworks_stmt->reset();
 			while (preload_artworks_stmt->step() == SQLITE_ROW)
 				Arcollect::db::artwork::query(preload_artworks_stmt->column_int64(0))->queue_for_load();
 		}
+		*/
 	}
 	// Check for screen change
 	int current_window_screen_index = SDL_GetWindowDisplayIndex(window);
@@ -214,11 +216,9 @@ bool Arcollect::gui::main(void)
 	static decltype(Arcollect::db::artwork_loader::done) main_done;
 	// Try to load requested artworks into VRAM
 	for (auto &artwork: Arcollect::db::artwork_loader::pending_main) {
-		auto iter = main_done.find(artwork);
-		if (iter != main_done.end()) {
-			std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,iter->second.get()));
-			artwork->texture_loaded(text);
-			main_done.erase(iter);
+		auto node = main_done.extract(artwork);
+		if (node) {
+			node.value()->load_stage_two();
 			if (SDL_GetTicks()-render_start_ticks > 40)
 				break;
 		}
@@ -233,7 +233,7 @@ bool Arcollect::gui::main(void)
 		for (auto &artwork: artwork_loader::pending_main)
 			if (artwork->load_state == artwork->LOAD_SCHEDULED) {
 				artwork_loader::pending_thread_second.emplace_back(artwork);
-				artwork->load_state = artwork->LOAD_PENDING;
+				artwork->load_state = artwork->LOAD_PENDING_STAGE1;
 			}
 		// Move pending_main in pending_thread_first
 		artwork_loader::pending_thread_first = std::move(artwork_loader::pending_main);
@@ -248,15 +248,14 @@ bool Arcollect::gui::main(void)
 		// Load arts
 		do {
 			decltype(main_done)::node_type art = main_done.extract(main_done.begin());
-			std::unique_ptr<SDL::Texture> text(SDL::Texture::CreateFromSurface(renderer,art.mapped().get()));
-			art.key()->texture_loaded(text);
+			art.value()->load_stage_two();
 			// Ensure nice framerate 
 		} while ((SDL_GetTicks()-render_start_ticks < 50) && main_done.size());
 	}
 	// Unload artworks if exceeding image_memory_limit
 	while (Arcollect::db::artwork_loader::image_memory_usage>>20 > static_cast<std::size_t>(Arcollect::config::image_memory_limit)) {
-		Arcollect::db::artwork& artwork = *--Arcollect::db::artwork::last_rendered.end();
-		artwork.texture_unload();
+		Arcollect::db::download& artwork = *--Arcollect::db::download::last_rendered.end();
+		artwork.unload();
 	}
 	// Redraws debugging
 	if (Arcollect::debug.redraws) {

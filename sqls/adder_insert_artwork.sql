@@ -16,14 +16,31 @@
  */
 /* Webext-adder statement to add a new artwork
  */
-INSERT OR FAIL INTO artworks (
-		art_title,
+INSERT INTO artworks (
+		art_dwnid,
+		art_thumbnail,
+		art_flag0,
 		art_platform,
+		art_title,
 		art_desc,
 		art_source,
 		art_rating,
-		art_mimetype,
+		art_license,
+		art_partof,
+		art_pageno,
 		art_postdate
-	) VALUES (?,?,?,?,?,?,?)
-	RETURNING art_artid
+	) VALUES (
+		?,
+		?,
+		0,
+		?,
+		?,
+		?,
+		?,
+		?,
+		?,
+		?,
+		?,
+		?
+	) RETURNING art_artid, art_flag0, art_partof, art_pageno, art_dwnid
 ;

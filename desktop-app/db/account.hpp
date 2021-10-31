@@ -17,7 +17,6 @@
 #pragma once
 #include <sqlite3.hpp>
 #include "../sdl2-hpp/SDL.hpp"
-#include <unordered_map>
 #include <memory>
 extern SDL::Renderer *renderer;
 namespace Arcollect {
@@ -32,7 +31,6 @@ namespace Arcollect {
 		 */
 		class account {
 			private:
-				std::shared_ptr<SDL::Texture> icon;
 				account(Arcollect::db::account_id arcoid);
 				// Cached DB infos
 				sqlite_int64 data_version = -1;
@@ -40,6 +38,7 @@ namespace Arcollect {
 				std::string acc_name;
 				std::string acc_title;
 				std::string acc_url;
+				sqlite_int64 acc_icon;
 			public:
 				// Delete copy constructor
 				account(const account&) = delete;
@@ -60,9 +59,10 @@ namespace Arcollect {
 					db_sync();
 					return acc_url;
 				}
-				inline std::shared_ptr<SDL::Texture> get_icon(void) {
-					return icon;
-				}
+				/** Query the account icon
+				 * \return The icon texture or NULL if not available yet
+				 */
+				std::unique_ptr<SDL::Texture> &get_icon(void);
 				/** Query an account
 				 * \param arcoid The account identifier
 				 * \return The account wrapped in a std::shared_ptr

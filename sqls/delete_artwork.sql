@@ -16,14 +16,9 @@
  */
 /* Delete an artwork given an art_artid
  *
- * This is a multi-step query where you must bind the art_artid in the first
- * for each steps.
+ * This is a query where you must bind the art_artid to remove.
+ *
+ * It may return multiple columns with the download ids to erase
  */
-/* substep 1 */
-DELETE FROM art_acc_links        WHERE art_artid  = ?;
-/* substep 2 */
-DELETE FROM art_tag_links        WHERE art_artid  = ?;
-/* substep 3 */
-DELETE FROM artworks_unsupported WHERE artu_artid = ?;
-/* substep 4 */
-DELETE FROM artworks             WHERE art_artid  = ?;
+DELETE FROM artworks             WHERE art_artid  = ?
+	RETURNING art_dwnid, art_thumbnail;

@@ -2,7 +2,16 @@
 
 The  `arcollect-webext-adder` is the program that handle WebExtension native host messaging. It communicate using JSON strings and add new artworks into the database.
 
-# Query format
+Within the webextension, you pass this object to the `arcollect_submit()` function, this function manage the communication with this C++ application, the `transaction_id` and wrap the response in a promise for you. 
+
+**Warning!** This protocol is unstable and reserved for Arcollect internal workings. If you really want to add an artwork, using this is still safer than directly changing the even more unstable schema.
+
+## Paranoid HTTPS
+When downloading remote assets, the webext-adder requires `https://` transfer (`http://` is not supported) with **TLS 1.2 at least**.
+
+Since all supported platforms and operating systems support this version of TLS, dealing with a weaker TLS is very likely someone trying a [MITM](https://en.wikipedia.org/wiki/Man-in-the-middle_attack), this requirement will be bumped up in the future.
+
+## Query format
 Here is an example showing all possible cases (unless I forgot something 🤔️) of a query to add something in the database.
 
 When adding artwork, send the plain artwork with this kind of JSON :
@@ -16,20 +25,29 @@ When adding artwork, send the plain artwork with this kind of JSON :
 		"desc": "My sample warmup for the morning.",
 		"source": "https://example.net/art/123456/",
 		"rating": 0,
-		"data": "<... base64 data ...>",
-		"thumbnail": "<... base64 data ...>"
+		"data": "<... download specification ...>",
+		"thumbnail": "<... download specification ...>"
 	}],
 	"accounts": [{
 		"id": 4213,
 		"name": "@drawauthor",
 		"title": "DrawAuthor make drawings",
 		"url": "https://example.net/user/4213/",
-		"icon": "<... base64 data ...>"
+		"icon": "<... download specification ...>"
 	}],
 	"tags": [{
 		"id": 2134,
 		"title": "Dragon",
 		"kind": "species"
+	}],
+	"comics": [
+		"id": "abcdef",
+		"title": "My comic",
+		"url": "https://example.net/comic/abcdef/",
+		"postdate": 1638227530,
+		"pages": {
+			<comic page specification...>
+		}
 	}],
 	"art_acc_links": [{
 		"artwork": "https://example.net/art/123456/",
@@ -47,16 +65,17 @@ The `platform` is the platform identifier, the root URL of the platform like `tw
 The `transaction_id` is a  string that is returned verbatim in the response to help the extension identify the tab destination.
 
 The `artwork` array contain objects you wants to add with some properties :
+
 * `title` is the artwork title.
 * `desc` is the artwork description.
 * `source` is the artwork URL. Caution ! This is a key in the database, reformat `window.location` in a way that the same artwork always have the same URL.
 * `rating` is the artwork rating. See the schema explanation of `artworks` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/sql/init.sql).
-* `mimetype` is the artwork mimetype. Try to guess the best MIME type but something like the default `image/*` is fine. When missing, Arcollect put `image/*` as default (in a future release it may record the HTTP [`Content-Type`](https://developer.mozilla.org/docs/Web/HTTP/Headers/Content-Typehttps://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) header).
 * `postdate` is the UNIX timestamp of when the artworks has been posted (optional).
 * `data` is the artwork file itself in base64 encoding or an `https://` link to the image (`http://` won't be supported).
 * `thumbnail` is the image thumbnail to show for non image type artworks. Same format as `data`.
 
 The `account` array contain users you might wants to add with some properties :
+
 * `id` is the user internal id on the platform. It should be an immutable numeric id if available, or `name`. This is a key in the database. For example on Twitter `1294737021714550784`, you can use text.
 * `name` is the username on the platform. Often something not very pretty with a limited charset. For example on Twitter `"@DevilishSpirits"`.
 * `title` is the pretty username, if different from the `name` title. For example on Twitter `"D-Spirits"`.
@@ -64,11 +83,20 @@ The `account` array contain users you might wants to add with some properties :
 * `icon` is the account avatar in base64 encoding.
 
 The `tags` array contain tags you might wants to add with some properties :
+
 * `id` is the tag internal id on the platform. It should be immutable. This is a key in the database. It can be a string or an integer
 * `title` is the pretty tag title, if different from `id`.
 * `kind` is the tag kind. See the schema explanation of `tags` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/sql/init.sql).
 
+
+The `comics` array contain comics you might wants to add with some properties :
+
+* `id` is the comic internal id on the platform. It should be immutable. This is a key in the database. It can be a string or an integer. **It's optionnal and only useful if the platform have a concept of comics!** Else you shall skip all fields except `pages` and Arcollect will generate a comics like ordering without creating a comic database entry. An example is Twitter and FurAffinity where the comics system allow ordering.
+* `title` is the comic title.
+* `url` is the comic URL.
+
 The `art_acc_link` array contain links with artworks and profiles :
+
 * `artwork` is the artwork `"source"` to link.
 * `account` is the account `"id"`.
 * `link` describre the type of link. Here `"account"` mean that this is the account which posted the artwork. Valid values are listed in the explanation of `art_acc_links` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/sql/init.sql).
@@ -78,6 +106,82 @@ The `art_tag_link` array contain links with artworks and tags :
 * `tag` is the tag `"id"`.
 
 This JSON is fully parsed before performing a transaction on the database. Items order in the JSON is not important.
+
+### Download specification
+Simple download specification are a string with either the raw data in Base64
+encoding or an `https://` URL to download from.
+This works for normal platforms, for weird ones you can pass a JSON object that
+customize the Arcollect behavior. Arcollect use the collection as an HTTP cache
+and might just do nothing or weird magic (picking right in the web-browser cache
+for extra performance and privacy is tempting...).
+The defaults are :
+
+```json
+	{
+		"data": "URL or Base64",
+		"cache_key": "'data' or a JSON null if Base64",
+		"mimetype": "Content-Type header",
+		"ok_codes": [200],
+		"headers": {
+			"Referer": "The page source",
+			"User-Agent": "Arcollect/<version> curl/<version>"
+		}
+	}
+```
+
+* `data` is the URL/Base64 you want to download
+* `cache_key` allows to override the key for matching in database. A use case is
+  the DeviantArt CDN which use time limited keys, the `cache_key` strip this
+  part. Passing `null` (default if `data` is in Base64) completely disable
+  caching.
+* `mimetype` allows to override the MIME type. It is mandatory for Base64 or if
+  the server don't send a [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type)
+  header.
+* `ok_codes` is an array of code we consider a success. FurAffinity does return
+  a 404 with a valid GIF if an account use the default avatar.
+* `headers` is a dictionary of custom headers to set, you can unset default
+  Arcollect and curl headers with a `null` value (a JSON `null`, not a `"null"`
+  aka a string with "null" inside).
+
+### Comics pages specification
+This field is a list of pages in your comic. You should include data for all
+artworks you know that are in the comic in addition of them that you save.
+Arcollect save informations about the artworks the user doesn't save and will
+try to resolve missing links.
+
+Let's take an example of a comic where you have a page, the next, the previous,
+the first and the last one of the comic.
+
+```json
+	"page: {
+		"https://example.com/cover#front": {"relative_to": "front_cover"},
+		"https://example.com/first_page" : {"relative_to": "main", "page":  1, "sub": 0},
+		"https://example.com/prev_page"  : {"relative_to": "main", "page": 12, "sub": 0},
+		"https://example.com/the_page"   : {"relative_to": "main", "page": 13, "sub": 0},
+		"https://example.com/next_page"  : {"relative_to": "main", "page": 14, "sub": 0},
+		"https://example.com/last_page"  : {"relative_to": "main", "page": -1, "sub": 0},
+	}]
+```
+
+Each items of the array is a single comic, this is an object using artwork
+sources as keys and another object at source.
+
+The `relative_to` string can be either a section name (`part`, `prolog`, ...)
+when you know the exact position, or an artwork source when you only have
+relative informations, in this case you must be relative to an artwork that you
+are saving.
+
+The `page`/`sub` is the page number/subartwork offset (0 by default), you can
+use negative number for *the last nth page* in sections.
+
+This offset is relative to `relative_to`, `"page": 1` for artwork source mean
+that this artwork is the next page to `relative_to`, for a section this is the
+first page in the section.
+
+In the example I put `"sub": 0`, this is entirely optional, I miss both `page`
+and `sub `in the `front_cover` because I want both to be zero.
+
+Note that Arcollect might not store your comic as is within the database.
 
 ## Result format
 

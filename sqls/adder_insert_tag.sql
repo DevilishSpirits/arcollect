@@ -16,11 +16,17 @@
  */
 /* Webext-adder statement to add a new tag
  */
-INSERT OR FAIL INTO tags (
+INSERT INTO tags (
 		tag_platid,
 		tag_platform,
 		tag_title,
-		tag_kind
-	) VALUES (?,?,?,?)
-	RETURNING tag_arcoid
+		tag_kind,
+		tag_createdate
+	) VALUES (
+		?,
+		?,
+		?,
+		?,
+		?
+	) RETURNING tag_arcoid
 ;

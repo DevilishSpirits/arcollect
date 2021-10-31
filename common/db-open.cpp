@@ -66,6 +66,13 @@ std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 			}
 		}
 		case 2: {
+			// Upgrade the database using 'upgrade_v3".sql'
+			if (data_db->exec(Arcollect::db::sql::upgrade_v3)) {
+				std::cerr << "Failed to upgrade DB \"" << db_path << "\" (upgrade_v3.sql): " << data_db->errmsg() << " Rollback." << std::endl;
+				data_db->exec("ROLLBACK;");
+			}
+		}
+		case 3: {
 			// Up-to-date database. Do nothing
 		} break;
 		case 0: {

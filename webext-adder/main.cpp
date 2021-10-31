@@ -17,12 +17,13 @@
 #ifdef __unix__
 #include <unistd.h>
 #endif
+#include <curl/curl.h> 
 #include <iostream>
 #include <arcollect-db-open.hpp>
 #include <arcollect-debug.hpp>
+#include "download.hpp"
 
 std::string process_json(char* begin, char* const end);
-extern const std::string user_agent;
 std::unique_ptr<SQLite3::sqlite3> db;
 
 int main(int argc, char *argv[])
@@ -30,13 +31,15 @@ int main(int argc, char *argv[])
 	#ifdef __unix__
 	if (isatty(0) == 1) {
 		std::cerr <<
-			"Arcollect web extension adder (" << user_agent << ")\n\n"
+			"Arcollect web extension adder (" << Arcollect::WebextAdder::user_agent << ")\n\n"
 			"This program is used by web extensions to add new artworks.\n"
 			"It works with JSON and is not intended to be used by biological entities.\n"
 		<< std::endl;
 	}
 	// TODO Handle SIGTERM
 	#endif
+	// Init curl
+	curl_global_init(CURL_GLOBAL_ALL); // TODO Check error code
 	// Check for debug mode
 	if (Arcollect::debug.webext_adder) {
 		std::cerr << "Arcollect web extension adder debugging on" << std::endl;

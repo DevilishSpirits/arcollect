@@ -16,12 +16,25 @@
  */
 /* Webext-adder statement to add a new account
  */
-INSERT OR FAIL INTO accounts (
+INSERT INTO accounts (
 		acc_platid,
+		acc_icon,
 		acc_platform,
 		acc_name,
 		acc_title,
-		acc_url
-	) VALUES (?,?,?,?,?)
-	RETURNING acc_arcoid
+		acc_desc,
+		acc_url,
+		acc_moneyurl,
+		acc_createdate
+	) VALUES (
+		?,
+		?,
+		?,
+		?,
+		?,
+		?,
+		?,
+		?,
+		?
+	) RETURNING acc_arcoid
 ;

@@ -18,10 +18,10 @@
 #include "../config.hpp"
 #include "artwork-loader.hpp"
 std::mutex Arcollect::db::artwork_loader::lock;
-std::vector<std::shared_ptr<Arcollect::db::artwork>> Arcollect::db::artwork_loader::pending_main;
-std::vector<std::shared_ptr<Arcollect::db::artwork>> Arcollect::db::artwork_loader::pending_thread_first;
-std::vector<std::shared_ptr<Arcollect::db::artwork>> Arcollect::db::artwork_loader::pending_thread_second;
-std::unordered_map<std::shared_ptr<Arcollect::db::artwork>,std::unique_ptr<SDL::Surface>> Arcollect::db::artwork_loader::done;
+std::vector<std::shared_ptr<Arcollect::db::download>> Arcollect::db::artwork_loader::pending_main;
+std::vector<std::shared_ptr<Arcollect::db::download>> Arcollect::db::artwork_loader::pending_thread_first;
+std::vector<std::shared_ptr<Arcollect::db::download>> Arcollect::db::artwork_loader::pending_thread_second;
+std::unordered_set<std::shared_ptr<Arcollect::db::download>> Arcollect::db::artwork_loader::done;
 std::condition_variable Arcollect::db::artwork_loader::condition_variable;
 std::size_t Arcollect::db::artwork_loader::image_memory_usage = 0;
 std::vector<std::unique_ptr<Arcollect::db::artwork_loader>> Arcollect::db::artwork_loader::threads;
@@ -30,7 +30,7 @@ void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 {
 	while (!stop) {
 		// Find an artwork to load
-		std::shared_ptr<Arcollect::db::artwork> artwork;
+		std::shared_ptr<Arcollect::db::download> artwork;
 		{
 			std::unique_lock<std::mutex> lock_guard(lock);
 			while (pending_thread_first.empty() && pending_thread_second.empty()) {
@@ -43,19 +43,19 @@ void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 			artwork = pending_thread.back();
 			pending_thread.pop_back();
 			// Skip if it has already been loaded
-			if (artwork->load_state != artwork->LOAD_PENDING)
+			if (artwork->load_state != artwork->LOAD_PENDING_STAGE1)
 				continue;
 			// Lock the artwork (it might be in both pending_thread_first and pending_thread_second)
-			artwork->load_state = artwork->READING_PIXELS;
+			artwork->load_state = artwork->LOADING_STAGE1;
 		}
 		// Check if the artwork is worth to load
-		SDL::Surface *surf = NULL;
 		if (
 		 (SDL_GetTicks()-artwork->last_render_timestamp <= 1000) // The artwork was requested since the last second
 		 ||((image_memory_usage+artwork->image_memory())>>20 < static_cast<std::size_t>(Arcollect::config::image_memory_limit)) // The artwork fit in "VRAM"
-			) surf = artwork->load_surface(); // Load the artwork
-		// Queue the surface
-		if (surf) {
+		 ) artwork->load_stage_one();
+		else artwork->load_state = artwork->UNLOADED;
+		// Queue the artwork for load
+		if (artwork->load_state == artwork->LOAD_PENDING_STAGE2) {
 			std::lock_guard<std::mutex> lock_guard(lock);
 			if (done.size() == 0) {
 				// No art done, wake-up the main thread ONLY once (hence the if)
@@ -63,9 +63,9 @@ void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 				e.type = SDL_USEREVENT;
 				SDL_PushEvent(&e);
 			}
-			done.emplace(artwork,surf);
-			artwork->load_state = artwork->SURFACE_AVAILABLE;
-		} else artwork->load_state = artwork->UNLOADED;
+			done.emplace(artwork);
+			artwork->load_state = artwork->LOAD_PENDING_STAGE2;
+		}
 	}
 }
 

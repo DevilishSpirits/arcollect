@@ -43,16 +43,14 @@ namespace Arcollect {
 				 */
 				virtual void resize(SDL::Rect rect) = 0;
 				virtual ~view(void) = default;
+				
+				static constexpr auto ARTWORK_TYPE_IMAGE   = Arcollect::db::download::ARTWORK_TYPE_IMAGE;
+				static constexpr auto ARTWORK_TYPE_TEXT    = Arcollect::db::download::ARTWORK_TYPE_TEXT;
+				static constexpr auto ARTWORK_TYPE_UNKNOWN = Arcollect::db::download::ARTWORK_TYPE_UNKNOWN;
 		};
 		class view_slideshow: public view {
-			/* README BEFORE READING CODE!!!
-			 *
-			 * `*--*collection_iterator` may seem dark to you :
-			 * 	`*collection_iterator` dereference the `std::unique_ptr` getting an (peusdo-)iterator (pseudo because not C++ compliant).
-			 * 	`--(*collection_iterator)` perform operator-- on the iterator.
-			 * 	`*(--*collection_iterator)` return the pointed std::shared_ptr<artwork>
-			 */
 			protected:
+				db::artwork::File displayed_file = db::artwork::FILE_ARTWORK;
 				// The bounding rect
 				SDL::Rect rect;
 				/** Size of the artwork at default zoom (100%)
@@ -180,11 +178,6 @@ namespace Arcollect {
 				 * Aka the end button
 				 */
 				void go_last(void);
-				
-				// Convenience
-				static constexpr auto ARTWORK_TYPE_UNKNOWN = db::artwork::ARTWORK_TYPE_UNKNOWN;
-				static constexpr auto ARTWORK_TYPE_IMAGE   = db::artwork::ARTWORK_TYPE_IMAGE;
-				static constexpr auto ARTWORK_TYPE_TEXT    = db::artwork::ARTWORK_TYPE_TEXT;
 		};
 		/** Vertical grid view
 		 *
@@ -199,6 +192,7 @@ namespace Arcollect {
 		 */
 		class view_vgrid: public view {
 			private:
+				db::artwork::File displayed_file = db::artwork::FILE_THUMBNAIL;
 				/** The data version
 				 *
 				 * Used to flush_layout() if the content change

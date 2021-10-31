@@ -16,6 +16,7 @@
  */
 /* This SQL list artworks that should be preloaded even if not requested
  */
-select art_artid FROM artworks WHERE
-	(art_width IS NULL) OR (art_height IS NULL) /* Preload artwork sizes */
+SELECT art_artid FROM artworks
+	JOIN downloads AS dwn_artdata ON artworks.art_dwnid = dwn_artdata.dwn_id
+	WHERE dwn_artdata.dwn_width IS NULL /* Checking dwn_height is a waste of time */
 ;

@@ -227,7 +227,8 @@ bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std:
 	// Compute width
 	SDL::Point size;
 	std::shared_ptr<db::artwork> artwork = db::artwork::query(*iter);
-	if (!artwork->QuerySize(size)) {
+	std::shared_ptr<db::download> download = artwork->get(displayed_file);
+	if (!download->QuerySize(size)) {
 		// Size is unknow, skip. Will flush_layout() on next redraw.
 		layout_invalid = true;
 		return true;
@@ -238,7 +239,7 @@ bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std:
 	if (size.x + artwork_margin.x < free_space) {
 		// It fit !
 		artwork_viewport& viewport = new_viewports.emplace_back();
-		viewport.artwork = artwork;
+		viewport.set_artwork(artwork,displayed_file);
 		viewport.iter = std::make_unique<artwork_collection::iterator>(iter);
 		viewport.set_corners({artwork_margin.x,y,size.x,artwork_height});
 		free_space -= size.x + artwork_margin.x;
@@ -250,7 +251,7 @@ bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std:
 		} else {
 			// This is an ultra large artwork !
 			artwork_viewport& viewport = new_viewports.emplace_back();
-			viewport.artwork = artwork;
+			viewport.set_artwork(artwork,displayed_file);
 			viewport.iter = std::make_unique<artwork_collection::iterator>(iter);
 			viewport.set_corners({artwork_margin.x,y,free_space,artwork_height});
 			// Remove all free_space

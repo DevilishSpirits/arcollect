@@ -38,7 +38,14 @@ namespace Arcollect {
 			SDL::Point corner_bl;
 			void set_corners(const SDL::Rect rect);
 			
+			std::shared_ptr<Arcollect::db::download> download;
+			
 			std::shared_ptr<Arcollect::db::artwork> artwork;
+			
+			void set_artwork(std::shared_ptr<Arcollect::db::artwork> new_artwork, Arcollect::db::artwork::File file) {
+				artwork = new_artwork;
+				download = artwork->get(file);
+			}
 			/** User iterator
 			 *
 			 * This is an optionnal iterator for user code.

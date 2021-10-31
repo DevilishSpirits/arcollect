@@ -5,6 +5,7 @@ common_deps = [
 common_srcs = [
 	'db-open.cpp',
 	'debug.cpp',
+	'downloads.cpp',
 	'paths.cpp',
 	db_schema_sources_target,
 ]
@@ -24,3 +25,5 @@ if (host_machine.system() == 'windows') and (cpp.get_id() == 'gcc')
 endif
 
 common_dep = declare_dependency(link_with: common_lib, link_args: common_link_args, include_directories: common_incdirs, dependencies: common_deps)
+
+subdir('tests')

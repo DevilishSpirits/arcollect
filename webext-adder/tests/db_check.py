@@ -52,7 +52,7 @@ def check_db(test_num, db, test_set):
 	print('# Checking "artworks" table')
 	for artwork in test_set['artworks']:
 		test_num += 1
-		artwork_db = db.execute('SELECT art_platform, art_title, art_desc, art_rating, art_height, art_width, art_mimetype, art_postdate FROM artworks where art_source = ?;',[artwork['source']]).fetchone()
+		artwork_db = db.execute('SELECT art_platform, art_title, art_desc, art_rating, art_postdate FROM artworks where art_source = ?;',[artwork['source']]).fetchone()
 		
 		# Check if the artwork has been found
 		if artwork_db is None:
@@ -63,9 +63,6 @@ def check_db(test_num, db, test_set):
 				('art_title'   ,artwork.setdefault('title',None) ),
 				('art_desc'    ,artwork.setdefault('desc',None)  ),
 				('art_rating'  ,artwork.setdefault('rating',None)),
-				('art_height'  ,None                      ),
-				('art_width'   ,None                      ),
-				('art_mimetype',artwork.setdefault('mimetype','image/*')),
 				('art_postdate',artwork.setdefault('postdate',None)),
 			)
 			mismatchs = []
@@ -81,17 +78,17 @@ def check_db(test_num, db, test_set):
 				print('not ok',test_num,'- Checking artwork',artwork['source'],'#',', '.join(mismatchs))
 	
 	print('# Checking artworks SHA-256 checksums')
-	artworks_dir = os.environ['XDG_DATA_HOME']+'/arcollect/artworks/'
+	artworks_dir = os.environ['XDG_DATA_HOME']+'/arcollect/'
 	for artwork in test_set['artworks']:
 		test_num += 1
-		artwork_db = db.execute('SELECT art_artid FROM artworks where art_source = ?;',[artwork['source']]).fetchone()
+		artwork_db = db.execute('SELECT art_artid,dwn_path FROM artworks JOIN downloads ON art_dwnid = dwn_id WHERE art_source = ?;',[artwork['source']]).fetchone()
 		
 		# Check if the artwork has been found
 		if artwork_db is None:
 			print('not ok',test_num,'- Check checksum of artwork',artwork['source'],'# Not found in database')
 		else:
 			expected_checksum = artwork['data.sha256']
-			computed_checksum = hashlib.sha256(open(artworks_dir+str(artwork_db[0]),'rb').read()).hexdigest()
+			computed_checksum = hashlib.sha256(open(artworks_dir+str(artwork_db[1]),'rb').read()).hexdigest()
 			
 			if expected_checksum == computed_checksum:
 				print('ok',test_num,'- Check checksum of artwork',artwork['source'])

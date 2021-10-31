@@ -19,6 +19,7 @@
 #include "../db/db.hpp"
 #include "../db/search.hpp"
 #include "../gui/main.hpp"
+#include <arcollect-paths.hpp>
 
 std::unique_ptr<SQLite3::stmt> Arcollect::dbus::gnome_shell_search_provider_result_metas_stmt;
 static std::string gnome_shell_search_string(DBus::Message::iterator terms)
@@ -84,7 +85,7 @@ static DBusHandlerResult GetResultMetas(DBus::Connection &conn, DBusMessage *mes
 			add_dbus_dict_sv(result,"id",id);
 			add_dbus_dict_sv(result,"name",artwork->title().c_str());
 			add_dbus_dict_sv(result,"description",artwork->desc().c_str());
-			add_dbus_dict_sv(result,"gicon",artwork->image_path().string().c_str());
+			add_dbus_dict_sv(result,"gicon",(Arcollect::path::arco_data_home/artwork->get(Arcollect::db::artwork::FILE_THUMBNAIL)->dwn_path).string().c_str());
 			results.close_container(result);
 		}
 	}

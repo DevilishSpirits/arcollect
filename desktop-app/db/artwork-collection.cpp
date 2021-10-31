@@ -17,6 +17,7 @@
 #include "artwork-collection.hpp"
 #include "db.hpp"
 #include "sorting.hpp"
+#include <arcollect-db-downloads.hpp>
 #include <arcollect-paths.hpp>
 #include <arcollect-sqls.hpp>
 Arcollect::db::artwork_collection::artwork_collection(void)
@@ -57,6 +58,7 @@ Arcollect::db::artwork_collection::iterator Arcollect::db::artwork_collection::f
 
 int Arcollect::db::artwork_collection::db_delete(void)
 {
+	std::unordered_set<sqlite_int64> downloads_to_remove;
 	int code;
 	if ((code = database->exec("BEGIN IMMEDIATE;")) != SQLITE_OK) {
 		switch (code) {
@@ -70,30 +72,38 @@ int Arcollect::db::artwork_collection::db_delete(void)
 	}
 	std::unique_ptr<SQLite3::stmt> stmt;
 	
-	// Run all substeps from 'delete_artwork.sql'
-	const char *zSql = Arcollect::db::sql::delete_artwork.data();
-	int substep = 0;
-	while (*zSql) {
-		substep++;
-		if (database->prepare(zSql,-1,stmt,zSql) != SQLITE_OK) {
-			std::cerr << "Deleting artworks, failed to prepare substep " << substep << ": " << database->errmsg() << ". Rollback." << std::endl;
+	// Run the query
+	if (database->prepare(Arcollect::db::sql::delete_artwork,stmt) != SQLITE_OK) {
+		std::cerr << "Deleting artworks, failed to prepare: " << database->errmsg() << ". Rollback." << std::endl;
+		database->exec("ROLLBACK;");
+		return SQLITE_ERROR;
+	}
+	for (artwork_id art_id: *this) {
+		stmt->reset();
+		if (stmt->bind(1,art_id) != SQLITE_OK) {
+			std::cerr << "Deleting artworks, failed to bind art_artid: " << database->errmsg() << ". Rollback." << std::endl;
 			database->exec("ROLLBACK;");
 			return SQLITE_ERROR;
 		}
-		for (artwork_id art_id: *this) {
-			stmt->reset();
-			if (stmt->bind(1,art_id) != SQLITE_OK) {
-				std::cerr << "Deleting artworks, failed to bind art_artid at substep " << substep << ": " << database->errmsg() << ". Rollback." << std::endl;
-				database->exec("ROLLBACK;");
-				return SQLITE_ERROR;
-			}
-			if (stmt->step() != SQLITE_DONE) {
-				std::cerr << "Deleting artworks, failed to run substep " << substep << ": " << database->errmsg() << ". Rollback." << std::endl;
-				database->exec("ROLLBACK;"); // TODO Error checkings
-				return SQLITE_ERROR;
-			}
+		switch (stmt->step()) {
+			case SQLITE_ROW: {
+				downloads_to_remove.insert(stmt->column_int64(0));
+				downloads_to_remove.insert(stmt->column_int64(1));
+			} break;
+			case SQLITE_DONE: {
+				std::cerr << "Tried to delete non existing artwork " << art_id << ". Continue normally." << std::endl;
+			} break;
+		}
+		if (stmt->step() != SQLITE_DONE) {
+			std::cerr << "Deleting artworks, the step() did not SQLITE_DONE: " << database->errmsg() << ". Rollback." << std::endl;
+			database->exec("ROLLBACK;"); // TODO Error checkings
+			return SQLITE_ERROR;
 		}
 	}
+	// Erase downloads
+	Arcollect::db::download::Transaction dwn_transaction(database);
+	for (sqlite3_int64 dwn_id: downloads_to_remove)
+		Arcollect::db::download::delete_cache(dwn_id,dwn_transaction);
 	
 	// Commit changes
 	if (database->exec("COMMIT;") != SQLITE_OK) {
@@ -101,11 +111,8 @@ int Arcollect::db::artwork_collection::db_delete(void)
 		database->exec("ROLLBACK;"); // TODO Error checkings
 		return SQLITE_ERROR;
 	}
-	// Erase on disk
-	for (artwork_id art_id: *this) {
-		std::filesystem::remove(Arcollect::path::artwork_pool / std::to_string(art_id));
-		std::filesystem::remove(Arcollect::path::artwork_pool / (std::to_string(art_id)+".thumbnail"));
-	}
+	
+	dwn_transaction.commit();
 	std::cerr << "Artworks has been deleted" << std::endl;
 	// Update data_version
 	Arcollect::local_data_version_changed();

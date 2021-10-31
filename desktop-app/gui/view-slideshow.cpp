@@ -39,12 +39,12 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 {
 	this->rect = rect;
 	size_know = false;
-	if (viewport.artwork) {
-		switch (viewport.artwork->artwork_type) {
-			case db::artwork::ARTWORK_TYPE_IMAGE: {
+	if (viewport.download) {
+		switch (viewport.download->artwork_type) {
+			case db::download::ARTWORK_TYPE_IMAGE: {
 				// Preserve aspect ratio
 				SDL::Point art_size;
-				if (!viewport.artwork->QuerySize(art_size))
+				if (!viewport.download->QuerySize(art_size))
 					return; // Art is queued for load, wait a little bit.
 				size_know = true;
 				
@@ -67,10 +67,13 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 				artwork_zoom1.y = rect.h;
 				viewport_zoom = rect.w/(float)art_size.x;
 			} break;
-			case db::artwork::ARTWORK_TYPE_TEXT: {
-				text_display.set_static_elements(viewport.artwork->query_font_elements());
+			case db::download::ARTWORK_TYPE_TEXT: {
+				auto elements = viewport.download->query_data<font::Elements>();
+				size_know = bool(elements); // Forcibly reupdate when elements gets loaded
+				if (size_know)
+					text_display.set_static_elements(elements->get());
 			} break;
-			case db::artwork::ARTWORK_TYPE_UNKNOWN: {
+			case db::download::ARTWORK_TYPE_UNKNOWN: {
 			} break;
 		}
 		// Reset cached title render
@@ -80,7 +83,7 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 void Arcollect::gui::view_slideshow::update_zoom(void)
 {
 	SDL::Point art_size;
-	if (!viewport.artwork->QuerySize(art_size))
+	if (!viewport.download->QuerySize(art_size))
 		return;
 	SDL::Point border_limits{rect.w/32,rect.h/32};
 	// Zoom check
@@ -121,7 +124,7 @@ void Arcollect::gui::view_slideshow::set_collection_iterator(const artwork_colle
 {
 	if (iter != collection->end()) {
 		collection_iterator = iter;
-		viewport.artwork = db::artwork::query(*collection_iterator);
+		viewport.set_artwork(db::artwork::query(*collection_iterator),displayed_file);
 		resize(rect);
 	} else viewport.artwork = NULL;
 }
@@ -207,17 +210,17 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 	if (viewport.artwork) {
 		// Preload previous artwork
 		if (collection_iterator != collection->begin()) {
-			db::artwork::query(*--collection_iterator)->query_texture();
+			db::artwork::query(*--collection_iterator)->get(displayed_file)->queue_for_load();
 			++collection_iterator;
 		}
 		// Preload next artwork
 		++collection_iterator;
 		if (collection_iterator != collection->end())
-			db::artwork::query(*collection_iterator)->query_texture();
+			db::artwork::query(*collection_iterator)->get(displayed_file)->queue_for_load();
 		--collection_iterator;
 		// Resize is size is unknow
-			switch (viewport.artwork->artwork_type) {
-				case db::artwork::ARTWORK_TYPE_IMAGE: {
+			switch (viewport.download->artwork_type) {
+				case ARTWORK_TYPE_IMAGE: {
 					if (!size_know)
 						resize(rect);
 					// Render artwork
@@ -226,10 +229,10 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 						viewport.render({0,0});
 					}
 				} break;
-				case db::artwork::ARTWORK_TYPE_TEXT: {
+				case ARTWORK_TYPE_TEXT: {
 					text_display.render(target);
 				} break;
-				case db::artwork::ARTWORK_TYPE_UNKNOWN: {
+				case ARTWORK_TYPE_UNKNOWN: {
 					Arcollect::gui::font::Renderable unknown_artwork_text_cache(Arcollect::gui::font::Elements::build(Arcollect::gui::font::FontSize(1.5),
 						SDL::Color{255,255,0,255},std::string_view(viewport.artwork->mimetype()),(SDL::Color){255,255,255,255},U" artwork type is not supported."sv
 					));
@@ -258,7 +261,10 @@ void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int windo
 		auto accounts = viewport.artwork->get_linked_accounts("account");
 		if (accounts.size() > 0) {
 			SDL::Rect icon_rect{target.x,target.y,target.h,target.h};
-			renderer->Copy(accounts[0]->get_icon().get(),NULL,&icon_rect);
+			std::unique_ptr<SDL::Texture> &icon = accounts[0]->get_icon();
+			if (icon)
+				renderer->Copy(icon.get(),NULL,&icon_rect);
+			// TODO Render placeholder
 		}
 		// Render title
 		const int title_border = target.h/4;
@@ -276,7 +282,8 @@ void Arcollect::gui::view_slideshow::go_first(void)
 {
 	if (viewport.artwork) {
 		collection_iterator = collection->begin();
-		target_artwork = viewport.artwork = db::artwork::query(*collection_iterator);
+		viewport.set_artwork(db::artwork::query(*collection_iterator),displayed_file);
+		target_artwork = viewport.artwork;
 		resize(rect);
 	}
 }
@@ -284,7 +291,8 @@ void Arcollect::gui::view_slideshow::go_prev(void)
 {
 	if (viewport.artwork) {
 		if (collection_iterator != collection->begin()) {
-			target_artwork = viewport.artwork = db::artwork::query(*--collection_iterator);
+			viewport.set_artwork(db::artwork::query(*--collection_iterator),displayed_file);
+			target_artwork = viewport.artwork;
 			resize(rect);
 		}
 	}
@@ -294,7 +302,8 @@ void Arcollect::gui::view_slideshow::go_next(void)
 	if (viewport.artwork) {
 		++collection_iterator;
 		if (collection_iterator != collection->end()) {
-			target_artwork = viewport.artwork = db::artwork::query(*collection_iterator);
+			viewport.set_artwork(db::artwork::query(*collection_iterator),displayed_file);
+			target_artwork = viewport.artwork;
 			resize(rect);
 		} else --collection_iterator; // Rewind
 	}
@@ -303,7 +312,8 @@ void Arcollect::gui::view_slideshow::go_last(void)
 {
 	if (viewport.artwork) {
 		collection_iterator = collection->end();
-		target_artwork = viewport.artwork = db::artwork::query(*--collection_iterator);
+		viewport.set_artwork(db::artwork::query(*--collection_iterator),displayed_file);
+		target_artwork = viewport.artwork;
 		resize(rect);
 	}
 }
@@ -320,34 +330,31 @@ Arcollect::gui::view_slideshow::ClickArea Arcollect::gui::view_slideshow::click_
 }
 bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 {
-	// STOP READING CODE!!! You might not understand some weird syntax.
-	// There's a 'README BEFORE READING CODE!!!' in top Arcollect::gui::view_slideshow declaration.
 	SDL::Point cursorpos;
 	auto mouse_state = SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
+	const auto artwork_type = viewport.download ? viewport.download->artwork_type : ARTWORK_TYPE_UNKNOWN;
 	switch (e.type) {
 		case SDL_KEYDOWN: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_UP: { // Zoom-in
-					if (viewport.artwork)
-						switch (viewport.artwork->artwork_type) {
-							case ARTWORK_TYPE_UNKNOWN:break;
-							case ARTWORK_TYPE_IMAGE: {
-								zoomat(+.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
-							} break;
-							case ARTWORK_TYPE_TEXT:
-								return text_display.event(e,target);
-						}
+					switch (artwork_type) {
+						case ARTWORK_TYPE_UNKNOWN:break;
+						case ARTWORK_TYPE_IMAGE: {
+							zoomat(+.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
+						} break;
+						case ARTWORK_TYPE_TEXT:
+							return text_display.event(e,target);
+					}
 				} break;
 				case SDL_SCANCODE_DOWN: { // Zoom-out
-					if (viewport.artwork)
-						switch (viewport.artwork->artwork_type) {
-							case ARTWORK_TYPE_UNKNOWN:break;
-							case ARTWORK_TYPE_IMAGE: {
-								zoomat(-.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
-							} break;
-							case ARTWORK_TYPE_TEXT:
-								return text_display.event(e,target);
-						}
+					switch (artwork_type) {
+						case ARTWORK_TYPE_UNKNOWN:break;
+						case ARTWORK_TYPE_IMAGE: {
+							zoomat(-.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
+						} break;
+						case ARTWORK_TYPE_TEXT:
+							return text_display.event(e,target);
+					}
 				} break;
 				default:break;
 			}
@@ -374,21 +381,20 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 			}
 		} break;
 		case SDL_MOUSEWHEEL: {
-			if (viewport.artwork)
-				switch (viewport.artwork->artwork_type) {
-					case ARTWORK_TYPE_UNKNOWN:break;
-					case ARTWORK_TYPE_IMAGE: {
-						SDL::Point cursorpos;
-						SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
-						zoomat(e.wheel.y*.1f,cursorpos);
-					} break;
-					case ARTWORK_TYPE_TEXT:
-						return text_display.event(e,target);
-				}
+			switch (artwork_type) {
+				case ARTWORK_TYPE_UNKNOWN:break;
+				case ARTWORK_TYPE_IMAGE: {
+					SDL::Point cursorpos;
+					SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
+					zoomat(e.wheel.y*.1f,cursorpos);
+				} break;
+				case ARTWORK_TYPE_TEXT:
+					return text_display.event(e,target);
+			}
 		} break;
 		case SDL_MOUSEMOTION: {
-			if ((clicking_area == CLICK_NONE)&& viewport.artwork) {
-				switch (viewport.artwork->artwork_type) {
+			if ((clicking_area == CLICK_NONE)) {
+				switch (artwork_type) {
 					case ARTWORK_TYPE_UNKNOWN:break;
 					case ARTWORK_TYPE_IMAGE: {
 						if (mouse_state & SDL_BUTTON(2)) {

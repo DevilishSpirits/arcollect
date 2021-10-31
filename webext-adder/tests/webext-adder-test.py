@@ -36,6 +36,7 @@ print('1..'+str(test_count))
 # Feed webext-adder
 print('# Feeding webext-adder')
 webext_adder_prog = os.environ['ARCOLLECT_WEBEXT_ADDER_PATH']
+print('XDG_DATA_HOME=\''+os.environ['XDG_DATA_HOME']+'\'',webext_adder_prog,'<',sys.argv[2], file = sys.stderr)
 stdout = Popen(webext_adder_prog,stdin=PIPE,stdout=PIPE).communicate(input=open(sys.argv[2],'rb').read())[0]
 stdout = BytesIO(stdout) # Wrap in a stream
 print('# Feeded webext-adder')

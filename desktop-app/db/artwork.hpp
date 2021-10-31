@@ -19,6 +19,7 @@
 #include "../sdl2-hpp/SDL.hpp"
 #include "../config.hpp"
 #include "../gui/font.hpp"
+#include "download.hpp"
 #include <cstddef>
 #include <filesystem>
 #include <list>
@@ -36,7 +37,6 @@ namespace Arcollect {
 		typedef sqlite_int64 artwork_id;
 		class artwork;
 		class account;
-		class artwork_loader;
 		/** Artwork data class holder
 		 *
 		 * This class hold data about an artwork. It's used trough a std::shared_ptr
@@ -45,64 +45,14 @@ namespace Arcollect {
 		 * It is instanciated on-demand trough Arcollect::db::artwork::query().
 		 */
 		class artwork {
-			public:
-				/** Loading stage of an #artwork
-				 */
-				volatile enum LoadState {
-					/** Not loaded, nor queued
-					 *
-					 * Artwork is not loaded nor scheduled to load in any queue
-					 */
-					UNLOADED,
-					/** Artwork scheduled to load
-					 *
-					 * Artwork has just been requested but is not yet into #artwork_loader
-					 * threads side. It will be pushed onto in the end of the main-loop.
-					 */
-					LOAD_SCHEDULED,
-					/** Artwork waiting for load
-					 *
-					 * Artwork is into #artwork_loader threads queue and will be loaded.
-					 */
-					LOAD_PENDING,
-					/** Artwork pixels are being loaded
-					 *
-					 * Artwork is processed into one #artwork_loader thread.
-					 */
-					READING_PIXELS,
-					/** Artwork pixels loaded in RAM
-					 *
-					 * Artwork has an #SDL::Surface but no #SDL::Texture yet.
-					 */
-					SURFACE_AVAILABLE,
-					/** Artwork is ready to use
-					 *
-					 * Artwork has a #SDL::Texture
-					 */
-					LOADED,
-				} load_state = UNLOADED;
-				/** Artwork type
-				 *
-				 * It change the way artworks are shown.
-				 */
-				enum ArtworkType {
-					ARTWORK_TYPE_UNKNOWN,
-					ARTWORK_TYPE_IMAGE,
-					ARTWORK_TYPE_TEXT,
-				} artwork_type;
 			private:
-				friend artwork_loader; // For queued_for_load
 				artwork(Arcollect::db::artwork_id art_id);
 				// Cached DB infos
 				sqlite_int64 data_version;
 				void db_sync(void);
 				std::string art_mimetype;
-				SDL::Point  art_size{0,0};
 				Arcollect::config::Rating art_rating;
 				std::unordered_map<std::string,std::vector<std::shared_ptr<account>>> linked_accounts;
-				std::unique_ptr<SDL::Texture> text;
-				gui::font::Elements artwork_text_elements;
-				std::list<std::reference_wrapper<artwork>>::iterator last_rendered_iterator;
 				/** Query a column
 				 * \param column name
 				 * \return The string or an empty string if NULL
@@ -110,80 +60,39 @@ namespace Arcollect {
 				 *          is only meant to be used with hardcoded strings.
 				 */
 				std::string get_db_string(const std::string& column);
+				std::shared_ptr<download> data;
+				std::shared_ptr<download> thumbnail;
 			public:
-				/** Return wether texture is loaded
-				 * \return true is the texture in loaded in memory
+				/** File to query in the artwork
 				 */
-				inline bool texture_is_loaded(void) const {
-					return text.get() != NULL;
-				}
-				/** Query artwork loading
-				 *
-				 * The artwork is pushed onto the artwork loader stack.
-				 */
-				void queue_for_load(void);
-				/** Get artwork (thumbnail) path
-				 * \return The path to the artwork itself (ARTWORK_TYPE_IMAGE) or a
-				 *         thumbnail.
-				 */
-				std::filesystem::path image_path(void) const {
-					std::filesystem::path base_path = Arcollect::path::artwork_pool / std::to_string(art_id);
-					switch (artwork_type) {
-						case ARTWORK_TYPE_IMAGE:
-							return base_path;
-						default:
-							return base_path += std::filesystem::path(".thumbnail");
-					}
-					
-				}
-				/** Load the image in a SDL::Surface
-				 * \return A surface containing the artwork
-				 * 
-				 * This is a convenience blocking function that is called in a dedicated
-				 * thread.
-				 */
-				SDL::Surface *load_surface(void) const;
-				/** Set the loaded texture
-				 * \param texture The loaded texture. This function steal it.
-				 *
-				 * This function is called by the main thread after load_surface() end
-				 * in the loader thread.
-				 */
-				void texture_loaded(std::unique_ptr<SDL::Texture> &texture);
-				/** Unload texture
-				 *
-				 * This function is called by the main thread when
-				 * Arcollect::config::image_memory_limit is exceeded.
-				 *
-				 * It free texture data and remove myself from #last_rendered list.
-				 */
-				void texture_unload(void);
-				const gui::font::Elements &query_font_elements(void);
-				/** Query the texture
-				 * \return The texture or NULL if it is not loaded right-now.
-				 * 
-				 * This function queue the artwork for loading if it is not loaded yet.
-				 */
-				std::unique_ptr<SDL::Texture> &query_texture(void);
+				enum File {
+					FILE_ARTWORK,
+					FILE_THUMBNAIL,
+				};
 				// Delete copy constructor
 				artwork(const artwork&) = delete;
 				artwork& operator=(artwork&) = delete;
-				inline bool QuerySize(SDL::Point &size) {
-					db_sync();
-					size = art_size;
-					
-					// Queue for load if size is unknow
-					bool loaded = art_size.x && art_size.y;
-					if (!loaded)
-						queue_for_load();
-					
-					return loaded;
-				}
 				/** The database artwork id
 				 */
 				const Arcollect::db::artwork_id art_id;
 				
-				int render(const SDL::Rect *dstrect);
+				std::shared_ptr<download> get_artwork(void) {
+					return data;
+				}
+				std::shared_ptr<download> get_thumbnail(void) {
+					return thumbnail;
+				}
+				std::shared_ptr<download> get(File file) {
+					static std::shared_ptr<download> none;
+					switch (file) {
+						case FILE_ARTWORK:
+							return data;
+						case FILE_THUMBNAIL:
+							return thumbnail;
+						default:
+							return none;
+					}
+				}
 				
 				std::string title(void) {
 					return get_db_string("art_title");
@@ -196,7 +105,7 @@ namespace Arcollect {
 				}
 				inline const std::string &mimetype(void) {
 					db_sync();
-					return art_mimetype;
+					return data->dwn_mimetype;
 				}
 				
 				const std::vector<std::shared_ptr<account>> &get_linked_accounts(const std::string &link);
@@ -207,43 +116,12 @@ namespace Arcollect {
 				void open_url(void);
 				#endif
 				
-				/** Estimate VRAM usage of this artwork
-				 *
-				 * It require the artwork to be loaded to work correctly. But it's fine
-				 * as an estimation (not for accounting as for
-				 * #Arcollect::db::artwork_loader::image_memory_usage).
-				 */
-				std::size_t image_memory(void);
-				
 				/** Query an artwork
 				 * \param art_id The artwork identifier
 				 * \return The artwork wrapped in a std::shared_ptr
 				 * This function create or return a cached version of the #Arcollect::db::artwork.
 				 */
 				static std::shared_ptr<artwork> &query(Arcollect::db::artwork_id art_id);
-				
-				/** Last render list
-				 *
-				 * This list is used to tack which artworks has been rendered most
-				 * recently and to only unload artworks which have not been rendered
-				 * recently.
-				 *
-				 * The front contain the most recently rendered artwork
-				 */
-				static std::list<std::reference_wrapper<artwork>> last_rendered;
-				/** Timestamp of last render attempt
-				 *
-				 * It's used to don't load artworks which have not been requested to
-				 * load since a while but are still queued for render.
-				 */
-				Uint32 last_render_timestamp = 0;
-				
-				/** Clear image cache
-				 *
-				 * This function destroy everything in image caches.
-				 * It is used when changing screens ICC profile.
-				 */
-				static void nuke_image_cache(void);
 		};
 	}
 }

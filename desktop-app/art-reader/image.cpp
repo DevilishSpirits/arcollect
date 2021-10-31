@@ -35,7 +35,7 @@ void Arcollect::art_reader::set_screen_icc_profile(SDL_Window *window)
 }
 void Arcollect::art_reader::set_screen_icc_profile(const std::string_view& icc_profile)
 {
-	Arcollect::db::artwork::nuke_image_cache();
+	Arcollect::db::download::nuke_image_cache();
 	// Swap profiles
 	cmsCloseProfile(cms_screenprofile);
 	if (icc_profile.empty()) {
