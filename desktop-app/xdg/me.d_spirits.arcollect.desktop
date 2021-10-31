@@ -2,7 +2,7 @@
 Type=Application
 Version=1.1
 Name=Arcollect
-Comment=Your personal visual artwork library.
+Comment=@ARCOLLECT_SUMMARY@
 DBusActivatable=true
 Exec=arcollect
 Terminal=false
