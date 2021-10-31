@@ -6,7 +6,7 @@ Priority: optional
 Section: graphics
 Depends: @DEB_CONTROL_DEPENDS@
 Homepage: @ARCOLLECT_WEBSITE@
-Description: Your personal visual artwork library
+Description: @ARCOLLECT_SUMMARY@
  If you like visual arts, you may want to save some artworks you find on the
  net. Right-click and save picture works but is not very convenient, forget the
  artwork source and classification is complicated.

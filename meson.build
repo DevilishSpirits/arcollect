@@ -46,6 +46,7 @@ endif
 config_h = configuration_data()
 config_h.set('ARCOLLECT_VERSION',meson.project_version())
 config_h.set('ARCOLLECT_WEBSITE','https://github.com/DevilishSpirits/arcollect')
+config_h.set('ARCOLLECT_SUMMARY','Your personal visual artwork library.')
 config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
 config_h.set('HAS_SDL_OPENURL','1') # TODO Probe that
 config_h.set('WITH_XDG',with_xdg ? '1' : '0')
