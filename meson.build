@@ -50,6 +50,7 @@ config_h.set('ARCOLLECT_SUMMARY','Your personal visual artwork library.')
 config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
 config_h.set('HAS_SDL_OPENURL','1') # TODO Probe that
 config_h.set('WITH_XDG',with_xdg ? '1' : '0')
+config_h.set('ARCOLLECT_X11_WM_CLASS','arcollect-desktop-app')
 config_h.set('CPP_STD',get_option('cpp_std').to_upper())
 if (cpp.get_id() == 'gcc')
 	config_h.set('CXX_COMPILER_TITLE','GCC '+cpp.version())

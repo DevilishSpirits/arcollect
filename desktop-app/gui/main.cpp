@@ -31,6 +31,9 @@
 #include <arcollect-debug.hpp>
 #include <arcollect-sqls.hpp>
 #include <iostream>
+#if WITH_XDG
+#include <stdlib.h> // For setenv()
+#endif
 
 extern SDL_Window    *window;
 SDL_Window    *window;
@@ -53,6 +56,9 @@ int Arcollect::gui::init(void)
 {
 	// Init SDL
 	SDL::Hint::SetRenderScaleQuality(SDL::Hint::RENDER_SCALE_QUALITY_BEST);
+	#if WITH_XDG
+	setenv("SDL_VIDEO_X11_WMCLASS",ARCOLLECT_X11_WM_CLASS_STR,false);
+	#endif
 	if (SDL::Init(SDL::INIT_VIDEO)) {
 		std::cerr << "SDL initialization failed: " << SDL::GetError() << std::endl;
 		return 1;

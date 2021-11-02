@@ -7,3 +7,4 @@ DBusActivatable=true
 Exec=arcollect
 Terminal=false
 Categories=Graphics;2DGraphics;Amusement;RasterGraphics;Viewer
+StartupWMClass=@ARCOLLECT_X11_WM_CLASS@
