@@ -19,6 +19,10 @@
  */
 #pragma once
 #include "wtf_json_parser-string_view.hpp"
+#include <ostream>
+#include <sqlite3.hpp>
+#include <string>
+#include <unordered_map>
 /** \file webext-adder/json-extra-helpers.hpp
  *  \brief Extra JSON helpers for the `arcollect-webext-adder`
  */
@@ -77,7 +81,7 @@ namespace std {
 		}
 	};
 }
-std::ostream &operator<<(std::ostream &left, const platform_id &right) {
+inline std::ostream &operator<<(std::ostream &left, const platform_id &right) {
 	if (right.IsInt64())
 		left << right.platid_int;
 	else left << right.platid_str;
@@ -108,7 +112,7 @@ struct JSONParsingError: public std::runtime_error {
  * \note It cope fine with Arcollect::json::ObjHave::NULL_LITTERALLY, it does
  *       not modify `out` in such case like if it was never defined.
  */
-static void json_read_string(Arcollect::json::ObjHave have, std::string_view &out, const std::string& debug_string, char*& iter, char* const end)
+inline void json_read_string(Arcollect::json::ObjHave have, std::string_view &out, const std::string& debug_string, char*& iter, char* const end)
 {
 	using namespace Arcollect::json;
 	if (have == ObjHave::NULL_LITTERALLY)
@@ -125,7 +129,7 @@ static void json_read_string(Arcollect::json::ObjHave have, std::string_view &ou
  *
  * json_read_string() that put a `'\0'` for use with C-string only API (CURL).
  */
-static void json_read_string_nul_terminate(Arcollect::json::ObjHave have, std::string_view &out, const std::string& debug_string, char*& iter, char* const end)
+inline void json_read_string_nul_terminate(Arcollect::json::ObjHave have, std::string_view &out, const std::string& debug_string, char*& iter, char* const end)
 {
 	json_read_string(have,out,debug_string,iter,end);
 	*const_cast<char*>(out.data() + out.size()) = '\0';
@@ -138,7 +142,7 @@ static void json_read_string_nul_terminate(Arcollect::json::ObjHave have, std::s
  * Function for things that expect an integer. Perform JSON type checking and
  * raise an exception on failure.
  */
-static sqlite_int64 json_read_int(Arcollect::json::ObjHave have, const std::string& debug_string, char*& iter, char* const end)
+inline sqlite_int64 json_read_int(Arcollect::json::ObjHave have, const std::string& debug_string, char*& iter, char* const end)
 {
 	using namespace Arcollect::json;
 	sqlite_int64 out;
@@ -157,7 +161,7 @@ static sqlite_int64 json_read_int(Arcollect::json::ObjHave have, const std::stri
  * Function for things that expect an integer or a string. Perform JSON type
  * checking and raise an exception on failure.
  */
-static void read_platform_id(Arcollect::json::ObjHave have, platform_id &out, const std::string& debug_string, char*& iter, char* const end)
+inline void read_platform_id(Arcollect::json::ObjHave have, platform_id &out, const std::string& debug_string, char*& iter, char* const end)
 {
 	using namespace Arcollect::json;
 	switch (have) {
