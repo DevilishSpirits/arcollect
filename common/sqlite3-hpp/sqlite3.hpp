@@ -130,6 +130,10 @@ namespace SQLite3 {
 			return sqlite3_errmsg((::sqlite3*)this);
 		}
 		
+		int extended_errcode(void) {
+			return sqlite3_extended_errcode((::sqlite3*)this);
+		}
+		
 		void operator delete(void* ptr) noexcept {
 			sqlite3_close_v2((::sqlite3*)ptr);
 		}
