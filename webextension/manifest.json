@@ -23,11 +23,12 @@
 		"matches": ["https://www.deviantart.com/*/art/*"],
 		"js": ["content-scripts/common.js","content-scripts/deviantart.com.js"]
 	},{
-		"matches": ["https://twitter.com/*"],
+		"matches": ["https://twitter.com/*","https://mobile.twitter.com/*"],
 		"js": ["content-scripts/common.js","content-scripts/twitter.com.js"]
 	}],
 	"permissions": [
 		"https://twitter.com/*",
+		"https://mobile.twitter.com/*",
 		"webRequest",
 		"webRequestBlocking",
 		"nativeMessaging"
