@@ -19,7 +19,27 @@
 
 namespace Arcollect {
 	namespace db {
+		/** Open the database
+		 * \param flags SQLite open flags (R/W by default)
+		 * \return The SQLite database handle
+		 *
+		 * This function open the database, run startup pragma and bootstrap/upgrade
+		 * the database.
+		 */
 		std::unique_ptr<SQLite3::sqlite3> open(int flags = SQLite3::OPEN_READWRITE|SQLite3::OPEN_CREATE);
+		/** Open and reset the database for test units
+		 * \return The SQLite database handle
+		 *
+		 * This function erase the data home, then call open(). It is intended for
+		 * test-units that needs to erase the database before.
+		 *
+		 * It requires `$ARCOLLECT_DATA_HOME` to be set, else it prints a Bail Out!
+		 * message and `std::exit(1)` to prevent accidental erase of the user
+		 * collection.
+		 * \todo Protect even more the user database by requiring also to set the
+		 * `$ARCOLLECT_TEST_CAN_SAFELY_NUKE_COLLECTION` environment variable.
+		 */
+		std::unique_ptr<SQLite3::sqlite3> test_open(void);
 	}
 }
 

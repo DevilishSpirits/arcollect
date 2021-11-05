@@ -17,6 +17,7 @@
 #include "arcollect-db-open.hpp"
 #include "arcollect-paths.hpp"
 #include <arcollect-sqls.hpp>
+#include <cstdlib>
 #include <iostream>
 
 std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
@@ -76,4 +77,14 @@ std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 		} break;
 	}
 	return data_db;
+}
+std::unique_ptr<SQLite3::sqlite3> Arcollect::db::test_open(void)
+{
+	auto* arcollect_home = std::getenv("ARCOLLECT_DATA_HOME");
+	if (!arcollect_home || (*arcollect_home == '\0')) {
+		std::cout << "Bail out! Refuse to run with $ARCOLLECT_DATA_HOME unset\n/!\\ THIS WOULD ERASE YOUR WHOLE COLLECTION!!!" << std::endl;
+		std::exit(1);
+	}
+	std::filesystem::remove(std::filesystem::path(arcollect_home)/"db.sqlite3");
+	return Arcollect::db::open();
 }
