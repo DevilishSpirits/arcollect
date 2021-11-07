@@ -70,6 +70,7 @@ config_h.set('ARCOLLECT_DBUS_PATH','/')
 # These are centralized here. Update README.md if you change things there.
 #config_h.set('ARCOLLECT_VERREQ_sdl2','>=2.0.x') # TODO Switch back to an SDL release when the ICC profile patch get released
 config_h.set('ARCOLLECT_VERREQ_boost','>=1.53') # Keep in sync with OIIO needs! # FIXME Should we use the recommend version?
+config_h.set('ARCOLLECT_VERREQ_libcurl','>=7.60')
 config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
 
 foreach key: config_h.keys()
