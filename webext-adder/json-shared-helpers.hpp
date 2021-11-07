@@ -42,10 +42,15 @@ struct platform_id {
 	
 	/** Bind a SQLite stmt value
 	 */
-	int bind(std::unique_ptr<SQLite3::stmt> &stmt, int col) const {
+	int bind(SQLite3::stmt &stmt, int col) const {
 		if (IsInt64())
-			return stmt->bind(col,platid_int);
-		else return stmt->bind(col,platid_str);
+			return stmt.bind(col,platid_int);
+		else return stmt.bind(col,platid_str);
+	}
+	/** Bind a SQLite stmt value
+	 */
+	int bind(std::unique_ptr<SQLite3::stmt> &stmt, int col) const {
+		return bind(*stmt,col);
 	}
 	
 	bool operator==(const platform_id& other) const {
