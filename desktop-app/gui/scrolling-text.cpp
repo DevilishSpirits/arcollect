@@ -53,10 +53,13 @@ void Arcollect::gui::scrolling_text::render(SDL::Rect target)
 	int max_scroll = renderable->size().y - target.h + border + border;
 	renderable->render_tl(target.x,target.y-current_scroll);
 	// Render progress bar
-	progress_bar.w = current_scroll*target.w/max_scroll;
+	progress_bar.w = target.w;
 	progress_bar.h = Arcollect::config::writing_font_size/8;
 	progress_bar.y += target.h-progress_bar.h;
-	renderer->SetDrawColor(128,128,128,255);
+	renderer->SetDrawColor(0,0,0,192);
+	renderer->FillRect(progress_bar);
+	progress_bar.w = current_scroll*target.w/max_scroll;
+	renderer->SetDrawColor(255,255,255,192);
 	renderer->FillRect(progress_bar);
 }
 bool Arcollect::gui::scrolling_text::event(SDL::Event &e, SDL::Rect target)
