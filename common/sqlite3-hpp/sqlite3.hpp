@@ -1,5 +1,6 @@
 #pragma once
 #include <sqlite3.h>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <memory>
@@ -54,6 +55,10 @@ namespace SQLite3 {
 		int sqlite3_bind_zeroblob(sqlite3_stmt*, int, int n);
 		int sqlite3_bind_zeroblob64(sqlite3_stmt*, int, sqlite3_uint64);
 		*/
+		template <typename T>
+		inline int bind(int column, const std::optional<T>& value) {
+			return value ? bind(column,*value) :  bind_null(column);
+		}
 		/* TODO
 		const void *sqlite3_column_blob(sqlite3_stmt*, int iCol);
 		*/
