@@ -16,6 +16,7 @@
  */
 #include "main.hpp"
 #include "../config.hpp"
+#include "../i18n.hpp"
 #include "../art-reader/image.hpp"
 #include "../db/artwork-loader.hpp"
 #include "../db/db.hpp"
@@ -63,6 +64,7 @@ int Arcollect::gui::init(void)
 		std::cerr << "SDL initialization failed: " << SDL::GetError() << std::endl;
 		return 1;
 	}
+	
 	// Create the SDL window
 	int window_create_flags = SDL_WINDOW_RESIZABLE|SDL_WINDOW_HIDDEN;
 	switch (Arcollect::config::start_window_mode) {
@@ -93,6 +95,10 @@ int Arcollect::gui::init(void)
 	
 	// Setup database
 	sqlite3_busy_handler((sqlite3*)Arcollect::database.get(),Arcollect::sqlite_busy::handler,NULL);
+	
+	// Load system language
+	Arcollect::i18n_strings::set_locale_system();
+	
 	return 0;
 }
 void Arcollect::gui::start(int argc, char** argv)
@@ -165,8 +171,13 @@ bool Arcollect::gui::main(void)
 				}
 			}
 		}
-		if (e.type == SDL_QUIT)
-			return false;
+		switch (e.type) {
+			case SDL_LOCALECHANGED: {
+				Arcollect::i18n_strings::set_locale_system();
+			} break;
+			case SDL_QUIT: {
+			} return false;
+		}
 		// Process other events
 		has_event = SDL::PollEvent(e);
 	}

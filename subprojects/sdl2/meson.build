@@ -12,6 +12,7 @@ subproj_opts.add_cmake_defines({
 	'SDL_EVENTS'       : true,
 	'SDL_JOYSTICK'     : true,  # If disabled, cause link failures
 	'SDL_HAPTIC'       : false,
+	'SDL_LOCALE'       : true,
 	'SDL_POWER'        : false,
 	'SDL_THREADS'      : false,
 	'SDL_TIMERS'       : true,  # For SDL_GetTicks()
@@ -21,7 +22,6 @@ subproj_opts.add_cmake_defines({
 	'SDL_FILESYSTEM'   : false,
 	'SDL_SENSOR'       : false,
 	'SDL_STATIC_PIC'   : true,
-	'SDL_LOCALE'       : false,
 	'WAYLAND_LIBDECOR' : false, # FIXME Add a hard depend on libdecor currently
 })
 dep_sdl2 = [

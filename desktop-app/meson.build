@@ -10,9 +10,11 @@ deskapp_deps = [
 	dep_freetype,
 	dep_sqlite3,
 	dep_inih,
+	i18n_deps['common'],
 ]
 deskapp_srcs = [
 	'config.cpp',
+	'i18n.cpp',
 	'art-reader/image.cpp',
 	'art-reader/text.cpp',
 	'db/account.cpp',
