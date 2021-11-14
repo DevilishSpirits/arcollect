@@ -229,6 +229,7 @@ dependency_report_data.set_quoted('ABOUT_EMBEDED_DEPENDENCIES_STR',about_embeded
 dependency_report_hpp = configure_file(output: 'dependency-report.hpp', configuration: dependency_report_data)
 
 # Add subdir (include order is important !)
+subdir('i18n')
 if enable_native_progs
 	subdir('sqls')
 	subdir('common')

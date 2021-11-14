@@ -34,7 +34,7 @@ The webextension require some permissions to works:
 ## Contributing
 I am open to contributions but keep in mind that this is a personal project, not a community driven thing. Arcollect mostly have what I use and can do with time, but it is built with extensibility and platform agnostism in mind.
 
-Your favorite platform is likely missing, with a content-script in `webextension` you can add support into Arcollect. Chromiums and macOS support are also welcome. This project also lack internationalization and translations.
+Your favorite platform is likely missing, with a content-script in `webextension` you can add support into Arcollect. Chromiums and macOS support are also welcome.
 
 Please, keep things simple and cross-patform, you have C++, a modern SDL and a bunch of dependencies, use them. Platform specific integrations are good while lightweight and simple. As an example, Arcollect is a GNOME search provider not using GNOME libs but FreeDesktop ones.
 
