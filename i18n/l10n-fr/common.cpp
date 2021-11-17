@@ -16,5 +16,4 @@
  */
 #include "arcollect-i18n-common.hpp"
 void Arcollect::i18n::common::apply_fr(void) noexcept {
-	summary = "Votre collection personelle d'art visuel.";
 }

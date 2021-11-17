@@ -1,0 +1,3 @@
+msgctxt "summary"
+msgid "Your personal visual artwork library."
+msgstr "Votre collection personelle d'art visuel."

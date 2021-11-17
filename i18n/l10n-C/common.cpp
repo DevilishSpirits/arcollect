@@ -16,5 +16,4 @@
  */
 #include "arcollect-i18n-common.hpp"
 void Arcollect::i18n::common::apply_C(void) noexcept {
-	summary = "Your personal visual artwork library.";
 }

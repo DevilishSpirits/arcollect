@@ -6,14 +6,15 @@ to locale specific data.
 
 Every translations and so on are located within this diretory, this include
 metadata files like the .desktop file and the webextension translations.
-*In case you ask yourself, .*
+*In case you ask yourself, the inner workings are well oiled but a bit cursed.*
 
 Why? Because I love the idea of [Fluent](https://projectfluent.org/) but it is
 unavailable for C++, it is for Rust but the cost of adding a full programming
 language in my build just for i18n isn't worth.
 
-Wanna translate Arcollect? I'm afraid that you need to know C++ for that, keep
-reading this documentation though it may still helps.
+Wanna translate Arcollect? Static strings use the PO file format.
+For anything else, you need to know C++ for that, keep reading this
+documentation though it may still helps.
 
 ## Modules
 A module is a set of translatable elements, there is many:
@@ -27,6 +28,7 @@ base implementation (the *C* locale) in english, localization is achieved by a
 set of functions which alter this structure with locale specific changes.
 Adding a translation is basically creating this function and telling the
 build-system that this translation exists.
+Static strings are stored and automatically extracted from in tree PO files.
 
 We'll take an example with the desktop-app itself with french from France, we
 assume that this translation doesn't exist.
@@ -53,6 +55,7 @@ with the standard boiler-plate code for that :
  */
 #include "arcollect-i18n-desktop_app.hpp"
 constexpr void Arcollect::i18n::desktop_app::apply_fr_FR(void) noexcept {
+	#include "arcollect-i18n-desktop_app-apply_fr_FR.cpp"
 	// TODO Localization
 }
 ```
@@ -77,8 +80,18 @@ constexpr void Arcollect::i18n::desktop_app::apply_fr_FR(void) noexcept {
 ```
 
 When adding more translations, keep the function sorted for better readability.
+Then copy `l10n-C/desktop_app.po` to `l10n-fr_FR/desktop_app.po`.
+In fact, the *topmenu_slideshow_edit_artwork* is stored there and should be
+translated in the PO file. Remove the C++ line and add the translation in the PO
+file, there is many GUI for that, you can also just edit the text file :
 
-The C++ file is okay, we need to tell the build-system that our translation
+```po
+msgctxt "topmenu_slideshow_edit_artwork"
+msgid "Edit artwork…"
+msgstr "Modifier l'oeuvre…"
+```
+
+Required files are okay, we need to tell the build-system that our translation
 exists, open [`meson.build`](./meson.build) in the `i18n` folder, it contains
 the `l10n_cpp_translations` dictionary of array that list modules and availables 
 translations, add your language code in the module array. Again sort items :
