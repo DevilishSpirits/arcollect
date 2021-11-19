@@ -26,7 +26,7 @@ webext_content_scripts = [
 	'furaffinity.net.js',
 	'twitter.com.js',
 ]
-python_copy_command = [find_program('python3'),'-c','import shutil\nimport sys\nshutil.copyfile(sys.argv[1],sys.argv[2])\n','@INPUT@','@OUTPUT@']
+python_copy_command = [find_program('python3'),'-c','import shutil; import sys; shutil.copyfile(sys.argv[1],sys.argv[2])','@INPUT@','@OUTPUT@']
 subdir('content-scripts')
 foreach file: webext_srcs
 	webext_zip_cmds += file
