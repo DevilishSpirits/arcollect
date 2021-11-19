@@ -1,0 +1,7 @@
+msgctxt "webext_tweet_not_in_cache"
+msgid "Tweet is not in cache, open a the tweet in a new tab or reload the page."
+msgstr "Le tweet n'est pas le cache, ouvrez le tweet dans un nouvel onglet ou rechargez la page."
+
+msgctxt "webext_twitter_account_not_in_cache"
+msgid "An account is not in cache, hover over all mentions and accounts in the tweet or open them in a new tab."
+msgstr "Un compte n'est pas le cache, survolez tous les comptes et mentions du tweet ou ouvrez les dans un nouvel onglet"

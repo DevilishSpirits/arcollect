@@ -212,7 +212,7 @@ function twitter_post_process_submit(json) {
 			const cached_tweet = twitter_tweets_cache[id];
 			if (cached_tweet == null) {
 				console.warn('Tweet',id,'is not in cache');
-				reply_to_content_script({'transaction_id': json.transaction_id, 'success': false, 'reason': 'Tweet is not in cache, open a the tweet in a new tab or reload the page.'});
+				reply_to_content_script({'transaction_id': json.transaction_id, 'success': false, 'reason': browser.i18n.getMessage('webext_tweet_not_in_cache')});
 				return null;
 			}
 			// Set data
@@ -236,7 +236,7 @@ function twitter_post_process_submit(json) {
 		const cached_account = twitter_accounts_cache[id];
 		if (cached_account == null) {
 				console.warn('Twitter account',id,'is not in cache');
-				reply_to_content_script({'transaction_id': json.transaction_id, 'success': false, 'reason': 'An account is not in cache, hover over all mentions and accounts in the tweet, open it in a new tab or reload the page.'});
+				reply_to_content_script({'transaction_id': json.transaction_id, 'success': false, 'reason': browser.i18n.getMessage('webext_twitter_account_not_in_cache')});
 				return null;
 		} else json.accounts.push(cached_account);
 	}

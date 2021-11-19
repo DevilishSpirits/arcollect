@@ -4,6 +4,7 @@
 	"author": "DevilishSpirits",
 	"homepage_url": "@ARCOLLECT_WEBSITE@",
 	"version": "@ARCOLLECT_VERSION@",
+	"default_locale": "en",
 	"background": {
 		"scripts": ["background.js","twitter.js"]
 	},

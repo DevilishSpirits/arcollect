@@ -1,6 +1,11 @@
+messages_json = custom_target('webextension-messages.json', command: [
+	executable('generate-messages','generate-messages.cpp', dependencies: [i18n_deps['common'],i18n_deps['webextension']])
+], output: 'messages.json', capture: true)
+
 webext_zip_cmds = [
 	find_program('build_zip.py', native: true),
 	meson.current_build_dir(),
+	messages_json,
 	'@OUTPUT@'
 ]
 webext_zip_depend_files = []
