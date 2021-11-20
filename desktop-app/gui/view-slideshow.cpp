@@ -226,8 +226,9 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 						viewport.render({0,0});
 					}
 				} break;
-				case db::artwork::ARTWORK_TYPE_TEXT:
-					return text_display.render(target);
+				case db::artwork::ARTWORK_TYPE_TEXT: {
+					text_display.render(target);
+				} break;
 				case db::artwork::ARTWORK_TYPE_UNKNOWN: {
 					Arcollect::gui::font::Elements unknown_artwork_elements;
 					unknown_artwork_elements.initial_height() = 22;
