@@ -110,19 +110,34 @@ function twitter_handle_user(user) {
 function twitter_handle_users(users) {
 	Object.entries(users).forEach((user) => twitter_handle_user(user[1]));
 }
+function twitter_handle_itemContent(itemContent) {
+	if (itemContent['itemType'] == 'TimelineTweet') {
+		let tweet_results = itemContent['tweet_results']
+		if (tweet_results.hasOwnProperty('result')) {
+			twitter_handle_tweet(tweet_results.result.legacy);
+			// Handle users in the tweet
+			twitter_handle_user(tweet_results.result.core.user_results.result);
+		}
+	}
+}
+function twitter_handle_items(items) {
+	items.forEach(function(entry) {
+		if (entry.hasOwnProperty('item')) {
+			twitter_handle_itemContent(entry['item']['itemContent']);
+		}
+		if (entry.hasOwnProperty('items')) {
+			twitter_handle_items(entry['items']);
+		}
+	});
+}
 function twitter_handle_entries(entries) {
 	entries.forEach(function(entry) {
 		let content = entry['content'];
 		if (content.hasOwnProperty('itemContent')) {
-			let itemContent = content['itemContent'];
-			if (itemContent['itemType'] == 'TimelineTweet') {
-				let tweet_results = itemContent['tweet_results']
-				if (tweet_results.hasOwnProperty('result')) {
-					twitter_handle_tweet(tweet_results.result.legacy);
-					// Handle users in the tweet
-					twitter_handle_user(tweet_results.result.core.user_results.result);
-				}
-			}
+			twitter_handle_itemContent(content['itemContent'])
+		}
+		if (content.hasOwnProperty('items')) {
+			twitter_handle_items(content['items']);
 		}
 	});
 }
