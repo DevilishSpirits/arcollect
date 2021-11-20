@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include "../i18n.hpp"
 #include "../db/filter.hpp"
 #include "../db/search.hpp"
 #include "../db/artwork-collections.hpp"
@@ -114,9 +115,9 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 		if (viewport.artwork) {
 			return {
 				#ifdef ARTWORK_HAS_OPEN_URL
-				std::make_shared<Arcollect::gui::menu_item_simple_label>(U"Browse…"s,::open_in_browser),
+				std::make_shared<Arcollect::gui::menu_item_simple_label>(Arcollect::i18n_desktop_app.browse_to_arwork_page,::open_in_browser),
 				#endif
-				std::make_shared<Arcollect::gui::menu_item_simple_label>(U"Edit artwork…"s,std::bind(edit_art,this)),
+				std::make_shared<Arcollect::gui::menu_item_simple_label>(Arcollect::i18n_desktop_app.edit_current_artwork,std::bind(edit_art,this)),
 			};
 		} else return {};
 	};

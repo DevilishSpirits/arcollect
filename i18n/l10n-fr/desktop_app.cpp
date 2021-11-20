@@ -14,12 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#pragma once
-#include <arcollect-i18n.hpp>
-#include <arcollect-i18n-common.hpp>
-#include <arcollect-i18n-desktop_app.hpp>
-namespace Arcollect {
-	extern Arcollect::i18n::common i18n_common;
-	extern Arcollect::i18n::desktop_app i18n_desktop_app;
-	void set_locale_system(void);
+#include "arcollect-i18n-desktop_app.hpp"
+void Arcollect::i18n::desktop_app::apply_fr(void) noexcept {
 }

@@ -27,11 +27,13 @@ static T make_translation(const SDL_Locale *prefered_locales) {
 	return translations;
 }
 
-Arcollect::i18n::common Arcollect::i18n_strings::common;
+Arcollect::i18n::common Arcollect::i18n_common;
+Arcollect::i18n::desktop_app Arcollect::i18n_desktop_app;
 
-void Arcollect::i18n_strings::set_locale_system(void)
+void Arcollect::set_locale_system(void)
 {
 	SDL_Locale *prefered_locales = SDL_GetPreferredLocales();
-	Arcollect::i18n_strings::common = make_translation<Arcollect::i18n::common>(prefered_locales);
+	Arcollect::i18n_common = make_translation<Arcollect::i18n::common>(prefered_locales);
+	Arcollect::i18n_desktop_app = make_translation<Arcollect::i18n::desktop_app>(prefered_locales);
 	SDL_free(prefered_locales);
 }

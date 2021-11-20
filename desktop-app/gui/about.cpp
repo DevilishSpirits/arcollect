@@ -91,7 +91,7 @@ void Arcollect::gui::about_window::render(SDL::Rect target)
 		Elements elements;
 		elements << Align::CENTER
 			<< FontSize(48) << U"Arcollect "sv ARCOLLECT_VERSION_STR "\n\n"
-			<< FontSize(22) << Arcollect::i18n_strings::common.summary << U"\n"sv
+			<< FontSize(22) << Arcollect::i18n_common.summary << U"\n"sv
 			<< FontSize(16) << U""sv ARCOLLECT_WEBSITE_STR "\n"
 			<< U"Powered by:\n"sv
 			   CPP_STD_STR " ⸱ " CXX_COMPILER_TITLE_STR " ⸱ SDL2 ⸱ SQLite3 ⸱ OpenImageIO ⸱ LittleCMS ⸱ FreeType2 ⸱ HarfBuzz ⸱ Many other…\n"

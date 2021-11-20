@@ -4,6 +4,9 @@ l10n_cpp_translations = {
 	'common': [
 		'fr',
 	]
+	,'desktop_app': [
+		'fr',
+	]
 	,'webextension': [
 		'fr',
 	]

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "rating-selector.hpp"
+#include "../i18n.hpp"
 #include "../db/filter.hpp"
 
 extern SDL::Renderer* renderer;
@@ -178,7 +179,7 @@ Arcollect::gui::rating_selector_menu::rating_selector_menu(std::function<void(Ar
 	selector.has_adult = true;
 	selector.onratingset = onratingset;
 }
-Arcollect::gui::rating_selector_menu::rating_selector_menu(void) : rating_selector_menu(Arcollect::db_filter::set_rating,font::Elements(U"Rating"s,14)) {}
+Arcollect::gui::rating_selector_menu::rating_selector_menu(void) : rating_selector_menu(Arcollect::db_filter::set_rating,font::Elements::build(font::FontSize(14),i18n_desktop_app.rating_selector_label)) {}
 SDL::Point Arcollect::gui::rating_selector_menu::size(void)
 {
 	SDL::Point size = text_line.size();

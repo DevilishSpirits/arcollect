@@ -115,6 +115,8 @@ namespace Arcollect {
 					: menu_item_simple_label(font::Elements(std::move(label),14),onclick) {}
 				menu_item_simple_label(const std::u32string_view& label, std::function<void()> onclick)
 					: menu_item_simple_label(std::u32string(label),onclick) {}
+				menu_item_simple_label(const std::string_view& label, std::function<void()> onclick)
+					: menu_item_simple_label(font::Elements::build(font::FontSize(14),label),onclick) {}
 		};
 		
 		/** Menu item that open a website

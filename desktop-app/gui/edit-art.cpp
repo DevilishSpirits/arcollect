@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "edit-art.hpp"
+#include "../i18n.hpp"
 #include "menu.hpp"
 #include "rating-selector.hpp"
 #include "window-borders.hpp"
@@ -27,6 +28,7 @@ struct on_set_rating {
 		std::shared_ptr<Arcollect::db::artwork_collection> &arts_to_set = collection;
 		using namespace Arcollect::gui;
 		modal_back().to_pop = true;
+		// TODO i18n
 		font::Elements elements(U"Mark artworks as "s,14);
 		switch (rating) {
 			case Arcollect::config::Rating::RATING_NONE: {
@@ -50,11 +52,12 @@ struct on_set_rating {
 void Arcollect::gui::popup_edit_art_metadata(std::shared_ptr<Arcollect::db::artwork_collection>& collection)
 {
 	using namespace Arcollect::gui;
-	static const auto delete_elements = font::Elements::build(font::FontSize(14),SDL::Color{255,0,0,255},U"Delete…"sv);
-	static const auto set_rating_elements = font::Elements(U"Set rating"s,14);
+	const auto delete_elements = font::Elements::build(font::FontSize(14),SDL::Color{255,0,0,255},i18n_desktop_app.edit_artwork_delete);
+	const auto set_rating_elements = font::Elements::build(font::FontSize(14),i18n_desktop_app.edit_artwork_set_rating);
 	// Build GUI
 	const std::vector<std::shared_ptr<menu_item>> menu_items = {
 		std::make_shared<menu_item_simple_label>(delete_elements,[collection](){
+			// TODO i18n
 			Arcollect::gui::font::Elements really_delete_elements(U"I really want to delete the artworks"s,14);
 			really_delete_elements.initial_color()  = {255,0,0,255};
 			Arcollect::gui::menu::popup_context({

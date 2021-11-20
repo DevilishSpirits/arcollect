@@ -82,6 +82,8 @@ int Arcollect::gui::init(void)
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
+	// Load system language
+	Arcollect::set_locale_system();
 	// Load ICC profile
 	Arcollect::art_reader::set_screen_icc_profile(window);
 	// Set custom borders
@@ -95,9 +97,6 @@ int Arcollect::gui::init(void)
 	
 	// Setup database
 	sqlite3_busy_handler((sqlite3*)Arcollect::database.get(),Arcollect::sqlite_busy::handler,NULL);
-	
-	// Load system language
-	Arcollect::i18n_strings::set_locale_system();
 	
 	return 0;
 }
@@ -173,7 +172,7 @@ bool Arcollect::gui::main(void)
 		}
 		switch (e.type) {
 			case SDL_LOCALECHANGED: {
-				Arcollect::i18n_strings::set_locale_system();
+				Arcollect::set_locale_system();
 			} break;
 			case SDL_QUIT: {
 			} return false;

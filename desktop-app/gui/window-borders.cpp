@@ -19,6 +19,7 @@
 #include "menu.hpp"
 #include "modal.hpp"
 #include "rating-selector.hpp"
+#include "../i18n.hpp"
 static bool display_bar = false;
 const int Arcollect::gui::window_borders::title_height = 32;
 const int Arcollect::gui::window_borders::resize_width = 4;
@@ -80,7 +81,7 @@ bool Arcollect::gui::window_borders::init(SDL_Window *window)
 {
 	// Init menus
 	topbar_menu_items.emplace_back(std::make_shared<Arcollect::gui::rating_selector_menu>());
-	topbar_menu_items.emplace_back(std::make_shared<Arcollect::gui::menu_item_simple_label>(U"About Arcollect…"s,Arcollect::gui::about_window::show));
+	topbar_menu_items.emplace_back(std::make_shared<Arcollect::gui::menu_item_simple_label>(i18n_desktop_app.about_arcollect,Arcollect::gui::about_window::show));
 	// Init borders
 	borderless = SDL_SetWindowHitTest(window,hit_test,NULL) == 0;
 	if (borderless) {

@@ -11,6 +11,7 @@ deskapp_deps = [
 	dep_sqlite3,
 	dep_inih,
 	i18n_deps['common'],
+	i18n_deps['desktop_app'],
 ]
 deskapp_srcs = [
 	'config.cpp',

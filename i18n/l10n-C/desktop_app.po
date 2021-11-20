@@ -1,0 +1,35 @@
+msgctxt "about_arcollect"
+msgid "About Arcollect…"
+msgstr ""
+
+msgctxt "browse_to_arwork_page"
+msgid "Browse…"
+msgstr ""
+
+msgctxt "db_busy_title"
+msgid "Database is locked!"
+msgstr ""
+
+msgctxt "db_busy_explanation"
+msgid "Another process is accessing the Arcollect database and prevent the query from completing."
+msgstr ""
+
+msgctxt "db_busy_hint"
+msgid "Close this program or press and release Esc to abort now."
+msgstr ""
+
+msgctxt "edit_artwork_delete"
+msgid "Delete…"
+msgstr ""
+
+msgctxt "edit_artwork_set_rating"
+msgid "Set rating"
+msgstr ""
+
+msgctxt "edit_current_artwork"
+msgid "Edit artwork…"
+msgstr ""
+
+msgctxt "rating_selector_label"
+msgid "Rating"
+msgstr ""

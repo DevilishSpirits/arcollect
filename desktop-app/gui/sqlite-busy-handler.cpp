@@ -18,12 +18,6 @@
 namespace Arcollect {
 	namespace sqlite_busy {
 		using namespace gui::font;
-		static const auto text_elements = Elements::build(FontSize(22),
-			Align::CENTER,U"Database is locked!\n"sv,
-			FontSize(18),
-			U"Another process is accessing the Arcollect database and prevent the query from completing.\n"sv,
-			SDL::Color{192,192,192,255},U"Close this program or press and release Esc to abort now."sv
-		);
 		static int handler(void* data, int invocation_count)
 		{
 			if (Arcollect::gui::enabled) {
@@ -46,6 +40,12 @@ namespace Arcollect {
 					}
 				// Render text
 				// TODO Cache that
+				const auto text_elements = Elements::build(FontSize(22),
+					Align::CENTER,i18n_desktop_app.db_busy_title,U"\n"sv,
+					FontSize(18),
+					i18n_desktop_app.db_busy_explanation,U"\n"sv,
+					SDL::Color{192,192,192,255},i18n_desktop_app.db_busy_hint
+				);
 				SDL::Point window_size;
 				renderer->GetOutputSize(window_size);
 				Renderable renderable(text_elements,window_size.x/2);
