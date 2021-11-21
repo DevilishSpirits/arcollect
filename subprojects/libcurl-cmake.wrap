@@ -1,6 +1,6 @@
 [wrap-file]
-directory = curl-7.79.0
-source_url = https://curl.se/download/curl-7.79.0.tar.gz
-source_filename = curl-7.79.0.tar.gz
-source_hash = aff0c7c4a526d7ecc429d2f96263a85fa73e709877054d593d8af3d136858074
+directory = curl-7.80.0
+source_url = https://curl.se/download/curl-7.80.0.tar.gz
+source_filename = curl-7.80.0.tar.gz
+source_hash = dab997c9b08cb4a636a03f2f7f985eaba33279c1c52692430018fae4a4878dc7
 patch_directory = curl

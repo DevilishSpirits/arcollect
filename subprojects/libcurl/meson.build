@@ -35,4 +35,4 @@ endif
 subproj_opts.set_install(false)
 subproj_curl = cmake.subproject('libcurl-cmake', options: subproj_opts)
 dep_curl_cmake = subproj_curl.dependency('libcurl')
-meson.override_dependency('libcurl',declare_dependency(dependencies: [dep_curl_cmake,dep_curl], version: '7.79.0'))
+meson.override_dependency('libcurl',declare_dependency(dependencies: [dep_curl_cmake,dep_curl], version: '7.80.0'))
