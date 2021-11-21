@@ -1,6 +1,6 @@
 # Arcollect packaging guide
 
-This directory contain files used to generate packages. If you intend to install Arcollect, you really should make a package.
+This directory contain files used to generate packages. If you intend to install Arcollect, check first if your distribution don't already ship a sufficiently up-to-date Arcollect, else you really should make a package.
 
 **Important!** You must have a working internet connection to build packages, because the configuration process download additionnal dependencies.
 
@@ -30,7 +30,7 @@ Install dependencies and then configure the project into the `build` directory b
 Release configuration is done by yourself. **You must [change the installation prefix to `/usr`](https://lintian.debian.org/tags/dir-in-usr-local)**, also turning on [stripping](https://lintian.debian.org/tags/unstripped-binary-or-object) and [BIND_NOW](https://lintian.debian.org/tags/hardening-no-bindnow) is required to pass lintian checks and you probably want to turn optimizations on. Note that this is really not *the Debian way*, while the package might works and I tried to reduce lintian output, it is not a high quality Debian packaging.
 
 ```sh
-	meson build --prefix=/usr -Dbuildtype=release -Dstrip=true -Db_lto=true -Dunity=on -Dcpp_link_args='-z now'
+	meson build --prefix=/usr -Dbuildtype=release -Dstrip=true -Db_lto=true -Dcpp_link_args='-z now'
 	# Search for the Debian package filename output
 	DEBNAME="$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
 	ninja -C build packaging/$DEBNAME
@@ -59,13 +59,11 @@ The `install` target will not works on Microsoft Windows system. You must genera
 If the `packaging/arcollect.msi` target is missing, this mean that `candle.exe` and `light.exe` have not been found, hence the target was not generated, look for 'Program **candle** found: **NO**' configuration message. You may create in the `packaging` directory `candle` and `light` wrapper scripts to solve this (I did that to generate tests MSI on ArchLinux using Wine).
 
 ### Other
-There is no packaging support. Actually, I will be suprised that someone packaged Arcollect. You can create one or use just install in `/usr/local` prefix :
+There is no packaging support. Actually, I will be suprised that someone packaged Arcollect. You should create one, or just install in `/usr/local` prefix, this is strongly discouraged :
 
 ```sh
-	# cd into `build`
-	cd ..
 	# Enable release configuration
 	meson configure -Dbuildtype=release -Dstrip=true -Db_lto=true
-	# Build and install
+	# Build and install (run as root)
 	ninja install
 ```
