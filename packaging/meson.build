@@ -74,7 +74,7 @@ pkgbuild_conf.set_quoted('PKGBUILD_SOURCE', 'https://github.com/DevilishSpirits/
 pkgbuild_conf.set('PKGBUILD_DEPENDS', ' '.join(pkgbuild_depends))
 pkgbuild_conf.set_quoted('PKGBUILD_MD5SUMS', 'SKIP')
 pkgbuild_conf.set('PKGBUILD_BUILDDIR', 'PKGBUILD.build')
-pkgbuild_conf.set_quoted('PKGBUILD_SRCDIR', '$srcdir/arcollect-$pkgver')
+pkgbuild_conf.set('PKGBUILD_MESON_COMMAND', 'meson --prefix=/usr --buildtype=release -Db_lto=true -Db_pie=true --libexecdir lib "$srcdir/arcollect-$pkgver" PKGBUILD.build')
 configure_file(input: 'PKGBUILD.in', output: 'PKGBUILD', configuration: pkgbuild_conf)
 
 pkgbuild_local_conf = configuration_data()
@@ -82,8 +82,8 @@ pkgbuild_local_conf.merge_from(config_h)
 pkgbuild_local_conf.set('PKGBUILD_SOURCE', '')
 pkgbuild_local_conf.set('PKGBUILD_DEPENDS', ' '.join(pkgbuild_depends))
 pkgbuild_local_conf.set('PKGBUILD_MD5SUMS', '')
-pkgbuild_local_conf.set('PKGBUILD_BUILDDIR', 'PKGBUILD.local-build')
-pkgbuild_local_conf.set('PKGBUILD_SRCDIR', meson.project_source_root())
+pkgbuild_local_conf.set('PKGBUILD_BUILDDIR', meson.project_build_root())
+pkgbuild_local_conf.set('PKGBUILD_MESON_COMMAND', 'meson configure \''+meson.project_build_root()+'\' --prefix=/usr --libexecdir lib # Enforce a correct configurations')
 pkgbuild_local = configure_file(input: 'PKGBUILD.in', output: 'PKGBUILD.local', configuration: pkgbuild_local_conf)
 
 foreach packages_file: packages_files

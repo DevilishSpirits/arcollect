@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Configure project
-        run: meson build
+        run: meson build --prefix=/usr --libexecdir lib --buildtype=release -Db_lto=true -Db_pie=true
       - name: Generate package (makepkg -p PKGBUILD.local)
         run: makepkg -p PKGBUILD.local -c CFLAGS= CXXFLAGS= LDFLAGS= PKGEXT=".pkg.tar.zst"
         working-directory: build/packaging

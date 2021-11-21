@@ -21,6 +21,7 @@ jobs:
         with:
           action: build
           meson-version: 0.59.0
+          setup-options: --prefix=/usr --libexecdir lib
       - name: Test project
         uses: BSFishy/meson-build@v1.0.3
         with:
@@ -55,7 +56,7 @@ jobs:
         uses: BSFishy/meson-build@v1.0.3
         with:
           action: build
-          setup-options: --force-fallback-for libcurl,sdl2,freetype2,harfbuzz,sqlite3,INIReader,libjpeg,libpng,libtiff-4,zlib
+          setup-options: --prefix=/usr --libexecdir lib --force-fallback-for libcurl,sdl2,freetype2,harfbuzz,sqlite3,INIReader,libjpeg,libpng,libtiff-4,zlib
           meson-version: 0.59.0
       - name: Test project
         uses: BSFishy/meson-build@v1.0.3

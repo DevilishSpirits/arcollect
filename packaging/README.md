@@ -7,7 +7,7 @@ This directory contain files used to generate packages. If you intend to install
 **Warning!** In addition of the application, some other libraries may be built and takes a lot of disk spaces, 2GB of disk space should be sufficient for worst cases.
 
 ## How to generate a package for my system ?
-Don't immediately configure and build the project, package generation is likely to redo this from scratch and there is some configuration you must change. Install Meson and follow system specific instructions. You should also take a look in [`.github/workflows/release.yml`](https://github.com/DevilishSpirits/arcollect/blob/master/.github/workflows/release.yml) to see how releases are made, it may contain workaround missing there.
+Don't immediately configure and build the project, there is special configuratino that you must change. Install Meson and follow system specific instructions. You should also take a look in [`.github/workflows/release.yml`](https://github.com/DevilishSpirits/arcollect/blob/master/.github/workflows/release.yml) to see how releases are made, it may contain workaround missing there.
 ```sh
 	# Ensure that you have a working version of Meson
 	pip3 install meson>=0.59.0
@@ -15,13 +15,14 @@ Don't immediately configure and build the project, package generation is likely 
 ```
 
 ### [ArchLinux](https://archlinux.org/) and derived
-Install dependencies and then configure the project into the `build` directory but do not build it, the PKGBUILD will reconfigure it from scratch. Then `cd` into `build/packaging` that contain configured `PKGBUILD` and run [`makepkg`](https://man.archlinux.org/man/makepkg.8) **with the `PKGBUILD.local` file !** Else you will download a release from GitHub. Note that the [PKGBUILD](https://github.com/DevilishSpirits/arcollect/blob/master/packaging/PKGBUILD.in#L15) force a release configuration with LTO and optimizations turned on.
+Install dependencies and then configure the project into the `build` directory with the ArchLinux specific configuration (`--prefix=/usr --libexecdir lib`) you may want to enable optimizations (`--buildtype=release -Db_lto=true -Db_pie=true`). Then `cd` into `build/packaging` that contain the configured [`PKGBUILD`](PKGBUILD.in) and run [`makepkg`](https://man.archlinux.org/man/makepkg.8) **with the `PKGBUILD.local` file !** Else you will download a release from GitHub. The `PKGBUILD.local` reuse the existing build-directory.
+
+**Warning!** The makepkg step should not trigger a reconfigure, if so dependency listing may be broken. To avoid that, always build the project before invoking `makepkg`.
 
 ```sh
-	meson build
-	# NOTE! If you install dependencies. Wipe `build` and configure again to get correct dependencies listing.
-	cd build/packaging
-	makepkg -p PKGBUILD.local
+	meson build --prefix=/usr --libexecdir lib --buildtype=release -Db_lto=true -Db_pie=true
+	# This one liner avoid a reconfiguration during makepkg
+	ninja -C build && (cd build/packaging; makepkg -fp PKGBUILD.local)
 ```
 
 ### [Debian](https://www.debian.org/) and derived

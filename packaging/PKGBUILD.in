@@ -12,7 +12,7 @@ source=(@PKGBUILD_SOURCE@)
 md5sums=(@PKGBUILD_MD5SUMS@)
 
 build() {
-	meson --prefix=/usr --buildtype=release -Db_lto=true -Db_pie=true --libexecdir lib @PKGBUILD_SRCDIR@ '@PKGBUILD_BUILDDIR@' 
+	@PKGBUILD_MESON_COMMAND@
 	meson compile -C '@PKGBUILD_BUILDDIR@'
 }
 
