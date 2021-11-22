@@ -41,7 +41,7 @@ Please, keep things simple and cross-patform, you have C++, a modern SDL and a b
 ## Installation
 Recent Linux distributions and Microsoft Windows with Firefox are supported.
 
-I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.18) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.18#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
+I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.19) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.19#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
 The Windows MSI is not signed and Microsoft SmartScreen filter incorrectly flag it as hazardous, you must insist to download the file, then open MSI file properties, check *Unblock* in the bottom and *Ok*. The MSI should now works.
 
 If you want to build the software yourself, grab the source code, install Meson (>0.59.0), dbus on UNIX-like, SQLite, FreeType2, Harfbuzz, OpenImageIO, lcms2 and libcurl. CMake is also required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
