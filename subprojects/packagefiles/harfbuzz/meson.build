@@ -1,6 +1,6 @@
 # Modifications of HarfBuzz meson.build for Arcollect
 project('harfbuzz', 'c', 'cpp',
-  version: '2.9.1',
+  version: '3.1.1',
 )
 
 hb_version_arr = meson.project_version().split('.')
@@ -31,6 +31,8 @@ if cpp.get_id() == 'msvc'
   add_project_arguments(msvc_args, language: ['c', 'cpp'])
   # Disable SAFESEH with MSVC for libs that use external deps that are built with MinGW
   # noseh_link_args = ['/SAFESEH:NO']
+  # disable exception handling
+  add_project_arguments(['/EHs-', '/EHc-'], language: 'cpp')
 endif
 
 add_project_link_arguments(cpp.get_supported_link_arguments([
@@ -168,17 +170,12 @@ if host_machine.system() == 'windows' and not get_option('gdi').disabled()
 endif
 
 # DirectWrite (Windows)
-directwrite_dep = null_dep
 if host_machine.system() == 'windows' and not get_option('directwrite').disabled()
   if get_option('directwrite').enabled() and not cpp.has_header('dwrite_1.h')
     error('DirectWrite was enabled explicitly, but required header is missing.')
   endif
 
-  directwrite_dep = cpp.find_library('dwrite', required: get_option('directwrite'))
-
-  if directwrite_dep.found()
-    conf.set('HAVE_DIRECTWRITE', 1)
-  endif
+  conf.set('HAVE_DIRECTWRITE', 1)
 endif
 
 # CoreText (macOS)
