@@ -4,7 +4,7 @@ This directory contain files used to generate packages. If you intend to install
 
 **Important!** You must have a working internet connection to build packages, because the configuration process download additionnal dependencies.
 
-**Warning!** In addition of the application, some other libraries may be built and use a lot of disk space. On recent Linux systems expect around 250MB and 1.2GB on Windows platforms where everything is embeded.
+**Warning!** In addition of the application, some other libraries may be built and takes a lot of disk spaces, 2GB of disk space should be sufficient for worst cases.
 
 ## How to generate a package for my system ?
 Don't immediately configure and build the project, package generation is likely to redo this from scratch and there is some configuration you must change. Install Meson and follow system specific instructions. You should also take a look in [`.github/workflows/release.yml`](https://github.com/DevilishSpirits/arcollect/blob/master/.github/workflows/release.yml) to see how releases are made, it may contain workaround missing there.
