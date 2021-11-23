@@ -152,6 +152,19 @@ inline sqlite_int64 json_read_int(Arcollect::json::ObjHave have, const std::stri
 		throw JSONParsingError("Error while reading "+debug_string+" integral number, syntax error.",iter,end);
 	return out;
 }
+/** JSON int reading helper
+ * \param have What we have
+ * \param debug_string What is read
+ * \return The integer
+ *
+ * Function for things that expect an integer. Perform JSON type checking and
+ * raise an exception on failure.
+ */
+inline sqlite_int64 json_read_int(Arcollect::json::ArrHave have, const std::string& debug_string, char*& iter, char* const end)
+{
+	return json_read_int(static_cast<Arcollect::json::ObjHave>(have),debug_string,iter,end);
+	
+}
 
 /** JSON #platform_id reading helper
  * \param have What we have
