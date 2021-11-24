@@ -23,11 +23,7 @@
 using namespace Arcollect::db::sql;
 #define SQL(name) {#name,name}
 static const std::pair<std::string_view,std::string_view> test_sqls[] = {
-		SQL(adder_insert_account),
-		SQL(adder_insert_artwork),
-		SQL(adder_insert_tag),
-		SQL(delete_artwork),
-		SQL(preload_artworks),
+	@DB_SCHEMA_SRC_TEST_PREPARE@
 };
 
 int main(void)

@@ -7,6 +7,8 @@ The schema itself is documented in [`init.sql`](https://github.com/DevilishSpiri
 
 **Note!** Arcollect configure SQLite with a lot of omited features that you would expect (temporary tables, ...). Checkout the [`meson.build`](../subprojects/packagefiles/sqlite/meson.build) and the [SQLite documentation](https://www.sqlite.org/compile.html). 
 
+The [`test-sql-prepare`](tests/test-sql-prepare.cpp) check if all statements can be prepared by SQLite (unless them in the `db_schema_src_no_test_prepare` array).
+
 The program [`gen-sources.cpp`](https://github.com/DevilishSpirits/arcollect/blob/master/sqls/gen-schema-sources.cpp) generate a pair of source/header with minified version of the SQL statements below.
 
 * [`boot.sql`](https://github.com/DevilishSpirits/arcollect/blob/master/sqls/boot.sql) -- Pragmas runs at each database opening.
