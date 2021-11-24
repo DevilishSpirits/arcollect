@@ -314,10 +314,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 			skiped_glyph_count = -1; // Will be incremented back a few lines later
 		}
 		// Don't render blanks codepoints
-		if (!((glyph_char == U' ')
-		 ||(glyph_char == U'\t')
-		 ||(glyph_char == U'\r')
-		 ||(glyph_char == U'\n')
+		if (!((glyph_char <= 0x20) // Space and ASCII control codes
 		 ||(glyph_char == 0x00A0)) // nbsp
 		 ) {
 			// Emplace the new char
