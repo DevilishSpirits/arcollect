@@ -49,7 +49,7 @@ function save_artwork()
 {
 	// Show that we are saving the artwork
 	saveButton.onclick = null;
-	saveButton.innerText = 'Saving...';
+	saveButton.innerText = arco_i18n_saving;
 	
 	let documentDivs = document.getElementsByTagName('div');
 	let documentAs = document.getElementsByTagName('a');
@@ -136,12 +136,12 @@ function save_artwork()
 	
 	// Submit
 	arcollect_submit(submit_json).then(function() {
-		saveButton.innerText = 'Saved';
+		saveButton.innerText = arco_i18n_saved;
 	}).catch(function(reason) {
 		saveButton.onclick = save_artwork;
-		saveButton.innerText = 'Retry to save in Arcollect';
-		console.log('Failed to save in Arcollect ! '+reason);
-		alert('Failed to save in Arcollect ! '+reason);
+		saveButton.innerText = arco_i18n_save_retry;
+		console.log(arco_i18n_save_fail+' '+reason);
+		alert(arco_i18n_save_fail+' '+reason);
 	});
 }
 
@@ -155,7 +155,7 @@ function make_save_ui() {
 	saveButton = document.createElement("button"); 
 	// Copy styles for aesthetics
 	saveButton.className = fave_button.className;
-	saveButton.innerText = "Save in Arcollect";
+	saveButton.innerText = arco_i18n_save;
 	saveButton.onclick   = save_artwork
 	// Prepend the button
 	fave_button.parentNode.insertBefore(saveButton,fave_button);

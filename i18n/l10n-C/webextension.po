@@ -1,3 +1,23 @@
+msgctxt "webext_save_in_arcollect"
+msgid "Save in Arcollect"
+msgstr ""
+
+msgctxt "webext_save_in_arcollect_failed"
+msgid "Failed to save in Arcollect!"
+msgstr ""
+
+msgctxt "webext_save_in_arcollect_retry"
+msgid "Retry to save in Arcollect"
+msgstr ""
+
+msgctxt "webext_saved_in_arcollect"
+msgid "Saved"
+msgstr ""
+
+msgctxt "webext_saving_in_arcollect"
+msgid "Saving…"
+msgstr ""
+
 msgctxt "webext_tweet_not_in_cache"
 msgid "Tweet is not in cache, open a the tweet in a new tab or reload the page."
 msgstr ""

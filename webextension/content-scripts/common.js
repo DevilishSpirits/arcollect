@@ -66,6 +66,12 @@ function arcollect_download_to_base64(url)
 	});
 }
 
+const arco_i18n_save       = browser.i18n.getMessage('webext_save_in_arcollect');
+const arco_i18n_saving     = browser.i18n.getMessage('webext_saving_in_arcollect');
+const arco_i18n_save_fail  = browser.i18n.getMessage('webext_save_in_arcollect_failed');
+const arco_i18n_save_retry = browser.i18n.getMessage('webext_save_in_arcollect_retry');;
+const arco_i18n_saved      = browser.i18n.getMessage('webext_saved_in_arcollect');;
+
 /** Normalize tag id
  * \param tag The image URL
  * \return The tag in a normalized form

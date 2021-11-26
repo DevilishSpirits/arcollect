@@ -40,14 +40,14 @@ var make_twitter_photo_save_button_intervalID = null;
  */
 function save_twitter_artwork(button, text_button, submit_json, retry_to_save)
 {
-	text_button.innerHTML = 'Saving...';
+	text_button.textContent = arco_i18n_saving;
 	arcollect_submit(submit_json).then(function() {
-		text_button.innerHTML = 'Saved';
+		text_button.textContent = arco_i18n_saved;
 	}).catch(function(reason) {
 		button.onclick = retry_to_save;
-		text_button.innerHTML = 'Retry to save in Arcollect';
-		console.error('Failed to save in Arcollect ! '+reason);
-		alert('Failed to save in Arcollect ! '+reason);
+		text_button.textContent = arco_i18n_save_retry;
+		console.error(arco_i18n_save_fail+' '+reason);
+		alert(arco_i18n_save_fail+' '+reason);
 	});
 }
 /** Save the artwork
@@ -101,7 +101,10 @@ function make_twitter_photo_save_button() {
 		if (button_svg != null)
 			button_svg.parentNode.remove()
 		// Set text
-		new_button.querySelector("[data-testid=app-text-transition-container]").innerHTML = "Save in Arcollect";
+		let text_entry = new_button.querySelector("[data-testid=app-text-transition-container]");
+		text_entry.innerHTML = '';// TODO text_entry.replaceChildren(); // Require Firefox 78 (2020-06-30), don't lost 3 years of backward compatibility with Firefox 57 (2017-11-23)
+		text_entry.textContent = arco_i18n_save;
+		
 		// Append the button
 		buttons_bar.appendChild(new_button);
 		new_button.onclick = make_twitter_photo_save_button_clicked;

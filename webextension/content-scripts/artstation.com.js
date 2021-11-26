@@ -29,7 +29,7 @@ function artstation_save_artwork(saveButtonA)
 {
 	// Show that we are saving the artwork
 	saveButtonA.onclick = null;
-	saveButtonA.text = 'Saving...';
+	saveButtonA.text = arco_i18n_saving;
 	
 	/** Get download URL
 	 *
@@ -122,12 +122,12 @@ function artstation_save_artwork(saveButtonA)
 	
 	// Submit
 	arcollect_submit(submit_json).then(function() {
-		saveButtonA.text = 'Saved';
+		saveButtonA.text = arco_i18n_saved;
 	}).catch(function(reason) {
 		saveButtonA.onclick = save_artwork;
-		saveButtonA.text = 'Retry to save in Arcollect';
-		console.log('Failed to save in Arcollect ! '+reason);
-		alert('Failed to save in Arcollect ! '+reason);
+		saveButtonA.text = arco_i18n_save_retry;
+		console.log(arco_i18n_save_fail+' '+reason);
+		alert(arco_i18n_save_fail+' '+reason);
 	});
 }
 
@@ -136,7 +136,7 @@ function artstation_save_artwork(saveButtonA)
  */
 function artstation_make_save_ui(assetActions) {
 	let saveButtonA = document.createElement("a");
-	saveButtonA.text = "Save in Arcollect";
+	saveButtonA.text = arco_i18n_save;
 	saveButtonA.className = "btn";
 	saveButtonA.onclick = function(){artstation_save_artwork(saveButtonA);};
 	

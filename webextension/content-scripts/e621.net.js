@@ -44,10 +44,10 @@ function save_artwork()
 {
 	// Show that we are saving the artwork
 	saveButtonA.onclick = null;
-	saveButtonA.text = 'Saving...';
+	saveButtonA.text = arco_i18n_saving;
 	saveButtonA.className = "button btn-warn";
 	saveButtonA.style = 'cursor:progress;';
-	Danbooru.notice('Saving...');
+	Danbooru.notice(arco_i18n_saved);
 	
 	/** Normalize source URL
 	 *
@@ -152,17 +152,17 @@ function save_artwork()
 	
 	// Submit
 	arcollect_submit(submit_json).then(function() {
-		saveButtonA.text = 'Saved';
+		saveButtonA.text = arco_i18n_saved;
 		saveButtonA.className = 'button btn-success';
 		saveButtonA.style = 'cursor:default;';
 		Danbooru.notice('Saved in Arcollect');
 	}).catch(function(reason) {
 		saveButtonA.onclick = save_artwork;
-		saveButtonA.text = 'Retry to save in Arcollect';
+		saveButtonA.text = arco_i18n_save_retry;
 		saveButtonA.className = 'button btn-danger';
 		saveButtonA.style = 'cursor:pointer;';
-		console.log('Failed to save in Arcollect ! '+reason);
-		alert('Failed to save in Arcollect ! '+reason);
+		console.log(arco_i18n_save_fail+' '+reason);
+		alert(arco_i18n_save_fail+' '+reason);
 	});
 }
 
@@ -170,7 +170,7 @@ function save_artwork()
  */
 function make_save_ui() {
 	saveButtonA = document.createElement("a");
-	saveButtonA.text = "Save in Arcollect";
+	saveButtonA.text = arco_i18n_save;
 	saveButtonA.className = "button btn-warn";
 	saveButtonA.style = 'cursor:pointer;';
 	saveButtonA.onclick = save_artwork;
