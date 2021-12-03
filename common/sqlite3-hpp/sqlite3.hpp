@@ -59,6 +59,12 @@ namespace SQLite3 {
 		inline int bind(int column, const std::optional<T>& value) {
 			return value ? bind(column,*value) :  bind_null(column);
 		}
+		int column_type(int iCol) {
+			return sqlite3_column_type((sqlite3_stmt*)this,iCol);
+		}
+		bool column_null(int iCol) {
+			return column_type(iCol) == SQLITE_NULL;
+		}
 		/* TODO
 		const void *sqlite3_column_blob(sqlite3_stmt*, int iCol);
 		*/
@@ -70,6 +76,9 @@ namespace SQLite3 {
 		}
 		inline sqlite3_int64 column_int64(int iCol) {
 			return sqlite3_column_int64((sqlite3_stmt*)this,iCol);
+		}
+		inline std::optional<sqlite3_int64> column_opt_int64(int iCol) {
+			return column_null(iCol) ? std::nullopt : std::make_optional(column_int64(iCol));
 		}
 		inline const char *column_text(int iCol) {
 			return reinterpret_cast<const char*>(sqlite3_column_text((sqlite3_stmt*)this,iCol));
@@ -83,9 +92,6 @@ namespace SQLite3 {
 		int sqlite3_column_bytes(sqlite3_stmt*, int iCol);
 		int sqlite3_column_bytes16(sqlite3_stmt*, int iCol);
 		*/
-		inline int column_type(int iCol) {
-			return sqlite3_column_type((sqlite3_stmt*)this,iCol);
-		}
 		inline int step(void) {
 			return sqlite3_step((sqlite3_stmt*)this);
 		}
