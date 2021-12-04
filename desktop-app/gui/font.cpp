@@ -219,9 +219,13 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 	hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
 	glyphs.reserve(glyph_base+glyph_count);
 	unsigned int glyphi_line_start = 0;
-	auto clusteri_line_end = text.find(U'\n'); // To break at \n
+	// Process leading '\n' (avoid a SEGFAULT in the code)
+	for (;(glyphi_line_start < glyph_count)&&(text[glyphi_line_start] == '\n'); ++glyphi_line_start)
+		cursor.y += line_spacing;
+	
+	auto clusteri_line_end = text.find(U'\n',glyphi_line_start ? glyphi_line_start+1 : 0); // To break at \n
 	// Process glyphs
-	for (unsigned int i = 0; i < glyph_count; i++) {
+	for (unsigned int i = glyphi_line_start; i < glyph_count; i++) {
 		hb_glyph_info_t &glyph_info = glyph_infos[i];
 		glyph_pos[i].x_advance >>= 6;
 		glyph_pos[i].y_advance >>= 6;
