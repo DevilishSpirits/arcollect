@@ -1,5 +1,5 @@
 [wrap-file]
-directory = SDL-007b5463e842bb90167be33d8ea62a8f182ab771
-source_url = https://github.com/libsdl-org/SDL/archive/007b5463e842bb90167be33d8ea62a8f182ab771.zip
-source_filename = SDL-007b5463e842bb90167be33d8ea62a8f182ab771.zip
-source_hash = 818e70cb730903e10c310b70c0f10d6987f3e2b930e30ff3099a91f88e742f7d
+directory = SDL2-2.0.18
+source_url = https://www.libsdl.org/release/SDL2-2.0.18.tar.gz
+source_filename = SDL-SDL2-2.0.18.tar.gz
+source_hash = 94d40cd73dbfa10bb6eadfbc28f355992bb2d6ef6761ad9d4074eff95ee5711c

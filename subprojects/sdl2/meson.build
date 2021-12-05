@@ -1,5 +1,5 @@
 # Thin wrapper around the CMake project
-project('sdl2', 'c', version: '2.0.14')
+project('sdl2', 'c', version: '2.0.18')
 
 cc = meson.get_compiler('c')
 cmake = import('cmake')

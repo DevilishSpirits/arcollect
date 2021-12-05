@@ -68,7 +68,7 @@ config_h.set('ARCOLLECT_DBUS_PATH','/')
 
 # Version requirements
 # These are centralized here. Update README.md if you change things there.
-#config_h.set('ARCOLLECT_VERREQ_sdl2','>=2.0.x') # TODO Switch back to an SDL release when the ICC profile patch get released
+config_h.set('ARCOLLECT_VERREQ_sdl2','>=2.0.18')
 config_h.set('ARCOLLECT_VERREQ_boost','>=1.53') # Keep in sync with OIIO needs! # FIXME Should we use the recommend version?
 config_h.set('ARCOLLECT_VERREQ_libcurl','>=7.60')
 config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
@@ -85,9 +85,7 @@ config_h_inc = include_directories('.')
 if enable_native_progs
 	dep_curl = dependency('libcurl', required: true)
 	
-	# SDL_GetWindowICCProfile has not been released yet
-	#dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
-	dep_sdl2 = subproject('sdl2').get_variable('sdl2_dep')
+	dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
 	
 	dep_oiio = dependency('OpenImageIO', fallback: ['oiio', 'dep_oiio'], default_options: [
 		'enable_bmp=enabled',
@@ -117,7 +115,6 @@ endif
 system_dependencies = []
 static_dependencies = []
 if enable_native_progs
-	# TODO Add sdl2 when no longer using a special branch
 	native_progs_deps = [
 		'freetype2',
 		'harfbuzz',
