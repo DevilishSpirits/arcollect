@@ -97,6 +97,7 @@ arcollect_mime_by_ext = {
 	'jpg' : 'image/jpeg',
 	'jpeg': 'image/jpeg',
 	'png' : 'image/png',
+	'rtf' : 'text/rtf',
 }
 /** File extension to MIME type dictionary
  * \return the MIME type or undefined if not supported by Arcollect.
