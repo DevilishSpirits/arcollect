@@ -4,13 +4,30 @@ l10n_cpp_translations = {
 	'common': [
 		'fr',
 	]
-	,'desktop_app': [
-		'fr',
-	]
 	,'webextension': [
 		'fr',
 	]
 }
+i18n_module_deps = {
+	'common': [
+	],
+	'webextension': [
+	],
+}
+if enable_native_progs
+	l10n_cpp_translations += {
+		'desktop_app': [
+			'fr',
+		],
+	}
+	i18n_module_deps += {
+		'desktop_app': [
+			dep_freetype,
+			dep_harfbuzz,
+			dep_sdl2,
+		],
+	}
+endif
 
 i18n_incs = include_directories('.')
 i18n_deps = {}
@@ -60,7 +77,7 @@ foreach module, locales: l10n_cpp_translations
 	cpp_files += hpp_files
 	cpp_files += configure_file(input: 'module-template.cpp', output: 'l10n-'+module+'.cpp', configuration: conf)
 	i18n_deps += { module: declare_dependency(
-		link_with: static_library('l10n-'+module, cpp_files, include_directories: i18n_incs),
+		link_with: static_library('l10n-'+module, cpp_files, dependencies: i18n_module_deps[module], include_directories: i18n_incs),
 		sources: hpp_files, # For correct dependency graph
 		include_directories: i18n_incs
 	)}
