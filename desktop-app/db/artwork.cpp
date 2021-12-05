@@ -222,6 +222,8 @@ void Arcollect::db::artwork::db_sync(void)
 			 &&(art_mimetype[3] == 't')
 			 &&(art_mimetype[4] == '/')) {
 				artwork_type = ARTWORK_TYPE_TEXT;
+			} else if (art_mimetype == "application/rtf") {
+				artwork_type = ARTWORK_TYPE_TEXT;
 			} else artwork_type = ARTWORK_TYPE_UNKNOWN;
 			
 			data_version = Arcollect::data_version;

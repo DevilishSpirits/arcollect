@@ -78,6 +78,7 @@ Arcollect::gui::font::Elements Arcollect::art_reader::text(const std::filesystem
 		else if (subtype == "rtf") {
 			return text_rtf(&*file_content.begin(),&*file_content.end());
 		} return elements << Y << mime << W << U" text types are not supported."sv;
-	}
+	} else if (mime == "application/rtf")
+		return text_rtf(&*file_content.begin(),&*file_content.end());
 	return elements << Y << mime << W << U" text types are not supported."sv;
 }
