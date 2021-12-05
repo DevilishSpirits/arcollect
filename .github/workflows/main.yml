@@ -92,7 +92,7 @@ jobs:
       - name: Install Mozilla's web-ext with npm
         run: sudo npm install -g web-ext
       - name: Setup project
-        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now'
+        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dfatal_cpp_feature_miss=false
       - name: Build project
         run: ninja -C build
       - name: Uploading arcollect-webextension.zip artifact
@@ -133,7 +133,7 @@ jobs:
       - name: Install Meson
         run: pip install meson ninja
       - name: Configure project
-        run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,robin-map,roboto,sdl2,harfbuzz,sqlite3,boost -Dcpp_link_args=-static -Dc_link_args=-static # TODO Make it works on Windows
+        run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,robin-map,roboto,sdl2,harfbuzz,sqlite3,boost -Dcpp_link_args=-static -Dc_link_args=-static -Dfatal_cpp_feature_miss=false # TODO Make it works on Windows
       - name: Build project
         run: ninja -C build
       - name: Generate MSI

@@ -83,6 +83,51 @@ config_h_inc = include_directories('.')
 
 # Dependencies
 if enable_native_progs
+	# Query C++ features
+	cpp_required_features = {
+		# C++17 features
+		'__cpp_fold_expressions'       : '>=201603',
+		'__cpp_lib_filesystem'         : '>=201703',
+		'__cpp_lib_optional'           : '>=201606',
+		'__cpp_lib_variant'            : '>=201606',
+		'__cpp_lib_to_chars'           : '>=201611',
+		'__cpp_lib_string_view'        : '>=201606',
+		# C++14 features
+		'__cpp_lib_string_udls'        : '>=201304',
+		'__cpp_lib_make_unique'        : '>=201304',
+		# C++11 features
+		'__cpp_unicode_characters'     : '>=200704',
+		'__cpp_unicode_literals'       : '>=200710',
+		'__cpp_lambdas'                : '>=200907',
+		'__cpp_constexpr'              : '>=200704',
+		'__cpp_range_based_for'        : '>=200907',
+		'__cpp_static_assert'          : '>=200410',
+		'__cpp_decltype'               : '>=200707',
+		'__cpp_variadic_templates'     : '>=200704',
+		'__cpp_initializer_lists'      : '>=200806',
+		'__cpp_delegating_constructors': '>=200604',
+		'__cpp_alias_templates'        : '>=200704',
+		# C++98 features
+		'__cpp_exceptions'             : '>=199711',
+	}
+	errmsg = []
+	foreach feature, version_min: cpp_required_features
+		version = cpp.get_define(feature, prefix: '#include <version>')
+		if version == ''
+			errmsg += feature+' (require '+version_min+')'
+		elif not version.version_compare(version_min)
+			errmsg += feature+' (found '+version+', requires '+version_min+')'
+		endif
+	endforeach
+	if errmsg.length() > 0
+		if get_option('fatal_cpp_feature_miss')
+			message('You may try again with -Dfatal_cpp_feature_miss=false to bypass this check')
+			error('The following C++ features are missing:',', '.join(errmsg))
+		else
+			warning('The following C++ features are missing:',', '.join(errmsg))
+		endif
+	endif
+	# Query dependencies
 	dep_curl = dependency('libcurl', required: true)
 	
 	dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
