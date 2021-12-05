@@ -64,5 +64,12 @@ namespace Arcollect {
 		 *       Only simple things like `text/plain; charset=utf-8` works.
 		 */
 		Charset mime_extract_charset(const std::string_view &mime, std::string_view &charset_name);
+		
+		/** Load an RTF (direct function)
+		 * \param iter The begin of RTF document
+		 * \param end  The end of the RTF document (a past-the-end iterator)
+		 * \return The #Arcollect::gui::font::Elements
+		 */
+		TextElements text_rtf(const char* iter, const char *const end);
 	};
 }

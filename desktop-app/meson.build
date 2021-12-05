@@ -18,6 +18,7 @@ deskapp_srcs = [
 	'i18n.cpp',
 	'art-reader/image.cpp',
 	'art-reader/text.cpp',
+	'art-reader/text-rtf.cpp',
 	'db/account.cpp',
 	'db/artwork.cpp',
 	'db/artwork-loader.cpp',

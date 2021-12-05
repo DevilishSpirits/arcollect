@@ -44,7 +44,6 @@ Arcollect::art_reader::Charset Arcollect::art_reader::mime_extract_charset(const
 		return Charset::UTF8;
 	else return Charset::UNKNOWN;
 }
-
 Arcollect::gui::font::Elements Arcollect::art_reader::text(const std::filesystem::path &path, const std::string_view &mime)
 {
 	constexpr SDL::Color Y{0xFFFF00ff}; // Yellow
@@ -75,6 +74,9 @@ Arcollect::gui::font::Elements Arcollect::art_reader::text(const std::filesystem
 					return elements << file_content;
 				case Charset::UTF32:
 					return elements << file_content_as_utf32;
+			}
+		else if (subtype == "rtf") {
+			return text_rtf(&*file_content.begin(),&*file_content.end());
 		} return elements << Y << mime << W << U" text types are not supported."sv;
 	}
 	return elements << Y << mime << W << U" text types are not supported."sv;
