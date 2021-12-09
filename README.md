@@ -17,7 +17,7 @@ Currently these platforms are supported :
 * **[DeviantArt](https://www.deviantart.com/)** - You have a `Save in Arcollect` button below the artwork. Support is limited.
 * **[e621](https://e621.net/)**/**[e926](https://e926.net)** - You have a `Save in Arcollect` button below the artwork.
 * **[FurAffinity](https://www.furaffinity.net/)** - You have a `Save in Arcollect` button below the artwork.
-* **[Twitter](https://twitter.com/)** - Click on the photo you want to save and `Save in Arcollect` button appear in the bottom. Support is still buggy.
+* **[Twitter](https://twitter.com/)** - Click on the photo you want to save and `Save in Arcollect` button appear in the bottom. Support is slightly buggy.
 
 ## About privacy
 Arcollect by itself does not collect any data or statistics, it is not a spyware. Only your artworks and settings are stored inside your personal folder and stay there.
@@ -44,7 +44,7 @@ Recent Linux distributions and Microsoft Windows with Firefox are supported.
 I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.19) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.19#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
 The Windows MSI is not signed and Microsoft SmartScreen filter incorrectly flag it as hazardous, you must insist to download the file, then open MSI file properties, check *Unblock* in the bottom and *Ok*. The MSI should now works.
 
-If you want to build the software yourself, grab the source code, install Meson (>0.59.0), dbus on UNIX-like, SQLite, FreeType2, Harfbuzz, OpenImageIO, lcms2 and libcurl. CMake is also required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
+If you want to build the software yourself, grab the source code, install Meson (>0.59.0), dbus on UNIX-like, SDL2, SQLite, FreeType2, Harfbuzz, OpenImageIO, lcms2 and libcurl. CMake might be required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
 
 ```sh
 	# Ensure that you have a working version of Meson
