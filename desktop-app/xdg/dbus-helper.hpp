@@ -110,8 +110,9 @@ namespace DBus {
 				}
 				
 				inline iterator &operator++(void) {
-					next();
 					not_past_end = has_next();
+					if (not_past_end)
+						next();
 					return *this;
 				}
 				inline iterator &operator*(void) {

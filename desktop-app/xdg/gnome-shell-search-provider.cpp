@@ -24,9 +24,10 @@ std::unique_ptr<SQLite3::stmt> Arcollect::dbus::gnome_shell_search_provider_resu
 static std::string gnome_shell_search_string(DBus::Message::iterator terms)
 {
 	std::string search_string;
-	for (auto term: terms) {
-		search_string += " " + std::string(term.get_basic<const char*>());
-	}
+	for (auto term: terms)
+		search_string += std::string(term.get_basic<const char*>()) + " ";
+	if (!search_string.empty())
+		search_string.pop_back();
 	return search_string;
 }
 static DBusHandlerResult GetResultSet(DBus::Connection &conn, DBusMessage *message, DBus::Message::iterator terms)
