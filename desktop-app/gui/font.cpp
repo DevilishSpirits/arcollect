@@ -336,7 +336,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 		cursor.y += glyph_pos[i].y_advance;
 	}
 	// Align the rest
-	align_glyphs(state.attrib_iter->alignment,glyph_base+glyphi_line_start+skiped_glyph_count,glyph_count,state.wrap_width - cursor.x);
+	align_glyphs(state.attrib_iter->alignment,glyph_base+glyphi_line_start+skiped_glyph_count,glyph_base+glyph_count,state.wrap_width - cursor.x);
 	// Cleanups and late updates
 	hb_buffer_destroy(buf);
 	state.text_run_cluster_offset += glyph_count;
