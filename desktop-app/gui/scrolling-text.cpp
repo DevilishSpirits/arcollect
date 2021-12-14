@@ -33,8 +33,8 @@ void Arcollect::gui::scrolling_text::scroll_text(int line_delta, const SDL::Rect
 void Arcollect::gui::scrolling_text::set_static_elements(const Arcollect::gui::font::Elements& new_elements)
 {
 	elements = new_elements;
-	elements.initial_height() = Arcollect::config::writing_font_size;
-	elements.initial_justify() = true;
+	// TODO elements.initial_height() = Arcollect::config::writing_font_size;
+	// TODO elements.initial_justify() = true;
 	renderable.reset();
 }
 void Arcollect::gui::scrolling_text::render(SDL::Rect target)

@@ -77,11 +77,13 @@ namespace Arcollect {
 				constexpr TypeName(decltype(value) value) : value(value) {} \
 				constexpr TypeName(const TypeName&) = default;
 			struct FontSize {
-				int value;
+				float value;
 				Arcollect_gui_font_element_wrapper_boilerplate(FontSize)
-				static const FontSize normal;
+				constexpr FontSize(void) : value(1) {}
 			};
-			static constexpr FontSize normal_font_size = 12;
+			constexpr FontSize ExactFontSize(float value) {
+				return FontSize(-value);
+			}
 			/** Justification flag (bool)
 			 *
 			 * Append this to an Arcollect::gui::font::Elements to turn on/off
@@ -229,35 +231,6 @@ namespace Arcollect {
 					}
 					
 				public:
-					/** Initial font size
-					 * \return A reference to the font size of the text beginning.
-					 * \warning The reference can be invalidated by operator<<().
-					 */
-					FontSize  &initial_height(void) {
-						return text_runs[0].first;
-					}
-					/** Initial alignment
-					 * \return A reference to the alignment of the text beginning.
-					 * \warning The reference can be invalidated by operator<<().
-					 */
-					Align     &initial_alignment(void) {
-						return attributes[0].alignment;
-					}
-					/** Initial justification
-					 * \return A reference to the justification of the text beginning.
-					 * \warning The reference can be invalidated by operator<<().
-					 */
-					Justify   &initial_justify(void) {
-						return attributes[0].justify;
-					}
-					/** Initial color
-					 * \return A reference to the color of the text beginning.
-					 * \warning The reference can be invalidated by operator<<().
-					 */
-					SDL::Color &initial_color(void) {
-						return attributes[0].color;
-					}
-					
 					/** Change justification
 					 *
 					 * The current line justification is changed.
@@ -318,34 +291,22 @@ namespace Arcollect {
 						return text_runs[0].second.empty();
 					}
 					
-					/** std::u32string move-constructor
-					 * \param string    The string to steal.
-					 * \param font_size The font size.
-					 *
-					 * Create a new #Elements with an initial text_run. The string content
-					 * is moved.
-					 * Use initial_* functions to set initial values.
-					 */
-					Elements(std::u32string &&string, FontSize font_size = normal_font_size) :
-						attributes{{static_cast<decltype(Attributes::end)>(string.size()),
-						// Initial attributes
-						Align::LEFT,        // Alignment
-						false,              // Justification
-						{255,255,255,255}}, // Color
-					},text_runs{{font_size,std::move(string)}},
-						must_push_new_attribute(string.empty()) {}
-					/** Default constructor
-					 *
-					 * Create an empty #Elements
-					 */
-					Elements(void) : Elements(U""s) {}
-					
 					/** Parameter pack builder
 					 * \param args Parameter pack
 					 *
 					 * Create a new #Elements by operator<<() all items of the parameter
 					 * pack.
 					 */
+					Elements(void) :
+						attributes{{0,
+						// Initial attributes
+						Align::LEFT,        // Alignment
+						false,              // Justification
+						{255,255,255,255}}, // Color
+					},text_runs{{1,std::move(U""s)}},
+						must_push_new_attribute(true) {
+					}
+					
 					template <typename ... Args>
 					static Elements build(Args... args) {
 						return (Elements() << ... << args);
@@ -528,7 +489,7 @@ namespace Arcollect {
 					 *
 					 * \note The text will be convertd to UTF-32.
 					 */
-					Renderable(const std::string_view& text, FontSize font_size = normal_font_size, int wrap_width = std::numeric_limits<int>::max())
+					Renderable(const std::string_view& text, FontSize font_size, int wrap_width = std::numeric_limits<int>::max())
 						: Renderable(Elements() << font_size << text,wrap_width) {}
 					Renderable(const Renderable&) = default;
 					void render_tl(int x, int y);

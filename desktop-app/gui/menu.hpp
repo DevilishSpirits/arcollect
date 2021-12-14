@@ -112,11 +112,11 @@ namespace Arcollect {
 				menu_item_simple_label(const font::Elements& elements, std::function<void()> onclick)
 					: menu_item_label(elements), onclick(onclick) {}
 				menu_item_simple_label(std::u32string&& label, std::function<void()> onclick)
-					: menu_item_simple_label(font::Elements(std::move(label),14),onclick) {}
+					: menu_item_simple_label(font::Elements::build(std::move(label)),onclick) {}
 				menu_item_simple_label(const std::u32string_view& label, std::function<void()> onclick)
 					: menu_item_simple_label(std::u32string(label),onclick) {}
 				menu_item_simple_label(const std::string_view& label, std::function<void()> onclick)
-					: menu_item_simple_label(font::Elements::build(font::FontSize(14),label),onclick) {}
+					: menu_item_simple_label(font::Elements::build(label),onclick) {}
 		};
 		
 		/** Menu item that open a website
@@ -134,7 +134,7 @@ namespace Arcollect {
 				menu_item_simple_link(const font::Elements& elements, const std::string_view &link)
 					: menu_item_label(elements), link(link) {}
 				menu_item_simple_link(const std::u32string_view& label, const std::string_view &link)
-					: menu_item_simple_link(font::Elements::build(font::FontSize(14),label),link) {}
+					: menu_item_simple_link(font::Elements::build(label),link) {}
 				template <typename ... Args>
 				static std::shared_ptr<menu_item> make_shared(Args... args) {
 					return std::shared_ptr<menu_item>(new menu_item_simple_link(args...));

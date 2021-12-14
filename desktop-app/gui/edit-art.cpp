@@ -29,7 +29,7 @@ struct on_set_rating {
 		using namespace Arcollect::gui;
 		modal_back().to_pop = true;
 		// TODO i18n
-		font::Elements elements(U"Mark artworks as "s,14);
+		auto elements = font::Elements::build(U"Mark artworks as "sv);
 		switch (rating) {
 			case Arcollect::config::Rating::RATING_NONE: {
 				elements << SDL::Color(128,255,128,255) << U"Safe"sv;
@@ -52,14 +52,13 @@ struct on_set_rating {
 void Arcollect::gui::popup_edit_art_metadata(std::shared_ptr<Arcollect::db::artwork_collection>& collection)
 {
 	using namespace Arcollect::gui;
-	const auto delete_elements = font::Elements::build(font::FontSize(14),SDL::Color{255,0,0,255},i18n_desktop_app.edit_artwork_delete);
-	const auto set_rating_elements = font::Elements::build(font::FontSize(14),i18n_desktop_app.edit_artwork_set_rating);
+	const auto delete_elements = font::Elements::build(SDL::Color{255,0,0,255},i18n_desktop_app.edit_artwork_delete);
+	const auto set_rating_elements = font::Elements::build(i18n_desktop_app.edit_artwork_set_rating);
 	// Build GUI
 	const std::vector<std::shared_ptr<menu_item>> menu_items = {
 		std::make_shared<menu_item_simple_label>(delete_elements,[collection](){
 			// TODO i18n
-			Arcollect::gui::font::Elements really_delete_elements(U"I really want to delete the artworks"s,14);
-			really_delete_elements.initial_color()  = {255,0,0,255};
+			auto really_delete_elements = Arcollect::gui::font::Elements::build(SDL::Color{255,0,0,255},U"I really want to delete the artworks"sv);
 			Arcollect::gui::menu::popup_context({
 				std::make_shared<Arcollect::gui::menu_item_simple_label>(really_delete_elements,[collection]() {
 					collection->db_delete();

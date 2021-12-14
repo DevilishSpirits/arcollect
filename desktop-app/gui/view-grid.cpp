@@ -77,7 +77,7 @@ void Arcollect::gui::view_vgrid::render_viewport_hover(const artwork_viewport& v
 	renderer->FillRect(rect);
 	// Draw title
 	if (caption_cache_artwork != viewport.artwork) {
-		caption_title = gui::font::Renderable(viewport.artwork->title(),18,rect.w);
+		caption_title = gui::font::Renderable(viewport.artwork->title(),1,rect.w);
 		caption_cache_has_artist = false; // Invalidate caption_account
 		caption_cache_artwork = viewport.artwork;
 	}
@@ -87,10 +87,7 @@ void Arcollect::gui::view_vgrid::render_viewport_hover(const artwork_viewport& v
 	auto accounts = viewport.artwork->get_linked_accounts("account");
 	if (accounts.size()) {
 		if (!caption_cache_has_artist) {
-			Arcollect::gui::font::Elements elements;
-			elements << std::string_view(accounts[0]->title());
-			elements.initial_color()  = {255,255,255,192};
-			elements.initial_height() = 14;
+			auto elements = Arcollect::gui::font::Elements::build(SDL::Color{255,255,255,192},std::string_view(accounts[0]->title()));
 			caption_account = gui::font::Renderable(elements,rect.w);
 			caption_cache_has_artist = true;
 		}

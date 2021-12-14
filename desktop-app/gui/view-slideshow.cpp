@@ -149,8 +149,8 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	// Render text
 	// TODO Cache this
 	Arcollect::gui::font::Elements elements;
-	elements << Arcollect::gui::font::FontSize(font_height  ) << artwork.title() << U"\n"s
-	         << Arcollect::gui::font::FontSize(font_height/4) << artwork.desc();
+	elements << Arcollect::gui::font::ExactFontSize(font_height  ) << artwork.title() << U"\n"s
+	         << Arcollect::gui::font::ExactFontSize(font_height/4) << artwork.desc();
 	Arcollect::gui::font::Renderable desc_renderable(elements,render_rect.w);
 	desc_renderable.render_tl(render_rect.x,render_rect.y);
 }
@@ -230,11 +230,9 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 					text_display.render(target);
 				} break;
 				case db::artwork::ARTWORK_TYPE_UNKNOWN: {
-					Arcollect::gui::font::Elements unknown_artwork_elements;
-					unknown_artwork_elements.initial_height() = 22;
-					unknown_artwork_elements.initial_color()  = {255,255,0,255};
-					unknown_artwork_elements << std::string_view(viewport.artwork->mimetype()) << (SDL::Color){255,255,255,255} << U" artwork type is not supported."sv;
-					Arcollect::gui::font::Renderable unknown_artwork_text_cache(unknown_artwork_elements);
+					Arcollect::gui::font::Renderable unknown_artwork_text_cache(Arcollect::gui::font::Elements::build(Arcollect::gui::font::FontSize(1.5),
+						SDL::Color{255,255,0,255},std::string_view(viewport.artwork->mimetype()),(SDL::Color){255,255,255,255},U" artwork type is not supported."sv
+					));
 					unknown_artwork_text_cache.render_tl(rect.x+(rect.w-unknown_artwork_text_cache.size().x)/2,rect.y+(rect.h-unknown_artwork_text_cache.size().y)/2);
 				} break;
 			}
@@ -248,7 +246,7 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 	} else {
 		static std::unique_ptr<Arcollect::gui::font::Renderable> no_artwork_text_cache;
 		if (!no_artwork_text_cache)
-			no_artwork_text_cache = std::make_unique<Arcollect::gui::font::Renderable>(Arcollect::gui::font::Elements(U"There is no artwork to show"s,22));
+			no_artwork_text_cache = std::make_unique<Arcollect::gui::font::Renderable>(Arcollect::gui::font::Elements::build(Arcollect::gui::font::FontSize(1.5),U"There is no artwork to show"sv));
 		no_artwork_text_cache->render_tl(rect.x+(rect.w-no_artwork_text_cache->size().x)/2,rect.y+(rect.h-no_artwork_text_cache->size().y)/2);
 	}
 	//render_info_incard();
@@ -265,7 +263,7 @@ void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int windo
 		// Render title
 		const int title_border = target.h/4;
 		if (!title_text_cache)
-			title_text_cache = std::make_unique<font::Renderable>(viewport.artwork->title().c_str(),target.h-2*title_border);
+			title_text_cache = std::make_unique<font::Renderable>(viewport.artwork->title().c_str(),-target.h+2*title_border);
 		title_text_cache->render_tl(target.x+title_border+target.h,target.y+title_border);
 		// Render clicks UI
 		// TODO Modify the prototype to include this information

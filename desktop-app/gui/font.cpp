@@ -27,8 +27,6 @@ extern SDL::Renderer *renderer;
 
 static FT_Library ft_library;
 
-const Arcollect::gui::font::FontSize Arcollect::gui::font::FontSize::normal(12);
-
 Arcollect::gui::font::Glyph::Glyph(hb_codepoint_t glyphid, int font_size)
 {
 	FT_Face face = query_face(font_size);
@@ -193,7 +191,7 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::text_runs)::value_type& text_run, RenderingState &state)
 {
 	// Extract parameters
-	const auto            font_size = text_run.first;
+	const int             font_size = text_run.first < 0 ? -text_run.first : text_run.first*14; // TODO Make the size customizable
 	const std::u32string_view& text = text_run.second;
 	SDL::Point              &cursor = state.cursor;
 	// Create the buffer
