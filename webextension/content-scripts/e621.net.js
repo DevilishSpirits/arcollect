@@ -129,7 +129,7 @@ function save_artwork()
 	let pool_names = document.getElementsByClassName('pool-name')
 	if (pool_names.length > 0) {
 		let pool_link = document.getElementsByClassName('pool-name')[0].children[0];
-		title = pool_link.text.split(' ').slice(1,-2).join(' ')+' ('+pool_link.title+')'
+		title = pool_link.text.split(' ').slice(1).join(' ')+' ('+pool_link.title.split('/')[0]+')';
 	} else title = document.title;
 	
 	// Build the JSON
