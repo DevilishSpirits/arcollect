@@ -34,10 +34,10 @@ namespace Arcollect {
 			for (char chr: str) {
 				switch (chr) {
 					case '\\': {
-						result += "\\";
+						result += "\\\\";
 					} break;
 					case '\"': {
-						result += "\\";
+						result += "\\\"";
 					} break;
 					default:
 						if (((uint8_t)chr < 32)||((uint8_t)chr==127)) {
