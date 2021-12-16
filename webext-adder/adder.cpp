@@ -368,6 +368,39 @@ struct new_comic {
 		pages.merge(comic.pages);
 	}
 	
+	void merge_to(std::unordered_set<new_comic*> &merge_with, std::vector<new_comic> &new_comics) {
+		// Merge comics
+		auto iter = merge_with.begin();
+		new_comic& target_comic = **iter;
+		target_comic.merge_from(*this);
+		do {
+			target_comic.merge_from(**iter);
+		} while (++iter != merge_with.end());
+		/* Remove merged comics from new_comics
+		 *
+		 * We remove elements by erasing a valid comic onto them, order
+		 * in the vector does not matter and this avoid jungling with
+		 * dangling pointers and more hazardous stuff in addition of better
+		 * performances.
+		 */
+		merge_with.erase(&target_comic);
+		while (!merge_with.empty()) {
+			// Shrink items located in the back
+			std::unordered_set<new_comic*>::iterator iter;
+			while ((iter = merge_with.find(&new_comics.back())) != merge_with.end()) {
+				new_comics.pop_back();
+				merge_with.erase(iter);
+			}
+			if (merge_with.empty())
+				break;
+			// Erase item
+			iter = merge_with.begin();
+			**iter = std::move(new_comics.back());
+			new_comics.pop_back();
+			merge_with.erase(iter);
+		}
+	}
+	
 	/** Parse a comic JSON
 	 * \param[out] merge_with The list of comics to merge with.
 	 *
@@ -680,39 +713,8 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 					if (merge_with.empty())
 						// New comic, simply append it
 						new_comics.emplace_back(std::move(comic));
-					else {
-						// Merge comics
-						auto iter = merge_with.begin();
-						new_comic& target_comic = **iter;
-						target_comic.merge_from(comic);
-						do {
-							target_comic.merge_from(**iter);
-						} while (++iter != merge_with.end());
-						/* Remove merged comics from new_comics
-						 *
-						 * We remove elements by erasing a valid comic onto them, order
-						 * in the vector does not matter and this avoid jungling with
-						 * dangling pointers and more hazardous stuff in addition of better
-						 * performances.
-						 */
-						merge_with.erase(&target_comic);
-						while (!merge_with.empty()) {
-							// Shrink items located in the back
-							decltype(merge_with)::iterator iter;
-							while ((iter = merge_with.find(&new_comics.back())) != merge_with.end()) {
-								new_comics.pop_back();
-								merge_with.erase(iter);
-							}
-							if (merge_with.empty())
-								break;
-							// Erase item
-							iter = merge_with.begin();
-							**iter = std::move(new_comics.back());
-							new_comics.pop_back();
-							merge_with.erase(iter);
-						}
-					}
-				};
+					else comic.merge_to(merge_with,new_comics);
+				}
 			} break;
 			case Root::art_acc_links: {
 				parse_links("art_acc_links",entry.have,iter,end,new_art_acc_links,db_artworks,db_accounts);
@@ -759,7 +761,6 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 		std::cerr << "Started SQLite transaction" << std::endl;
 		
 	// Read cache
-	// TODO Read comics_missing_pages table and rebuild things
 	std::unique_ptr<SQLite3::stmt> adder_cache_stmt;
 	if (db->prepare(Arcollect::db::sql::adder_cache_artwork,adder_cache_stmt))
 		return "Failed to prepare adder_cache_artwork " + std::string(db->errmsg());
@@ -784,6 +785,8 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 	if (Arcollect::debug.webext_adder)
 		std::cerr << "\tLooking for " << db_tags.cache_map.size() << " tags..." << std::endl;
 	db_tags.query_db(*db,*adder_cache_stmt,platform);
+	
+	// TODO Read the comics_missing_pages table
 	
 	// Now write in the database!
 	std::unique_ptr<SQLite3::stmt>  insert_stmt;
@@ -947,6 +950,8 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 			insert_stmt->reset();
 		}
 	} new_artworks.clear();
+	
+	// TODO Write back the comics_missing_pages table
 	
 	// INSERT INTO accounts
 	struct new_acc_icon {

@@ -4,7 +4,7 @@ The  `arcollect-webext-adder` is the program that handle WebExtension native hos
 
 Within the webextension, you pass this object to the `arcollect_submit()` function, this function manage the communication with this C++ application, the `transaction_id` and wrap the response in a promise for you. 
 
-**Warning!** This protocol is unstable and reserved for Arcollect internal workings. If you really want to add an artwork, using this is still safer than directly changing the even more unstable schema.
+**Warning!** This protocol is unstable and reserved for Arcollect internal workings. Though if you really want to add an artwork, using it is still safer than directly changing the even more unstable schema.
 
 ## Paranoid HTTPS
 When downloading remote assets, the webext-adder requires `https://` transfer (`http://` is not supported) with **TLS 1.2 at least**.
@@ -153,7 +153,7 @@ Let's take an example of a comic where you have a page, the next, the previous,
 the first and the last one of the comic.
 
 ```json
-	"page: {
+	"pages": {
 		"https://example.com/cover#front": {"relative_to": "front_cover"},
 		"https://example.com/first_page" : {"relative_to": "main", "page":  1, "sub": 0},
 		"https://example.com/prev_page"  : {"relative_to": "main", "page": 12, "sub": 0},

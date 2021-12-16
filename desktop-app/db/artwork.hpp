@@ -52,6 +52,8 @@ namespace Arcollect {
 				void db_sync(void);
 				std::string art_mimetype;
 				Arcollect::config::Rating art_rating;
+				sqlite3_int64 art_partof;
+				sqlite3_int64 art_pageno;
 				std::unordered_map<std::string,std::vector<std::shared_ptr<account>>> linked_accounts;
 				/** Query a column
 				 * \param column name
@@ -106,6 +108,12 @@ namespace Arcollect {
 				inline const std::string &mimetype(void) {
 					db_sync();
 					return data->dwn_mimetype;
+				}
+				inline const sqlite3_int64 &partof(void) const {
+					return art_partof;
+				}
+				inline const sqlite3_int64 &pageno(void) const {
+					return art_pageno;
 				}
 				
 				const std::vector<std::shared_ptr<account>> &get_linked_accounts(const std::string &link);

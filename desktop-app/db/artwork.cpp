@@ -47,12 +47,14 @@ void Arcollect::db::artwork::db_sync(void)
 {
 	if (data_version != Arcollect::data_version) {
 		std::unique_ptr<SQLite3::stmt> stmt;
-		database->prepare("SELECT art_rating, art_dwnid, art_thumbnail FROM artworks WHERE art_artid = ?;",stmt); // TODO Error checking
+		database->prepare("SELECT art_rating, art_dwnid, art_thumbnail, art_partof, art_pageno FROM artworks WHERE art_artid = ?;",stmt); // TODO Error checking
 		stmt->bind(1,art_id);
 		if (stmt->step() == SQLITE_ROW) {
 			art_rating = static_cast<Arcollect::config::Rating>(stmt->column_int64(0));
 			data      = download::query(stmt->column_int64(1));
 			thumbnail = download::query(stmt->column_int64(2));
+			art_partof = stmt->column_int64(3);
+			art_partof = stmt->column_int64(4);
 			
 			data_version = Arcollect::data_version;
 		}
