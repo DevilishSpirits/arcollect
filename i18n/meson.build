@@ -77,7 +77,7 @@ foreach module, locales: l10n_cpp_translations
 	cpp_files += hpp_files
 	cpp_files += configure_file(input: 'module-template.cpp', output: 'l10n-'+module+'.cpp', configuration: conf)
 	i18n_deps += { module: declare_dependency(
-		link_with: static_library('l10n-'+module, cpp_files, dependencies: i18n_module_deps[module], include_directories: i18n_incs),
+		link_with: static_library('l10n-'+module, cpp_files, dependencies: i18n_module_deps[module], include_directories: i18n_incs, build_by_default: false),
 		sources: hpp_files, # For correct dependency graph
 		include_directories: i18n_incs
 	)}

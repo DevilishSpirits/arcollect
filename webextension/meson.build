@@ -1,5 +1,5 @@
 messages_json = custom_target('webextension-messages.json', command: [
-	executable('generate-messages','generate-messages.cpp', dependencies: [i18n_deps['common'],i18n_deps['webextension']])
+	executable('generate-messages','generate-messages.cpp', dependencies: [i18n_deps['common'],i18n_deps['webextension']], build_by_default: false)
 ], output: 'messages.json', capture: true)
 
 webext_zip_cmds = [

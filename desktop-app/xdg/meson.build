@@ -29,7 +29,7 @@ xdg_localized_files = custom_target('xdg-localized-files', output: [
 			'generate-xdg-files.cpp',
 			'generate-desktop-file.cpp',
 			'generate-metainfo-xml.cpp',
-			),include_directories: config_h_inc, install: false, dependencies: i18n_deps['common']
+			),include_directories: config_h_inc, install: false, build_by_default: false, dependencies: i18n_deps['common']
 		),
 		'@OUTPUT@',
 	],env: {
