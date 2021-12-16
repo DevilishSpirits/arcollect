@@ -47,7 +47,7 @@ function save_artwork()
 	saveButtonA.text = arco_i18n_saving;
 	saveButtonA.className = "button btn-warn";
 	saveButtonA.style = 'cursor:progress;';
-	Danbooru.notice(arco_i18n_saved);
+	Danbooru.notice(arco_i18n_saving);
 	
 	/** Normalize source URL
 	 *
@@ -155,7 +155,7 @@ function save_artwork()
 		saveButtonA.text = arco_i18n_saved;
 		saveButtonA.className = 'button btn-success';
 		saveButtonA.style = 'cursor:default;';
-		Danbooru.notice('Saved in Arcollect');
+		Danbooru.notice(arco_i18n_saved);
 	}).catch(function(reason) {
 		saveButtonA.onclick = save_artwork;
 		saveButtonA.text = arco_i18n_save_retry;
