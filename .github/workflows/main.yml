@@ -47,6 +47,8 @@ jobs:
           path: build/webextension/arcollect.zip
   build-wrapped:
     runs-on: [archlinux]
+    env:
+      LDFLAGS: "-lwayland-client" # FIXME See https://github.com/libsdl-org/SDL/issues/5088, remove on next SDL2 release
     steps:
       - uses: actions/checkout@v2
       - name: Build project
