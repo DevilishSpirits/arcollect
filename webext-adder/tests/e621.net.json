@@ -9,14 +9,55 @@
 		"postdate": 1625803851,
 		"data":"https://static1.e621.net/data/28/81/288198f695aa4f816b5fd24e5ac2f2aa.jpg",
 		"data.sha256": "03488a673565be1c9fcd1ce67f123b68d64de3f9ba53711913e57c8656c652b4"
+	},{
+		"title": "Foxes in Love (page 1)",
+		"desc": null,
+		"source": "https://e621.net/posts/2211520",
+		"rating": 0,
+		"mimetype": "image/jpeg",
+		"postdate": 1586605783,
+		"pageno": 268435456,
+		"data": "https://static1.e621.net/data/88/2c/882c0b16073d1d2802b9819150f0ea11.jpg",
+		"data.sha256": "391678dced33bf289926b0ad82f829967919b44d6b57bc7557f1d0a1635e0842"
+	},{
+		"title": "Foxes (page 2)",
+		"desc": null,
+		"source": "https://e621.net/posts/2287570",
+		"rating": 0,
+		"mimetype": "image/jpeg",
+		"postdate": 1591661765,
+		"pageno": 536870912,
+		"data": "https://static1.e621.net/data/4c/db/4cdb0e747b7a9a7469752b1ecaee54e3.jpg",
+		"data.sha256": "26317336cea58b4d5bd320fe8b4e507ba561722d898701b67a739aa6abcf6fdb"
 	}],
 	"accounts":[{
 		"id":"nmvsolidus",
 		"name":"nmvsolidus",
 		"url":"https://e621.net/posts?tags=nmvsolidus",
 		"icon":"https://e621.net/apple-touch-icon.png"
+	},{
+		"id": "foxes-in-love",
+		"name": "foxes in love",
+		"url": "https://e621.net/posts?tags=foxes_in_love",
+		"icon": "https://e621.net/apple-touch-icon.png"
+	}],
+	"comics": [{
+		"id": 20198,
+		"title": "Foxes in Love",
+		"url": "https://e621.net/pools/20198",
+		"pages": {
+			"https://e621.net/posts/2211520": {"relative_to": "main", "page": 1},
+			"https://e621.net/posts/2287570": {"relative_to": "main", "page": 2},
+			"https://e621.net/posts/3072949": {"relative_to": "main", "page": 485}
+		}
 	}],
 	"tags":[{
+		"id": "blue-fox-foxes-in-love",
+		"kind": "character"
+	},{
+		"id": "green-fox-foxes-in-love",
+		"kind": "character"
+	},{
 		"id":"canid",
 		"kind":"species"
 	},{
@@ -25,6 +66,9 @@
 	},{
 		"id":"canis",
 		"kind":"species"
+	},{
+		"id": "fox",
+		"kind": "species"
 	},{
 		"id":"mammal",
 		"kind":"species"
@@ -44,11 +88,53 @@
 		"id":"wolf",
 		"kind":"species"
 	},{
+		"id": "ambiguous-ambiguous",
+		"kind": null
+	},{
+		"id": "ambiguous-gender",
+		"kind": null
+	},{
 		"id":"anthro",
 		"kind":null
 	},{
+		"id": "bedding",
+		"kind": null
+	},{
+		"id": "bed-sheet",
+		"kind": null
+	},{
+		"id": "blue-body",
+		"kind": null
+	},{
+		"id": "blue-fur",
+		"kind": null
+	},{
 		"id":"cellphone",
 		"kind":null
+	},{
+		"id": "cuddling",
+		"kind": null
+	},{
+		"id": "duo",
+		"kind": null
+	},{
+		"id": "eyes-closed",
+		"kind": null
+	},{
+		"id": "feral",
+		"kind": null
+	},{
+		"id": "fur",
+		"kind": null
+	},{
+		"id": "green-body",
+		"kind": null
+	},{
+		"id": "green-fur",
+		"kind": null
+	},{
+		"id": "licking",
+		"kind": null
 	},{
 		"id":"male",
 		"kind":null
@@ -65,6 +151,15 @@
 		"id":"nude",
 		"kind":null
 	},{
+		"id": "onomatopoeia",
+		"kind": null
+	},{
+		"id": "profanity",
+		"kind": null
+	},{
+		"id": "rolling",
+		"kind": null
+	},{
 		"id":"pawpads",
 		"kind":null
 	},{
@@ -80,22 +175,66 @@
 		"id":"simple-background",
 		"kind":null
 	},{
+		"id": "sleeping",
+		"kind": null
+	},{
 		"id":"solo",
 		"kind":null
+	},{
+		"id": "sound-effects",
+		"kind": null
+	},{
+		"id": "text",
+		"kind": null
+	},{
+		"id": "tongue",
+		"kind": null
+	},{
+		"id": "tongue-out",
+		"kind": null
 	},{
 		"id":"white-background",
 		"kind":null
 	},{
+		"id": "wide-eyed",
+		"kind": null
+	},{
 		"id":"yellow-eyes",
 		"kind":null
 	},{
+		"id": "zzz",
+		"kind": null
+	},{
+		"id": "2019",
+		"kind": null
+	},{
+		"id": "comic",
+		"kind": null
+	},{
 		"id":"hi-res",
 		"kind":null
+	},{
+		"id": "english-text",
+		"kind": null
+	},{
+		"id": "male-lore",
+		"kind": null
+	},{
+		"id": "url",
+		"kind": null
 	}],
 	"art_acc_links":[{
 		"account":"nmvsolidus",
 		"artwork":"https://e621.net/posts/2821766",
 		"link":"account"
+	},{
+		"account": "foxes-in-love",
+		"artwork": "https://e621.net/posts/2211520",
+		"link": "account"
+	},{
+		"account": "foxes-in-love",
+		"artwork": "https://e621.net/posts/2287570",
+		"link": "account"
 	}],
 	"art_tag_links":[{
 		"artwork":"https://e621.net/posts/2821766",
@@ -172,5 +311,167 @@
 	},{
 		"artwork":"https://e621.net/posts/2821766",
 		"tag":"hi-res"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "blue-fox-foxes-in-love"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "green-fox-foxes-in-love"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "canid"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "canine"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "fox"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "mammal"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "bed-sheet"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "bedding"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "blue-body"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "cuddling"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "duo"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "feral"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "fur"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "green-body"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "green-fur"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "male"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "onomatopoeia"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "rolling"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "simple-background"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "sleeping"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "sound-effects"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "text"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "comic"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "english-text"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
+		"tag": "male-lore"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "blue-fox-foxes-in-love"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "green-fox-foxes-in-love"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "canid"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "canine"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "fox"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "mammal"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "ambiguous-ambiguous"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "ambiguous-gender"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "blue-body"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "blue-fur"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "duo"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "eyes-closed"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "fur"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "green-body"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "green-fur"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "licking"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "profanity"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "sleeping"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "sound-effects"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "text"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "tongue"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "tongue-out"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "wide-eyed"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "zzz"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "2019"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "comic"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "english-text"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "url"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "male-lore"
 	}]
 }
