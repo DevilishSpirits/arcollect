@@ -9,6 +9,8 @@ webext_test_env  = environment({
 	'ARCOLLECT_WEBEXT_ADDER_PATH': webext_adder_exe.full_path(),
 	'ARCOLLECT_WEBEXT_ZIP_PATH': webextension_target.full_path(),
 	'ARCOLLECT_TEST_DATA_HOME': meson.current_build_dir(),
+	'LANG': 'C',
+	'LC_ALL': 'C',
 	'UBLOCK_ORIGIN_XPI_PATH': meson.current_source_dir()/'ublock_origin-1.36.0-an+fx.xpi',
 })
 webextension_browser_test_prog = find_program('webextension-browser-test.py')
