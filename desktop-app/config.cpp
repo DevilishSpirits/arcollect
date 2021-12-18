@@ -26,6 +26,7 @@ Arcollect::config::Param<int> Arcollect::config::image_memory_limit(2048);
 Arcollect::config::Param<int> Arcollect::config::littlecms_intent(INTENT_PERCEPTUAL);
 Arcollect::config::Param<int> Arcollect::config::littlecms_flags(cmsFLAGS_HIGHRESPRECALC|cmsFLAGS_BLACKPOINTCOMPENSATION);
 Arcollect::config::Param<int> Arcollect::config::writing_font_size(18);
+Arcollect::config::Param<int> Arcollect::config::rows_per_screen(5);
 
 void Arcollect::config::read_config(void)
 {
@@ -38,6 +39,7 @@ void Arcollect::config::read_config(void)
 	littlecms_flags.value = reader.GetInteger("arcollect","littlecms_flags",littlecms_flags.default_value);
 	littlecms_intent.value = reader.GetInteger("arcollect","littlecms_intent",littlecms_intent.default_value);
 	writing_font_size.value = reader.GetInteger("arcollect","writing_font_size",writing_font_size.default_value);
+	rows_per_screen.value = reader.GetInteger("arcollect","rows_per_screen",rows_per_screen.default_value);
 }
 void Arcollect::config::write_config(void)
 {
@@ -95,5 +97,10 @@ void Arcollect::config::write_config(void)
 	       << "; This is the text height in pixels used to render text artworks.\n"
 	       << "; Default is " << writing_font_size.default_value << "\n"
 	       << "writing_font_size=" << writing_font_size << '\n'
+	       << "\n"
+	       << "; rows_per_screen - Number of rows per screen\n"
+	       << "; This adjust the height of rows in the grid view to display the given number of rows at full screen.\n"
+	       << "; Default is " << rows_per_screen.default_value << "\n"
+	       << "rows_per_screen=" << rows_per_screen << '\n'
 	;
 }

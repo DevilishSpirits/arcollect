@@ -121,5 +121,12 @@ namespace Arcollect {
 		 * This is the text height in pixels used to render text artworks.
 		 */
 		extern Param<int> writing_font_size;
+		
+		/** rows_per_screen - Number of rows per screen
+		 *
+		 * This adjust the height of rows in the grid view to display the given
+		 * number of rows at full screen.
+		 */
+		extern Param<int> rows_per_screen;
 	}
 }

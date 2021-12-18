@@ -220,7 +220,7 @@ namespace Arcollect {
 				bool layout_invalid;
 				/** Artworks height in pixel
 				 */
-				int artwork_height = 200;
+				int artwork_height;
 				/** Artworks margins in pixel
 				 */
 				SDL::Point artwork_margin = {10,10};
@@ -234,12 +234,12 @@ namespace Arcollect {
 				 *
 				 * Used to known when to call new_line_left()
 				 */
-				int left_y = 0;
+				int left_y = artwork_margin.y;
 				/** Bottom position of the right (bottom) line
 				 *
 				 * Used to known when to call new_line_right()
 				 */
-				int right_y = 0;
+				int right_y = artwork_margin.y;
 				db::artwork_collection::iterator left_iter;
 				db::artwork_collection::iterator right_iter;
 				

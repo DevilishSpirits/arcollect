@@ -16,6 +16,7 @@
  */
 #include "font.hpp"
 #include "views.hpp"
+#include "../config.hpp"
 #include "../db/account.hpp"
 #include "../db/db.hpp"
 void Arcollect::gui::view_vgrid::set_collection(std::shared_ptr<artwork_collection> &new_collection)
@@ -33,8 +34,13 @@ void Arcollect::gui::view_vgrid::flush_layout(void)
 	// Reset scrolling
 	left_iter = collection->begin();
 	right_iter = collection->begin();
-	left_y = 0;
-	right_y = 0;
+	left_y = artwork_margin.y;
+	right_y = artwork_margin.y;
+	// Update artwork_height
+	SDL_Rect screen0_rect;
+	if (!SDL_GetDisplayBounds(0,&screen0_rect))
+		artwork_height = (screen0_rect.h - artwork_margin.y)/Arcollect::config::rows_per_screen - artwork_margin.y;
+	
 	// Force viewport regeneration
 	
 	do_scroll(0);
