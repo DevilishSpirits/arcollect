@@ -15,7 +15,6 @@ class Platform:
 		while Save_in_Arcollect.GetText() == 'Save in Arcollect':
 			time.sleep(1)
 		
-		while Save_in_Arcollect.GetText() == 'Saving...':
+		while Save_in_Arcollect.GetText() == 'Saving…':
 			time.sleep(1)
-		
 		return Save_in_Arcollect.GetText() == 'Saved'
