@@ -16,6 +16,56 @@
 		"mimetype": "image/png",
 		"data": "https://d.furaffinity.net/art/skdaffle/1556210470/1556210470.skdaffle_garruscomm39.png",
 		"data.sha256": "ac5ec3b4c59a6a6ed2abd07ffb9a99f687c49304c40e67d74ad550caa2afdcaf"
+	},{
+		"title": "Transformation Study: Werebat (Page 1)",
+		"desc": "\n                    Commission for artguy! ^^  Thank you so much for working with me on this, it was a pleasure helping expand your lore of werebats. \n\nIt was done in the format of my \"Transformation Observations & Studies\" (AKA 'Packleader' tier) journals on Patreon. \nSo if you enjoy this format, please check out all of the other non-comm ones I've done over there, accessible through the \"Packleader\" tier! The support is appreciated as well! <3 https://www.patreon.com/StrawberryTFs\n\n<<< PREV | FIRST | NEXT >>>\n\n\n\n[Ko-fi] | [Patreon]  | [Twitter] | [Picarto]\n                                    ",
+		"source": "https://www.furaffinity.net/view/42631254/",
+		"rating": 16,
+		"mimetype": "image/jpeg",
+		"page": 1,
+		"data": "https://d.furaffinity.net/art/strawberrytfs/1625429620/1625429620.strawberrytfs_0306_artguy_1_fa.jpg",
+		"data.sha256" : "66c174e3ca48dccf728b0432248c1ed67130718599636a2434d68da6adc712f3"
+	},{
+		"title": "Transformation Study: Werebat (Page 2)",
+		"desc": "\n                    Batty skulls >:3\n\n<<< PREV | FIRST | NEXT >>>\n\n\n\n[Ko-fi] | [Patreon]  | [Twitter] | [Picarto]\n                                    ",
+		"source": "https://www.furaffinity.net/view/42631292/",
+		"rating": 16,
+		"mimetype": "image/jpeg",
+		"page": 2,
+		"data": "https://d.furaffinity.net/art/strawberrytfs/1625429752/1625429752.strawberrytfs_0306_artguy_2_fa.jpg",
+		"data.sha256": "bfe086606aa060da5e7d0456da41783ef438faac2447afdcf43fa1c736ecb7b4"
+	},{
+		"title": "Transformation Study: Werebat (Page 3)",
+		"desc": "\n                    Really interesting figuring out how to represent the wings in such a small space. They get so big!\n\n<<< PREV | FIRST | NEXT >>>\n\n\n\n[Ko-fi] | [Patreon]  | [Twitter] | [Picarto]\n                                    ",
+		"source": "https://www.furaffinity.net/view/42631320/",
+		"rating": 16,
+		"mimetype": "image/jpeg",
+		"page": 3,
+		"data": "https://d.furaffinity.net/art/strawberrytfs/1625429827/1625429827.strawberrytfs_0306_artguy_3_fa.jpg",
+		"data.sha256": "82a113878106e1b11d3f9adb224562c24419f8ad4eaa3e11002c2d583bc32e4e"
+	},{
+		"title": "Transformation Study: Werebat (Page 4)",
+		"desc": "\n                    <<< PREV | FIRST | NEXT >>>\n\nWithout a doubt this is my favourite page. Augh the werebat concept is so cool!!\n\nThanks again to artguy for commissioning me to draw this ^^  I'm really happy you enjoy my journals!\n\nAnd again, if you really enjoyed this format as well, I have 11 more (and a new one every month) of these up on the ol' Patreon through the \"Packleader\" tier! Your support would be incredibly appreciated if you choose to check it out  <3  https://www.patreon.com/StrawberryTFs\n\n\n\n[Ko-fi] | [Patreon]  | [Twitter] | [Picarto]\n                                    ",
+		"source": "https://www.furaffinity.net/view/42631382/",
+		"rating": 16,
+		"mimetype": "image/jpeg",
+		"page": 4,
+		"data": "https://d.furaffinity.net/art/strawberrytfs/1625430019/1625430019.strawberrytfs_0306_artguy_4_fa.jpg",
+		"data.sha256": "1f2e66db49b2ed234a5be67e65841e0e06da70dbb65c95c46fd23c4b14c90a93"
+	}],
+	"comics":[{
+		"https://www.furaffinity.net/view/42631292/": {"relative_to": "https://www.furaffinity.net/view/42631254/", "page":  1}
+	},{
+		"https://www.furaffinity.net/view/42631254/": {"relative_to": "https://www.furaffinity.net/view/42631292/", "page": -1},
+		"https://www.furaffinity.net/view/42631254/": {"relative_to": "main", "page": 1},
+		"https://www.furaffinity.net/view/42631320/": {"relative_to": "https://www.furaffinity.net/view/42631292/", "page":  1}
+	},{
+		"https://www.furaffinity.net/view/42631292/": {"relative_to": "https://www.furaffinity.net/view/42631320/", "page": -1},
+		"https://www.furaffinity.net/view/42631254/": {"relative_to": "main", "page": 1},
+		"https://www.furaffinity.net/view/42631382/": {"relative_to": "https://www.furaffinity.net/view/42631320/", "page":  1}
+	},{
+		"https://www.furaffinity.net/view/42631320/": {"relative_to": "https://www.furaffinity.net/view/42631382/", "page": -1},
+		"https://www.furaffinity.net/view/42631254/": {"relative_to": "main", "page": 1}
 	}],
 	"accounts":[{
 		"id":"tanraak",
@@ -27,14 +77,88 @@
 		"name": "skdaffle",
 		"url": "https://www.furaffinity.net/user/skdaffle/",
 		"icon": "https://a.furaffinity.net/1629479446/skdaffle.gif"
+	},{
+		"id": "strawberrytfs",
+		"name": "StrawberryTFs",
+		"url": "https://www.furaffinity.net/user/strawberrytfs/",
+		"icon": "https://a.furaffinity.net/1547934968/strawberrytfs.gif"
 	}],
 	"tags":[{
+		"id": "anthro"
+	},{
+		"id": "abdomen"
+	},{
+		"id": "abs"
+	},{
+		"id": "anatomy"
+	},{
+		"id": "and"
+	},{
 		"id":"bat",
 		"title":"Bat",
 		"kind":"species"
 	},{
+		"id": "depth"
+	},{
+		"id": "draw"
+	},{
+		"id": "feet"
+	},{
+		"id": "female",
+		"title": "Female"
+	},{
+		"id": "fingers"
+	},{
+		"id": "growth"
+	},{
+		"id": "how"
+	},{
+		"id": "lore"
+	},{
 		"id":"male",
 		"title":"Male"
+	},{
+		"id": "naked"
+	},{
+		"id": "nsfw"
+	},{
+		"id": "nude"
+	},{
+		"id": "observations"
+	},{
+		"id": "packleader"
+	},{
+		"id": "proportions"
+	},{
+		"id": "reading"
+	},{
+		"id": "sketch"
+	},{
+		"id": "skull"
+	},{
+		"id": "studies"
+	},{
+		"id": "study"
+	},{
+		"id": "to"
+	},{
+		"id": "transform"
+	},{
+		"id": "transformation"
+	},{
+		"id": "transforming"
+	},{
+		"id": "tutorial"
+	},{
+		"id": "were"
+	},{
+		"id": "werebat"
+	},{
+		"id": "wings"
+	},{
+		"id": "wings"
+	},{
+		"id": "writing"
 	}],
 	"art_acc_links":[{
 		"account":"tanraak",
@@ -44,6 +168,22 @@
 		"account": "skdaffle",
 		"artwork": "https://www.furaffinity.net/view/31316794/",
 		"link": "account"
+	},{
+		"account": "strawberrytfs",
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"link": "account"
+	},{
+		"account": "strawberrytfs",
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"link": "account"
+	},{
+		"account": "strawberrytfs",
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"link": "account"
+	},{
+		"account": "strawberrytfs",
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"link": "account"
 	}],
 	"art_tag_links":[{
 		"artwork":"https://www.furaffinity.net/view/20321200/",
@@ -51,5 +191,434 @@
 	},{
 		"artwork":"https://www.furaffinity.net/view/20321200/",
 		"tag":"male"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "werebat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "were"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "bat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "transformation"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "observations"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "and"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "study"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "studies"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "anatomy"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "transforming"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "transform"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "lore"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "reading"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "writing"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "wings"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "feet"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "fingers"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "nsfw"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "naked"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "nude"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "packleader"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "skull"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "depth"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "growth"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "tutorial"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "sketch"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "abs"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "abdomen"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "wings"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "how"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "to"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "draw"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "proportions"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "anthro"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "bat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631254/",
+		"tag": "male"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "werebat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "were"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "bat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "transformation"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "observations"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "and"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "study"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "studies"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "anatomy"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "transforming"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "transform"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "lore"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "reading"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "writing"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "wings"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "feet"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "fingers"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "nsfw"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "naked"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "nude"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "packleader"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "skull"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "depth"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "growth"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "tutorial"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "sketch"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "abs"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "abdomen"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "wings"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "how"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "to"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "draw"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "proportions"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "anthro"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "bat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631292/",
+		"tag": "female"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "werebat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "were"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "bat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "transformation"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "observations"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "and"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "study"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "studies"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "anatomy"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "transforming"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "transform"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "lore"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "reading"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "writing"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "wings"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "feet"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "fingers"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "nsfw"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "naked"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "nude"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "packleader"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "skull"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "depth"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "growth"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "tutorial"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "sketch"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "abs"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "abdomen"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "wings"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "how"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "to"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "draw"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "proportions"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "anthro"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631320/",
+		"tag": "bat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "werebat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "were"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "bat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "transformation"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "observations"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "and"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "study"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "studies"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "anatomy"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "transforming"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "transform"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "lore"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "reading"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "writing"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "wings"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "feet"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "fingers"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "nsfw"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "naked"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "nude"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "packleader"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "skull"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "depth"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "growth"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "tutorial"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "sketch"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "abs"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "abdomen"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "wings"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "how"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "to"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "draw"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "proportions"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "anthro"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "bat"
+	},{
+		"artwork": "https://www.furaffinity.net/view/42631382/",
+		"tag": "male"
 	}]
 }

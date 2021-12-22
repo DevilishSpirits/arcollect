@@ -126,11 +126,32 @@ function save_artwork()
 	/** Extract title
 	 */
 	let title;
+	let comics;
 	let pool_names = document.getElementsByClassName('pool-name')
 	if (pool_names.length > 0) {
-		let pool_link = document.getElementsByClassName('pool-name')[0].children[0];
-		title = pool_link.text.split(' ').slice(1).join(' ')+' ('+pool_link.title.split('/')[0]+')';
-	} else title = document.title;
+		// Extract comic informations
+		let pool_link = pool_names[0].children[0];
+		let comic_id = parseInt(pool_link.href.split('/').splice(-1)[0]);
+		let comic_title = pool_link.text.split(' ').slice(1).join(' ');
+		let pageno_str = pool_link.title.split('/')[0];
+		title = comic_title+' ('+pageno_str+')';
+		// Read pages
+		let navlink_for_pool = document.getElementById('nav-link-for-pool-'+comic_id);;
+		let pages = {}
+		pages[source] = {"relative_to": "main", "page": parseInt(pageno_str.split(' ')[1])};
+		for (a of navlink_for_pool.querySelectorAll('a.first,a.prev,a.next,a.last'))
+			pages[a.href.split('?')[0].replace("https://e926.net",'https://e621.net')] = {"relative_to": "main", "page": parseInt(a.title.split(' ')[2])};
+		// Make entry
+		comics = [{
+			"id": comic_id,
+			"title": comic_title,
+			"url": pool_link.href,
+			"pages": pages,
+		}]
+	} else {
+		title = document.title;
+		comics = [];
+	}
 	
 	// Build the JSON
 	submit_json = {
@@ -146,6 +167,7 @@ function save_artwork()
 		}],
 		'accounts': accounts,
 		'tags': tags,
+		'comics': comics,
 		'art_acc_links': art_acc_links,
 		'art_tag_links': art_tag_links,
 	};
