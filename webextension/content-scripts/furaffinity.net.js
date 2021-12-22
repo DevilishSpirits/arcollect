@@ -38,6 +38,14 @@ function findElementByText(collection, text)
 	return null;
 }
 
+/** Normalize a source URL
+ *
+ * https://www.furaffinity.net/view/<id>/
+ */
+function normalize_fa_url(href)
+{
+	return 'https://www.furaffinity.net/view/'+href.split('/')[4]+'/';
+}
 
 /** Get the #submissionImg
  *
@@ -75,11 +83,8 @@ function save_artwork()
 	save_buttondiv.style = 'cursor:progress;'
 	
 	let highlights = document.getElementsByClassName('highlight');
-	/** Normalize source URL
-	 *
-	 * https://www.furaffinity.net/view/<id>/
-	 */
-	let source = 'https://www.furaffinity.net/view/'+window.location.pathname.split('/')[2]+'/';
+	let source = normalize_fa_url(window.location.href);
+	let comics = [];
 	
 	/** Extract the account
 	 *
@@ -168,14 +173,43 @@ function save_artwork()
 	 * It's simply the ".submission-description .user-submitted-links" element.
 	 * \todo it may have fancy things with don't support right-now
 	 */
-	let description = document.getElementsByClassName('submission-description user-submitted-links')[0].textContent;
+	let desc_node = document.getElementsByClassName('submission-description user-submitted-links')[0].cloneNode(true);
+	/** Detect comics logic with .parsed_nav_links
+	 *
+	 * Note: This feature is little know and a lot of artists don't use it or a
+	 * reproduction.
+	 */
+	for (parsed_navlinks of desc_node.getElementsByClassName('parsed_nav_links')) {
+		let comic = {};
+		let empty_comic = true;
+		for (link of parsed_navlinks.getElementsByTagName('a')) {
+			switch (link.text.trim()) {
+				case '<<<\xa0PREV':
+					comic[normalize_fa_url(link.href)] = {"relative_to": source, "page": -1};
+					empty_comic = false;
+					break;
+				case 'FIRST':
+					comic[normalize_fa_url(link.href)] = {"relative_to": "main", "page": 1};
+					empty_comic = false;
+					break;
+				case 'NEXT\xa0>>>':
+					comic[normalize_fa_url(link.href)] = {"relative_to": source, "page": +1};
+					empty_comic = false;
+					break;
+			}
+		}
+		if (!empty_comic)
+			comics.push(comic);
+		// Free space
+		parsed_navlinks.remove();
+	}
 	
 	// Build the JSON
 	submit_json = {
 		'platform': 'furaffinity.net',
 		'artworks': [{
 			'title': submissionImg.alt,
-			'desc': description,
+			'desc': desc_node.textContent,
 			'source': source,
 			'rating': rating,
 			'mimetype': artworkMIME,
@@ -183,6 +217,7 @@ function save_artwork()
 		}],
 		'accounts': accountJson,
 		'tags': tags,
+		'comics': comics,
 		'art_acc_links': art_acc_links,
 		'art_tag_links': art_tag_links,
 	};
