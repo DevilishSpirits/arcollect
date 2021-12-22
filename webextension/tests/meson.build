@@ -15,7 +15,13 @@ webext_test_env  = environment({
 })
 webextension_browser_test_prog = find_program('webextension-browser-test.py')
 
-geckodriver_prog = find_program('geckodriver', required: false)
+if (host_machine.system() == 'windows')
+	# We won't mess the user registry to make the test works
+	geckodriver_prog = disabler()
+else
+	geckodriver_prog = find_program('geckodriver', required: false)
+endif
+
 if geckodriver_prog.found()
 	geckodriver_test_deps = [
 		common_test_deps,
