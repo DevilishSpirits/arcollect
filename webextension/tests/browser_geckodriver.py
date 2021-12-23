@@ -1,5 +1,6 @@
 from subprocess import Popen,DEVNULL
 import time
+import shutil
 import sys
 import os
 import WebDriver
@@ -12,8 +13,7 @@ class Browser:
 		# Install manifest
 		appmanifest_dest = os.environ['HOME']+'/'+os.environ['FIREFOX_APPMANIFEST_DEST']
 		os.makedirs(os.path.dirname(appmanifest_dest),exist_ok=True)
-		os.unlink(appmanifest_dest)
-		os.link(os.environ['FIREFOX_APPMANIFEST_SOURCE'],appmanifest_dest)
+		shutil.copyfile(os.environ['FIREFOX_APPMANIFEST_SOURCE'],appmanifest_dest)
 		# Spawn geckodriver
 		# TODO Do not close stdout
 		self.geckodriver = Popen(['geckodriver'],stdout=DEVNULL)
