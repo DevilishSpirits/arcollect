@@ -330,20 +330,21 @@ namespace Arcollect {
 					if (++iter == end)
 						return false;
 				// Read integral part
-				if (read_simple_natural(out,iter,end))
-					return true;
+				bool done = read_simple_natural(out,iter,end);
 				// Read fractional part
-				if (*iter == '.') {
+				if (!done &&(*iter == '.')) {
 					if (++iter == end)
 						return false;
 					numberT fractional_part = 0;
-					bool done = read_simple_natural(fractional_part,iter,end);
+					done = read_simple_natural(fractional_part,iter,end);
 					while (fractional_part > 1)
 						fractional_part /= 10;
 					out += fractional_part;
-					if (done)
-						return true;
 				}
+				if (negate)
+					out = -out;
+				if (done)
+					return true;
 				// Read exponent
 				if ((*iter == 'e')||(*iter == 'E')) {
 					if (++iter == end)
