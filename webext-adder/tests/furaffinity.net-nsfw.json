@@ -22,7 +22,7 @@
 		"source": "https://www.furaffinity.net/view/42631254/",
 		"rating": 16,
 		"mimetype": "image/jpeg",
-		"page": 1,
+		"pageno": 268435456,
 		"data": "https://d.furaffinity.net/art/strawberrytfs/1625429620/1625429620.strawberrytfs_0306_artguy_1_fa.jpg",
 		"data.sha256" : "66c174e3ca48dccf728b0432248c1ed67130718599636a2434d68da6adc712f3"
 	},{
@@ -31,7 +31,7 @@
 		"source": "https://www.furaffinity.net/view/42631292/",
 		"rating": 16,
 		"mimetype": "image/jpeg",
-		"page": 2,
+		"pageno": 536870912,
 		"data": "https://d.furaffinity.net/art/strawberrytfs/1625429752/1625429752.strawberrytfs_0306_artguy_2_fa.jpg",
 		"data.sha256": "bfe086606aa060da5e7d0456da41783ef438faac2447afdcf43fa1c736ecb7b4"
 	},{
@@ -40,7 +40,7 @@
 		"source": "https://www.furaffinity.net/view/42631320/",
 		"rating": 16,
 		"mimetype": "image/jpeg",
-		"page": 3,
+		"pageno": 805306368,
 		"data": "https://d.furaffinity.net/art/strawberrytfs/1625429827/1625429827.strawberrytfs_0306_artguy_3_fa.jpg",
 		"data.sha256": "82a113878106e1b11d3f9adb224562c24419f8ad4eaa3e11002c2d583bc32e4e"
 	},{
@@ -49,23 +49,30 @@
 		"source": "https://www.furaffinity.net/view/42631382/",
 		"rating": 16,
 		"mimetype": "image/jpeg",
-		"page": 4,
+		"pageno": 1073741824,
 		"data": "https://d.furaffinity.net/art/strawberrytfs/1625430019/1625430019.strawberrytfs_0306_artguy_4_fa.jpg",
 		"data.sha256": "1f2e66db49b2ed234a5be67e65841e0e06da70dbb65c95c46fd23c4b14c90a93"
 	}],
 	"comics":[{
-		"https://www.furaffinity.net/view/42631292/": {"relative_to": "https://www.furaffinity.net/view/42631254/", "page":  1}
+		"pages": {
+			"https://www.furaffinity.net/view/42631292/": {"relative_to": "https://www.furaffinity.net/view/42631254/", "page":  1}
+		}
 	},{
-		"https://www.furaffinity.net/view/42631254/": {"relative_to": "https://www.furaffinity.net/view/42631292/", "page": -1},
-		"https://www.furaffinity.net/view/42631254/": {"relative_to": "main", "page": 1},
-		"https://www.furaffinity.net/view/42631320/": {"relative_to": "https://www.furaffinity.net/view/42631292/", "page":  1}
+		"pages": {
+			"https://www.furaffinity.net/view/42631254/": {"relative_to": "main", "page": 1},
+			"https://www.furaffinity.net/view/42631320/": {"relative_to": "https://www.furaffinity.net/view/42631292/", "page":  1}
+		}
 	},{
-		"https://www.furaffinity.net/view/42631292/": {"relative_to": "https://www.furaffinity.net/view/42631320/", "page": -1},
-		"https://www.furaffinity.net/view/42631254/": {"relative_to": "main", "page": 1},
-		"https://www.furaffinity.net/view/42631382/": {"relative_to": "https://www.furaffinity.net/view/42631320/", "page":  1}
+		"pages": {
+			"https://www.furaffinity.net/view/42631292/": {"relative_to": "https://www.furaffinity.net/view/42631320/", "page": -1},
+			"https://www.furaffinity.net/view/42631254/": {"relative_to": "main", "page": 1},
+			"https://www.furaffinity.net/view/42631382/": {"relative_to": "https://www.furaffinity.net/view/42631320/", "page":  1}
+		}
 	},{
-		"https://www.furaffinity.net/view/42631320/": {"relative_to": "https://www.furaffinity.net/view/42631382/", "page": -1},
-		"https://www.furaffinity.net/view/42631254/": {"relative_to": "main", "page": 1}
+		"pages": {
+			"https://www.furaffinity.net/view/42631320/": {"relative_to": "https://www.furaffinity.net/view/42631382/", "page": -1},
+			"https://www.furaffinity.net/view/42631254/": {"relative_to": "main", "page": 1}
+		}
 	}],
 	"accounts":[{
 		"id":"tanraak",
