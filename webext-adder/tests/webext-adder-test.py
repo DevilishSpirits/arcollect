@@ -45,8 +45,12 @@ test_num = 0
 for test_set_path in sys.argv[3:]:
 	test_num += 1
 	# Read the JSON
-	stdout_json = json.loads(stdout.read(unpack('I',stdout.read(4))[0]).decode('utf-8'))
+	try:
+		stdout_json = json.loads(stdout.read(unpack('I',stdout.read(4))[0]).decode('utf-8'))
+	except Exception as e:
 	# FIXME Don't crash if no valid results are returned
+		print(e,file = sys.stderr)
+		stdout_json = {'success': False, 'reason': 'Exception when reading the JSON'}
 	if stdout_json['success']:
 		print('ok',test_num,'- Web-ext adder for',test_set_path)
 	else:
