@@ -28,6 +28,7 @@ webext_conf_inbuild = configuration_data()
 webext_conf_inbuild.merge_from(config_h)
 webext_conf_inbuild.set('ARCOLLECT_WEBEXT_ADDER_PATH',webext_adder_exe.full_path())
 webext_appmanifest_firefox_debug = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox.json', configuration: webext_conf_inbuild)
+webext_appmanifest_firefox_debug = meson.current_build_dir()/'appmanifest-firefox.json'
 
 webext_conf_windows = configuration_data()
 webext_conf_windows.merge_from(config_h)
