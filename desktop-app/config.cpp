@@ -19,7 +19,6 @@
 #include <fstream>
 #include "lcms2.h"
 
-Arcollect::config::Param<int> Arcollect::config::first_run(0);
 Arcollect::config::Param<int> Arcollect::config::start_window_mode(Arcollect::config::STARTWINDOW_MAXIMIZED);
 Arcollect::config::Param<int> Arcollect::config::current_rating(Arcollect::config::RATING_ADULT); // FIXME Adult default is not a sane default for everyone
 Arcollect::config::Param<int> Arcollect::config::image_memory_limit(2048);
@@ -32,7 +31,6 @@ void Arcollect::config::read_config(void)
 {
 	INIReader reader((Arcollect::path::xdg_config_home/"arcollect.ini").string().c_str());
 	// TODO if (reader.ParseError() < 0)
-	first_run.value = reader.GetInteger("arcollect","first_run",first_run.default_value);
 	start_window_mode.value = reader.GetInteger("arcollect","start_window_mode",start_window_mode.default_value);
 	current_rating.value = reader.GetInteger("arcollect","current_rating",current_rating.default_value);
 	image_memory_limit.value = reader.GetInteger("arcollect","image_memory_limit",image_memory_limit.default_value);
@@ -50,9 +48,6 @@ void Arcollect::config::write_config(void)
 	       << "; Your library is stored at " << Arcollect::path::arco_data_home << "\n"
 	       << "; Note: Your comments won't be preserved\n"
 	       << "\n"
-	       << "; first_run - Whether you did the first run for this version\n"
-	       << "first_run=" << first_run << '\n'
-	       << "; start_window_mode - Window starting mode\n"
 	       << "; " << STARTWINDOW_NORMAL     << ": Normal windowed mode\n"
 	       << "; " << STARTWINDOW_MAXIMIZED  << ": Maximized window\n"
 	       << "; " << STARTWINDOW_FULLSCREEN << ": Full-screen\n"

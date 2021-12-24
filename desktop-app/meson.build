@@ -31,7 +31,6 @@ deskapp_srcs = [
 	'gui/about.cpp',
 	'gui/artwork-viewport.cpp',
 	'gui/edit-art.cpp',
-	'gui/first-run.cpp',
 	'gui/font.cpp',
 	'gui/main.cpp',
 	'gui/menu.cpp',

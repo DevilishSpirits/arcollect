@@ -11,7 +11,6 @@
 }
 #define foreach_int_param(instructions) \
 { \
-	foreach_param_step(first_run,instructions); \
 	foreach_param_step(start_window_mode,instructions); \
 	foreach_param_step(current_rating,instructions); \
 }

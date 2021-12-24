@@ -24,7 +24,6 @@
 #include "../sdl2-hpp/SDL.hpp"
 #undef main // This cause name clash
 #include "animation.hpp"
-#include "first-run.hpp"
 #include "font.hpp"
 #include "modal.hpp"
 #include "slideshow.hpp"
@@ -109,9 +108,6 @@ void Arcollect::gui::start(int argc, char** argv)
 		// Bootstrap the background
 		Arcollect::gui::background_slideshow.resize(window_rect);
 		Arcollect::gui::modal_stack.push_back(Arcollect::gui::background_slideshow);
-		// Show the first run if not done
-		if (Arcollect::config::first_run == 0)
-			Arcollect::gui::modal_stack.push_back(Arcollect::gui::first_run_modal);
 		
 		SDL_ShowWindow(window);
 	}
