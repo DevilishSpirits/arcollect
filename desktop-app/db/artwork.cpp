@@ -191,22 +191,19 @@ void Arcollect::db::artwork::db_sync(void)
 {
 	if (data_version != Arcollect::data_version) {
 		std::unique_ptr<SQLite3::stmt> stmt;
-		database->prepare("SELECT art_title, art_desc, art_source, art_width, art_height, art_rating, art_mimetype FROM artworks WHERE art_artid = ?;",stmt); // TODO Error checking
+		database->prepare("SELECT art_width, art_height, art_rating, art_mimetype FROM artworks WHERE art_artid = ?;",stmt); // TODO Error checking
 		stmt->bind(1,art_id);
 		if (stmt->step() == SQLITE_ROW) {
-			art_title  = column_string_default(stmt,0);
-			art_desc   = column_string_default(stmt,1);
-			art_source = stmt->column_string(2);
 			// Load picture size if unknow
 			if (!art_size.x || !art_size.y) {
-				art_size.x = stmt->column_int64(3);
-				art_size.y = stmt->column_int64(4);
+				art_size.x = stmt->column_int64(0);
+				art_size.y = stmt->column_int64(1);
 			}
 			
-			art_rating = static_cast<Arcollect::config::Rating>(stmt->column_int64(5));
+			art_rating = static_cast<Arcollect::config::Rating>(stmt->column_int64(2));
 			
 			// Detect artwork type
-			art_mimetype = stmt->column_string(6);
+			art_mimetype = stmt->column_string(3);
 			if ((art_mimetype.size() >= 6)
 			 &&(art_mimetype[0] == 'i')
 			 &&(art_mimetype[1] == 'm')
@@ -230,6 +227,22 @@ void Arcollect::db::artwork::db_sync(void)
 		}
 		
 		linked_accounts.clear();
+	}
+}
+std::string Arcollect::db::artwork::get_db_string(const std::string& column)
+{
+	std::unique_ptr<SQLite3::stmt> stmt;
+	const std::string query = "SELECT "+column+" FROM artworks WHERE art_artid = ?;";
+	if (database->prepare(query.c_str(),stmt)) {
+		std::cerr << "Failed to prepare '" << query << "': " << database->errmsg() << std::endl;
+		return "";
+	}
+	stmt->bind(1,art_id);
+	if (stmt->step() == SQLITE_ROW) {
+		return column_string_default(stmt,0);
+	} else {
+		std::cerr << "Failed to get " << column << " column from artwork " << art_id << ": " << database->errmsg() << std::endl;
+		return "";
 	}
 }
 

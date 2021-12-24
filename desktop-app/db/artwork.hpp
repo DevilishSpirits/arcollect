@@ -96,9 +96,6 @@ namespace Arcollect {
 				// Cached DB infos
 				sqlite_int64 data_version;
 				void db_sync(void);
-				std::string art_title;
-				std::string art_desc;
-				std::string art_source;
 				std::string art_mimetype;
 				SDL::Point  art_size{0,0};
 				Arcollect::config::Rating art_rating;
@@ -106,6 +103,13 @@ namespace Arcollect {
 				std::unique_ptr<SDL::Texture> text;
 				gui::font::Elements artwork_text_elements;
 				std::list<std::reference_wrapper<artwork>>::iterator last_rendered_iterator;
+				/** Query a column
+				 * \param column name
+				 * \return The string or an empty string if NULL
+				 * \warning **`column` is sensitive to SQL injections!** This function
+				 *          is only meant to be used with hardcoded strings.
+				 */
+				std::string get_db_string(const std::string& column);
 			public:
 				/** Return wether texture is loaded
 				 * \return true is the texture in loaded in memory
@@ -181,17 +185,14 @@ namespace Arcollect {
 				
 				int render(const SDL::Rect *dstrect);
 				
-				inline const std::string &title(void) {
-					db_sync();
-					return art_title;
+				std::string title(void) {
+					return get_db_string("art_title");
 				}
-				inline const std::string &desc(void) {
-					db_sync();
-					return art_desc;
+				std::string desc(void) {
+					return get_db_string("art_desc");
 				}
-				inline const std::string &source(void) {
-					db_sync();
-					return art_source;
+				std::string source(void) {
+					return get_db_string("art_source");
 				}
 				inline const std::string &mimetype(void) {
 					db_sync();
