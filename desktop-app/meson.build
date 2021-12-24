@@ -47,7 +47,6 @@ deskapp_srcs = [
 	roboto_proj.get_variable('gen_roboto_target')[0],
 ]
 deskapp_additional_srcs = [
-	db_schema_sources_target[1], # for <arcollect-sqls.hpp>
 	roboto_proj.get_variable('gen_roboto_target')[1],
 ]
 

@@ -11,7 +11,7 @@ The schema itself is documented in [`init.sql`](https://github.com/DevilishSpiri
 
 The [`test-sql-prepare`](tests/test-sql-prepare.cpp) check if all statements can be prepared by SQLite (unless these in the `db_schema_src_no_test_prepare` array).
 
-The program [`gen-sources.cpp`](https://github.com/DevilishSpirits/arcollect/blob/master/sqls/gen-schema-sources.cpp) generate a pair of source/header with minified version of the SQL statements below.
+The program [`gen-sources.cpp`](https://github.com/DevilishSpirits/arcollect/blob/master/sqls/gen-schema-sources.cpp) generate a source file with minified version of the SQL statements below.
 
 * `adder_insert_*.sql`/`adder_update_*.sql` -- Webext-adder statements to insert/update entries in the database.
 * [`boot.sql`](https://github.com/DevilishSpirits/arcollect/blob/master/sqls/boot.sql) -- Pragmas runs at each database opening.

@@ -8,7 +8,6 @@ webext_adder_srcs = [
 	'adder.cpp',
 	'download.cpp',
 	'main.cpp',
-	db_schema_sources_target[1], # for <arcollect-sqls.hpp>
 ]
 
 if (host_machine.system() == 'windows')
