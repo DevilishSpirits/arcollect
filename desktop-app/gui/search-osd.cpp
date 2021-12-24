@@ -93,14 +93,14 @@ void Arcollect::gui::search_osd::text_changed(void)
 	// Update GUI
 	const int title_border = window_borders::title_height/4;
 	const int font_height = window_borders::title_height-2*title_border;
-	const char* search_term = " ";
+	std::string_view search_term = " ";
 	if (!text.empty())
-		search_term = text.c_str();
-	text_render = font::Renderable(search_term,font_height);
+		search_term = text;
+	text_render = font::Renderable(font::Elements::build(font::ExactFontSize(font_height),search_term));
 	
 	// Perform search
 	std::unique_ptr<SQLite3::stmt> stmt;
-	Arcollect::db::search::build_stmt(search_term,stmt);
+	Arcollect::db::search::build_stmt(search_term.data(),stmt);
 	collection = std::make_shared<Arcollect::db::artwork_collection_sqlite>(std::move(stmt));
 	Arcollect::gui::update_background(collection);
 	
