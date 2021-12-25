@@ -214,7 +214,7 @@ BEGIN IMMEDIATE;
 		com_savedate   INTEGER NOT NULL       DEFAULT (strftime('%s','now')), /* When the comic was saved in Arcollect */
 		PRIMARY KEY (com_arcoid AUTOINCREMENT)
 	);
-	INSERT INTO sqlite_sequence(name,seq) VALUES ('comics',0);
+	INSERT INTO sqlite_sequence(name,seq) SELECT 'comics',MAX(art_partof) FROM artworks;
 	
 	CREATE TABLE comics_missing_pages (
 		art_artid      INTEGER NOT NULL, /* The reference artwork ID */
