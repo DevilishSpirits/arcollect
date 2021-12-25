@@ -23,7 +23,9 @@ db_schema_src = [
 	'cache_query_by_source.sql',
 	'delete_artwork.sql',
 	'delete_download.sql',
+	'downloads_move_refs.sql',
 	'downloads_new_entry.sql',
+	'downloads_unsource.sql',
 	'preload_artworks.sql',
 ]
 db_schema_src_no_test_prepare = [

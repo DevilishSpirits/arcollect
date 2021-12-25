@@ -22,6 +22,7 @@ Arcollect::db::downloads::Transaction::Transaction(std::unique_ptr<SQLite3::sqli
 {
 	// TODO Checks
 	db->prepare(Arcollect::db::sql::cache_query_by_source,query_cache_stmt);
+	db->prepare(Arcollect::db::sql::downloads_unsource,unsource_stmt);
 }
 void Arcollect::db::downloads::Transaction::commit(void) noexcept
 {
@@ -40,30 +41,56 @@ Arcollect::db::downloads::Transaction::~Transaction(void) noexcept
 }
 Arcollect::db::downloads::DownloadInfo::DownloadInfo(std::unique_ptr<SQLite3::stmt> &query_cache_stmt)
 : 
-	dwn_id      (query_cache_stmt->column_int64(0)),
+	dwn_id_write(query_cache_stmt->column_int64(0)),
 	dwn_lastedit(query_cache_stmt->column_int64(1)),
 	dwn_etag    (query_cache_stmt->column_null(2) ? std::string() : query_cache_stmt->column_string(2)),
 	dwn_path    (query_cache_stmt->column_string(3))
 {
 }
-std::optional<Arcollect::db::downloads::DownloadInfo> Arcollect::db::downloads::Transaction::query_cache(const std::string_view &db_key)
+Arcollect::db::downloads::DownloadInfo Arcollect::db::downloads::Transaction::query_cache(const std::string_view &db_key)
 {
 	query_cache_stmt->reset();
 	query_cache_stmt->bind(1,db_key);
 	switch (query_cache_stmt->step()) {
 		case SQLITE_ROW:
 			// Cache hit!
-			return std::make_optional<Arcollect::db::downloads::DownloadInfo>(query_cache_stmt);
+			return Arcollect::db::downloads::DownloadInfo(query_cache_stmt);
 		case SQLITE_DONE:
 			// Cache miss
-			return std::nullopt;
+			return Arcollect::db::downloads::DownloadInfo();
 		default: {
 			std::cerr << "Failed to query cache (dwn_source = " << db_key << "): " << db->errmsg() << ". Assume cache miss." << std::endl;
-		} return std::nullopt;
+		} return Arcollect::db::downloads::DownloadInfo();
 	}
+}
+void Arcollect::db::downloads::Transaction::unsource(sqlite3_int64 dwn_id)
+{
+	unsource_stmt->reset();
+	unsource_stmt->bind(1,dwn_id);
+	unsource_stmt->step();
+}
+std::string Arcollect::db::downloads::Transaction::move_refs(sqlite3_int64 from, sqlite3_int64 to)
+{
+	std::unique_ptr<SQLite3::stmt> stmt;
+	const char *zSql = Arcollect::db::sql::downloads_move_refs.data();
+	int substep = 0;
+	while (*zSql) {
+		substep++;
+		if (db->prepare(zSql,-1,stmt,zSql) != SQLITE_OK)
+			return "Updating download ref " + std::to_string(from) + " to " + std::to_string(to) + ", failed to prepare substep " + std::to_string(substep) + ": " + std::string(db->errmsg()) + ".";
+		if (stmt->bind(1,from) != SQLITE_OK)
+			return "Updating download ref " + std::to_string(from) + " to " + std::to_string(to) + ", failed to bind the source reference: " + std::string(db->errmsg()) + ".";
+		if (stmt->bind(2,to) != SQLITE_OK)
+			return "Updating download ref " + std::to_string(from) + " to " + std::to_string(to) + ", failed to bind the target reference: " + std::string(db->errmsg()) + ".";
+		if (stmt->step() != SQLITE_DONE)
+			return "Updating download ref " + std::to_string(from) + " to " + std::to_string(to) + ", failed to run substep " + std::to_string(substep) + ": " + std::string(db->errmsg()) + ".";
+	}
+	return "";
 }
 std::string Arcollect::db::downloads::Transaction::write_cache(const std::string_view &db_key, const std::string_view &mimetype, Arcollect::db::downloads::DownloadInfo& infos)
 {
+	if (infos)
+		unsource(infos.dwn_id());
 	std::filesystem::path new_path(infos.dwn_path);
 	for (unsigned int i = 0; i < std::numeric_limits<decltype(i)>::max(); ++i) {
 		// Ensure that we are not writing an erased file
@@ -88,12 +115,20 @@ std::string Arcollect::db::downloads::Transaction::write_cache(const std::string
 		downloads_new_entry_stmt->bind(5,mimetype);
 		switch (downloads_new_entry_stmt->step()) {
 			case SQLITE_ROW: {
-				infos.dwn_id = downloads_new_entry_stmt->column_int64(0);
+				std::optional<sqlite3_int64> old_ref = infos.dwn_id_write;
+				infos.dwn_id_write = downloads_new_entry_stmt->column_int64(0);
 				infos.dwn_path = new_path;
 				created_files.emplace_back(std::move(new_path));
 				// Get a SQLITE_DONE
 				if (downloads_new_entry_stmt->step() != SQLITE_DONE)
 					return std::string("Failed to add cache entry in database (in SQLITE_ROW handling): "+std::string(db->errmsg()));
+				// Move references
+				if (old_ref) {
+					std::string move_refs_result = move_refs(*old_ref,infos.dwn_id());
+					if (!move_refs_result.empty())
+						return move_refs_result;
+					delete_cache(*old_ref);
+				}
 			} return std::string();
 			case SQLITE_CONSTRAINT: {
 				if (db->extended_errcode() == SQLITE_CONSTRAINT_UNIQUE) {

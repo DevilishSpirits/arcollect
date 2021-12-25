@@ -41,39 +41,65 @@ namespace Arcollect {
 		 *          use old values as any fieds may be overwritten.
 		 */
 		namespace downloads {
+			class Transaction;
 			/** Downloads infos
 			 *
 			 * This struture hold informations about an entry in the cache
 			 * \warning Many functions take and edit this structure, ensure that you 
-		 * *          don't use old values as any fieds may be overwritten.
+		 * *          don't use old values as any fields may be overwritten.
 			 */
-			struct DownloadInfo {
-				/** The download ID
-				 */
-				sqlite3_int64 dwn_id;
-				/** Last change UNIX timestamp
-				 *
-				 * Used for [`If-Modified-Since`](https://developer.mozilla.org/fr/docs/Web/HTTP/Headers/If-Modified-Since).
-				 */
-				sqlite3_int64 dwn_lastedit;
-				/** Etag
-				 *
-				 * Used for caching
-				 */
-				std::string dwn_etag;
-				/** File path
-				 *
-				 * This path is relative to Arcollect::path::arco_data_home.
-				 *
-				 * \warning NEVER CACHE THE PATH!!! write_cache() and overwrite_cache()
-				 *          may change this field, you would overwrite a file that
-				 *          shouldn't and break the user collection!
-				 */
-				std::filesystem::path dwn_path;
-				/** Default constructor */
-				DownloadInfo(void) = default;
-				/** Constructor for Transaction::query_cache() usage */
-				DownloadInfo(std::unique_ptr<SQLite3::stmt> &query_cache_stmt);
+			class DownloadInfo {
+				private:
+					friend Transaction;
+					/** The download ID writeable
+					 *
+					 * For #Transaction use.
+					 */
+					std::optional<sqlite3_int64> dwn_id_write;
+				public:
+					/** Query the download ID
+					 *
+					 * You never have to set this value yourself, it is entirely managed
+					 * by the download management library
+					 *
+					 * \warning DO NOT call this function if operator bool() doesn't
+					 *          returns true.
+					 */
+					sqlite3_int64 dwn_id(void) const {
+						return *dwn_id_write;
+					}
+					/** Last change UNIX timestamp
+					 *
+					 * Used for [`If-Modified-Since`](https://developer.mozilla.org/fr/docs/Web/HTTP/Headers/If-Modified-Since).
+					 */
+					sqlite3_int64 dwn_lastedit;
+					/** Etag
+					 *
+					 * Used for caching
+					 */
+					std::string dwn_etag;
+					/** File path
+					 *
+					 * This path is relative to Arcollect::path::arco_data_home.
+					 *
+					 * \warning NEVER CACHE THE PATH!!! write_cache() and overwrite_cache()
+					 *          may change this field, you would overwrite a file that
+					 *          shouldn't and break the user collection!
+					 */
+					std::filesystem::path dwn_path;
+					/** Return the if the download info is valid
+					 * \return If dwn_id is set
+					 *
+					 * It is intended for use after Transaction::query_cache() to know if
+					 * there was a cache hit.
+					 */
+					operator bool(void) const {
+						return dwn_id_write.has_value();
+					}
+					/** Default constructor */
+					DownloadInfo(void) = default;
+					/** Constructor for Transaction::query_cache() usage */
+					DownloadInfo(std::unique_ptr<SQLite3::stmt> &query_cache_stmt);
 			};
 			/** A download transaction
 			 *
@@ -95,6 +121,7 @@ namespace Arcollect {
 					 */
 					SQLite3::sqlite3 *const db;
 					std::unique_ptr<SQLite3::stmt> query_cache_stmt;
+					std::unique_ptr<SQLite3::stmt> unsource_stmt;
 					/** List of deleted files
 					 *
 					 * This is a list of (logically) deleted files, they are really erased
@@ -107,24 +134,36 @@ namespace Arcollect {
 					 * is destroyed. This set is cleared on a commit().
 					 */
 					std::vector<std::filesystem::path> created_files;
+					/** Move references
+					 * \return An empty string on success or the error message
+					 *
+					 * Cache entries are immutable, when we update a resource, we move
+					 * existing references **that should be moved** using this function.
+					 *
+					 * \note Unless you know that you want to keep the ref, delete_cache()
+					 *       the old ref afterward to cleanup bits. Don't be afraid to
+					 *       break things, at worst that's a no-op.
+					 */
+					std::string move_refs(sqlite3_int64 from, sqlite3_int64 to);
 				public:
 					/** Query cache for an URL
 					 * \param db_key The URL to query from (might not be the real one)
-					 * \return Cache hit or an empty object on miss
+					 * \return A download info, cast to bool(true) on cache hit.
 					 * \warning Any DB change invalidate the result, don't forget to lock
 					 *          the database before calling query_cache().
 					 */
-					std::optional<DownloadInfo> query_cache(const std::string_view &db_key);
+					DownloadInfo query_cache(const std::string_view &db_key);
 					/** Write a new entry in the cache
 					 * \param db_key  The cached URL (might not be the real one)
 					 * \param[in/out] infos Infos to write in the database.
 					 *                Some infos will be overwritten with the effective
 					 *                settings.
-					 *                You MUST have set all fields expect `dwn_id`.
+					 *                You MUST have set all fields.
 					 * \return An empty string on success, the error message else
 					 * \warning `dwn_path` and other settings may be overwritten by this
 					 *          function. Don't copy and reuse any field before calling
 					 *          this function!
+					 * \warning The old dwn_id will be delete_cache().
 					 */
 					std::string write_cache(const std::string_view &db_key, const std::string_view &mimetype, DownloadInfo& infos);
 					/** Attempt to delete a download
@@ -134,6 +173,13 @@ namespace Arcollect {
 					 * \warning It rely on SQLite foreign keys enforcement.
 					 */
 					bool delete_cache(sqlite3_int64 dwn_id);
+					/** Unsource a download
+					 * \return An empty string on success or the error message
+					 *
+					 * Unset the dwn_source field so a new download using the same key can
+					 * be used instead.
+					 */
+					void unsource(sqlite3_int64 dwn_id);
 					
 					Transaction(std::unique_ptr<SQLite3::sqlite3> &database);
 					/** Move constructor

@@ -216,13 +216,10 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 	
 	if (!cache_key.empty()) {
 		// Search in the database
-		std::optional<DownloadInfo> cache_result = session.cache.query_cache(cache_key);
-		cache_miss = !cache_result;
-		if (!cache_miss) {
-			download_infos = *cache_result;
-			if (Arcollect::debug.webext_adder)
-				std::cerr << ": collection cache hit";
-		}
+		download_infos = session.cache.query_cache(cache_key);
+		cache_miss = !download_infos;
+		if (!cache_miss && Arcollect::debug.webext_adder)
+			std::cerr << ": collection cache hit";
 	}
 	download_infos.dwn_path = target;
 	// Perform transfer
@@ -261,7 +258,7 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 					if (Arcollect::debug.webext_adder)
 						std::cerr << ": 200 OK." << std::endl;
 					
-				} return session.url_cache[cache_key] = download_infos.dwn_id;
+				} return session.url_cache[cache_key] = download_infos.dwn_id();
 				case CURLE_WRITE_ERROR: {
 					/** Check for a 304 Not Modified
 					 * In such case, assert_http_status() clear ok_codes.
@@ -269,7 +266,7 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 					if (ok_codes.empty()) {
 						if (Arcollect::debug.webext_adder)
 							std::cerr << ": 304 Not Modified." << std::endl;
-						return session.url_cache[cache_key] = download_infos.dwn_id;
+						return session.url_cache[cache_key] = download_infos.dwn_id();
 					}
 				} // falltrough;
 				default: {
@@ -291,11 +288,11 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 					std::string binary;
 					macaron::Base64::Decode(data_string.data(),binary);
 					std::ofstream((Arcollect::path::arco_data_home/download_infos.dwn_path)) << binary;
-					return session.url_cache[cache_key] = download_infos.dwn_id;
+					return session.url_cache[cache_key] = download_infos.dwn_id();
 				} else throw std::runtime_error(std::string("Failed to perform transaction: ")+error);
 			} else {
 				// Use the cache
-				return session.url_cache[cache_key] = download_infos.dwn_id;
+				return session.url_cache[cache_key] = download_infos.dwn_id();
 			}
 		} break;
 	}

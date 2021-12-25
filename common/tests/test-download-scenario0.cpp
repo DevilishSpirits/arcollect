@@ -61,7 +61,7 @@ struct Entry {
 
 int main(void)
 {
-	std::cout << "1..6" << std::endl;
+	std::cout << "1..8" << std::endl;
 	std::unique_ptr<SQLite3::sqlite3> database = Arcollect::db::test_open();
 	Transaction cache(database);
 	// 1. Add initial set
@@ -84,9 +84,17 @@ int main(void)
 	
 	// 3. Remove the first set and ensure it filename is not reuse
 	Entry entry3(entry1);
-	cache.delete_cache(entry1.infos.dwn_id);
+	cache.delete_cache(entry1.infos.dwn_id());
 	entry3.assert_write_cache(true,"Reinserting first set after deleting it");
 	entry1.assert_equal(false,"Ensure the reinserted first set is different from the first set",entry3);
+	
+	// 4. Assert write_cache failure on same db_key
+	Entry entry4(entry2);
+	entry2.assert_write_cache(true,"Reinsert entry2");
+	cache.unsource(entry2.infos.dwn_id());
+	// 5. Assert write_cache success on same db_key
+	auto query1 = cache.query_cache(entry2.db_key);
+	ok_nok(query1.dwn_id() != entry2.infos.dwn_id(),true) << "Ensure that the dwn_id has been updated" << std::endl;
 	
 	database->exec("COMMIT;");
 }
