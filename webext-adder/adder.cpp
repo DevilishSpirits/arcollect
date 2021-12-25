@@ -306,6 +306,10 @@ struct new_comic_page {
 	new_comic *comic;
 	ArtworksDBCache::optional_type* relative_to = NULL;
 	sqlite3_int64 offset = 0;
+	/** Parse a comic page
+	 *
+	 * This create a new page from the submitted JSON
+	 */
 	new_comic_page(char*& iter, char* const end, ArtworksDBCache& db_artworks) {
 		enum class ComicPage {
 			relative_to,
@@ -335,7 +339,13 @@ struct new_comic_page {
 					offset += json_read_int(entry.have,"\"comics\":[{\"pages\":{\"...\":{\"sub\"",iter,end);
 				} break;
 			}
+		if (relative_to && !offset)
+			// This is used for a special case
+			throw std::runtime_error("An artwork cannot be relative to another one and be at the exact same page");
 	}
+	/** Create a comic page from a reference in "relative_to"
+	 */
+	new_comic_page(ArtworksDBCache::optional_type &artwork, new_comic* in_comic) : comic(in_comic), relative_to(&artwork) {}
 };
 struct new_comic {
 	platform_id      com_platid;
@@ -440,25 +450,39 @@ struct new_comic {
 					while (more_pages)
 						switch (Arcollect::json::read_object_keyval(art_source,iter,end)) {
 							case Arcollect::json::ObjHave::OBJECT: {
-								ArtworksDBCache::optional_type &artwork = db_artworks[art_source];
+								// Parse the page
 								new_comic_page new_page(iter,end,db_artworks);
 								new_page.comic = this;
+								if (new_page.relative_to) {
+									// The page is relative to another artwork, include it in the comic
+									ArtworksDBCache::optional_type &artwork = *new_page.relative_to;
+									if (artwork.comic_page) {
+										// Already have comic data
+										if (artwork.comic_page->comic != this)
+											merge_with.insert(artwork.comic_page->comic);
+									} else {
+										artwork.comic_page = &pages.try_emplace(&artwork,artwork,this).first->second;
+									}	
+								}
+								// Check if the artwork already have a comic page
+								ArtworksDBCache::optional_type &artwork = db_artworks[art_source];
 								if (artwork.comic_page) {
 									// Artwork is already in a comic
-									merge_with.insert(artwork.comic_page->comic);
-									if (artwork.comic_page->comic == this)
-										throw std::runtime_error("Duplicate artwork "+std::string(art_source)+" in a comic.");
+									if (artwork.comic_page->comic != this)
+										merge_with.insert(artwork.comic_page->comic);
 									// Sanity checks and updates
 									if (!new_page.relative_to && artwork.comic_page->relative_to) {
 										// Our page is absolute, the other is not -> put our version
 										artwork.comic_page->relative_to = NULL;
 										artwork.comic_page->offset = new_page.offset;
+									} else if (new_page.relative_to && artwork.comic_page->relative_to && (!artwork.comic_page->offset)) {
+										// This is a page referencing itself -> put our version
+										artwork.comic_page->relative_to = new_page.relative_to;
+										artwork.comic_page->offset      = new_page.offset;
 									} else if (!new_page.relative_to && !artwork.comic_page->relative_to && (new_page.offset != artwork.comic_page->offset))
 										// Our page is absolute, the other is too but not the same -> error
 										throw std::runtime_error("Page number conflict on "+std::string(art_source)+".");
-									
 								} else artwork.comic_page = &pages.emplace(&artwork,std::move(new_page)).first->second;
-								//artwork.art_partof      = &cache; // /!\ The cache ref is not valid there!
 							} break;
 							default: {
 							} throw std::runtime_error("Syntax error in \"comics\":[{\"pages\":{ object, expected another object or the end the the \"pages\" object.");
@@ -803,6 +827,14 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 	if (Arcollect::debug.webext_adder)
 		std::cerr << "\tInserting " << new_comics.size() << " comics..." << std::endl;
 	for (auto& comic : new_comics) {
+		// Resolve some artworks from the 
+		for (auto& page: comic.pages)
+			if ((page.first == page.second.relative_to) // The page has a unresolved reference that may be in the DB
+			&& (*page.first)                       // The page is the database
+			&& ((*page.first)->art_pageno)) { // The artwork have a page number
+				page.second.relative_to = NULL;
+				page.second.offset      = *(*page.first)->art_pageno;
+			}
 		// Resolve links
 		// TODO I don't like the O(n²) complexity
 		for (const auto& page: comic.pages)
@@ -879,13 +911,15 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 	if (Arcollect::debug.webext_adder)
 		std::cerr << "\tInserting " << new_artworks.size() << " artworks..." << std::endl;
 	for (auto& artwork : new_artworks) {
+		// Mark our artwork as handlede for the comic page updater
+		const new_comic_page* comic_page = artwork.cache.comic_page;
+		artwork.cache.comic_page = NULL;
 		// Skip if the artwork is frozen
 		if (artwork.cache && (artwork.cache->art_flag0 & 1)) {
 			continue;
 		}
 		// Handle comic related stuff
 		sqlite3_int64 art_partof = artwork.cache.art_partof ? (*artwork.cache.art_partof)->com_arcoid : alloc_comicid(*db,*alloc_comicid_stmt);
-		const new_comic_page* comic_page = artwork.cache.comic_page;
 		if (comic_page && (comic_page->relative_to != NULL))
 			// Comic absolute page number is unknow -> don't write it
 			comic_page = NULL;
@@ -950,6 +984,24 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 			insert_stmt->reset();
 		}
 	} new_artworks.clear();
+	
+	// Update other artworks pages if an absolute one is known and the artwork is not frozen
+	if (db->prepare(Arcollect::db::sql::adder_update_artwork_comic,update_stmt))
+		return "Failed to prepare adder_update_artwork_comic: " + std::string(db->errmsg());
+	for (auto& comic : new_comics)
+		for (auto& page: comic.pages)
+			if (*page.first && !page.second.relative_to && !((*page.first)->art_flag0 & 1)) {
+				update_stmt->bind(1,(*page.first)->art_artid);
+				update_stmt->bind(2,(*comic.cache)->com_arcoid);
+				update_stmt->bind(3,page.second.offset);
+				switch (update_stmt->step()) {
+					case SQLITE_DONE: {
+					} break;
+					default: {
+					} return "Failed to update artwork comic infos: " + std::string(db->errmsg());
+				}
+				update_stmt->reset();
+			}
 	
 	// TODO Write back the comics_missing_pages table
 	

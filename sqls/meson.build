@@ -14,6 +14,7 @@ db_schema_src = [
 	'adder_insert_tag.sql',
 	'adder_update_account.sql',
 	'adder_update_artwork.sql',
+	'adder_update_artwork_comic.sql',
 	'adder_update_comic.sql',
 	'adder_update_tag.sql',
 	'allocate_comicid.sql',
