@@ -396,6 +396,18 @@ namespace Arcollect {
 				}
 			};
 			
+			/** Text rendering configuration
+			 */
+			struct RenderConfig {
+				/** Default font height in pixels
+				 */
+				int base_font_height;
+				/** Justification forcing
+				 */
+				bool always_justify;
+				RenderConfig(void);
+			};
+			
 			/** Text rendering result
 			 *
 			 * This is what you render on the screen.
@@ -474,14 +486,14 @@ namespace Arcollect {
 					 *          You must set the object to something valid before render.
 					 */
 					Renderable(void) = default;
-					/** Render UTF-32 text
+					/** Rendert text
 					 * \param elements Elements to add
 					 * \param wrap_width The maximum width
+					 * \param config The configuration to use
 					 *
-					 * \note This variant is selected with U""s variants.
 					 * \warning The wrap_width not an absolute limit!
 					 */
-					Renderable(const Elements& elements, int wrap_width = std::numeric_limits<int>::max());
+					Renderable(const Elements& elements, int wrap_width = std::numeric_limits<int>::max(), const RenderConfig& config = RenderConfig());
 					/** Render UTF-8 text
 					 * \param text UTF-8 text
 					 * \param font_size Text height

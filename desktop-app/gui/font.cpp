@@ -98,6 +98,14 @@ Arcollect::gui::font::Elements& Arcollect::gui::font::Elements::operator<<(const
 	return operator<<(codepoints);
 }
 
+
+Arcollect::gui::font::RenderConfig::RenderConfig() :
+	base_font_height(14),
+	always_justify(false)
+{
+}
+
+
 void Arcollect::gui::font::Renderable::add_rect(const SDL::Rect &rect, SDL::Color color)
 {
 	const auto left  = rect.x;
@@ -165,6 +173,9 @@ void Arcollect::gui::font::Renderable::align_glyphs(Align align, unsigned int i_
  * is stored in a local variable of Renderable() constructor.
  */
 struct Arcollect::gui::font::Renderable::RenderingState {
+	/** Rendering configuration
+	 */
+	const RenderConfig& config;
 	/** Current cursor position
 	 *
 	 * It's the "pen" in FreeType2 vocabulary.
@@ -191,7 +202,7 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::text_runs)::value_type& text_run, RenderingState &state)
 {
 	// Extract parameters
-	const int             font_size = text_run.first < 0 ? -text_run.first : text_run.first*14; // TODO Make the size customizable
+	const int             font_size = text_run.first < 0 ? -text_run.first : text_run.first * state.config.base_font_height; // TODO Make the size customizable
 	const std::u32string_view& text = text_run.second;
 	SDL::Point              &cursor = state.cursor;
 	// Create the buffer
@@ -232,7 +243,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 		if (state.attrib_iter->end <= glyph_info.cluster + state.text_run_cluster_offset)
 			++state.attrib_iter;
 		const Align  &alignment = state.attrib_iter->alignment;
-		const bool     &justify = state.attrib_iter->justify;
+		const bool      justify = state.config.always_justify || state.attrib_iter->justify;
 		const SDL::Color  &color = state.attrib_iter->color;
 		// Wrap text (but not if we already started a new_line, the cluster won't fit anyway)
 		if ((((cursor.x + glyph_pos[i].x_advance) > state.wrap_width) && (glyph_info.cluster != glyph_infos[glyphi_line_start].cluster))) {
@@ -339,10 +350,11 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 	hb_buffer_destroy(buf);
 	state.text_run_cluster_offset += glyph_count;
 }
-Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_width) :
+Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_width, const RenderConfig& config) :
 	result_size{0,0}
 {
 	RenderingState state {
+		config,
 		{0,0},// cursor
 		wrap_width,
 		elements.attributes.begin(),
