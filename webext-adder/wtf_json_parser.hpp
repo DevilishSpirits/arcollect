@@ -309,6 +309,7 @@ namespace Arcollect {
 								return false;
 					} else if (is_valid_after_value(*iter))
 						return true;
+					else return false;
 				}
 			return true;
 		}

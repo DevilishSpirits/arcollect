@@ -23,6 +23,7 @@
 #include "../wtf_json_parser.hpp"
 #include "../wtf_json_parser-string_view.hpp"
 #include <iostream>
+#include <limits>
 #include <vector>
 
 int main(void)
@@ -36,6 +37,8 @@ int main(void)
 	}
 	// To see writes in real time
 	std::cout.setf(std::ios::unitbuf);
+	// Maximum floating point precision
+	std::cout.precision(std::numeric_limits<double>::max_digits10 - 1);
 	// Stack of containers
 	enum ContainerType {
 		ROOT,
@@ -47,8 +50,8 @@ int main(void)
 	using namespace Arcollect::json;
 	char*      iter = &json_file[0];
 	char* const end = &json_file[std::cin.gcount()];
+	Have have;
 	while (iter != end) {
-		Have have;
 		switch (containers.back()) {
 			case ROOT: {
 				have = what_i_have(iter,end);
