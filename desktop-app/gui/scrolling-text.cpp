@@ -33,8 +33,6 @@ void Arcollect::gui::scrolling_text::scroll_text(int line_delta, const SDL::Rect
 void Arcollect::gui::scrolling_text::set_static_elements(const Arcollect::gui::font::Elements& new_elements)
 {
 	elements = new_elements;
-	// TODO elements.initial_height() = Arcollect::config::writing_font_size;
-	// TODO elements.initial_justify() = true;
 	renderable.reset();
 }
 void Arcollect::gui::scrolling_text::render(SDL::Rect target)
@@ -46,7 +44,10 @@ void Arcollect::gui::scrolling_text::render(SDL::Rect target)
 	target.y += border;
 	// Shape text if not made already
 	if (!renderable || (target.w != renderable_target_width)) {
-		renderable = std::make_unique<Arcollect::gui::font::Renderable>(elements,target.w-border-border);
+		Arcollect::gui::font::RenderConfig render_config;
+		render_config.base_font_height = Arcollect::config::writing_font_size;
+		render_config.always_justify = true;
+		renderable = std::make_unique<Arcollect::gui::font::Renderable>(elements,target.w-border-border,render_config);
 		renderable_target_width = target.w;
 	}
 	// Render text
