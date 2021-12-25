@@ -187,7 +187,7 @@ BEGIN IMMEDIATE;
 		acc_arcoid,
 		acc_icon,
 		acc_savedate
-	FROM accounts;
+	FROM accounts WHERE acc_platform != 'e621.net';
 	
 	CREATE TABLE com_acc_links (
 		com_arcoid   INTEGER NOT NULL       , /* The comic unique ID   */
