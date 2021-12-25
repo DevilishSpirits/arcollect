@@ -251,7 +251,9 @@ bool Arcollect::gui::main(void)
 	// Unload artworks if exceeding image_memory_limit
 	while (Arcollect::db::artwork_loader::image_memory_usage>>20 > static_cast<std::size_t>(Arcollect::config::image_memory_limit)) {
 		Arcollect::db::download& artwork = *--Arcollect::db::download::last_rendered.end();
-		artwork.unload();
+		if (SDL_GetTicks() - artwork.last_render_timestamp > 1000)
+			artwork.unload();
+		else break;
 	}
 	// Redraws debugging
 	if (Arcollect::debug.redraws) {
