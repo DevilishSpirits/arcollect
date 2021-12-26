@@ -217,7 +217,7 @@ function save_artwork()
 		}],
 		'accounts': accountJson,
 		'tags': tags,
-		'comics': comics,
+		'comics': {'pages': comics},
 		'art_acc_links': art_acc_links,
 		'art_tag_links': art_tag_links,
 	};
