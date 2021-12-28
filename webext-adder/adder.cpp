@@ -926,13 +926,12 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 		std::optional<sqlite3_int64> art_pageno = comic_page ? std::make_optional(comic_page->offset) : std::nullopt;
 		// Download data
 		sqlite3_int64 art_flag0 = artwork.cache ? artwork.cache->art_flag0 : 0;
-		std::filesystem::path save_path = "artworks";
-		save_path /= platform;
+		std::string filename(platform);
 		sqlite_int64 dwnid = (art_flag0 & 1)
 			? artwork.cache->art_dwnid // Artwork data frozen -> do not change
-			: artwork.art_dwnid.perform(save_path,artwork.art_source);
-		save_path += ".thumbnail";
-		sqlite_int64 thumbnail = artwork.art_thumbnail.empty() ? dwnid : artwork.art_thumbnail.perform(save_path,artwork.art_source);
+			: artwork.art_dwnid.perform("artworks",filename,artwork.art_source);
+		filename += ".thumbnail";
+		sqlite_int64 thumbnail = artwork.art_thumbnail.empty() ? dwnid : artwork.art_thumbnail.perform("artworks",filename,artwork.art_source);
 		// Perform SQL
 		if (artwork.cache) {
 			update_stmt->bind(1,artwork.cache->art_artid);
@@ -1020,11 +1019,10 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 		std::cerr << "\tInserting " << new_accounts.size() << " accounts..." << std::endl;
 	for (auto& account : new_accounts) {
 		// Download data
-		std::filesystem::path save_path = "account-avatars";
-		save_path /= platform;
-		save_path += "_";
-		save_path += account.acc_name;
-		sqlite_int64 icon = account.acc_icon.perform(save_path,account.acc_url);
+		std::string filename(platform);
+		filename += "_";
+		filename += account.acc_name;
+		sqlite_int64 icon = account.acc_icon.perform("account-avatars",filename,account.acc_url);
 		// Perform SQL
 		if (account.cache) {
 			// Update

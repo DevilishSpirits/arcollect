@@ -46,7 +46,7 @@ struct Entry {
 			(mimetype == right.mimetype)&&
 			(infos.dwn_lastedit == right.infos.dwn_lastedit)&&
 			(infos.dwn_etag == right.infos.dwn_etag)&&
-			(infos.dwn_path == right.infos.dwn_path);
+			(infos.dwn_path() == right.infos.dwn_path());
 	}
 	Entry(Transaction &cache) : cache(cache) {}
 	Entry(const Entry&) = default;
@@ -70,7 +70,7 @@ int main(void)
 	entry1.mimetype = "image/*";
 	entry1.infos.dwn_lastedit = 0;
 	entry1.infos.dwn_etag = "123abc";
-	entry1.infos.dwn_path = "test";
+	entry1.infos.set_dwn_path("test","test");
 	
 	// 2. Add a second set and ensure it changes
 	Entry entry2(entry1);

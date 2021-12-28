@@ -189,7 +189,7 @@ size_t Arcollect::WebextAdder::Download::curl_first_write_callback(char *ptr, si
 		return -1;
 	}
 	// Make output file
-	file = fopen((Arcollect::path::arco_data_home/download_infos.dwn_path).string().c_str(),"wb");
+	file = fopen((Arcollect::path::arco_data_home/download_infos.dwn_path()).string().c_str(),"wb");
 	if (!file) {
 		snprintf(curl_errorbuffer,sizeof(curl_errorbuffer),"Failed to perform transaction: %s",strerror(errno));
 		return -1;
@@ -201,7 +201,7 @@ size_t Arcollect::WebextAdder::Download::curl_first_write_callback(char *ptr, si
 	curl_easy_setopt(easyhandle,CURLOPT_WRITEDATA,file);
 	return fwrite(ptr,size,nmemb,file);
 }
-sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::path& target, const std::string_view &referer)
+sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::path& target_dir, const std::string_view& target, const std::string_view &referer)
 {
 	using Arcollect::db::downloads::DownloadInfo;
 	if (Arcollect::debug.webext_adder)
@@ -221,7 +221,7 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 		if (!cache_miss && Arcollect::debug.webext_adder)
 			std::cerr << ": collection cache hit";
 	}
-	download_infos.dwn_path = target;
+	download_infos.set_dwn_path(target_dir,target);
 	// Perform transfer
 	switch (uri_type) {
 		case URI_HTTPS: {
@@ -287,7 +287,7 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 				if (error.empty()) {
 					std::string binary;
 					macaron::Base64::Decode(data_string.data(),binary);
-					std::ofstream((Arcollect::path::arco_data_home/download_infos.dwn_path)) << binary;
+					std::ofstream((Arcollect::path::arco_data_home/download_infos.dwn_path())) << binary;
 					return session.url_cache[cache_key] = download_infos.dwn_id();
 				} else throw std::runtime_error(std::string("Failed to perform transaction: ")+error);
 			} else {

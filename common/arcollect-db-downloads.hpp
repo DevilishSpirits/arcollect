@@ -56,6 +56,11 @@ namespace Arcollect {
 					 * For #Transaction use.
 					 */
 					std::optional<sqlite3_int64> dwn_id_write;
+					/** The path for write
+					 *
+					 * To avoid Local File Inclusion.
+					 */
+					std::filesystem::path dwn_path_write;
 				public:
 					/** Query the download ID
 					 *
@@ -86,7 +91,18 @@ namespace Arcollect {
 					 *          may change this field, you would overwrite a file that
 					 *          shouldn't and break the user collection!
 					 */
-					std::filesystem::path dwn_path;
+					const std::filesystem::path &dwn_path() const {
+						return dwn_path_write;
+					}
+					/** Set and sanitize dwn_path()
+					 * \param dir The ALWAYS hardcoded directory to place into.
+					 * \param filename The file name to set
+					 * 
+					 * This function set dwn_path() and sanitize the filename to avoid
+					 * security issues. The dir IS NOT sanitized, so always hardcode a
+					 * directory.
+					 */
+					void set_dwn_path(const std::filesystem::path& dir, const std::string_view& filename);
 					/** Return the if the download info is valid
 					 * \return If dwn_id is set
 					 *

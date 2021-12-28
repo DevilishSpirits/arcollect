@@ -18,6 +18,28 @@
 #include "arcollect-paths.hpp"
 #include "arcollect-sqls.hpp"
 #include <iostream>
+void Arcollect::db::downloads::DownloadInfo::set_dwn_path(const std::filesystem::path& dir, const std::string_view& filename)
+{
+	// Sanitize filename
+	std::filesystem::path sane_filename;
+	//sane_filename.reserve(filename.size());
+	std::string_view::size_type i_begin = 0;
+	std::string_view::size_type i_end   = i_begin;
+	while (i_end < filename.size()) {
+		// Restrict to a reduced subset of ASCII
+		const char c = filename[i_end];
+		bool valid_char = ((c >= 'A') && (c <= 'Z'))||((c >= 'a') && (c <= 'z'))||((c >= '0') && (c <= '9'))||(c == '.')||(c == '_')||(c == '-');
+		if (!valid_char) {
+			// Skip the glyph
+			sane_filename.concat(&filename[i_begin],&filename[i_end]);
+			i_begin = ++i_end;
+		} else ++i_end;
+	}
+	sane_filename.concat(&filename[i_begin],&filename[i_end]);
+	// Set the path
+	dwn_path_write = dir/sane_filename;
+}
+
 Arcollect::db::downloads::Transaction::Transaction(std::unique_ptr<SQLite3::sqlite3> &database) : db(database.get())
 {
 	// TODO Checks
@@ -42,9 +64,9 @@ Arcollect::db::downloads::Transaction::~Transaction(void) noexcept
 Arcollect::db::downloads::DownloadInfo::DownloadInfo(std::unique_ptr<SQLite3::stmt> &query_cache_stmt)
 : 
 	dwn_id_write(query_cache_stmt->column_int64(0)),
+	dwn_path_write(query_cache_stmt->column_string(3)),
 	dwn_lastedit(query_cache_stmt->column_int64(1)),
-	dwn_etag    (query_cache_stmt->column_null(2) ? std::string() : query_cache_stmt->column_string(2)),
-	dwn_path    (query_cache_stmt->column_string(3))
+	dwn_etag    (query_cache_stmt->column_null(2) ? std::string() : query_cache_stmt->column_string(2))
 {
 }
 Arcollect::db::downloads::DownloadInfo Arcollect::db::downloads::Transaction::query_cache(const std::string_view &db_key)
@@ -91,12 +113,12 @@ std::string Arcollect::db::downloads::Transaction::write_cache(const std::string
 {
 	if (infos)
 		unsource(infos.dwn_id());
-	std::filesystem::path new_path(infos.dwn_path);
+	std::filesystem::path new_path(infos.dwn_path());
 	for (unsigned int i = 0; i < std::numeric_limits<decltype(i)>::max(); ++i) {
 		// Ensure that we are not writing an erased file
 		if (deleted_files.find(new_path) != deleted_files.end()) {
 			// dwn_path duplicate, try another one
-			new_path = infos.dwn_path;
+			new_path = infos.dwn_path();
 			new_path += std::filesystem::path("-"+std::to_string(i));
 			continue; // This download is still used in the database
 		}
@@ -117,7 +139,7 @@ std::string Arcollect::db::downloads::Transaction::write_cache(const std::string
 			case SQLITE_ROW: {
 				std::optional<sqlite3_int64> old_ref = infos.dwn_id_write;
 				infos.dwn_id_write = downloads_new_entry_stmt->column_int64(0);
-				infos.dwn_path = new_path;
+				infos.dwn_path_write = new_path;
 				created_files.emplace_back(std::move(new_path));
 				// Get a SQLITE_DONE
 				if (downloads_new_entry_stmt->step() != SQLITE_DONE)
@@ -135,7 +157,7 @@ std::string Arcollect::db::downloads::Transaction::write_cache(const std::string
 					const std::string_view errmsg(db->errmsg());
 					if (errmsg.compare(errmsg.size()-8,8,"dwn_path") == 0) {
 						// dwn_path duplicate, try another one
-						new_path = infos.dwn_path;
+						new_path = infos.dwn_path();
 						new_path += std::filesystem::path("-"+std::to_string(i));
 						continue; // This download is still used in the database
 					}
@@ -146,7 +168,7 @@ std::string Arcollect::db::downloads::Transaction::write_cache(const std::string
 		}
 	}
 	// Okay we REALLY have a problem
-	return std::string("You have too much files starting with "+infos.dwn_path.string()+" in your collection. How did you do that?");
+	return std::string("You have too much files starting with "+infos.dwn_path().string()+" in your collection. How did you do that?");
 }
 bool Arcollect::db::downloads::Transaction::delete_cache(sqlite3_int64 dwn_id)
 {

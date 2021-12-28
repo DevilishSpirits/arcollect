@@ -143,13 +143,15 @@ namespace Arcollect {
 					return data_string.empty();
 				}
 				/** Attempt to download a resource
+				 * \param target_dir  Target directory (MUST BE hardcoded)
+				 * \param target      Target filename (will be sanitized)
 				 * \param referer     Referer to use.
 				 * \param cache       Cache transaction to use.
 				 * \return The dwn_id, throw an exception on error.
 				 * \warning `referer` must be NUL-terminated!
 				 *          The code ensure that with json_read_string_nul_terminate().
 				 */
-				sqlite_int64 perform(const std::filesystem::path& target, const std::string_view &referer);
+				sqlite_int64 perform(const std::filesystem::path& target_dir, const std::string_view& target, const std::string_view &referer);
 				Download(NetworkSession &session) : session(session) {}
 		};
 	}
