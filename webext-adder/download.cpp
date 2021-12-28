@@ -298,3 +298,40 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 	}
 	throw std::runtime_error("How the fuck did I get there?");
 }
+
+std::string_view Arcollect::WebextAdder::Download::base_filename(void) const noexcept
+{
+	std::string_view result = cache_key;
+	switch (uri_type) {
+		case URI_BASE64: if (result.empty()) {
+			// Pick 8 chars in the middle of the Base4 file
+			decltype(result)::size_type pos = data_string.size()/2;
+			decltype(result)::size_type length = pos;
+			if (pos > 8)
+				pos = 8;
+			result = result.substr(pos,length);
+		} // falltrough;
+		case URI_HTTPS: {
+			// If cache_key is not set, use URL
+			if (result.empty())
+				result = data_string;
+			// If empty, return nothing
+			if (result.empty())
+				return result;
+			// Cut at the last '/'
+			decltype(result)::size_type pos;
+			pos = result.find_last_of('/');
+			if (pos != result.npos)
+				result = result.substr(pos,result.size()-pos);
+			// Cut at the first '?'
+			pos = result.find_first_of('?');
+			if (pos != result.npos)
+				result = result.substr(0,-pos);
+			// Truncate the filename at 96 chars
+			if (result.size() > 96)
+				result = result.substr(0,96);
+		} break;
+	}
+	// Return
+	return result;
+}

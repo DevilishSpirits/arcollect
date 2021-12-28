@@ -131,6 +131,11 @@ namespace Arcollect {
 					URI_BASE64,
 				} uri_type;
 			public:
+				/** Query the base filename
+				 * \return In short the part after the last '/' and before the '?' or
+				 *         nothing if base64.
+				 */
+				std::string_view base_filename(void) const noexcept;
 				/* Parse a download specification 
 				 * \param iter        JSON iterator
 				 * \param end         End of the JSON

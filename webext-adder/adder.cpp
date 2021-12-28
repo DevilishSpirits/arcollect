@@ -927,6 +927,8 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 		// Download data
 		sqlite3_int64 art_flag0 = artwork.cache ? artwork.cache->art_flag0 : 0;
 		std::string filename(platform);
+		filename += "_";
+		filename += artwork.art_dwnid.base_filename();
 		sqlite_int64 dwnid = (art_flag0 & 1)
 			? artwork.cache->art_dwnid // Artwork data frozen -> do not change
 			: artwork.art_dwnid.perform("artworks",filename,artwork.art_source);
