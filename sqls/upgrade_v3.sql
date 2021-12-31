@@ -189,6 +189,43 @@ BEGIN IMMEDIATE;
 		acc_savedate
 	FROM accounts WHERE acc_platform != 'e621.net';
 	
+	CREATE TABLE art_acc_links_upgrade_v3 (
+		art_artid    INTEGER NOT NULL       , /* The artwork unique ID   */
+		acc_arcoid   INTEGER NOT NULL       , /* The account ID within Arcollect */
+		artacc_link  TEXT    NOT NULL       , /* The kind of link */
+		FOREIGN KEY (art_artid ) REFERENCES artworks(art_artid ) ON DELETE CASCADE,
+		FOREIGN KEY (acc_arcoid) REFERENCES accounts(acc_arcoid) ON DELETE CASCADE,
+		PRIMARY KEY (art_artid,acc_arcoid,artacc_link)
+	);
+	INSERT OR ROLLBACK INTO art_acc_links_upgrade_v3 (
+		art_artid,
+		acc_arcoid,
+		artacc_link
+	) SELECT
+		art_artid,
+		acc_arcoid,
+		artacc_link
+	FROM art_acc_links;
+	DROP TABLE art_acc_links;
+	ALTER TABLE art_acc_links_upgrade_v3 RENAME TO art_acc_links;
+	
+	CREATE TABLE art_tag_links_upgrade_v3 (
+		art_artid    INTEGER NOT NULL       , /* The artwork unique ID   */
+		tag_arcoid   INTEGER NOT NULL       , /* The tag ID within Arcollect */
+		FOREIGN KEY (art_artid ) REFERENCES artworks(art_artid ) ON DELETE CASCADE,
+		FOREIGN KEY (tag_arcoid) REFERENCES tags    (tag_arcoid) ON DELETE CASCADE,
+		PRIMARY KEY (art_artid,tag_arcoid)
+	);
+	INSERT OR ROLLBACK INTO art_tag_links_upgrade_v3 (
+		art_artid,
+		tag_arcoid
+	) SELECT
+		art_artid,
+		tag_arcoid
+	FROM art_tag_links;
+	DROP TABLE art_tag_links;
+	ALTER TABLE art_tag_links_upgrade_v3 RENAME TO art_tag_links;
+	
 	CREATE TABLE com_acc_links (
 		com_arcoid   INTEGER NOT NULL       , /* The comic unique ID   */
 		acc_arcoid   INTEGER NOT NULL       , /* The account ID within Arcollect */
