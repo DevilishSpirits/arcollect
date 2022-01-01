@@ -20,17 +20,40 @@
 #include "animation.hpp"
 #include "font.hpp"
 #include "modal.hpp"
+#include "../db/download.hpp"
+#include <variant>
 namespace Arcollect {
 	namespace gui {
 		class scrolling_text: public modal {
 			private:
-				Arcollect::gui::font::Elements elements;
+				std::variant<
+					Arcollect::gui::font::Elements,
+					std::shared_ptr<Arcollect::db::download>
+				> data;
+				/** Check if an #Arcollect::gui::font::Elements is available
+				 * \return true if so
+				 *
+				 * It is used to check if it is safe to call get_elements()
+				 */
+				bool elements_available(void) const;
+				/** Query elements
+				 * \return A reference to the elements
+				 *
+				 * \warning This function is only valid if the elements objects is
+				 *          available! Always ensure that elements_available() is true
+				 *          before calling this function.
+				 */
+				Arcollect::gui::font::Elements& get_elements(void);
 				std::unique_ptr<gui::font::Renderable> renderable;
 				int renderable_target_width;
 				animation::scrolling<int> scroll;
 				void scroll_text(int line_delta, const SDL::Rect &rect);
 			public:
-				void set_static_elements(const Arcollect::gui::font::Elements& new_elements);
+				template <typename T>
+				void set(const T& new_elements) {
+					data = new_elements;
+					renderable.reset();
+				}
 				void render(SDL::Rect target) override;
 				bool event(SDL::Event &e, SDL::Rect target) override;
 		};

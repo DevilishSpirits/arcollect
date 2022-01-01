@@ -30,13 +30,31 @@ void Arcollect::gui::scrolling_text::scroll_text(int line_delta, const SDL::Rect
 		scroll = target;
 	}
 }
-void Arcollect::gui::scrolling_text::set_static_elements(const Arcollect::gui::font::Elements& new_elements)
+// From https://en.cppreference.com/w/cpp/utility/variant/visit
+template<class> inline constexpr bool always_false_v = false;
+bool Arcollect::gui::scrolling_text::elements_available(void) const
 {
-	elements = new_elements;
-	renderable.reset();
+	if (std::holds_alternative<Arcollect::gui::font::Elements>(data))
+		return true;
+	else if (std::holds_alternative<std::shared_ptr<Arcollect::db::download>>(data))
+		return std::get<std::shared_ptr<Arcollect::db::download>>(data)->queue_for_load();
+	else return false; // FIXME Make this case an error at compile time
+}
+Arcollect::gui::font::Elements& Arcollect::gui::scrolling_text::get_elements(void)
+{
+	if (std::holds_alternative<Arcollect::gui::font::Elements>(data))
+		return std::get<Arcollect::gui::font::Elements>(data);
+	else if (std::holds_alternative<std::shared_ptr<Arcollect::db::download>>(data))
+		return *std::get<std::shared_ptr<Arcollect::db::download>>(data)->query_data<Arcollect::gui::font::Elements>();
+	else {// FIXME Make this case an error at compile time
+		static Arcollect::gui::font::Elements wtf;
+		return wtf;
+	}
 }
 void Arcollect::gui::scrolling_text::render(SDL::Rect target)
 {
+	if (!elements_available())
+		return;
 	SDL::Rect progress_bar{target.x,target.y};
 	int current_scroll = scroll;
 	int border = target.w/10;
@@ -47,7 +65,7 @@ void Arcollect::gui::scrolling_text::render(SDL::Rect target)
 		Arcollect::gui::font::RenderConfig render_config;
 		render_config.base_font_height = Arcollect::config::writing_font_size;
 		render_config.always_justify = true;
-		renderable = std::make_unique<Arcollect::gui::font::Renderable>(elements,target.w-border-border,render_config);
+		renderable = std::make_unique<Arcollect::gui::font::Renderable>(get_elements(),target.w-border-border,render_config);
 		renderable_target_width = target.w;
 	}
 	// Render text

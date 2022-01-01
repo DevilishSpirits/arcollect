@@ -71,7 +71,7 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 				auto elements = viewport.download->query_data<font::Elements>();
 				size_know = bool(elements); // Forcibly reupdate when elements gets loaded
 				if (size_know)
-					text_display.set_static_elements(elements->get());
+					text_display.set(elements->get());
 			} break;
 			case db::download::ARTWORK_TYPE_UNKNOWN: {
 			} break;

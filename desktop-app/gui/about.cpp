@@ -49,7 +49,7 @@ class about_project: public Arcollect::gui::scrolling_text {
 	public:
 		static void show(const Arcollect::gui::font::Elements &license) {
 			about_project* new_project = new about_project();
-			new_project->set_static_elements(license);
+			new_project->set(license);
 			Arcollect::gui::modal_stack.emplace_back(std::unique_ptr<Arcollect::gui::modal>(new_project));
 		}
 };
