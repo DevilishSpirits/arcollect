@@ -20,3 +20,6 @@ The program [`gen-sources.cpp`](https://github.com/DevilishSpirits/arcollect/blo
 * [`preload_artworks.sql`](https://github.com/DevilishSpirits/arcollect/blob/master/sqls/preload_artworks.sql) -- List artworks that should be preloaded even if not requested.
 * [`upgrade_v2.sql`](https://github.com/DevilishSpirits/arcollect/blob/master/sqls/upgrade_v2.sql) -- Upgrade a [v1 schema](https://github.com/DevilishSpirits/arcollect/blob/v0.3/db-schema/init.sql) to the [v2 schema](https://github.com/DevilishSpirits/arcollect/blob/v0.14/sqls/init.sql), *probably something only me used to have*.
 * [`upgrade_v3.sql`](https://github.com/DevilishSpirits/arcollect/blob/master/sqls/upgrade_v3.sql) -- Upgrade a [v1 schema](https://github.com/DevilishSpirits/arcollect/blob/v0.17/db-schema/init.sql) to the [v2 schema](https://github.com/DevilishSpirits/arcollect/blob/v0.18/sqls/init.sql), *also something only me used to have likely*.
+
+## Templating
+There is a minimalistic substitution based templating engine. That's simply expanding `$SOME_TEXT` to a value, the expanding is recursive and only works outside comments and strings, this is like a cheap shell variable expansion to [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) the SQL code. Everything in the `substitutions` static const map in [`gen-sources.cpp`](gen-schema-sources.cpp).

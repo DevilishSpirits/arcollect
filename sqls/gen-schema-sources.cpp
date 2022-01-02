@@ -25,9 +25,15 @@
 #include <fstream>
 #include <cstring>
 #include <string_view>
+#include <unordered_map>
+#include <vector>
 
 static std::fstream cpp;
 static char sql_file[1048576];
+
+static std::unordered_map<std::string_view,std::string_view> substitutions{
+	{"ADDER_ARTWORKS_COLUMN", "art_artid, art_flag0, art_partof, art_pageno, art_dwnid"},
+};
 
 static void write_sql_file(const char* sql_file_path, const std::string_view &var_name)
 {
@@ -43,7 +49,6 @@ static void write_sql_file(const char* sql_file_path, const std::string_view &va
 	// Start C++ variable
 	cpp << "const std::string_view Arcollect::db::sql::" << var_name << " = \"";
 	// Write and minify the file
-	const auto sql_size = sql.gcount();
 	bool needblank = false;
 	bool wasblank = false;
 	enum {
@@ -52,11 +57,29 @@ static void write_sql_file(const char* sql_file_path, const std::string_view &va
 		COMMENT_IN,   // We are in a comment
 		COMMENT_END, // We read a '*', maybe the end of the comment
 		STRING_IN,  // We are in a string
+		SUBST,     // We are parsing a substitution ($BLA_BLA)
 	} state = NORMAL;
+	std::vector<std::pair<std::string_view,std::string_view::size_type>> subst_stack{
+		{{&sql_file[0],static_cast<std::string_view::size_type>(sql.gcount())},0}
+	};
+	std::string_view::size_type i_subst_start;
 	// case: on blanks chars
 	#define case_blank case ' ':case '\t':case '\n':case '\r'
-	for (auto i = 0; i < sql_size; i++)
-		switch (state) {
+	while (!subst_stack.empty()) {
+		const std::string_view sql_file = subst_stack.back().first;
+		auto &i = subst_stack.back().second;
+		if (i >= sql_file.size()) {
+			subst_stack.pop_back();
+			if (state == SUBST) {
+				std::string_view subst = std::string_view(&sql_file[i_subst_start],i-i_subst_start);
+				auto iter = substitutions.find(subst);
+				if (iter == substitutions.end()) {
+					std::cerr << "Unknow substitution $" << subst << " in " << sql_file_path << std::endl;
+					std::exit(1);
+				}
+				subst_stack.emplace_back(iter->second,0);
+			}
+		} else switch (state) {
 			case COMMENT_BEGIN: {
 				// We may be an a comment start
 				if (sql_file[i] == '*') {
@@ -79,6 +102,10 @@ static void write_sql_file(const char* sql_file_path, const std::string_view &va
 					case '/': {
 						// Maybe the start of a comment
 						state = COMMENT_BEGIN;
+					} break;
+					case '$': {
+						state = SUBST;
+						i_subst_start = i + 1;
 					} break;
 					case_blank: {
 						// Skip blank chars
@@ -121,7 +148,22 @@ static void write_sql_file(const char* sql_file_path, const std::string_view &va
 					needblank = false;
 				}
 			} break;
+			case SUBST: {
+				if (!(((sql_file[i] >= 'A')&&(sql_file[i] <= 'Z'))||((sql_file[i] >= 'a')&&(sql_file[i] <= 'z'))||(sql_file[i] == '_'))) {
+					std::string_view subst = std::string_view(&sql_file[i_subst_start],i-i_subst_start);
+					auto iter = substitutions.find(subst);
+					if (iter == substitutions.end()) {
+						std::cerr << "Unknow substitution $" << subst << " in " << sql_file_path << std::endl;
+						std::exit(1);
+					}
+					subst_stack.emplace_back(iter->second,0);
+					state = NORMAL;
+					cpp << ' '; // Put a blank if needed
+				}
+			} break;
 		}
+		++i;
+	}
 	// Finish the C++
 	cpp << "\";\n";
 }
