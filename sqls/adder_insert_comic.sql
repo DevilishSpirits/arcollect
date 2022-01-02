@@ -28,5 +28,5 @@ INSERT INTO comics (
 		?,
 		?,
 		?
-	) RETURNING com_arcoid
+	) RETURNING $ADDER_COMICS_COLUMNS
 ;

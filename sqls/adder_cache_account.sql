@@ -14,5 +14,5 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-SELECT acc_arcoid FROM accounts
-	WHERE acc_platid = ?;
+SELECT $ADDER_ACCOUNTS_COLUMNS FROM accounts
+	WHERE acc_platid = ? AND acc_platform = ?;;

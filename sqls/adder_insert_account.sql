@@ -36,5 +36,5 @@ INSERT INTO accounts (
 		?,
 		?,
 		?
-	) RETURNING acc_arcoid
+	) RETURNING $ADDER_ACCOUNTS_COLUMNS
 ;

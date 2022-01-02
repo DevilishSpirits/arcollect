@@ -14,5 +14,5 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-SELECT art_artid, art_flag0, art_partof, art_pageno, art_dwnid FROM artworks
+SELECT $ADDER_ARTWORKS_COLUMNS FROM artworks
 	WHERE art_source = ?;

@@ -14,5 +14,5 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-SELECT art_artid, art_flag0, art_partof, art_pageno FROM artworks
-	WHERE art_source = ?;
+SELECT $ADDER_COMICS_COLUMNS FROM comics
+	WHERE com_platid = ? AND com_platform = ?;

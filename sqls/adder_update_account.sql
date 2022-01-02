@@ -25,5 +25,5 @@ UPDATE accounts SET
 		acc_moneyurl   = ?7,
 		acc_createdate = ?8
 	WHERE acc_arcoid = ?1
-	RETURNING acc_arcoid
+	RETURNING $ADDER_ACCOUNTS_COLUMNS
 ;

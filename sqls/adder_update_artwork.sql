@@ -26,5 +26,5 @@ UPDATE artworks SET
 		art_pageno    = ?8,
 		art_postdate  = ?9
 	WHERE art_artid = ?1
-	RETURNING art_artid, art_flag0, art_partof, art_pageno, art_dwnid
+	RETURNING $ADDER_ARTWORKS_COLUMNS
 ;

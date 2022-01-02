@@ -32,7 +32,9 @@ static std::fstream cpp;
 static char sql_file[1048576];
 
 static std::unordered_map<std::string_view,std::string_view> substitutions{
-	{"ADDER_ARTWORKS_COLUMN", "art_artid, art_flag0, art_partof, art_pageno, art_dwnid"},
+	{"ADDER_ACCOUNTS_COLUMNS", "acc_arcoid"},
+	{"ADDER_ARTWORKS_COLUMNS", "art_artid, art_flag0, art_partof, art_pageno, art_dwnid"},
+	{"ADDER_COMICS_COLUMNS"  , "com_arcoid"},
 };
 
 static void write_sql_file(const char* sql_file_path, const std::string_view &var_name)

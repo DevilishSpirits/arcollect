@@ -42,5 +42,5 @@ INSERT INTO artworks (
 		?,
 		?,
 		?
-	) RETURNING art_artid, art_flag0, art_partof, art_pageno, art_dwnid
+	) RETURNING $ADDER_ARTWORKS_COLUMNS
 ;
