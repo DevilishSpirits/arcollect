@@ -79,7 +79,7 @@ struct DBCache {
 	using value_type = ValueT;
 	using sql_binder_type = SQLBinder;
 	using optional_type = OptionalT;
-	std::unordered_map<key_type,std::unique_ptr<optional_type>> cache_map;
+	std::unordered_map<key_type,optional_type> cache_map;
 	
 	/** Query an artwork
 	 * \param key The key to search for
@@ -90,10 +90,7 @@ struct DBCache {
 	 *       After locking the database, query_db() do this job.
 	 */
 	optional_type& operator[](const key_type& key) {
-		auto iter = cache_map.find(key);
-		if (iter == cache_map.end())
-			iter = cache_map.emplace(key,std::make_unique<optional_type>()).first;
-		return *iter->second;
+		return cache_map[key];
 	}
 	static constexpr const std::string key_to_string(const std::string_view &key) {
 		return std::string(key);
@@ -115,7 +112,7 @@ s	 */
 			SQLBinder().bind(stmt,pair.first,platform);
 			switch (stmt.step()) {
 				case SQLITE_ROW: {
-					pair.second->emplace(db,stmt);
+					pair.second.emplace(db,stmt);
 				} break;
 				case SQLITE_DONE: {
 					// Cache miss, do nothing
