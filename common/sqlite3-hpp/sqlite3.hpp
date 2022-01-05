@@ -86,6 +86,9 @@ namespace SQLite3 {
 		inline std::string column_string(int iCol) {
 			return std::string(column_text(iCol));
 		}
+		int column_count(void) {
+			return sqlite3_column_count((sqlite3_stmt*)this);
+		}
 		/*
 		const void *sqlite3_column_text16(sqlite3_stmt*, int iCol);
 		sqlite3_value *sqlite3_column_value(sqlite3_stmt*, int iCol);
