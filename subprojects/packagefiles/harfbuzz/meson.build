@@ -1,6 +1,6 @@
 # Modifications of HarfBuzz meson.build for Arcollect
 project('harfbuzz', 'c', 'cpp',
-  version: '3.1.1',
+  version: '3.2.0',
 )
 
 hb_version_arr = meson.project_version().split('.')
