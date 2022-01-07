@@ -24,7 +24,7 @@ BOOST_ATOMIC_SOURCES = files(
 	'src/lock_pool.cpp',
 )
 if (host_machine.system() == 'windows')
-	BOOST_ATOMIC_SOURCES += files('src/wait_ops_windows.cpp')
+	BOOST_ATOMIC_SOURCES += files('src/wait_on_address.cpp')
 endif
 
 #check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/../config/checks/architecture/x86.cpp>\nint main() {}" BOOST_ATOMIC_TARGET_X86)

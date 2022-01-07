@@ -1,4 +1,4 @@
-project('boost', 'cpp', version: '1.77.0')
+project('boost', 'cpp', version: '1.78.0')
 cpp = meson.get_compiler('cpp')
 add_project_arguments('-DBOOST_ALL_STATIC_LINK', language: 'cpp')
 boost_pub_args = [
