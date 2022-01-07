@@ -67,6 +67,7 @@ libOpenImageIO_srcs = [
 	'xmp.cpp',
 	'color_ocio.cpp',
 	'maketexture.cpp',
+	'bluenoise.cpp',
 	'../libutil/argparse.cpp',
 	'../libutil/benchmark.cpp',
 	'../libutil/errorhandler.cpp', 
