@@ -1,70 +1,127 @@
+# Arcollect specific version of FreeType2 meson.build
+#
+# Meson project file for FreeType 2
+#
+
+# Copyright (C) 2020-2021 by
+# David Turner, Robert Wilhelm, and Werner Lemberg.
+#
+# This file is part of the FreeType project, and may only be used, modified,
+# and distributed under the terms of the FreeType project license,
+# LICENSE.TXT.  By continuing to use, modify, or distribute this file you
+# indicate that you have read the license and understand and accept it
+# fully.
+
+#
+# Say
+#
+#   meson configure
+#
+# to see all configuration options and their default values.  For example,
+# to build only a shared version of FreeType, override the default value
+# with
+#
+#   meson setup -Ddefault_library=shared
+#
+
 project('freetype2', 'c',
-  license : ['FTL', 'GPL2'],
-  meson_version: '>= 0.47.0',
-  version: '2.9.1',
-  default_options: ['buildtype=debugoptimized'])
+  meson_version: '>= 0.55.0',
+  default_options: ['default_library=both'],
+  version: run_command('builds/meson/extract_freetype_version.py',
+                       'include/freetype/freetype.h').stdout().strip(),
+)
 
-# NOTE about Freetype versions
-# There are 3 versions numbers associated with each releases:
-# - official release number (eg. 2.9.1) - accessible via FREETYPE_{MAJOR,MINOR,PATCH} macros from FT_FREETYPE_H
-# - libtool-specific version number, this is hat is returned by freetype-config --version / pkg-config --modversion (eg. 22.1.16)
-# - the platform-specific shared object version number (eg. 6.16.1)
-# See https://git.savannah.gnu.org/cgit/freetype/freetype2.git/tree/docs/VERSIONS.TXT
-# for more information
-release_version = meson.project_version()
-libtool_version = '22.1.16'
-so_version = '6.16.1'
-so_soversion = '6'
+# Only meson >= 0.57 can read a file and assign its contents to a
+# variable; we thus use an external command to have this functionality
+# with older versions, too.
 
-cc = meson.get_compiler('c')
+python = import('python')
+python_exe = python.find_installation(required: true)
 
-base_sources = [
-  'src/autofit/autofit.c',
+ft2_pkgconfig_version = run_command(python_exe,
+  files('builds/meson/extract_libtool_version.py'),
+  files('builds/unix/configure.raw')).stdout().strip()
+
+ft2_includes = include_directories('include')
+
+freetype_includedir = join_paths(get_option('includedir'), 'freetype2')
+
+# Generate a custom `ftmodule.h` version based on the content of
+# `modules.cfg`.
+
+ftmodule_h = custom_target('ftmodule.h',
+  output: 'ftmodule.h',
+  input: 'modules.cfg',
+  command: [python_exe, files('builds/meson/parse_modules_cfg.py'),
+            '--format=ftmodule.h', '@INPUT@', '--output', '@OUTPUT@'],
+  install: false,
+  install_dir: join_paths(freetype_includedir, 'freetype/config'),
+)
+ft2_sources = [ftmodule_h]
+
+
+# FreeType 2 modules.
+
+ft_main_modules = run_command(python_exe,
+  files('builds/meson/parse_modules_cfg.py'),
+  '--format=main-modules',
+  files('modules.cfg')).stdout().strip().split()
+
+ft2_sources += files([
   'src/base/ftbase.c',
-  'src/base/ftbbox.c',
-  'src/base/ftbdf.c',
-  'src/base/ftbitmap.c',
-  'src/base/ftcid.c',
-  'src/base/ftfstype.c',
-  'src/base/ftgasp.c',
-  'src/base/ftglyph.c',
-  'src/base/ftgxval.c',
   'src/base/ftinit.c',
-  'src/base/ftmm.c',
-  'src/base/ftotval.c',
-  'src/base/ftpatent.c',
-  'src/base/ftpfr.c',
-  'src/base/ftstroke.c',
-  'src/base/ftsynth.c',
-  'src/base/ftsystem.c',
-  'src/base/fttype1.c',
-  'src/base/ftwinfnt.c',
-  'src/bdf/bdf.c',
-  'src/bzip2/ftbzip2.c',
-  'src/cache/ftcache.c',
-  'src/cff/cff.c',
-  'src/cid/type1cid.c',
-  'src/gzip/ftgzip.c',
-  'src/lzw/ftlzw.c',
-  'src/pcf/pcf.c',
-  'src/pfr/pfr.c',
-  'src/psaux/psaux.c',
-  'src/pshinter/pshinter.c',
-  'src/psnames/psnames.c',
-  'src/raster/raster.c',
-  'src/sfnt/sfnt.c',
-  'src/smooth/smooth.c',
-  'src/truetype/truetype.c',
-  'src/type1/type1.c',
-  'src/type42/type42.c',
-  'src/winfonts/winfnt.c',
-]
+])
 
-ft2build_h = [
-  'include/ft2build.h',
-]
+foreach mod: ft_main_modules
+  source = mod
+  if mod == 'winfonts'
+    source = 'winfnt'
+  elif mod == 'cid'
+    source = 'type1cid'
+  endif
+  ft2_sources += 'src/@0@/@1@.c'.format(mod, source)
+endforeach
 
-ft_headers = [
+# NOTE: The `bzip2` aux module is handled through options.
+ft_aux_modules = run_command(python_exe,
+  files('builds/meson/parse_modules_cfg.py'),
+  '--format=aux-modules',
+  files('modules.cfg')).stdout().strip().split()
+
+foreach auxmod: ft_aux_modules
+  source = auxmod
+  # Most sources are named `src/<module>/<module>.c`, but there are a few
+  # exceptions handled here.
+  if auxmod == 'cache'
+    source = 'ftcache'
+  elif auxmod == 'lzw'
+    source = 'ftlzw'
+  elif auxmod == 'gzip'
+    source = 'ftgzip'
+  elif auxmod == 'bzip2'
+    # Handled through options instead, see below.
+    continue
+  endif
+  ft2_sources += 'src/@0@/@1@.c'.format(auxmod, source)
+endforeach
+
+
+# FreeType 2 base extensions.
+# To be configured in `modules.cfg`.
+
+base_extensions = run_command(python_exe,
+  files('builds/meson/parse_modules_cfg.py'),
+  '--format=base-extensions-list',
+  files('modules.cfg')).stdout().split()
+
+foreach ext: base_extensions
+  ft2_sources += files('src/base/' + ext)
+endforeach
+
+
+# Header files.
+
+ft2_public_headers = files([
   'include/freetype/freetype.h',
   'include/freetype/ftadvanc.h',
   'include/freetype/ftbbox.h',
@@ -74,6 +131,7 @@ ft_headers = [
   'include/freetype/ftcache.h',
   'include/freetype/ftchapters.h',
   'include/freetype/ftcid.h',
+  'include/freetype/ftcolor.h',
   'include/freetype/ftdriver.h',
   'include/freetype/fterrdef.h',
   'include/freetype/fterrors.h',
@@ -108,118 +166,162 @@ ft_headers = [
   'include/freetype/ttnameid.h',
   'include/freetype/tttables.h',
   'include/freetype/tttags.h',
-]
+])
 
-ft_config_headers = [
-  'include/freetype/config/ftmodule.h',
+ft2_config_headers = files([
+  'include/freetype/config/ftconfig.h',
   'include/freetype/config/ftheader.h',
   'include/freetype/config/ftstdlib.h',
-  'include/freetype/config/ftconfig.h',
-]
+  'include/freetype/config/integer-types.h',
+  'include/freetype/config/mac-support.h',
+  'include/freetype/config/public-macros.h',
+])
 
+ft2_defines = ['-DFT2_BUILD_LIBRARY=1']
+
+
+# System support file.
+
+cc = meson.get_compiler('c')
+
+# NOTE: msys2 on Windows has `unistd.h` and `fcntl.h` but not `sys/mman.h`!
+has_unistd_h = cc.has_header('unistd.h')
+has_fcntl_h = cc.has_header('fcntl.h')
+has_sys_mman_h = cc.has_header('sys/mman.h')
+
+mmap_option = get_option('mmap')
+
+use_unix_ftsystem_c = false
+if mmap_option.disabled()
+  ft2_sources += files(['src/base/ftsystem.c',])
+elif host_machine.system() == 'windows'
+  ft2_sources += files(['builds/windows/ftsystem.c',])
+else
+  if has_unistd_h and has_fcntl_h and has_sys_mman_h
+    # This version of `ftsystem.c` uses `mmap` to read input font files.
+    ft2_sources += files(['builds/unix/ftsystem.c',])
+    use_unix_ftsystem_c = true
+  elif mmap_option.enabled()
+    error('mmap was enabled via options but is not available,'
+          + ' required headers were not found!')
+  else
+    ft2_sources += files(['src/base/ftsystem.c',])
+  endif
+endif
+
+
+# Debug support file
+#
+# NOTE: Some specialized versions exist for other platforms not supported by
+# Meson.  Most implementation differences are extremely minor, i.e., in the
+# implementation of `FT_Message` and `FT_Panic`, and getting the `FT2_DEBUG`
+# value from the environment, when this is supported.  A smaller refactor
+# might make these platform-specific files much smaller, and could be moved
+# into `ftsystem.c` as well.
+#
 if host_machine.system() == 'windows'
   winmod = import('windows')
-  base_sources += [
+  ft2_sources += [
     'builds/windows/ftdebug.c',
     winmod.compile_resources('src/base/ftver.rc'),
   ]
 else
-  base_sources += [
-    'src/base/ftdebug.c',
+  ft2_sources += 'src/base/ftdebug.c'
+endif
+
+
+ft2_deps = []
+common_ldflags = []
+
+
+# Correct compatibility version for OS x.
+#
+# OSX sets the compatibility_version (aka libtools version) differently from
+# the library name.
+#
+if host_machine.system() == 'darwin'
+  # maintain compatibility with autotools on macOS
+  common_ldflags = [
+    '-compatibility_version', ft2_pkgconfig_version.split('.')[0],
+    '-current_version', ft2_pkgconfig_version
   ]
 endif
 
-c_args = [
-  '-DFT2_BUILD_LIBRARY',
-  '-DFT_CONFIG_CONFIG_H=<ftconfig.h>',
-  '-DFT_CONFIG_OPTIONS_H=<ftoption.h>'
-]
 
-if cc.get_id() == 'msvc'
-  c_args += [
-    '-D_CRT_SECURE_NO_WARNINGS',
-    '-D_CRT_NONSTDC_NO_WARNINGS',
-  ]
-endif
+# Generate `ftoption.h` based on available dependencies.
 
-check_headers = []
+process_header_command = [python_exe,
+  files('builds/meson/process_ftoption_h.py'),
+  '@INPUT@', '--output=@OUTPUT@']
+ftoption_command = process_header_command
 
-if ['linux', 'darwin', 'cygwin'].contains(host_machine.system())
-  check_headers += [
-    ['unistd.h'],
-    ['fcntl.h'],
-    ['stdint.h'],
-  ]
-  ftconfig_h_in = files('builds/unix/ftconfig.h.in')
-else
-  ftconfig_h_in = files('include/freetype/config/ftconfig.h')
-endif
 
-check_optional_deps = [
-  ['bzip2'],
-]
+# external GZip support
+zlib_dep = dependency('zlib')
+ftoption_command += ['--enable=FT_CONFIG_OPTION_SYSTEM_ZLIB']
+ft2_deps += [zlib_dep]
 
-conf = configuration_data()
-deps = []
-incbase = include_directories(['include'])
+# BZip2 support
+bzip2_dep = dependency('bzip2')
+ftoption_command += ['--enable=FT_CONFIG_OPTION_USE_BZIP2']
+ft2_sources += files(['src/bzip2/ftbzip2.c',])
+ft2_deps += [bzip2_dep]
 
-foreach check : check_headers
-  name = check[0]
+# PNG support
+libpng_dep = dependency('libpng')
+ftoption_command += ['--enable=FT_CONFIG_OPTION_USE_PNG']
+ft2_deps += [libpng_dep]
 
-  if cc.has_header(name)
-    conf.set('HAVE_@0@'.format(name.to_upper().underscorify()), 1)
-  endif
-endforeach
-
-foreach check : check_optional_deps
-  name = check[0]
-  opts = check.length() > 1 ? check[1] : {}
-  pkg_name = opts.get('pkg', name)
-  conf_name = 'FT_CONFIG_OPTION_USE_@0@'.format(name.to_upper())
-
-  if opts.has_key('version')
-    dep = dependency(pkg_name, version : opts['version'], required : false)
-  else
-    dep = dependency(pkg_name, required : false)
-  endif
-
-  conf.set(conf_name, dep.found())
-
-  if dep.found()
-    deps += [dep]
-  endif
-endforeach
-
-zlib_dep = dependency('zlib', method: 'system')
-if zlib_dep.found()
-  conf.set('FT_CONFIG_OPTION_SYSTEM_ZLIB', 1)
-  deps += [zlib_dep]
-endif
-
-png_dep = dependency('libpng',
-  required: false,
-  fallback: ['libpng', 'png_dep']
-)
-if png_dep.found()
-  conf.set('FT_CONFIG_OPTION_USE_PNG', 1)
-  deps += [png_dep]
-endif
-
-configure_file(input: ftconfig_h_in,
-  output: 'ftconfig.h',
-  configuration: conf)
-
-ft_config_headers += [configure_file(input: 'include/freetype/config/ftoption.h.in',
+# We can now generate `ftoption.h`.
+ftoption_h = custom_target('ftoption.h',
+  input: 'include/freetype/config/ftoption.h',
   output: 'ftoption.h',
-  configuration: conf)]
-
-libfreetype = static_library('freetype', base_sources,
-  include_directories: incbase,
-  dependencies: deps,
-  c_args: c_args,
-  install: false)
-
-freetype_dep = declare_dependency(link_with: libfreetype,
-  include_directories : incbase,
-  dependencies: deps
+  command: ftoption_command,
+  install: false,
+  install_dir: join_paths(freetype_includedir, 'freetype/config'),
 )
+ft2_sources += ftoption_h
+ft2_defines += ['-DFT_CONFIG_OPTIONS_H=<ftoption.h>']
+
+# Generate `ftconfig.h`.
+
+ftconfig_command = process_header_command
+if has_unistd_h
+  ftconfig_command += '--enable=HAVE_UNISTD_H'
+endif
+if has_fcntl_h
+  ftconfig_command += '--enable=HAVE_FCNTL_H'
+endif
+
+if use_unix_ftsystem_c
+  ftconfig_h_in = files('builds/unix/ftconfig.h.in')
+  ftconfig_h = custom_target('ftconfig.h',
+    input: ftconfig_h_in,
+    output: 'ftconfig.h',
+    command: ftconfig_command,
+    install: false,
+    install_dir: join_paths(freetype_includedir, 'freetype/config'),
+  )
+  ft2_sources += ftconfig_h
+  ft2_defines += ['-DFT_CONFIG_CONFIG_H=<ftconfig.h>']
+endif
+
+
+ft2_lib = static_library('freetype',
+  sources: ft2_sources + [ftmodule_h],
+  c_args: ft2_defines,
+  gnu_symbol_visibility: 'hidden',
+  include_directories: ft2_includes,
+  dependencies: ft2_deps,
+  install: false,
+  link_args: common_ldflags,
+)
+
+# To be used by other projects including this one through `subproject`.
+freetype_dep = declare_dependency(
+  include_directories: ft2_includes,
+  link_with: ft2_lib,
+  version: ft2_pkgconfig_version)
+
+meson.override_dependency('freetype2', freetype_dep)
+# EOF
