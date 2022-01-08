@@ -157,8 +157,8 @@ endif
 
 # Track dependencies
 # It's important to clearly state what is embeded
-system_dependencies = []
-static_dependencies = []
+system_dependencies = {}
+static_dependencies = {}
 if enable_native_progs
 	native_progs_deps = [
 		'freetype2',
@@ -175,33 +175,40 @@ if enable_native_progs
 	if dependency('OpenImageIO', required: false).type_name() == 'internal'
 		native_progs_deps += [
 			'boost',
-			# TODO Add all dependencies
+			'FMT',
+			'Imath',
+			'libtiff-4',
+			'robin-map',
+			'libjpeg',
+			'libpng',
+		]
+	endif
+	if ('libpng' in native_progs_deps) and (dependency('libpng', required: false).type_name() == 'internal')
+		native_progs_deps += [
+			'zlib',
 		]
 	endif
 	foreach dep_name: native_progs_deps
 		dep = dependency(dep_name, required: false)
 		if dep.found()
 			if dep.type_name() == 'internal'
-				static_dependencies += dep_name
+				static_dependencies += {dep_name: dep.version()}
 			else
-				system_dependencies += dep_name
+				system_dependencies += {dep_name: dep.version()}
 			endif
 		endif
 	endforeach
 endif
 
-# TODO if 'OpenImageIO' in static_dependencies
-#endif
-
-if (host_machine.system() == 'windows') and (system_dependencies.length() > 0)
+if (host_machine.system() == 'windows') and (system_dependencies.keys().length() > 0)
 	deps = static_dependencies+system_dependencies
 	warning('You are linking to DLLs!. You should reconfigure with --force-fallback-for='+','.join(deps))
 endif
 
-foreach dep: system_dependencies
+foreach dep, version: system_dependencies
 	summary(dep,true , section: 'Using system dependencies (NO if embeded)', bool_yn: true)
 endforeach
-foreach dep: static_dependencies
+foreach dep, version: static_dependencies
 	summary(dep,false, section: 'Using system dependencies (NO if embeded)', bool_yn: true)
 endforeach
 
@@ -211,28 +218,42 @@ dep_fancy_name = {
 	'boost'            : 'Boost',
 	'dbus-1'           : 'D-Bus',
 	'freetype2'        : 'FreeType2',
+	'FMT'              : '{fmt}',
 	'harfbuzz'         : 'HarfBuzz',
+	'Imath'            : 'Imath',
 	'inih'             : 'INIReader',
 	'lcms2'            : 'LittleCMS',
-	'libcurl'             : 'curl',
+	'libcurl'          : 'curl',
+	'libjpeg'          : 'libjpeg-turbo',
+	'libpng'           : 'libpng',
+	'libtiff-4'        : 'LibTIFF',
 	'OpenImageIO'      : 'OpenImageIO',
+	'robin-map'        : 'robin-ma',
 	'roboto'           : 'Roboto',
 	'sdl2'             : 'SDL',
 	'sqlite3'          : 'SQLite',
+	'zlib'             : 'zlib',
 }
 dep_website = {
 	'base64'           : 'https://gist.github.com/tomykaira/f0fd86b6c73063283afe550bc5d77594',
 	'boost'            : 'https://www.boost.org/',
 	'dbus-1'           : 'https://www.freedesktop.org/wiki/Software/dbus/',
 	'freetype2'        : 'https://www.freetype.org',
+	'FMT'              : 'https://fmt.dev/latest/index.html',
 	'harfbuzz'         : 'https://harfbuzz.github.io/',
+	'Imath'            : 'https://github.com/AcademySoftwareFoundation/Imath',
 	'inih'             : 'https://github.com/benhoyt/inih',
 	'lcms2'            : 'https://littlecms.com/',
 	'libcurl'          : 'https://curl.se/',
+	'libjpeg'          : 'https://libjpeg-turbo.org/',
+	'libpng'           : 'http://www.libpng.org/pub/png/libpng.html',
+	'libtiff-4'        : 'http://www.simplesystems.org/libtiff/',
 	'OpenImageIO'      : 'https://openimageio.org',
+	'robin-map'        : 'https://github.com/Tessil/robin-map',
 	'roboto'           : 'https://fonts.google.com/specimen/Roboto',
 	'sdl2'             : 'https://www.libsdl.org/',
 	'sqlite3'          : 'https://www.sqlite.org/',
+	'zlib'             : 'https://zlib.net/',
 }
 
 # TODO Get version of these
@@ -241,14 +262,15 @@ also_embeded = [
 	'roboto',
 ]
 
-if (static_dependencies.length() + also_embeded.length() > 0)
+# TODO Save that in C++ structures
+#if (static_dependencies.length() + also_embeded.length() > 0)
 	about_embeded_dependencies = []
 	last_embeded_dependencies = ''
-	foreach dep: static_dependencies
+	foreach dep, version: static_dependencies
 		if last_embeded_dependencies != ''
 			about_embeded_dependencies += last_embeded_dependencies
 		endif
-		last_embeded_dependencies = dep_fancy_name[dep]+' '+dependency(dep).version()+' ('+dep_website[dep]+')'
+		last_embeded_dependencies = dep_fancy_name[dep]+' '+version+' ('+dep_website[dep]+')'
 	endforeach
 	foreach dep: also_embeded
 		if last_embeded_dependencies != ''
@@ -256,15 +278,9 @@ if (static_dependencies.length() + also_embeded.length() > 0)
 		endif
 		last_embeded_dependencies = dep_fancy_name[dep]+' ('+dep_website[dep]+')'
 	endforeach
-	if ('OpenImageIO' in static_dependencies)
-		if last_embeded_dependencies != ''
-			about_embeded_dependencies += last_embeded_dependencies
-		endif
-		last_embeded_dependencies = 'TODO: Dependencies of OpenImageIO (checkout the source code for now)'
-	endif
 	about_embeded_dependencies = ', '.join(about_embeded_dependencies) + ' and ' + last_embeded_dependencies
 	message('This copy of Arcollect will embed copies of '+about_embeded_dependencies)
-endif
+#endif	
 
 dependency_report_data = configuration_data()
 dependency_report_data.set_quoted('ABOUT_EMBEDED_DEPENDENCIES_STR',about_embeded_dependencies.replace('\n','\\n'))

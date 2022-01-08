@@ -101,7 +101,7 @@ ar_prog  = find_program('ar', required: false, native: true)
 if apt_prog.found() and dpkg_architecture_prog.found() and tar_prog.found() and ar_prog.found() and sh_prog.found()
 	# Get the "Architecture:" field using dpkg-achitecture
 	dpkg_architecture_run = run_command(dpkg_architecture_prog,'-q','DEB_HOST_ARCH', check: true)
-	deb_system_dependencies = system_dependencies
+	deb_system_dependencies = system_dependencies.keys()
 	deb_skip_dependencies = []
 	
 	debian_depends = ['libc6', 'libstdc++6', 'xdg-utils']
