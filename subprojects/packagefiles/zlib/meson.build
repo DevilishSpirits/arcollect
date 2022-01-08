@@ -1,4 +1,4 @@
-project('zlib', 'c', version : '1.2.11', license : 'zlib')
+project('zlib', 'c', license : 'zlib')
 
 cc = meson.get_compiler('c')
 
@@ -53,6 +53,10 @@ zlib = library('z', src,
 
 incdir = include_directories('.')
 
+zlib_ver = cc.get_define('ZLIB_VERSION', include_directories: incdir, prefix: '#include <zlib.h>').strip('"')
+
 zlib_dep = declare_dependency(
   link_with : zlib,
-  include_directories : incdir)
+  include_directories : incdir,
+  version: zlib_ver,
+  )

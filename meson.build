@@ -201,8 +201,7 @@ if enable_native_progs
 endif
 
 if (host_machine.system() == 'windows') and (system_dependencies.keys().length() > 0)
-	deps = static_dependencies+system_dependencies
-	warning('You are linking to DLLs!. You should reconfigure with --force-fallback-for='+','.join(deps))
+	warning('You are linking to DLLs!. You should reconfigure with --force-fallback-for='+','.join(static_dependencies.keys()+system_dependencies.keys()))
 endif
 
 foreach dep, version: system_dependencies
