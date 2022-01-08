@@ -12,7 +12,15 @@
 #
 # This license notice only apply to this file. Arcollect is published under the
 # GPL-3.0 license with some part being explicitely shared under another license.
-project('FMT', 'cpp', version: '8.1.1')
+project('FMT', 'cpp')
 incdirs = include_directories('include')
 fmt = static_library('fmt', 'src/format.cc', 'src/os.cc', include_directories: incdirs)
-fmt_dep = declare_dependency(link_with: fmt, include_directories: incdirs)
+
+fmt_ver = meson.get_compiler('cpp').get_define('FMT_VERSION', include_directories: incdirs, prefix: '#include <fmt/core.h>').to_int()
+fmt_vermajor = fmt_ver/10000
+fmt_ver = fmt_ver - fmt_vermajor*10000
+fmt_verminor = fmt_ver/100
+fmt_ver = fmt_ver - fmt_verminor*100
+fmt_ver = fmt_vermajor.to_string()+'.'+fmt_verminor.to_string()+'.'+fmt_ver.to_string()
+
+fmt_dep = declare_dependency(link_with: fmt, include_directories: incdirs, version: fmt_ver)
