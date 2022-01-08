@@ -54,7 +54,7 @@ void Arcollect::db::artwork::db_sync(void)
 			data      = download::query(stmt->column_int64(1));
 			thumbnail = download::query(stmt->column_int64(2));
 			art_partof = stmt->column_int64(3);
-			art_partof = stmt->column_int64(4);
+			art_pageno = stmt->column_int64(4);
 			
 			data_version = Arcollect::data_version;
 		}

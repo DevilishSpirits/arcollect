@@ -33,20 +33,21 @@ Arcollect::db::artwork_collection::iterator Arcollect::db::artwork_collection::f
 	return iter;
 }
 
- Arcollect::db::artwork_collection::iterator Arcollect::db::artwork_collection::find_artid_randomized(artwork_id id, bool nearest)
+Arcollect::db::artwork_collection::iterator Arcollect::db::artwork_collection::find_artid_randomized(artwork_id id, bool nearest)
 {
+	const Arcollect::db::sorting::Implementation &sorter = Arcollect::db::sorting::implementations(Arcollect::db::sorting::RANDOM);
 	cache_size_type left = 0;
 	cache_size_type size = cache.size();
-	auto target = db::artid_randomize(id);
+	const artwork& target = *artwork::query(id);
 	while (size) {
 		size -= 1;
 		size /= 2;
 		auto current = left + size;
-		auto diff = db::artid_randomize(cache[current])-target;
-		if (diff == 0)
+		const artwork& current_artwork = *artwork::query(cache[current]);
+		if (target.art_id == current_artwork.art_id)
 			// Match
 			return begin()+current;
-		else if (diff < 0)
+		else if (sorter.compare_arts(current_artwork,target))
 			// Match is in the right part, update left
 			left += size + 1;
 		//else size will be shrink on next loop iteration, nothing to do
