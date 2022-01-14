@@ -64,6 +64,7 @@ SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 		std::cerr << "Failed to open " << path << ". " << OIIO::geterror();
 		return NULL;
 	}
+	image->threads(1);
 	const OIIO::ImageSpec &spec = image->spec();
 	int pixel_format;
 	switch (spec.nchannels) {
