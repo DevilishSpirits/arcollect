@@ -19,7 +19,7 @@ namespace Arcollect {
 	namespace gui {
 		namespace window_borders {
 			void init(SDL_Window *window);
-			extern const int title_height;
+			extern int title_height;
 			extern const int resize_width;
 			bool event(SDL::Event &e);
 			void render(void);

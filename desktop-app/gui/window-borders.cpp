@@ -21,14 +21,14 @@
 #include "rating-selector.hpp"
 #include "../i18n.hpp"
 static bool display_bar = false;
-const int Arcollect::gui::window_borders::title_height = 32;
+int Arcollect::gui::window_borders::title_height = 32;
 const int Arcollect::gui::window_borders::resize_width = 4;
 extern SDL_Window    *window;
 extern SDL::Renderer *renderer;
 
 
-static const int title_button_height  = Arcollect::gui::window_borders::title_height;
-static const int title_button_width   = Arcollect::gui::window_borders::title_height;
+static int &title_button_height  = Arcollect::gui::window_borders::title_height;
+static int &title_button_width   = Arcollect::gui::window_borders::title_height;
 enum TitleButton: int {
 	TITLEBTN_CLOSE,
 	TITLEBTN_MAXIMIZE,
@@ -78,6 +78,10 @@ static SDL_HitTestResult hit_test(SDL_Window *, const SDL_Point *point, void* da
 
 void Arcollect::gui::window_borders::init(SDL_Window *window)
 {
+	// Set title_button_height
+	SDL_Rect screen0_rect;
+	if (!SDL_GetDisplayBounds(0,&screen0_rect))
+		title_height = std::max(title_height,screen0_rect.h/32);
 	// Init menus
 	topbar_menu_items.emplace_back(std::make_shared<Arcollect::gui::rating_selector_menu>());
 	topbar_menu_items.emplace_back(std::make_shared<Arcollect::gui::menu_item_simple_label>(i18n_desktop_app.about_arcollect,Arcollect::gui::about_window::show));
