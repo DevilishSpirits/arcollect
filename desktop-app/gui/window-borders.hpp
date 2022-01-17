@@ -18,8 +18,7 @@
 namespace Arcollect {
 	namespace gui {
 		namespace window_borders {
-			bool init(SDL_Window *window);
-			extern bool borderless;
+			void init(SDL_Window *window);
 			extern const int title_height;
 			extern const int resize_width;
 			bool event(SDL::Event &e);

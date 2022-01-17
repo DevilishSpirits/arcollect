@@ -23,7 +23,6 @@
 static bool display_bar = false;
 const int Arcollect::gui::window_borders::title_height = 32;
 const int Arcollect::gui::window_borders::resize_width = 4;
-bool Arcollect::gui::window_borders::borderless;
 extern SDL_Window    *window;
 extern SDL::Renderer *renderer;
 
@@ -77,18 +76,15 @@ static SDL_HitTestResult hit_test(SDL_Window *, const SDL_Point *point, void* da
 	return SDL_HITTEST_NORMAL;
 }
 
-bool Arcollect::gui::window_borders::init(SDL_Window *window)
+void Arcollect::gui::window_borders::init(SDL_Window *window)
 {
 	// Init menus
 	topbar_menu_items.emplace_back(std::make_shared<Arcollect::gui::rating_selector_menu>());
 	topbar_menu_items.emplace_back(std::make_shared<Arcollect::gui::menu_item_simple_label>(i18n_desktop_app.about_arcollect,Arcollect::gui::about_window::show));
 	// Init borders
-	borderless = SDL_SetWindowHitTest(window,hit_test,NULL) == 0;
-	if (borderless) {
-		SDL_SetWindowBordered(window,SDL_FALSE);
-		SDL_SetWindowMinimumSize(window,title_button_width*TITLEBTN_N,title_button_height);
-	}
-	return borderless;
+	SDL_SetWindowHitTest(window,hit_test,NULL);
+	SDL_SetWindowBordered(window,SDL_FALSE);
+	SDL_SetWindowMinimumSize(window,title_button_width*TITLEBTN_N,title_button_height);
 }
 
 bool Arcollect::gui::window_borders::event(SDL::Event &e)
@@ -99,128 +95,126 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 	// Get window size
 	SDL::Point window_size;
 	renderer->GetOutputSize(window_size);
-	if (Arcollect::gui::window_borders::borderless) {
-		switch (e.type) {
-			case SDL_QUIT: {
-				// Destroy menus GUI resources
-				topbar_menu_items.clear();
-			} return true;
-			case SDL_WINDOWEVENT: {
-				switch (e.window.event) {
-					case SDL_WINDOWEVENT_SIZE_CHANGED:
-					case SDL_WINDOWEVENT_RESIZED: {
-						// Falltrough SDL_MOUSEMOTION code with updated mouse data
-						SDL_GetMouseState(&cursor_position.x,&cursor_position.y);
-					} break;
-					default: {
-						// Do nothing
-					} return true;
-				}
+	switch (e.type) {
+		case SDL_QUIT: {
+			// Destroy menus GUI resources
+			topbar_menu_items.clear();
+		} return true;
+		case SDL_WINDOWEVENT: {
+			switch (e.window.event) {
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
+				case SDL_WINDOWEVENT_RESIZED: {
+					// Falltrough SDL_MOUSEMOTION code with updated mouse data
+					SDL_GetMouseState(&cursor_position.x,&cursor_position.y);
+				} break;
+				default: {
+					// Do nothing
+				} return true;
 			}
-			case SDL_MOUSEMOTION: {
-				static SDL_Cursor* cursor_normal = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-				static SDL_Cursor* cursor_nwse   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
-				static SDL_Cursor* cursor_nesw   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
-				static SDL_Cursor* cursor_we     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
-				static SDL_Cursor* cursor_ns     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
-				SDL_HitTestResult test_result = hit_test(NULL,(SDL_Point*)&cursor_position,NULL);
-				// Check if we display the bar
-				display_bar = cursor_position.y <= Arcollect::gui::window_borders::title_height;
-				// Check which title button is hovered
-				if (display_bar) {
-					// Compute position
-					int titlebtn_position = (window_size.x - cursor_position.x)/title_button_width;
-					if (titlebtn_position < TITLEBTN_N)
-						titlebtn_hovered = static_cast<TitleButton>(titlebtn_position);
-					else titlebtn_hovered = TITLEBTN_NONE;
-				} else titlebtn_hovered = TITLEBTN_NONE;
-				// Update cursor
-				switch (test_result) {
-					case SDL_HITTEST_RESIZE_TOPLEFT:
-					case SDL_HITTEST_RESIZE_BOTTOMRIGHT: {
-						SDL_SetCursor(cursor_nwse);
+		}
+		case SDL_MOUSEMOTION: {
+			static SDL_Cursor* cursor_normal = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+			static SDL_Cursor* cursor_nwse   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+			static SDL_Cursor* cursor_nesw   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
+			static SDL_Cursor* cursor_we     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
+			static SDL_Cursor* cursor_ns     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
+			SDL_HitTestResult test_result = hit_test(NULL,(SDL_Point*)&cursor_position,NULL);
+			// Check if we display the bar
+			display_bar = cursor_position.y <= Arcollect::gui::window_borders::title_height;
+			// Check which title button is hovered
+			if (display_bar) {
+				// Compute position
+				int titlebtn_position = (window_size.x - cursor_position.x)/title_button_width;
+				if (titlebtn_position < TITLEBTN_N)
+					titlebtn_hovered = static_cast<TitleButton>(titlebtn_position);
+				else titlebtn_hovered = TITLEBTN_NONE;
+			} else titlebtn_hovered = TITLEBTN_NONE;
+			// Update cursor
+			switch (test_result) {
+				case SDL_HITTEST_RESIZE_TOPLEFT:
+				case SDL_HITTEST_RESIZE_BOTTOMRIGHT: {
+					SDL_SetCursor(cursor_nwse);
+				} break;
+				case SDL_HITTEST_RESIZE_TOP:
+				case SDL_HITTEST_RESIZE_BOTTOM: {
+					SDL_SetCursor(cursor_ns);
+				} break;
+				case SDL_HITTEST_RESIZE_TOPRIGHT:
+				case SDL_HITTEST_RESIZE_BOTTOMLEFT: {
+					SDL_SetCursor(cursor_nesw);
+				} break;
+				case SDL_HITTEST_RESIZE_LEFT:
+				case SDL_HITTEST_RESIZE_RIGHT: {
+					SDL_SetCursor(cursor_we);
+				} break;
+				case SDL_HITTEST_DRAGGABLE: {
+					SDL_SetCursor(cursor_normal);
+				} break;
+				case SDL_HITTEST_NORMAL:
+				default: {
+					SDL_SetCursor(cursor_normal);
+				} return true;
+			}
+		} return e.type == SDL_WINDOWEVENT; // Propage window resize events
+		case SDL_MOUSEBUTTONDOWN: {
+			if (titlebtn_hovered != TITLEBTN_NONE)
+				titlebtn_pressed = titlebtn_hovered;
+		} return cursor_position.y >= Arcollect::gui::window_borders::title_height;
+		case SDL_MOUSEBUTTONUP: {
+			bool button_clicked = titlebtn_pressed == titlebtn_hovered;
+			titlebtn_pressed = TITLEBTN_NONE;
+			if (button_clicked) {
+				auto window_flags = SDL_GetWindowFlags(window);
+				switch (titlebtn_hovered) {
+					case TITLEBTN_CLOSE: {
+						// Generate a quit event
+						SDL_Event event;
+						event.type = SDL_QUIT;
+						SDL_PushEvent(&event);
 					} break;
-					case SDL_HITTEST_RESIZE_TOP:
-					case SDL_HITTEST_RESIZE_BOTTOM: {
-						SDL_SetCursor(cursor_ns);
-					} break;
-					case SDL_HITTEST_RESIZE_TOPRIGHT:
-					case SDL_HITTEST_RESIZE_BOTTOMLEFT: {
-						SDL_SetCursor(cursor_nesw);
-					} break;
-					case SDL_HITTEST_RESIZE_LEFT:
-					case SDL_HITTEST_RESIZE_RIGHT: {
-						SDL_SetCursor(cursor_we);
-					} break;
-					case SDL_HITTEST_DRAGGABLE: {
-						SDL_SetCursor(cursor_normal);
-					} break;
-					case SDL_HITTEST_NORMAL:
-					default: {
-						SDL_SetCursor(cursor_normal);
-					} return true;
-				}
-			} return e.type == SDL_WINDOWEVENT; // Propage window resize events
-			case SDL_MOUSEBUTTONDOWN: {
-				if (titlebtn_hovered != TITLEBTN_NONE)
-					titlebtn_pressed = titlebtn_hovered;
-			} return cursor_position.y >= Arcollect::gui::window_borders::title_height;
-			case SDL_MOUSEBUTTONUP: {
-				bool button_clicked = titlebtn_pressed == titlebtn_hovered;
-				titlebtn_pressed = TITLEBTN_NONE;
-				if (button_clicked) {
-					auto window_flags = SDL_GetWindowFlags(window);
-					switch (titlebtn_hovered) {
-						case TITLEBTN_CLOSE: {
-							// Generate a quit event
-							SDL_Event event;
-							event.type = SDL_QUIT;
-							SDL_PushEvent(&event);
-						} break;
-						case TITLEBTN_MAXIMIZE: {
-							// Maximize or restore window
-							if (window_flags & SDL_WINDOW_MAXIMIZED)
-								SDL_RestoreWindow(window);
-							else {
-								if (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
-									set_fullscreen(false);
-								SDL_MaximizeWindow(window);
-							}
-						} break;
-						case TITLEBTN_MINIMIZE: {
-							// Minimize window
-							SDL_MinimizeWindow(window);
-						} break;
-						case TITLEBTN_FULLSCREEN: {
-							// Toggle fullscreen
+					case TITLEBTN_MAXIMIZE: {
+						// Maximize or restore window
+						if (window_flags & SDL_WINDOW_MAXIMIZED)
+							SDL_RestoreWindow(window);
+						else {
 							if (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
 								set_fullscreen(false);
-							else set_fullscreen(true);
-						} break;
-						case TITLEBTN_MENU: {
-							// Don't pop if there is a context menu
-							if (Arcollect::gui::menu::popup_context_count == 0) {
-								// Pop menu
-								std::vector<std::shared_ptr<menu_item>> menu = Arcollect::gui::modal_back().top_menu();
-								for (auto& item: topbar_menu_items)
-									menu.emplace_back(item);
-								Arcollect::gui::menu::popup_context(menu,{title_button_width,title_height},true,false,false,true);
-							} else {
-								/* Hide the menu
-								 *
-								 * Context menu popdown upon SDL_MOUSEBUTTONUP. By default we
-								 * don't propagate this event for clicks on the menu bar. But to
-								 * hide the menu, we make a special exception
-								 */
-								return true;
-							}
-						} break;
-						// Suppress warnings about missing TITLEBTN_NONE
-						case TITLEBTN_NONE: break;
-					}
+							SDL_MaximizeWindow(window);
+						}
+					} break;
+					case TITLEBTN_MINIMIZE: {
+						// Minimize window
+						SDL_MinimizeWindow(window);
+					} break;
+					case TITLEBTN_FULLSCREEN: {
+						// Toggle fullscreen
+						if (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+							set_fullscreen(false);
+						else set_fullscreen(true);
+					} break;
+					case TITLEBTN_MENU: {
+						// Don't pop if there is a context menu
+						if (Arcollect::gui::menu::popup_context_count == 0) {
+							// Pop menu
+							std::vector<std::shared_ptr<menu_item>> menu = Arcollect::gui::modal_back().top_menu();
+							for (auto& item: topbar_menu_items)
+								menu.emplace_back(item);
+							Arcollect::gui::menu::popup_context(menu,{title_button_width,title_height},true,false,false,true);
+						} else {
+							/* Hide the menu
+							 *
+							 * Context menu popdown upon SDL_MOUSEBUTTONUP. By default we
+							 * don't propagate this event for clicks on the menu bar. But to
+							 * hide the menu, we make a special exception
+							 */
+							return true;
+						}
+					} break;
+					// Suppress warnings about missing TITLEBTN_NONE
+					case TITLEBTN_NONE: break;
 				}
-			} return cursor_position.y >= Arcollect::gui::window_borders::title_height;
-		}
+			}
+		} return cursor_position.y >= Arcollect::gui::window_borders::title_height;
 	}
 	return true;
 }
@@ -311,8 +305,6 @@ void Arcollect::gui::set_fullscreen(bool fullscreen)
 		// GNOME Shell workaround if the program is started in fullscreen mode
 		// FIXME Check if it happen on Windows
 		// FIXME Check if it happen on macOS
-		if (Arcollect::gui::window_borders::borderless)
-			SDL_SetWindowBordered(window,SDL_FALSE);
 		SDL_SetWindowFullscreen(window,0);
 	}
 }
