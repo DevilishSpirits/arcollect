@@ -160,7 +160,7 @@ bool Arcollect::WebextAdder::Download::assert_http_status(void)
 			return false;
 	// Failure
 	std::snprintf(session.curl_errorbuffer,sizeof(session.curl_errorbuffer),"Bad HTTP status %ld.", http_code);
-	return false;
+	return true;
 }
 size_t Arcollect::WebextAdder::Download::curl_first_write_callback(char *ptr, size_t size, size_t nmemb) noexcept
 {
