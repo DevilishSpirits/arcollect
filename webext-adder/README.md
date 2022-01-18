@@ -33,6 +33,7 @@ When adding artwork, send the plain artwork with this kind of JSON :
 		"name": "@drawauthor",
 		"title": "DrawAuthor make drawings",
 		"url": "https://example.net/user/4213/",
+		"desc": "I draw artworks.",
 		"icon": "<... download specification ...>"
 	}],
 	"tags": [{
@@ -81,6 +82,7 @@ The `account` array contain users you might wants to add with some properties :
 * `title` is the pretty username, if different from the `name` title. For example on Twitter `"D-Spirits"`.
 * `url` is the account URL.
 * `icon` is the account avatar in base64 encoding.
+* `desc` is the account description.
 
 The `tags` array contain tags you might wants to add with some properties :
 
