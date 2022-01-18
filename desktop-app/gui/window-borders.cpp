@@ -309,6 +309,7 @@ void Arcollect::gui::set_fullscreen(bool fullscreen)
 		// GNOME Shell workaround if the program is started in fullscreen mode
 		// FIXME Check if it happen on Windows
 		// FIXME Check if it happen on macOS
+		SDL_SetWindowBordered(window,SDL_FALSE);
 		SDL_SetWindowFullscreen(window,0);
 	}
 }
