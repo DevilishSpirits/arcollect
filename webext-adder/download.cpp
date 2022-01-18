@@ -92,18 +92,24 @@ void Arcollect::WebextAdder::Download::parse(char*& iter, char* const end, Arcol
 						if (entry.have != Arcollect::json::ObjHave::OBJECT)
 							throw std::runtime_error("<download_spec>:[{\"headers\" must be an object of string or null.");
 						std::string_view header_name;
-						switch (Arcollect::json::read_object_keyval(header_name,iter,end)) {
-							case Arcollect::json::ObjHave::STRING: {
-								std::string_view header_value;
-								json_read_string(Arcollect::json::ObjHave::STRING,header_value,"<download_spec>:[{\"headers\": \"\"",iter,end);
-								http_headers.append_header(header_name,header_value);
-							} break;
-							case Arcollect::json::ObjHave::NULL_LITTERALLY: {
-								http_headers.disable_header(header_name);
-							} break;
-							default: {
-								throw std::runtime_error("<download_spec>:[{\"headers\": elements must be strings or null."); 
-						} break;
+						bool has_header = true;
+						while (has_header) {
+							switch (Arcollect::json::read_object_keyval(header_name,iter,end)) {
+								case Arcollect::json::ObjHave::STRING: {
+									std::string_view header_value;
+									json_read_string(Arcollect::json::ObjHave::STRING,header_value,"<download_spec>:[{\"headers\": \"\"",iter,end);
+									http_headers.append_header(header_name,header_value);
+								} break;
+								case Arcollect::json::ObjHave::NULL_LITTERALLY: {
+									http_headers.disable_header(header_name);
+								} break;
+								case Arcollect::json::ObjHave::OBJECT_CLOSE: {
+									has_header = false;
+								} break;
+								default: {
+									throw std::runtime_error("<download_spec>:[{\"headers\": elements must be strings or null."); 
+								} break;
+							}
 						}
 					} break;
 				}
