@@ -14,7 +14,7 @@ webext_test_env  = environment({
 	'HOME': meson.current_build_dir(),
 	'FIREFOX_APPMANIFEST_SOURCE': webext_appmanifest_firefox_debug,
 	'FIREFOX_APPMANIFEST_DEST': '.mozilla/native-messaging-hosts/arcollect_webext_adder.json',
-	'UBLOCK_ORIGIN_XPI_PATH': meson.current_source_dir()/'ublock_origin-1.36.0-an+fx.xpi',
+	'UBLOCK_ORIGIN_XPI_PATH': meson.current_source_dir()/'uBlock0_1.40.8.firefox.signed.xpi',
 })
 webextension_browser_test_prog = find_program('webextension-browser-test.py')
 
