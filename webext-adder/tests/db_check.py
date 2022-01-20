@@ -87,6 +87,8 @@ def check_db(test_num, db, test_set):
 		# Check if the artwork has been found
 		if artwork_db is None:
 			print('not ok',test_num,'- Check checksum of artwork',artwork['source'],'# Not found in database')
+		elif 'data.sha256' not in artwork:
+			print('not ok',test_num,'- Missing checksum for artwork',artwork['source'],'(add a "data.sha256": "<SHA-256>" in the artwork object)')
 		else:
 			expected_checksum = artwork['data.sha256']
 			computed_checksum = hashlib.sha256(open(artworks_dir+str(artwork_db[1]),'rb').read()).hexdigest()
