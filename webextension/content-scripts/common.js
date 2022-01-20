@@ -87,6 +87,26 @@ String.prototype.arcollect_tag = function() {
 	return arcollect_normalize_tag(this)
 }
 
+/** Wordlist of NSFW tags
+ * 
+ * This is a list of tags that should be considered as flag for adult content.
+ *
+ * It is used on platforms that lack efficient adult rating system like Tumblr
+ * or Twitter.
+ *
+ * You might expand this list, but the root of the problem is located in the
+ * platforms themselves.
+ */
+const arcollect_adult_tags = [
+	'nsfw',
+	'porn',
+	'sex',
+]
+
+String.prototype.is_adult_tag = function() {
+	return arcollect_adult_tags.includes(this.toLowerCase());
+}
+
 /** File extension to MIME type dictionary
  *
  * Only contain supported formats.
