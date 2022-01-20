@@ -145,7 +145,8 @@ bool Arcollect::WebextAdder::Download::assert_http_status(void)
 	CURLcode curl_res = curl_easy_getinfo(session.easyhandle,CURLINFO_RESPONSE_CODE,&http_code);
 	if (curl_res) {
 		if (!session.curl_errorbuffer[0])
-			std::strncpy(session.curl_errorbuffer,curl_easy_strerror(curl_res),sizeof(session.curl_errorbuffer));
+			std::memcpy(session.curl_errorbuffer2,session.curl_errorbuffer,sizeof(session.curl_errorbuffer2));
+		else std::memcpy(session.curl_errorbuffer2,curl_easy_strerror(curl_res),sizeof(session.curl_errorbuffer2));
 		return -1;
 	}
 	// Check for 304 Not Modified
@@ -159,13 +160,13 @@ bool Arcollect::WebextAdder::Download::assert_http_status(void)
 		if (http_code == ok_code)
 			return false;
 	// Failure
-	std::snprintf(session.curl_errorbuffer,sizeof(session.curl_errorbuffer),"Bad HTTP status %ld.", http_code);
+	std::snprintf(session.curl_errorbuffer2,sizeof(session.curl_errorbuffer2),"Bad HTTP status %ld.", http_code);
 	return true;
 }
 size_t Arcollect::WebextAdder::Download::curl_first_write_callback(char *ptr, size_t size, size_t nmemb) noexcept
 {
 	CURL *const easyhandle = session.easyhandle;
-	auto &curl_errorbuffer = session.curl_errorbuffer;
+	auto &curl_errorbuffer = session.curl_errorbuffer2;
 	// Assert status
 	if (assert_http_status())
 		return -1;
@@ -244,14 +245,17 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 			curl_easy_setopt(easyhandle,CURLOPT_USERAGENT,Arcollect::WebextAdder::user_agent.c_str());
 			curl_easy_setopt(easyhandle,CURLOPT_ERRORBUFFER,session.curl_errorbuffer);
 			curl_easy_setopt(easyhandle,CURLOPT_SSLVERSION,CURL_SSLVERSION_TLSv1_2); 
-			curl_easy_setopt(easyhandle,CURLOPT_HEADER,http_headers.list);
+			curl_easy_setopt(easyhandle,CURLOPT_HTTPHEADER,http_headers.list);
 			if (!cache_miss) {
 				curl_easy_setopt(easyhandle,CURLOPT_TIMECONDITION,CURL_TIMECOND_IFMODSINCE); 
 				curl_easy_setopt(easyhandle,CURLOPT_TIMEVALUE_LARGE,static_cast<curl_off_t>(download_infos.dwn_lastedit)); 
 				// TODO Etag
 			}
 			// Invoke CURL
+			session.curl_errorbuffer2[0] = '\0';
 			CURLcode curl_res = curl_easy_perform(easyhandle);
+			if (session.curl_errorbuffer2[0])
+				std::memcpy(session.curl_errorbuffer,session.curl_errorbuffer2,sizeof(session.curl_errorbuffer));
 			if (file)
 				fclose(file);
 			else if (!curl_res && !file && assert_http_status())

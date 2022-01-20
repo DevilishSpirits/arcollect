@@ -55,6 +55,11 @@ namespace Arcollect {
 			 * Download::curl_first_write_callback().
 			 */
 			char curl_errorbuffer[CURL_ERROR_SIZE];
+			/** Second curl error buffer handle
+			 *
+			 * Like curl_errorbuffer but if not empty take predecence over it.
+			 */
+			char curl_errorbuffer2[CURL_ERROR_SIZE];
 			NetworkSession(Arcollect::db::downloads::Transaction &cache);
 			NetworkSession(const NetworkSession&) = delete;
 			~NetworkSession(void);
