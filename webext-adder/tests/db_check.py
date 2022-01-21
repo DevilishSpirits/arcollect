@@ -52,7 +52,7 @@ def check_db(test_num, db, test_set):
 	print('# Checking "artworks" table')
 	for artwork in test_set['artworks']:
 		test_num += 1
-		artwork_db = db.execute('SELECT art_platform, art_title, art_desc, art_rating, art_pageno, art_postdate FROM artworks where art_source = ?;',[artwork['source']]).fetchone()
+		artwork_db = db.execute('SELECT art_platform, art_title, art_desc, art_rating, art_license, art_pageno, art_postdate FROM artworks where art_source = ?;',[artwork['source']]).fetchone()
 		
 		# Check if the artwork has been found
 		if artwork_db is None:
@@ -63,6 +63,7 @@ def check_db(test_num, db, test_set):
 				('art_title'   ,artwork.setdefault('title',None) ),
 				('art_desc'    ,artwork.setdefault('desc',None)  ),
 				('art_rating'  ,artwork.setdefault('rating',None)),
+				('art_license' ,artwork.setdefault('license',None)),
 				('art_pageno'  ,artwork.setdefault('pageno',None)),
 				('art_postdate',artwork.setdefault('postdate',None)),
 			)
