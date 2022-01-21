@@ -113,6 +113,8 @@ std::string Arcollect::db::downloads::Transaction::write_cache(const std::string
 {
 	if (infos)
 		unsource(infos.dwn_id());
+	const std::filesystem::path filename  = infos.dwn_path().stem();
+	const std::filesystem::path extension = infos.dwn_path().extension();
 	std::filesystem::path new_path(infos.dwn_path());
 	for (unsigned int i = 0; i < std::numeric_limits<decltype(i)>::max(); ++i) {
 		// Ensure that we are not writing an erased file
@@ -158,7 +160,10 @@ std::string Arcollect::db::downloads::Transaction::write_cache(const std::string
 					if (errmsg.compare(errmsg.size()-8,8,"dwn_path") == 0) {
 						// dwn_path duplicate, try another one
 						new_path = infos.dwn_path();
-						new_path += std::filesystem::path("-"+std::to_string(i));
+						new_path.replace_filename(filename);
+						new_path += "-";
+						new_path += std::to_string(i);
+						new_path += extension;
 						continue; // This download is still used in the database
 					}
 				}
