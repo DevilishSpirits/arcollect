@@ -25,6 +25,7 @@ When adding artwork, send the plain artwork with this kind of JSON :
 		"desc": "My sample warmup for the morning.",
 		"source": "https://example.net/art/123456/",
 		"rating": 0,
+		"spdx": "CC-BY-4.0",
 		"data": "<... download specification ...>",
 		"thumbnail": "<... download specification ...>"
 	}],
@@ -72,6 +73,7 @@ The `artwork` array contain objects you wants to add with some properties :
 * `source` is the artwork URL. Caution ! This is a key in the database, reformat `window.location` in a way that the same artwork always have the same URL.
 * `rating` is the artwork rating. See the schema explanation of `artworks` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/sql/init.sql).
 * `postdate` is the UNIX timestamp of when the artworks has been posted (optional).
+* `license` is the license SPDX identifier **be extremely careful about it!** Do not set it if the website does not have a clever way to retrieve it or is known to be innacurate.
 * `data` is the artwork file itself in base64 encoding or an `https://` link to the image (`http://` won't be supported).
 * `thumbnail` is the image thumbnail to show for non image type artworks. Same format as `data`.
 
