@@ -179,14 +179,12 @@ bool Arcollect::gui::main(void)
 	// Check for DB updates
 	sqlite_int64 data_version_snapshot = Arcollect::data_version;
 	if (data_version_snapshot != Arcollect::update_data_version()) {
-		/* TODO Restore this behavior
 		// Query artworks to preload
 		if (preload_artworks_stmt) {
 			preload_artworks_stmt->reset();
 			while (preload_artworks_stmt->step() == SQLITE_ROW)
-				Arcollect::db::artwork::query(preload_artworks_stmt->column_int64(0))->queue_for_load();
+				Arcollect::db::artwork::query(preload_artworks_stmt->column_int64(0))->get_thumbnail()->queue_for_load();
 		}
-		*/
 	}
 	// Check for screen change
 	int current_window_screen_index = SDL_GetWindowDisplayIndex(window);
