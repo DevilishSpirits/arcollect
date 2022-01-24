@@ -494,6 +494,12 @@ namespace Arcollect {
 					 * \warning The wrap_width not an absolute limit!
 					 */
 					Renderable(const Elements& elements, int wrap_width = std::numeric_limits<int>::max(), const RenderConfig& config = RenderConfig());
+					/** Render undelimited text
+					 * \param elements Elements to add
+					 * \param config The configuration to use
+					 *
+					 */
+					Renderable(const Elements& elements, const RenderConfig& config) : Renderable(elements,std::numeric_limits<int>::max(),config) {}
 					/** Render UTF-8 text
 					 * \param text UTF-8 text
 					 * \param font_size Text height
