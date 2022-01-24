@@ -120,14 +120,6 @@ void Arcollect::gui::search_osd::pop(void)
 	SDL_StopTextInput();
 	to_pop = true;
 }
-void Arcollect::gui::search_osd::db_delete(void)
-{
-	if (!text.empty()) {
-		std::unique_ptr<SQLite3::stmt> stmt;
-		Arcollect::db::search::build_stmt(text.c_str(),stmt);
-		Arcollect::db::artwork_collection_sqlite(std::move(stmt)).db_delete();
-	}
-}
 
 std::vector<std::shared_ptr<Arcollect::gui::menu_item>> Arcollect::gui::search_osd::top_menu(void)
 {
