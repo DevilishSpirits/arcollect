@@ -20,6 +20,19 @@
 #include <cstdlib>
 #include <iostream>
 
+bool arcollect_match_prefix(const std::string_view &X, const std::string_view &Y) {
+	return (X.size() < Y.size()) ? 0 : !sqlite3_strnicmp(X.data(),Y.data(),Y.size());
+}
+/** Arcollect match prefix
+ *
+ * **SQL Synopsis** : arcollect_match_prefix(X,Y)
+ * Return true, if Y is a case-insensitive prefix of X.
+ */
+static void arcollect_match_prefix_sqlite_func(sqlite3_context* ctx, int, sqlite3_value** values)
+{
+	*reinterpret_cast<SQLite3::context*>(ctx) = arcollect_match_prefix(reinterpret_cast<const char*>(sqlite3_value_text(values[0])),reinterpret_cast<const char*>(sqlite3_value_text(values[1])));
+}
+
 std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 {
 	SQLite3::initialize();
@@ -31,6 +44,8 @@ std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
 		std::cerr << "Failed to open \"" << db_path << "\": " << sqlite3_errstr(sqlite_open_code) << std::endl;
 		std::abort();
 	}
+	// Insert custom functions
+	sqlite3_create_function_v2(reinterpret_cast<sqlite3*>(data_db.get()),"arcollect_match_prefix",2,SQLITE_UTF8|SQLITE_DETERMINISTIC,NULL,arcollect_match_prefix_sqlite_func,NULL,NULL,NULL);
 	// TODO Error checking
 	if (data_db->exec(Arcollect::db::sql::boot)) {
 		std::cerr << "Failed to run SQL boot script: " << data_db->errmsg() << std::endl;
