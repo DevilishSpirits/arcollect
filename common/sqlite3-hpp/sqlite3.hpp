@@ -25,6 +25,86 @@ namespace SQLite3 {
 	//constexpr const int NULL    = SQLITE_NULL;
 	constexpr const int TEXT    = SQLITE_TEXT;
 
+	struct value {
+		/* TODO
+		SQLITE_API const void *sqlite3_value_blob(sqlite3_value*);
+		SQLITE_API double sqlite3_value_double(sqlite3_value*);
+		SQLITE_API int sqlite3_value_int(sqlite3_value*);
+		SQLITE_API sqlite3_int64 sqlite3_value_int64(sqlite3_value*);
+		SQLITE_API void *sqlite3_value_pointer(sqlite3_value*, const char*);
+		SQLITE_API const unsigned char *sqlite3_value_text(sqlite3_value*);
+		SQLITE_API const void *sqlite3_value_text16(sqlite3_value*);
+		SQLITE_API const void *sqlite3_value_text16le(sqlite3_value*);
+		SQLITE_API const void *sqlite3_value_text16be(sqlite3_value*);
+		SQLITE_API int sqlite3_value_bytes(sqlite3_value*);
+		SQLITE_API int sqlite3_value_bytes16(sqlite3_value*);
+		SQLITE_API int sqlite3_value_type(sqlite3_value*);
+		SQLITE_API int sqlite3_value_numeric_type(sqlite3_value*);
+		SQLITE_API int sqlite3_value_nochange(sqlite3_value*);
+		SQLITE_API int sqlite3_value_frombind(sqlite3_value*);
+		SQLITE_API unsigned int sqlite3_value_subtype(sqlite3_value*);
+		SQLITE_API sqlite3_value *sqlite3_value_dup(const sqlite3_value*);*/
+		~value(void) noexcept {
+			sqlite3_value_free(reinterpret_cast<sqlite3_value*>(this));
+		}
+	};
+
+	struct context {
+		void* get_auxdata(int N) {
+			return sqlite3_get_auxdata(reinterpret_cast<sqlite3_context*>(this),N);
+		}
+		template <typename T>
+		void set_auxdata(int N, T* data, void (*destructor)(T*) = NULL) {
+			return sqlite3_set_auxdata(reinterpret_cast<sqlite3_context*>(this),N,static_cast<void*>(data),static_cast<void(*)(void*)>(destructor));
+		}
+		void *aggregate_context(int nBytes) {
+			return sqlite3_aggregate_context(reinterpret_cast<sqlite3_context*>(this),nBytes);
+		}
+		void *user_data(void) {
+			return sqlite3_user_data(reinterpret_cast<sqlite3_context*>(this));
+		}
+		template <typename T>
+		void result(const T* data, int length, void(*destructor)(T*)) {
+			return sqlite3_result_blob(reinterpret_cast<sqlite3_context*>(this),static_cast<void*>(data),length,static_cast<void(*)(void*)>(destructor));
+		}
+		template <typename T>
+		void result(const T* data, sqlite3_uint64 length, void(*destructor)(T*)) {
+			return sqlite3_result_blob64(reinterpret_cast<sqlite3_context*>(this),static_cast<void*>(data),length,static_cast<void(*)(void*)>(destructor));
+		}
+		void result(double value) noexcept {
+			return sqlite3_result_double(reinterpret_cast<sqlite3_context*>(this),value);
+		}
+		/*void sqlite3_result_error(sqlite3_context*, const char*, int);
+		void sqlite3_result_error16(sqlite3_context*, const void*, int);
+		void sqlite3_result_error_toobig(sqlite3_context*);
+		void sqlite3_result_error_nomem(sqlite3_context*);
+		void sqlite3_result_error_code(sqlite3_context*, int);*/
+		void result(int value) noexcept {
+			return sqlite3_result_int(reinterpret_cast<sqlite3_context*>(this),value);
+		}
+		void result(sqlite3_int64 value) noexcept {
+			return sqlite3_result_int(reinterpret_cast<sqlite3_context*>(this),value);
+		}
+		void result_null(void) noexcept {
+			return sqlite3_result_null(reinterpret_cast<sqlite3_context*>(this));
+		}
+		/*void sqlite3_result_text(sqlite3_context*, const char*, int, void(*)(void*));
+		void sqlite3_result_text64(sqlite3_context*, const char*,sqlite3_uint64,
+				                       void(*)(void*), unsigned char encoding);*/
+		/*void sqlite3_result_text16(sqlite3_context*, const void*, int, void(*)(void*));
+		void sqlite3_result_text16le(sqlite3_context*, const void*, int,void(*)(void*));
+		void sqlite3_result_text16be(sqlite3_context*, const void*, int,void(*)(void*));*/
+		/*void sqlite3_result_value(sqlite3_context*, sqlite3_value*);
+		void sqlite3_result_pointer(sqlite3_context*, void*,const char*,void(*)(void*));
+		void sqlite3_result_zeroblob(sqlite3_context*, int n);
+		int sqlite3_result_zeroblob64(sqlite3_context*, sqlite3_uint64 n);*/
+		template <typename T>
+		context &operator=(const T& value) noexcept {
+			result(value);
+			return *this;
+		}
+	};
+	
 	struct stmt {
 		inline int bind(int column, double value) {
 			return sqlite3_bind_double((sqlite3_stmt*)this,column,value);
