@@ -80,9 +80,9 @@ namespace Arcollect {
 				 *
 				 * If true, the thread exit.
 				 */
-				volatile bool stop = false;
+				bool stop;
+				artwork_loader(void) : std::thread(thread_func,std::ref(stop = false)) {}
 				static void thread_func(volatile bool &stop);
-				artwork_loader(void) : std::thread(thread_func,std::ref(stop)) {}
 			public:
 				~artwork_loader(void);
 				/** Global mutex
