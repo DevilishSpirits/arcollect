@@ -168,5 +168,10 @@ int Arcollect::db::artwork_collection::db_set_rating(Arcollect::config::Rating r
 	std::cerr << "Artworks ratings sets" << std::endl;
 	// Update data_version
 	Arcollect::local_data_version_changed();
+	// Reset taint
+	for (auto& art_id: *this) {
+		artwork::query(art_id)->get_artwork()->reset_taint(rating);
+		artwork::query(art_id)->get_thumbnail()->reset_taint(rating);
+	}
 	return 0;
 }

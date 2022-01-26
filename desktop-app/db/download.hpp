@@ -17,6 +17,7 @@
 #pragma once
 #include <sqlite3.hpp>
 #include "../gui/font.hpp"
+#include "../config.hpp"
 #include <arcollect-db-downloads.hpp>
 #include <cstddef>
 #include <filesystem>
@@ -102,6 +103,18 @@ namespace Arcollect {
 					gui::font::Elements
 				> data;
 				std::list<std::reference_wrapper<download>>::iterator last_rendered_iterator;
+				
+				/** NSFW material taint level
+				 *
+				 * Rating is not stored within the download but in artworks data, this
+				 * value allow to reduce the risk of displaying NSFW is not wanted.
+				 *
+				 * This is an **additional** security, attempting to query NSFW material
+				 * when filter is turned on IS a bug! But given the potentally dramatic
+				 * consequences of this kind of bug, Arcollect has always put an extra
+				 * security barrier.
+				 */
+				Arcollect::config::Rating rating_taint_level = Arcollect::config::RATING_NONE;
 			public:
 				download(sqlite_int64 id, std::string &&source, std::filesystem::path &&path, std::string &&mimetype);
 				/** Query download for loading
@@ -139,7 +152,7 @@ namespace Arcollect {
 				 */
 				template <typename T>
 				std::optional<std::reference_wrapper<T>> query_data(void) {
-					if (queue_for_load()) {
+					if ((rating_taint_level <= Arcollect::config::current_rating)&&queue_for_load()) {
 						last_rendered.splice(last_rendered.begin(),last_rendered,last_rendered_iterator);
 						last_render_timestamp = SDL_GetTicks();
 						return std::get<T>(data);
@@ -176,6 +189,28 @@ namespace Arcollect {
 				const std::filesystem::path dwn_path;
 				const std::string           dwn_mimetype;
 				SDL::Point size;
+				
+				/** Taint the download as NSFW material
+				 *
+				 * Rating is not stored within the download but in artworks data, this
+				 * value allow to reduce the risk of displaying NSFW is not wanted.
+				 *
+				 * This is an **additional** security, attempting to query NSFW material
+				 * when filter is turned on IS a bug! But given the potentally dramatic
+				 * consequences of this kind of bug, Arcollect has always put an extra
+				 * security barrier.
+				 */
+				void taint(Arcollect::config::Rating rating) {
+					rating_taint_level = std::max(rating_taint_level,rating);
+				}
+				/** Reset the NSFW taint the download
+				 *
+				 * See taint(), this variant can lower the taint level.
+				 * \warning **DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!!!**
+				 */
+				void reset_taint(Arcollect::config::Rating rating) {
+					rating_taint_level = rating;
+				}
 				
 				/** Estimate VRAM usage of this artwork
 				 *

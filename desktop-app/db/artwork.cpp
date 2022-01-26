@@ -57,6 +57,9 @@ void Arcollect::db::artwork::db_sync(void)
 			art_pageno = stmt->column_int64(4);
 			
 			data_version = Arcollect::data_version;
+			
+			data->taint(art_rating);
+			thumbnail->taint(art_rating);
 		}
 		
 		linked_accounts.clear();
