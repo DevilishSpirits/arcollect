@@ -31,3 +31,8 @@ void Arcollect::local_data_version_changed(void)
 {
 	Arcollect::private_data_version++;
 }
+void Arcollect::set_filter_rating(config::Rating rating)
+{
+	config::current_rating = rating;
+	local_data_version_changed();
+}

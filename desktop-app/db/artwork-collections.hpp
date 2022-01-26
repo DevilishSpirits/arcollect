@@ -20,6 +20,7 @@
 #pragma once
 #include "artwork-collection.hpp"
 #include "../db/db.hpp"
+#include <iostream>
 namespace Arcollect {
 	namespace db {
 		/** Artwork collection bound to a SQLite query
@@ -36,8 +37,11 @@ namespace Arcollect {
 				 */
 				artwork_collection_sqlite(std::unique_ptr<SQLite3::stmt> &&stmt)
 				{
-					while (stmt->step() == SQLITE_ROW)
+					int status;
+					while ((status = stmt->step()) == SQLITE_ROW)
 						cache_append(stmt->column_int64(0));
+					if (status != SQLITE_DONE)
+						std::cerr << "artwork_collection_sqlite(stmt) failed to read rows: " << database->errmsg() << std::endl;
 					stmt.reset();
 				}
 				artwork_collection::iterator find(artwork_id id) override {

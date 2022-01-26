@@ -35,7 +35,7 @@ Arcollect::db::artwork_collection::iterator Arcollect::db::artwork_collection::f
 
 Arcollect::db::artwork_collection::iterator Arcollect::db::artwork_collection::find_artid_randomized(artwork_id id, bool nearest)
 {
-	const Arcollect::db::sorting::Implementation &sorter = Arcollect::db::sorting::implementations(Arcollect::db::sorting::RANDOM);
+	const Arcollect::db::SortingImpl &sorter = Arcollect::db::sorting(Arcollect::db::SORT_RANDOM);
 	cache_size_type left = 0;
 	cache_size_type size = cache.size();
 	const artwork& target = *artwork::query(id);

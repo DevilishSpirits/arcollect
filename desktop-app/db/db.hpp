@@ -17,6 +17,7 @@
 #pragma once
 #include <sqlite3.hpp>
 #include <string>
+#include "../config.hpp"
 
 namespace Arcollect {
 	extern std::unique_ptr<SQLite3::sqlite3> database;
@@ -53,4 +54,7 @@ namespace Arcollect {
 	 * This function is regulary called.
 	 */
 	sqlite_int64 update_data_version(void);
+		/** Set current rating
+		 */
+	void set_filter_rating(config::Rating rating);
 }

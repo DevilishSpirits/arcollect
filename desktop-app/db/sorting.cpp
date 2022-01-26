@@ -14,10 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include "search.hpp"
 #include "sorting.hpp"
+#include "artwork.hpp"
+using Arcollect::db::SearchType;
+using Arcollect::db::SortingType;
 const std::time_t Arcollect::db::artid_randomizer_seed = std::time(NULL);
 
-static const Arcollect::db::sorting::Implementation sorting_impl_random = {
+static const Arcollect::db::SortingImpl sorting_impl_random = {
 	[](const Arcollect::db::artwork& left, const Arcollect::db::artwork& right) -> bool {
 		if (Arcollect::db::artid_randomize(left.partof()) != Arcollect::db::artid_randomize(right.partof()))
 			return Arcollect::db::artid_randomize(left.partof()) < Arcollect::db::artid_randomize(right.partof());
@@ -25,17 +29,31 @@ static const Arcollect::db::sorting::Implementation sorting_impl_random = {
 			return left.pageno() < right.pageno();
 		else return left.art_id < right.art_id;
 	},
-	",((art_partof+"+std::to_string(Arcollect::db::artid_randomizer_seed)+")*2654435761) % 4294967296 AS art_order"
-	" FROM artworks",
-	"ORDER BY art_order, art_pageno, art_artid;"
+	[](SearchType search_type) -> const std::string_view {
+		switch (search_type) {
+			default:
+			case Arcollect::db::SEARCH_ARTWORKS: {
+				static std::string result = ",((art_partof+"+std::to_string(Arcollect::db::artid_randomizer_seed)+")*2654435761) % 4294967296 AS art_order";
+				return result;
+			} break;
+		}
+	},
+	[](SearchType search_type) -> const std::string_view {
+		switch (search_type) {
+			default:
+			case Arcollect::db::SEARCH_ARTWORKS: {
+				return "art_order, art_pageno, art_artid";
+			} break;
+		}
+	},
 };
 
 /** Get implementation by mode
 */
-const Arcollect::db::sorting::Implementation& Arcollect::db::sorting::implementations(Arcollect::db::sorting::Mode mode)
+const Arcollect::db::SortingImpl& Arcollect::db::sorting(SortingType mode)
 {
 	switch (mode) {
-		case Arcollect::db::sorting::Mode::RANDOM:return sorting_impl_random;
+		case SORT_RANDOM:return sorting_impl_random;
 		default:return sorting_impl_random;
 	}
 }

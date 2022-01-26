@@ -28,8 +28,6 @@ namespace Arcollect {
 				font::Renderable text_render;
 				void text_changed(void);
 				void pop(void);
-				sqlite_int64 private_data_version;
-				unsigned int filter_version;
 				std::shared_ptr<Arcollect::db::artwork_collection> collection;
 			public:
 				bool event(SDL::Event &e, SDL::Rect target) override;

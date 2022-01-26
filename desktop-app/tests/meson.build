@@ -5,7 +5,6 @@ desktop_app_test_env = environment({
 
 tap_tests = [
 	'test-config',
-	'test-search-tokenizer',
 	'test-mime-extract-charset',
 ]
 

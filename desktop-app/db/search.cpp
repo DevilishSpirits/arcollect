@@ -14,350 +14,426 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "config.hpp"
-#include "db.hpp"
-#include "filter.hpp"
 #include "search.hpp"
 #include "sorting.hpp"
-#include <cctype>
-#include <sstream>
-
-// TODO UTF-8 support
-static Arcollect::db::search::Token classify_char(char chr)
-{
-	if (chr == '\0')
-		return Arcollect::db::search::TOK_EOL;
-	else if (std::isalnum(chr) || (chr == '_') || (chr == '.'))
-		return Arcollect::db::search::TOK_IDENTIFIER;
-	else if (chr == ':')
-		return Arcollect::db::search::TOK_COLON;
-	else if (chr == '-')
-		return Arcollect::db::search::TOK_NEGATE;
-	else if (std::isblank(chr))
-		return Arcollect::db::search::TOK_BLANK;
-	else return Arcollect::db::search::TOK_INVALID;
+#include "db.hpp"
+#include "../config.hpp"
+#include "../gui/font.hpp"
+#include <arcollect-debug.hpp>
+#include <functional>
+#include <map>
+#include <type_traits>
+#include <unordered_set>
+using Arcollect::db::SearchType;
+using Arcollect::search::ParsedSearch;
+static Arcollect::config::Rating parse_rating(const std::string_view& value) {
+	if (value.size())
+		switch (value[0]) {
+			case 'e':case 'E':
+				return Arcollect::config::RATING_ADULT;
+			case 'q':case 'Q':
+				return Arcollect::config::RATING_MATURE;
+			case 's':case 'S':
+				return Arcollect::config::RATING_NONE;
+		}
+	return Arcollect::config::RATING_NONE;
 }
-const char* Arcollect::db::search::tokenize(const char* search, std::function<bool(Token token, std::string_view value, void* data)> new_token, void* data)
-{
-	Token state = TOK_BLANK;
-	for (const char* token_start = search; state != Arcollect::db::search::TOK_EOL; search++) {
-		Token next_state = classify_char(search[0]);
-		if (next_state == Arcollect::db::search::TOK_INVALID)
-			return search;
-		/** Handle 'black-dragon' like constructs
-		 *
-		 * This generate one TOK_IDENTIFIER 'black-dragon'
-		 */
-		if ((state == TOK_IDENTIFIER)&&(next_state == TOK_NEGATE))
-			continue;
-		if (state != next_state) {
-			if (new_token(state,std::string_view(token_start,search-token_start),data))
-				return token_start;
-			state = next_state;
-			token_start = search;
+static SDL::Color make_rating_color(Arcollect::config::Rating rating) {
+	return (rating <= Arcollect::config::RATING_NONE) ? SDL::Color{0,255,0,255} :
+		(rating <= Arcollect::config::RATING_MATURE) ? SDL::Color{0,0,255,255} :
+		SDL::Color{255,0,0,255};
+}
+/** Set of tags
+ *
+ * A tag set hold a list of tags and their negated tags. For example
+ * `dragon -noodle` is a set of 1 positive and 1 negative tag.
+ *
+ * Arcollect also use this structure for `account:abc` objects to make
+ * things easier.
+ */
+template <typename T>
+struct TagSet {
+	/** Container of matchs typedef
+	 */
+	using matchs_container = std::unordered_set<T>;
+	/** Positive matchs
+	 */
+	matchs_container positive_matchs;
+	/** Negative matchs
+	 */
+	matchs_container negative_matchs;
+	/** Select positive or negated matchs list
+	 * \param negated Wheather to return the negated match list
+	 * \return positive_matchs if negated is `false`, negative_matchs
+	 *         otherwhise.
+	 */
+	matchs_container &operator[](bool negated) {
+		return negated ? negative_matchs : positive_matchs;
+	}
+	static void generate_matchs_sql_list(const matchs_container& container, std::string &query, ParsedSearch::sql_bindings_type &bindings) {
+		// Generate SQL placeholders
+		query += "?";
+		for (typename matchs_container::size_type i = 1; i < container.size(); i++)
+			query += ",?";
+		// Add bindings
+		for (const T& match: container)
+			bindings.push_back(match);
+	}
+	/** Generate the SQL WHERE statement that match in a links table
+	 *
+	 */
+	void gen_link_matching_sql(const std::string_view &source_table, const std::string_view &link_table, const std::string_view &linked_table, const std::string_view &link_idcol, const std::vector<std::string_view> &cols_match, std::string &query, ParsedSearch::sql_bindings_type &bindings) const {
+		if (!positive_matchs.empty()) {
+			query += "AND EXISTS (SELECT 1 FROM ";
+			query += link_table;
+			query += " NATURAL JOIN ";
+			query += linked_table;
+			query += " WHERE ";
+			query += link_table;
+			query += ".";
+			query += link_idcol;
+			query += " = ";
+			query += source_table;
+			query += ".";
+			query += link_idcol;
+			query += " AND (0";
+				for (const std::string_view& col: cols_match) {
+					query += " OR(";
+					query += linked_table;
+					query += ".";
+					query += col;
+					query += " IN(";
+					generate_matchs_sql_list(positive_matchs,query,bindings);
+					query += "))";
+				}
+				query += ") LIMIT " + std::to_string(positive_matchs.size()-1) + ",1)";
+		}
+		if (!negative_matchs.empty()) {
+			query += "AND NOT EXISTS (SELECT 1 FROM ";
+			query += link_table;
+			query += " NATURAL JOIN ";;
+			query += linked_table;
+			query += " WHERE ";
+			query += link_table;
+			query += ".";
+			query += link_idcol;
+			query += " = ";
+			query += source_table;
+			query += ".";
+			query += link_idcol;
+			query += " AND(0 ";
+				for (const std::string_view& col: cols_match) {
+					query += "OR(";
+					query += linked_table;
+					query += ".";
+					query += col;
+					query += " IN(";
+					generate_matchs_sql_list(negative_matchs,query,bindings);
+					query += "))";
+				}
+				query += ")LIMIT 1)";
 		}
 	}
-	return NULL;
-}
-
-namespace Arcollect {
-	namespace db {
-		struct search_do_search_struct {
-			Arcollect::db::search::Token last_token = Arcollect::db::search::TOK_BLANK;
-			/** Current tag
-			 *
-			 * This is normally an empty string_view. But in some cases like with
-			 * 'black-dragon' tags. Intermediate tokens are parts of the tag.
-			 * In such case, 
-			 */
-			std::string_view current_tag;
-			bool current_identifier_is_negated = false;
-			template <typename T>
-			struct negatable_container {
-				typedef T type_name;
-				bool &negated;
-				T positive_matches;
-				T negative_matches;
-				inline operator T&(void) {
-					return negated ? negative_matches : positive_matches;
-				}
-				inline T& operator()(void) {
-					return *this;
-				}
-				negatable_container(bool &negated) : negated(negated) {}
-			};
-			/** List of tags
-			 *
-			 * All positive matching tags must be present (a AND) and no negative one
-			 * must be present (AND NOT).
-			 */
-			negatable_container<std::vector<std::string_view>> tags{current_identifier_is_negated};
-			/** List of accounts
-			 *
-			 * All positive matching tags must be present (a AND) and no negative one
-			 * must be present (AND NOT).
-			 */
-			negatable_container<std::vector<std::string_view>> accounts{current_identifier_is_negated};
-			/** List of column,value prefix matchs
-			 */
-			negatable_container<std::vector<std::pair<std::string,std::string_view>>> db_prefixes{current_identifier_is_negated};
-			/** List of column,value exact matchs
-			 */
-			negatable_container<std::vector<std::pair<std::string,std::string_view>>> db_matches{current_identifier_is_negated};
-			typedef std::function<bool(search_do_search_struct&,search::Token,search::Token)> ColonHandler;
-			ColonHandler current_colon_handler;
-			
-			inline void reset_current_tag() {
-				current_tag = std::string_view();
-			}
-		};
-		typedef search_do_search_struct::ColonHandler ColonHandler;
-		
-		/** Search colon handler map (when you have a "colon:in-search")
-		 *
-		 * This map, colon-handler names to the function that handle them.
-		 */
-		static std::unordered_map<std::string,ColonHandler> search_colon_handlers{
-			{"account",[](search_do_search_struct& search, search::Token token, search::Token last_token) -> bool {
-				switch (token) {
-					case Arcollect::db::search::TOK_BLANK:
-					case Arcollect::db::search::TOK_EOL: {
-						search.current_colon_handler = nullptr;
-						switch (last_token) {
-							case Arcollect::db::search::TOK_IDENTIFIER: {
-								// Add the match
-								search.accounts().emplace_back(search.current_tag);
-								search.current_identifier_is_negated = false;
-								search.reset_current_tag();
-							} return false;
-							default: return false;
-						}
-					} return false;
-					default: return false;
-				}
-			}},
-			{"site",[](search_do_search_struct& search, search::Token token, search::Token last_token) -> bool {
-				switch (token) {
-					case Arcollect::db::search::TOK_BLANK:
-					case Arcollect::db::search::TOK_EOL: {
-						search.current_colon_handler = nullptr;
-						switch (last_token) {
-							case Arcollect::db::search::TOK_IDENTIFIER: {
-								// Add the match
-								search.db_prefixes().emplace_back("art_platform",search.current_tag);
-								search.current_identifier_is_negated = false;
-								search.reset_current_tag();
-							} return false;
-							default: return false;
-						}
-					} return false;
-					default: return false;
-				}
-			}},{"rating",[](search_do_search_struct& search, search::Token token, search::Token last_token) -> bool {
-				switch (token) {
-					case Arcollect::db::search::TOK_BLANK:
-					case Arcollect::db::search::TOK_EOL: {
-						search.current_colon_handler = nullptr;
-						switch (last_token) {
-							case Arcollect::db::search::TOK_IDENTIFIER: {
-								// Analyze rating
-								static const std::string rating_none   = std::to_string(Arcollect::config::RATING_NONE);
-								static const std::string rating_mature = std::to_string(Arcollect::config::RATING_MATURE);
-								static const std::string rating_adult  = std::to_string(Arcollect::config::RATING_ADULT);
-								switch (search.current_tag[0]) {
-									case 's':case 'S': {
-										search.db_matches().emplace_back("art_rating",rating_none);
-									} break;
-									case 'q':case 'Q': {
-										search.db_matches().emplace_back("art_rating",rating_mature);
-									} break;
-									case 'e':case 'E': {
-										search.db_matches().emplace_back("art_rating",rating_adult);
-									} break;
-									default: return true;
-								};
-								// Add the match
-								search.current_identifier_is_negated = false;
-								search.reset_current_tag();
-							} return false;
-							default: return false;
-						}
-					} return false;
-					default: return false;
-				}
-			}},
-		};
-		static bool search_do_search_callback(Arcollect::db::search::Token token, std::string_view value, void* data)
-		{
-			struct Arcollect::db::search_do_search_struct &search = *reinterpret_cast<struct Arcollect::db::search_do_search_struct*>(data);
-			auto last_token = search.last_token;
-			search.last_token = token;
-			// Update current_tag for identifiers
-			if (token == Arcollect::db::search::TOK_IDENTIFIER) {
-				if (search.current_tag.empty())
-					search.current_tag = value;
-				else search.current_tag = std::string_view(search.current_tag.data(),search.current_tag.begin()-value.end());
-			}
-			if (search.current_colon_handler)
-				return search.current_colon_handler(search,token,last_token);
-			else switch (token) {
-				case Arcollect::db::search::TOK_IDENTIFIER: {
-					// last_token dependent handling
-					switch (last_token) {
-						case Arcollect::db::search::TOK_NEGATE: {
-							// '-dragon' like construct -> Raise current_identifier_is_negated flag
-							search.current_identifier_is_negated = true;
-						} return false;
-						default: {
-						} return false;
-					}
-				} return false;
-				case Arcollect::db::search::TOK_COLON: {
-					// Search colon construct name
-					auto iter = search_colon_handlers.find(std::string(search.current_tag));
-					// Error if unknown key
-					if (iter == search_colon_handlers.end())
-						return true;
-					// Else set current_colon_handler
-					search.current_colon_handler = iter->second;
-					// Reset current_tag
-					search.reset_current_tag();
-				} return false;
-				case Arcollect::db::search::TOK_BLANK:
-				case Arcollect::db::search::TOK_EOL: {
-					switch (last_token) {
-						case Arcollect::db::search::TOK_IDENTIFIER: {
-							// Append the tag
-							search.tags().emplace_back(search.current_tag);
-							// Reset current_identifier_is_negated flag and current_tag
-							search.current_identifier_is_negated = false;
-							search.reset_current_tag();
-						} return false;
-						default: return false;
-					}
-				} return false;
-				default: {
-				} return false;
-			}
+	void gen_exact_matching_sql(const std::string_view &table_dot_col, std::string &query, ParsedSearch::sql_bindings_type &bindings) const {
+		for (const auto &match: positive_matchs) {
+			query += " AND(";
+			query += table_dot_col;
+			query += " = ?)";
+			bindings.push_back(match);
+		}
+		for (const auto &match: negative_matchs) {
+			query += " AND(";
+			query += table_dot_col;
+			query += " != ?)";
+			bindings.push_back(match);
 		}
 	}
+	void gen_prefix_matching_sql(const std::string_view &table_dot_col, std::string &query, ParsedSearch::sql_bindings_type &bindings) const {
+		for (const std::string_view &match: positive_matchs) {
+			query += "AND arcollect_match_prefix(";
+			query += table_dot_col;
+			query += ",?)";
+			bindings.push_back(match);
+		}
+		for (const std::string_view &match: negative_matchs) {
+			query += "AND NOT arcollect_match_prefix(";
+			query += table_dot_col;
+			query += ",?)";
+			bindings.push_back(match);
+		}
+	}
+	std::function<void(const std::string_view,bool)> tokenize_func(void) {
+		return [this](const std::string_view data,bool negated){
+			operator[](negated).emplace(T(data));
+		};
+	}
+};
+
+static void tokenize(const std::string_view& search, const std::unordered_map<std::string_view,std::function<void(std::string_view,bool)>> &output)
+{
+	enum {
+		BLANK,
+		VERB,
+		VALUE,
+	} parse_stage = BLANK;
+	auto verb_iter = output.find("");
+	bool negated = false;
+	const char* start = NULL;
+	for (const char &chr: search)
+		switch (parse_stage) {
+			case BLANK: {
+				start = &chr;
+				if (chr == '-')
+					negated = true;
+				else if (!std::isblank(chr)) {
+					parse_stage = VERB;
+					start = &chr;
+				} else negated = false;
+			} break;
+			case VERB: {
+				if (chr == ':') {
+					verb_iter = output.find(std::string_view(start,std::distance(start,&chr)));
+					start = NULL;
+					parse_stage = VALUE;
+					break;
+				}
+			} // falltrough;
+			case VALUE: {
+				if (start == NULL)
+					start = &chr;
+				if (std::isblank(chr)) {
+					if (verb_iter != output.cend())
+						verb_iter->second(std::string_view(start,std::distance(start,&chr)),negated);
+					verb_iter = output.cend();
+					parse_stage = BLANK;
+				}
+			} break;
+		}
+	// Add the last word
+	if (start)
+		switch (parse_stage) {
+			case VERB: {
+				verb_iter = output.find("");
+			} // falltrough;
+			case VALUE: {
+					if (verb_iter != output.cend())
+						verb_iter->second(std::string_view(start,std::distance(start,search.end())),negated);
+			} break;
+			case BLANK: {
+				// Do nothing
+			} break;
+		}
 }
 
-const char* Arcollect::db::search::build_stmt(const char* search, std::ostream &query, std::vector<std::string_view> &query_bindings)
-{
-	Arcollect::db::search_do_search_struct src;
-	const char* where_its_wrong = Arcollect::db::search::tokenize(search,Arcollect::db::search_do_search_callback,&src);
-	const auto sorting_mode = Arcollect::db::sorting::RANDOM;
-	const auto &sorting_impl = Arcollect::db::sorting::implementations(sorting_mode);
-	if (where_its_wrong)
-		return where_its_wrong;
-	// Manually generate a TOK_EOL
-	if (Arcollect::db::search_do_search_callback(TOK_EOL,{},&src))
-		; // TODO Error reporting
+template <const char* string>
+struct SQLDontPrintOnce {
+	bool do_print = false;
+};
+template <const char* string>
+std::string &operator+=(std::string &left, SQLDontPrintOnce<string> &right) {
+	if (right.do_print)
+		left += string;
+	else right.do_print = true;
+	return left;
+}
+static constexpr char sql_and[] = " AND ";
+static constexpr char sql_or[]  = " OR ";
+using SQLAnd = SQLDontPrintOnce<sql_and>;
+using SQLOr = SQLDontPrintOnce<sql_or>;
+template<class> inline constexpr bool always_false_v = false;
+/** Set of match filters
+ *
+ * This object store a set of criterias to AND.
+ */
+struct MatchExpr {
+	TagSet<std::string_view> tags;
+	TagSet<std::string_view> accounts;
+	TagSet<std::string_view> platforms;
+	TagSet<sqlite_int64> ratings;
+	TagSet<std::string_view> ratings_string;
+	std::vector<std::unique_ptr<MatchExpr>> or_subexprs;
 	
-	query << "SELECT art_artid"+sorting_impl.sql_select_and_from+" WHERE " << Arcollect::db_filter::get_sql() << " AND (0";
-	// Title OR match
-	if (src.tags.positive_matches.size() || src.tags.negative_matches.size() || src.accounts.positive_matches.size() || src.accounts.negative_matches.size()) {
-		// Note: will be followed by a tag matching
-		query << " OR (INSTR(lower(art_title),lower(?)) > 0) OR (1";
-		query_bindings.emplace_back(search);
-	} else query << " OR 1";// No token: Force a full match
-	// Tags OR matching
-	if (src.tags.positive_matches.size()) {
-		/** Add tag checking logic
-		 *
-		 * Tags are checked using an EXISTS subquery on art_tag_links JOIN tags.
-		 * To implement the AND logic, a LIMIT statement is used to return no row
-		 * unless all tags are matched.
-		 */
-		query <<" AND EXISTS ("
-			"SELECT 1 FROM art_tag_links"
-			" NATURAL JOIN tags WHERE art_tag_links.art_artid = artworks.art_artid"
-			" AND tags.tag_platid in (?";
-		query_bindings.emplace_back(src.tags.positive_matches[0]);
-		for (decltype(src.tags.positive_matches)::size_type i = 1; i < src.tags.positive_matches.size(); i++) {
-			query << ",?";
-			query_bindings.emplace_back(src.tags.positive_matches[i]);
+	void gen_artworks_sql(std::string &query, ParsedSearch::sql_bindings_type &bindings) const {
+		tags.gen_link_matching_sql("artworks","art_tag_links","tags","art_artid",{"tag_platid","tag_title"},query,bindings);
+		accounts.gen_link_matching_sql("accounts","art_acc_links","accounts","acc_arcoid",{"acc_platid","acc_name","acc_title"},query,bindings);
+		platforms.gen_prefix_matching_sql("artworks.art_platform",query,bindings);
+		ratings.gen_exact_matching_sql("artworks.art_rating",query,bindings);
+		
+		if (!or_subexprs.empty()) {
+			SQLOr _or_;
+			query += " AND (";
+			for (const std::unique_ptr<MatchExpr> &subexpr: or_subexprs) {
+				query += _or_;
+				query += "(";
+				subexpr->gen_artworks_sql(query,bindings);
+				query += ")";
+			}
+			query += ")";
 		}
-		query << ") LIMIT " << (src.tags.positive_matches.size()-1) << ",1)";
 	}
-	if (src.tags.negative_matches.size()) {
-		/** Add tag exclusion logic
-		 *
-		 * It's the same thing as above but negated and without the LIMIT because a
-		 * match inivalidate the whole tag
-		 */
-		query << " AND NOT EXISTS ("
-			"SELECT 1 FROM art_tag_links"
-			" NATURAL JOIN tags WHERE art_tag_links.art_artid = artworks.art_artid"
-			" AND tags.tag_platid in (?";
-		query_bindings.emplace_back(src.tags.negative_matches[0]);
-		for (decltype(src.tags.negative_matches)::size_type i = 1; i < src.tags.negative_matches.size(); i++) {
-			query << ",?";
-			query_bindings.emplace_back(src.tags.negative_matches[i]);
+	
+	struct our_std_less {
+		constexpr bool operator()(const std::string_view& lhs, const std::string_view& rhs) const {
+			return std::less<std::string_view::const_pointer>()(lhs.data(),rhs.data());
 		}
-		query << "))";
-	}
-	// Accounts OR matching
-	if (src.accounts.positive_matches.size()) {
-		query <<" AND EXISTS ("
-			"SELECT 1 FROM art_acc_links"
-			" NATURAL JOIN accounts WHERE art_acc_links.art_artid = artworks.art_artid"
-			" AND accounts.acc_name in (?";
-		query_bindings.emplace_back(src.accounts.positive_matches[0]);
-		for (decltype(src.accounts.positive_matches)::size_type i = 1; i < src.accounts.positive_matches.size(); i++) {
-			query << ",?";
-			query_bindings.emplace_back(src.accounts.positive_matches[i]);
+	};
+	/** Search coloration container type
+	 *
+	 * This map hold a list of std::string_view and the color to use.
+	 *
+	 * MatchExpr doesn't preserve the order of tokens while parsing the
+	 * expression but it's std::string_view reference the search string that is
+	 * naturally ordered. Map keys is sorted with ascending start in the string,
+	 * this allow easy search coloration by colorize_search().
+	 */
+	using text_colors_maps = std::map<std::string_view,SDL::Color,our_std_less>;
+	
+	constexpr static SDL::Color positive_matchs_color{192,255,192,255};
+	constexpr static SDL::Color negative_matchs_color{255,192,192,255};
+	/** Generate text colors for a tagset
+	 * \param tagset to colorize
+	 * \param verb_length is the length of the prefix verb like `"account"` for
+	 *                    *account* (note that the `':'` is included).
+	 *                    You should use `sizeof("account")` values.
+	 * \param verb_color is the color for the verb.
+	 *
+	 * \warning A too large `verb_length` might trigger buffer underflows.
+	 */
+	template <typename TagsetT>
+	static void gen_text_colors_for_tagset(const TagsetT &tagset, text_colors_maps &colors, int verb_length, SDL::Color verb_color) {
+		for (const auto& match: tagset.positive_matchs) {
+			colors.emplace(std::string_view(match.data()-verb_length,verb_length-1),verb_color);
+			colors.emplace(match,positive_matchs_color);
 		}
-		query << ") LIMIT " << (src.accounts.positive_matches.size()-1) << ",1)";
-	}
-	if (src.accounts.negative_matches.size()) {
-		query << " AND NOT EXISTS ("
-			"SELECT 1 FROM art_acc_links"
-			" NATURAL JOIN accounts WHERE art_acc_links.art_artid = artworks.art_artid"
-			" AND accounts.acc_name in (?";
-		query_bindings.emplace_back(src.accounts.negative_matches[0]);
-		for (decltype(src.accounts.negative_matches)::size_type i = 1; i < src.accounts.negative_matches.size(); i++) {
-			query << ",?";
-			query_bindings.emplace_back(src.accounts.negative_matches[i]);
+		for (const auto& match: tagset.negative_matchs) {
+			// FIXME colors.emplace(std::string_view(match.data()-verb_length-1,1),SDL::Color{255,0,0,255});
+			colors.emplace(std::string_view(match.data()-verb_length,verb_length-1),verb_color);
+			colors.emplace(match,negative_matchs_color);
 		}
-		query << "))";
 	}
-	if (src.tags.positive_matches.size() || src.tags.negative_matches.size() || src.accounts.positive_matches.size() || src.accounts.negative_matches.size())
-		query << ")";
-	for (auto &match: src.db_matches.positive_matches) {
-		// FIXME That's not very safe
-		query << " AND (" << match.first << " = ?)";
-		query_bindings.emplace_back(match.second);
+	
+	/** Generate text coloration
+	 * \param[out] colors Output of color data
+	 *
+	 * You can generate Arcollect::gui::font::Elements with colorize_search().
+	 *
+	 * This variant exists for internal operation, you can use gen_text_colors()
+	 * that directly returns a #text_colors_maps.
+	 */
+	void gen_artworks_text_colors(text_colors_maps &colors) const {
+		for (const std::string_view& match: tags.negative_matchs) {
+			// FIXME colors.emplace(std::string_view(match.data()-1,1),SDL::Color{255,0,0,255});
+			colors.emplace(match,negative_matchs_color);
+		}
+		
+		gen_text_colors_for_tagset(accounts,colors,sizeof("account"),{0,255,0,255});
+		gen_text_colors_for_tagset(platforms,colors,sizeof("site"),{0,0,255,255});
+		
+		for (const auto& match: ratings_string.positive_matchs) {
+			colors.emplace(std::string_view(match.data()-7,6),SDL::Color{128,128,128,255});
+			colors.emplace(match,make_rating_color(parse_rating(match)));
+		}
+		for (const auto& match: ratings_string.negative_matchs) {
+			// FIXME colors.emplace(std::string_view(match.data()-8,1),SDL::Color{255,0,0,255});
+			colors.emplace(std::string_view(match.data()-7,6),SDL::Color{128,128,128,255});
+			colors.emplace(match,make_rating_color(parse_rating(match)));
+		}
+		
+		for (const std::unique_ptr<MatchExpr>& subexpr: or_subexprs)
+			subexpr->gen_artworks_text_colors(colors);
 	}
-	for (auto &match: src.db_matches.negative_matches) {
-		// FIXME That's not very safe
-		query << " AND (" << match.first << " != ?)";
-		query_bindings.emplace_back(match.second);
+	/** Generate text coloration
+	 * \return Output of color data
+	 *
+	 * You can generate Arcollect::gui::font::Elements with colorize_search().
+	 */
+	text_colors_maps gen_text_colors(SearchType search_type) const {
+		text_colors_maps result;
+		switch (search_type) {
+			case Arcollect::db::SEARCH_ARTWORKS: {
+				gen_artworks_text_colors(result);
+			} break;
+		}
+		return result;
 	}
-	for (auto &match: src.db_prefixes.positive_matches) {
-		// FIXME That's not very safe
-		query << " AND (instr(" << match.first << ",lower(?)) = 1)";
-		query_bindings.emplace_back(match.second);
+	static Arcollect::gui::font::Elements colorize_search(const std::string_view& search, const text_colors_maps& map) {
+		Arcollect::gui::font::Elements elements;
+		const char* iter = search.data();
+		for (const auto &pair: map) {
+			// Print elements between two colored set in white (color is already white)
+			elements << std::string_view(iter,std::distance(iter,pair.first.data()))
+			// Print the colored string
+			         << pair.second << pair.first
+			// Reset to white
+			         << SDL::Color(255,255,255,255);
+			// Place the cursor at the end of the colored area
+			iter = &*pair.first.end();
+		}
+		// Print the rest of the string
+		return elements << std::string_view(iter,search.size()-std::distance(search.data(),iter));
 	}
-	for (auto &match: src.db_prefixes.negative_matches) {
-		// FIXME That's not very safe
-		query << " AND (instr(" << match.first << ",lower(?)) != 1)";
-		query_bindings.emplace_back(match.second);
-	}
-	query << ") " << sorting_impl.sql_trailer;
-	return NULL;
-}
-bool Arcollect::db::search::build_stmt(const char* search, std::unique_ptr<SQLite3::stmt> &stmt)
+};
+
+
+Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, SearchType search_type, SortingType sorting_type) :
+	search(std::move(search_terms)),
+	search_type(search_type),
+	sorting_type(sorting_type)
 {
-	std::ostringstream query;
-	std::vector<std::string_view> query_bindings;
-	if (build_stmt(search,query,query_bindings))
-		return true;
-	if (database->prepare(query.str().c_str(),stmt))
-		return true;
+	if (Arcollect::debug.search)
+		std::cerr << "Query:" << search_terms << std::endl;
+	// Parse the expression
+	MatchExpr expr;
+	sql_query.reserve(65536); // Preallocate a large chunk of memory
+	const std::unordered_map<std::string_view,std::function<void(std::string_view,bool)>> tagset_map = {
+		{"",expr.tags.tokenize_func()},
+		{"account",expr.accounts.tokenize_func()},
+		{"site",expr.platforms.tokenize_func()},
+		{"rating",[&](const std::string_view data,bool negated){
+			expr.ratings[negated].emplace(parse_rating(data));
+			expr.ratings_string[negated].emplace(data);
+		}},
+	};
+	tokenize(search,tagset_map);
+	sql_query = "SELECT art_artid";
+	sql_query += sorting().sql_select_trailer(search_type);
+	sql_query += " FROM artworks WHERE ((1 ";
+	const auto sql_query_size = sql_query.size();
+	expr.gen_artworks_sql(sql_query,sql_bindings);
+	if (sql_query_size == sql_query.size())
+		sql_query += "AND 0 ";
+	sql_query += ")OR(INSTR(lower(art_title),lower(?)) > 0)) AND art_rating <= ? ORDER BY ";
+	sql_query += sorting().sql_order_by(search_type);
+	sql_query += ";";
+	sql_bindings.push_back(search);
+	sql_query.shrink_to_fit();
+	if (Arcollect::debug.search) {
+		std::cerr << "\tSQL:" << sql_query << "\n\tSQL bindings:";
+		for (const auto& binding: sql_bindings) {
+			std::visit([](auto&& binding) {
+				std::cerr << "\n\t\t" << binding;
+				using T = std::decay_t<decltype(binding)>;
+				if constexpr (std::is_same_v<T, std::string_view>)
+					std::cerr << "\tTEXT";
+				else if constexpr (std::is_same_v<T, sqlite_int64>)
+					std::cerr << "\tINTEGER";
+				else static_assert(always_false_v<T>, "non-exhaustive visitor!");
+			}, binding);
+		}
+		std::cerr << std::endl;
+	}
+	// Generate the text
+	cached_elements = std::make_unique<Arcollect::gui::font::Elements>(expr.colorize_search(search,expr.gen_text_colors(search_type)));
+}
+
+void Arcollect::search::ParsedSearch::build_stmt(std::unique_ptr<SQLite3::stmt> &stmt) const
+{
+	if (database->prepare(sql_query.data(),stmt))
+		std::cerr << "Search SQL prepare failure: " << database->errmsg() << " Search was: \"" << search << "\". Query was " << sql_query << "std::endl";
 	int i = 1;
-	for (auto& binding: query_bindings)
-		stmt->bind(i++,binding.data(),binding.size());
-	return false;
+	for (const auto& binding: sql_bindings)
+		std::visit([&](auto&& binding) {
+			stmt->bind(i++,binding);
+		}, binding);
+	stmt->bind(i++,Arcollect::config::current_rating);
 }

@@ -44,11 +44,12 @@ static DBusHandlerResult GetResultSet(DBus::Connection &conn, DBusMessage *messa
 	
 	// Build statement
 	std::unique_ptr<SQLite3::stmt> stmt;
-	if (!Arcollect::db::search::build_stmt(search_string.c_str(),stmt))
-		while (stmt->step() == SQLITE_ROW) {
-			// Append artwork id
-			results << std::to_string(stmt->column_int64(0)).c_str();
-		}
+	
+	Arcollect::search::ParsedSearch(search_string,Arcollect::db::SEARCH_ARTWORKS,Arcollect::db::SORT_RANDOM).build_stmt(stmt);
+	while (stmt->step() == SQLITE_ROW) {
+		// Append artwork id
+		results << std::to_string(stmt->column_int64(0)).c_str();
+	}
 	append_iter.close_container(results);
 	
 	// Send message

@@ -20,7 +20,6 @@
 #include "menu.hpp"
 #include "window-borders.hpp"
 #include "../db/artwork-collections.hpp"
-#include "../db/filter.hpp"
 #include "../db/search.hpp"
 
 Arcollect::gui::search_osd Arcollect::gui::search_osd_modal;
@@ -53,11 +52,10 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e, SDL::Rect target)
 		case SDL_KEYUP: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_ESCAPE: {
-					update_background(saved_text,true);
+					update_background(saved_text);
 					pop();
 				} break;
 				case SDL_SCANCODE_RETURN: {
-					update_background(text,true);
 					pop();
 				} break;
 				default: {
@@ -74,9 +72,6 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e, SDL::Rect target)
 }
 void Arcollect::gui::search_osd::render(SDL::Rect target)
 {
-	// Update upon local changes only
-	if ((private_data_version != Arcollect::private_data_version)||(filter_version != Arcollect::db_filter::version))
-		text_changed();
 	// Force render the title bar
 	SDL::Point screen_size;
 	renderer->GetOutputSize(screen_size);
@@ -90,23 +85,20 @@ void Arcollect::gui::search_osd::render_titlebar(SDL::Rect target, int window_wi
 }
 void Arcollect::gui::search_osd::text_changed(void)
 {
-	// Update GUI
-	const int title_border = window_borders::title_height/4;
-	const int font_height = window_borders::title_height-2*title_border;
+	// Parse the search
 	std::string_view search_term = " ";
 	if (!text.empty())
 		search_term = text;
-	text_render = font::Renderable(font::Elements::build(font::ExactFontSize(font_height),search_term));
+	Arcollect::search::ParsedSearch search(std::string(search_term),Arcollect::db::SEARCH_ARTWORKS,Arcollect::db::SORT_RANDOM);
+	// Update GUI
+	const int title_border = window_borders::title_height/4;
+	const int font_height = window_borders::title_height-2*title_border;
+	font::RenderConfig render_config;
+	render_config.base_font_height = font_height;
+	text_render = font::Renderable(search.elements(),render_config);
 	
 	// Perform search
-	std::unique_ptr<SQLite3::stmt> stmt;
-	Arcollect::db::search::build_stmt(search_term.data(),stmt);
-	collection = std::make_shared<Arcollect::db::artwork_collection_sqlite>(std::move(stmt));
-	Arcollect::gui::update_background(collection);
-	
-	// Update filter versions
-	private_data_version = Arcollect::private_data_version;
-	filter_version = Arcollect::db_filter::version;
+	Arcollect::gui::update_background(text);
 }
 void Arcollect::gui::search_osd::push(void)
 {

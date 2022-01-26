@@ -20,7 +20,6 @@
 #include "../art-reader/image.hpp"
 #include "../db/artwork-loader.hpp"
 #include "../db/db.hpp"
-#include "../db/filter.hpp"
 #include "../sdl2-hpp/SDL.hpp"
 #undef main // This cause name clash
 #include "animation.hpp"
@@ -91,9 +90,6 @@ int Arcollect::gui::init(void)
 	if (Arcollect::database->prepare(Arcollect::db::sql::preload_artworks,preload_artworks_stmt) != SQLITE_OK)
 	std::cerr << "Failed to prepare preload_artworks SQL stmt: " << Arcollect::database->errmsg() << std::endl;
 	
-	// Init background
-	Arcollect::gui::update_background(true);
-	
 	// Setup database
 	sqlite3_busy_handler((sqlite3*)Arcollect::database.get(),Arcollect::sqlite_busy::handler,NULL);
 	
@@ -119,7 +115,7 @@ void Arcollect::gui::start(int argc, char** argv)
 				Arcollect::gui::background_slideshow.target_artwork = artwork;
 		} //falltrough;
 		case 2: {
-			Arcollect::gui::update_background(argv[1],true);
+			Arcollect::gui::update_background(argv[1]);
 		}
 	}
 	
@@ -139,7 +135,7 @@ bool Arcollect::gui::main(void)
 	bool has_event = saved_animation_running ? SDL::PollEvent(e) : SDL::WaitEvent(e);
 	// Check for emergency SFW shortcut (Ctrl+Maj+X)
 	if ((SDL_GetModState()&(KMOD_CTRL|KMOD_SHIFT)) && keyboard_state[SDL_GetScancodeFromKey(SDLK_x)])
-		Arcollect::db_filter::set_rating(Arcollect::config::RATING_NONE);
+		Arcollect::set_filter_rating(Arcollect::config::RATING_NONE);
 	// Update timing informations
 	Uint32 new_ticks = SDL_GetTicks();
 	Arcollect::gui::time_framedelta = Arcollect::gui::time_now-new_ticks;
