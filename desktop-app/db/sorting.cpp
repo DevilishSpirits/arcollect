@@ -19,7 +19,13 @@
 #include "artwork.hpp"
 using Arcollect::db::SearchType;
 using Arcollect::db::SortingType;
-const std::time_t Arcollect::db::artid_randomizer_seed = std::time(NULL);
+static std::time_t artid_randomizer_seed(void) {
+	static std::time_t value = std::time(NULL);
+	return value;
+}
+sqlite_int64 Arcollect::db::artid_randomize(sqlite_int64 art_artid) {
+	return ((art_artid+artid_randomizer_seed())*2654435761) % 4294967296;
+}
 
 static const Arcollect::db::SortingImpl sorting_impl_random = {
 	[](const Arcollect::db::artwork& left, const Arcollect::db::artwork& right) -> bool {
@@ -33,7 +39,7 @@ static const Arcollect::db::SortingImpl sorting_impl_random = {
 		switch (search_type) {
 			default:
 			case Arcollect::db::SEARCH_ARTWORKS: {
-				static std::string result = ",((art_partof+"+std::to_string(Arcollect::db::artid_randomizer_seed)+")*2654435761) % 4294967296 AS art_order";
+				static std::string result = ",((art_partof+"+std::to_string(artid_randomizer_seed())+")*2654435761) % 4294967296 AS art_order";
 				return result;
 			} break;
 		}

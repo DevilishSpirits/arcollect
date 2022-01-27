@@ -52,17 +52,9 @@ namespace Arcollect {
 		/** Get sorting implementation by mode
 		 */
 		const SortingImpl& sorting(SortingType mode);
-		/** Seed used for #Arcollect::db::artid_randomizer
-		 *
-		 * It's set to std::time(NULL) at program init.
-		 * \todo No longer expose this in public API
-		 */
-		extern const std::time_t artid_randomizer_seed;
 		/** Apply #Arcollect::db::artid_randomizer
 		 * \todo No longer expose this in public API
 		 */
-		inline sqlite_int64 artid_randomize(sqlite_int64 art_artid) {
-			return ((art_artid+artid_randomizer_seed)*2654435761) % 4294967296;
-		}
+		sqlite_int64 artid_randomize(sqlite_int64 art_artid);
 	}
 }
