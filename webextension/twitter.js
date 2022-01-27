@@ -33,7 +33,9 @@ function twitter_handle_tweet(tweet) {
 	// Ensure that there is medias before processing the tweet
 	let entities = tweet['entities'];
 	if (entities.hasOwnProperty('media')) {
-		let media = entities['media'];
+		// Note: extended_entities might be entities if not found
+		let extended_entities = tweet.hasOwnProperty('extended_entities') ? tweet['extended_entities'] : entities;
+		let media = extended_entities['media'];
 		if (media.length) {
 			// Cache relevant tweet infos
 			let id = parseInt(tweet['id_str'])
@@ -44,14 +46,16 @@ function twitter_handle_tweet(tweet) {
 			if (entities.hasOwnProperty('hashtags'))
 				entities['hashtags'].forEach(hashtag => hashtags.push(hashtag.text));
 			let medias = []
-			entities['media'].forEach(pic => medias.push(pic.media_url_https));
+			media.forEach(pic => medias.push({
+				'data': pic.media_url_https+'?name=orig',
+				'rating': (tweet['possibly_sensitive']||(pic.hasOwnProperty('sensitive_media_warning') && Object.values(pic.sensitive_media_warning).includes(true))) ? 18 : 0,
+			}));
 			twitter_tweets_cache[id] = {
-				'artwork_template': Object.entries({
+				'artwork_template': {
 					"title": tweet['full_text'].split('\n')[0], // TODO Obey to tweet['display_text_range'] >>UTF-32<< delimitations (RAAAH!!!)
 					"description": tweet['full_text'],
-					"rating": tweet['possibly_sensitive'] ? 18 : 0,
 					"postdate": Date.parse(tweet['created_at'])/1000,
-				}),
+				},
 				'tweet_account' : parseInt(tweet['user_id_str']),
 				'mention_accounts': user_mentions,
 				'hashtags' : hashtags,
@@ -230,10 +234,10 @@ function twitter_post_process_submit(json) {
 				reply_to_content_script({'transaction_id': json.transaction_id, 'success': false, 'reason': browser.i18n.getMessage('webext_tweet_not_in_cache')});
 				return null;
 			}
-			// Set data
-			json['artworks'][i]['data'] = cached_tweet.medias[pic_no-1]+'?name=orig';
 			// Copy artwork_template
-			cached_tweet.artwork_template.forEach(pair => json['artworks'][i][pair[0]] = pair[1]);
+			Object.assign(json['artworks'][i],cached_tweet.artwork_template);
+			// Set data
+			Object.assign(json['artworks'][i],cached_tweet.medias[pic_no-1]);
 			// Add accounts infos
 			account_ids.add(cached_tweet.tweet_account);
 			json.art_acc_links.push({'account': cached_tweet.tweet_account, 'artwork': source, 'link': 'account'})
