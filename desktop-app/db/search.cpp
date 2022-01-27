@@ -255,7 +255,7 @@ struct MatchExpr {
 	
 	void gen_artworks_sql(std::string &query, ParsedSearch::sql_bindings_type &bindings) const {
 		tags.gen_link_matching_sql("artworks","art_tag_links","tags","art_artid",{"tag_platid","tag_title"},query,bindings);
-		accounts.gen_link_matching_sql("accounts","art_acc_links","accounts","acc_arcoid",{"acc_platid","acc_name","acc_title"},query,bindings);
+		accounts.gen_link_matching_sql("artworks","art_acc_links","accounts","art_artid",{"acc_platid","acc_name","acc_title"},query,bindings);
 		platforms.gen_prefix_matching_sql("artworks.art_platform",query,bindings);
 		ratings.gen_exact_matching_sql("artworks.art_rating",query,bindings);
 		
