@@ -73,6 +73,48 @@ bool Arcollect::db::download::queue_for_load(void)
 	return false;
 }
 
+struct SurfacePixelBordersIterate {
+	SDL::Surface& surface;
+	struct iterator {
+		SDL::Surface& surf;
+		SDL::Point position;
+		bool start;
+		SDL::Color &operator*(void) const {
+			return *reinterpret_cast<SDL::Color*>(&(static_cast<Uint8*>(surf.pixels)[surf.pitch*position.y+position.x*surf.format->BytesPerPixel]));
+		}
+		constexpr iterator& operator++(void) {
+			start = false;
+			// Top left-to-right scan
+			if (!position.y)
+				if (position.x == surf.w-1)
+					position.y++;
+				else position.x++;
+			// Right top-to-bottom scan
+			else if (position.x == surf.w-1)
+				if (position.y == surf.h-1)
+					position.x--;
+				else position.y++;
+			// Top right-to-keft scan
+			else if (position.x)
+				position.x--;
+			// Left bottom-to-top scan
+			else position.y--;
+			return *this;
+		}
+		constexpr bool operator!=(const iterator& other) const {
+			return (position != other.position)||(start != other.start);
+		}
+		iterator(SDL::Surface& surface, bool start) : surf(surface), position{0,0}, start(start) {}
+	};
+	iterator begin(void) {
+		return iterator(surface,true);
+	}
+	iterator end(void) {
+		return iterator(surface,false);
+	}
+	SurfacePixelBordersIterate(SDL::Surface& surface) : surface(surface) {}
+};
+
 void Arcollect::db::download::load_stage_one(void)
 {
 	const std::filesystem::path full_path = Arcollect::path::arco_data_home/dwn_path;
@@ -82,6 +124,71 @@ void Arcollect::db::download::load_stage_one(void)
 		} break;
 		case ARTWORK_TYPE_IMAGE: {
 			data = std::unique_ptr<SDL::Surface>(art_reader::image(full_path));
+			if (!std::get<std::unique_ptr<SDL::Surface>>(data))
+				break;
+			SDL::Surface &surf = *std::get<std::unique_ptr<SDL::Surface>>(data);
+			if ((surf.w > 2)&&(surf.h > 2)) {
+				/* Try to auto-detect the best background color
+				 *
+				 * Colors on the border are averaged and a simplified deviation computed
+				 * to guess if there is a flat border background color to expand on the
+				 * rest of the image.
+				 * The amount of pixels exceding a deviation threshold is also counted,
+				 * if the amount of deviant pixels exceed a threshold (0,4%), the image
+				 * is considered to have no border too.
+				 *
+				 * This allow some noise (JPEG, ...) while staying fairly sensitive to
+				 * border irregularities. Some botder gradients still pass the test,
+				 * actually many fradients are visually improved but 
+				 * 
+				 * Most scans does not pass the test, but the limit would be noticable
+				 * and not beautiful. Before thinking that the system is not working,
+				 * look closely at the image if there is irregularities.
+				 *
+				 * Best results are on almost-black background where this effect is not
+				 * perceived but lack would be a lot.
+				 */
+				int64_t red = 0;
+				int64_t green = 0;
+				int64_t blue = 0;
+				// Accumulate pixels on the border
+				for (const SDL::Color &color: SurfacePixelBordersIterate(surf)) {
+					red += color.r;
+					green += color.g;
+					blue += color.b;
+				}
+				// Compute the average
+				// Note that we are rounding to nearest, not to zero
+				const auto pix_count = 2*(surf.w+surf.h);
+				red <<= 1;
+				green <<= 1;
+				blue <<= 1;
+				red /= pix_count;
+				green /= pix_count;
+				blue /= pix_count;
+				red += 1;
+				green += 1;
+				blue += 1;
+				red >>= 1;
+				green >>= 1;
+				blue >>= 1;
+				// Compute a simplified deviation
+				int64_t deviation = 0;
+				int64_t pixels_out_deviation = 0;
+				for (const SDL::Color &color: SurfacePixelBordersIterate(surf)) {
+					int64_t this_deviation = abs(red - static_cast<int>(color.r)) + abs(green - static_cast<int>(color.g)) + abs(blue - static_cast<int>(color.b));
+					if (this_deviation > 48)
+						pixels_out_deviation++;
+					deviation += this_deviation;
+				}
+				deviation /= pix_count;
+				if ((deviation < 48)&&(pixels_out_deviation <= pix_count/256)) {
+					background_color.r = red;
+					background_color.g = green;
+					background_color.b = blue;
+					background_color.a = 255;
+				}
+			}
 		} break;
 		case ARTWORK_TYPE_TEXT: {
 			data = art_reader::text(full_path,dwn_mimetype);
