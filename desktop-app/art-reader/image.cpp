@@ -78,12 +78,12 @@ SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 		std::cerr << "Failed to load pixels from " << path << ". " << image->geterror();
 		return NULL;
 	}
-	image->read_scanlines(0,0,0,spec.height-1,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,surface->pixels,surface->format->BytesPerPixel,surface->pitch);
+	image->read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,surface->pixels,surface->format->BytesPerPixel,surface->pitch);
 	if (spec.nchannels == 1) {
 		// FIXME Optimize that
 		// Monochrome picture, populate green and blue
-	image->read_scanlines(0,0,0,spec.height-1,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,&((char*)surface->pixels)[1],surface->format->BytesPerPixel,surface->pitch);
-	image->read_scanlines(0,0,0,spec.height-1,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,&((char*)surface->pixels)[2],surface->format->BytesPerPixel,surface->pitch);
+	image->read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,&((char*)surface->pixels)[1],surface->format->BytesPerPixel,surface->pitch);
+	image->read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,&((char*)surface->pixels)[2],surface->format->BytesPerPixel,surface->pitch);
 	}
 	
 	// Set pixel format for lcms2
