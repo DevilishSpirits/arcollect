@@ -129,6 +129,15 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			std::shared_ptr<Arcollect::db::artwork_collection> new_collection = std::make_shared<Arcollect::db::artwork_collection_sqlite>(std::move(stmt));
 			Arcollect::gui::update_background(new_collection);
 		}
+		switch (viewport.download->artwork_type) {
+			case ARTWORK_TYPE_IMAGE: {
+				if (viewport.download) {
+					renderer->SetDrawColor(viewport.download->background_color);
+					renderer->FillRect(target);
+				}
+			}
+			default:break;
+		}
 		Arcollect::gui::view_slideshow::render(target);
 	}
 } background_slideshow;

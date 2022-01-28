@@ -189,6 +189,7 @@ namespace Arcollect {
 				const std::filesystem::path dwn_path;
 				const std::string           dwn_mimetype;
 				SDL::Point size;
+				SDL::Color background_color{0,0,0,0};
 				
 				/** Taint the download as NSFW material
 				 *
