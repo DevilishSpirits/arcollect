@@ -29,6 +29,12 @@ namespace SDL {
 			y /= value;
 			return *this;
 		}
+		constexpr bool operator==(const SDL_Point& other) const {
+			return (x == other.x)&&(y == other.y);
+		}
+		constexpr bool operator!=(const SDL_Point& other) const {
+			return (x != other.x)||(y != other.y);
+		}
 	};
 	struct FPoint {
 		float x;
