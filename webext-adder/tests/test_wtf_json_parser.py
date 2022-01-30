@@ -9,7 +9,8 @@ for filename in sys.argv[2:]:
 	data = open(filename,'r', encoding="utf-8").read()
 	json_file = json.loads(data)
 	try:
-		parsed_json = Popen(test_wtf_json_parser,stdin=PIPE,stdout=PIPE).communicate(input=data.encode('utf-8'))[0].decode('utf-8')
+		parsed_json = Popen(test_wtf_json_parser,stdin=PIPE,stdout=PIPE).communicate(input=data.encode('utf-8'))[0]
+		parsed_json = parsed_json.decode('utf-8')
 		json_parsed = json.loads(parsed_json)
 	except Exception as e:
 		print('not', end = ' ')
