@@ -6,7 +6,7 @@ test_wtf_json_parser = sys.argv[1]
 print('1..'+str(len(sys.argv)-2))
 test_num = 1
 for filename in sys.argv[2:]:
-	data = open(filename,'r').read()
+	data = open(filename,'r', encoding="utf-8").read()
 	json_file = json.loads(data)
 	parsed_json = Popen(test_wtf_json_parser,stdin=PIPE,stdout=PIPE).communicate(input=data.encode('utf-8'))[0].decode('utf-8')
 	try:
