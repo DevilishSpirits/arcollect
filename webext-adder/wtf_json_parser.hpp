@@ -185,13 +185,13 @@ namespace Arcollect {
 								if (codepoint < 0x80) {
 									// ASCII character
 									*write_head = codepoint;
-								} else if (codepoint < 0x8000) {
+								} else if (codepoint < 0x800) {
 									// Two-bytes UTF-8 sequence
-									*write_head   = 0b11000000 | ((codepoint >>  6) & 0b00111111);
+									*write_head   = 0b11000000 | ((codepoint >>  6) & 0b00011111);
 									*++write_head = 0b10000000 | ((codepoint >>  0) & 0b00111111);
 								} else {
 									// Three-bytes UTF-8 sequence
-									*write_head   = 0b11100000 | ((codepoint >> 12) & 0b00111111);
+									*write_head   = 0b11100000 | ((codepoint >> 12) & 0b00001111);
 									*++write_head = 0b10000000 | ((codepoint >>  6) & 0b00111111);
 									*++write_head = 0b10000000 | ((codepoint >>  0) & 0b00111111);
 								}
