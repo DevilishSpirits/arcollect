@@ -141,6 +141,7 @@ namespace Arcollect {
 		template <typename IterT>
 		constexpr IterT read_string(IterT &iter, const IterT end) {
 			IterT write_head = iter;
+			uint16_t high_surrogate = 0xFFFF;
 			for  (;iter != end; ++iter, ++write_head) {
 				switch (*iter) {
 					case '\0': {
@@ -182,13 +183,26 @@ namespace Arcollect {
 									codepoint += digit;
 								}
 								// Generate the UTF-8 sequence
-								if (codepoint < 0x80) {
+								if (high_surrogate != 0xFFFF) {
+									// UTF-16 low surrogate expected
+									if (((codepoint >= 0xDC00)&&(codepoint < 0xE000))) {
+										codepoint &= 0x03FF; // Strip the prefix
+										*write_head = 0b10000000 | ((high_surrogate << 4) & 0b00110000) | ((codepoint >> 6) & 0b00001111);
+										*++write_head = 0b10000000 | ((codepoint >>  0) & 0b00111111);
+										high_surrogate = 0xFFFF; // Reset the no surrogate flag.
+									} else return end;
+								} else if (codepoint < 0x80) {
 									// ASCII character
 									*write_head = codepoint;
 								} else if (codepoint < 0x800) {
 									// Two-bytes UTF-8 sequence
 									*write_head   = 0b11000000 | ((codepoint >>  6) & 0b00011111);
 									*++write_head = 0b10000000 | ((codepoint >>  0) & 0b00111111);
+								} else if ((codepoint >= 0xD800)&&(codepoint < 0xDC00)) {
+									// UTF-16 high surrogate 
+									high_surrogate = (codepoint & 0x03FF)+0x40; // Strip the prefix and add 0x10000
+									*write_head   = 0b11110000 | ((high_surrogate >> 8) & 0b00000111);
+									*++write_head = 0b10000000 | ((high_surrogate >> 2) & 0b00111111);
 								} else {
 									// Three-bytes UTF-8 sequence
 									*write_head   = 0b11100000 | ((codepoint >> 12) & 0b00001111);
