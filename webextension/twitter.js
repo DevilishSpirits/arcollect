@@ -220,6 +220,7 @@ function twitter_post_process_submit(json) {
 	let account_ids = new Set();
 	let hashtags = new Set();
 	json.art_acc_links = []
+	let comics = {};
 	// Process artworks
 	if (json.hasOwnProperty('artworks'))
 		for (i in json['artworks']) {
@@ -247,8 +248,14 @@ function twitter_post_process_submit(json) {
 			});
 			// Add hashtags infos
 			cached_tweet.hashtags.forEach(hashtag => hashtags.add(hashtag));
+			// Process comics
+			let comic_source = source_splited.slice(0,-1).join('/')+'/';
+			let pages = {}
+			for (let i = 1; i <= cached_tweet.medias.length; i++)
+				pages[comic_source+i] = { 'relative_to': 'dummy', 'pageno': id, 'sub': i};
+			comics[id] = {'pages': pages};
 		}
-	
+	json['comics'] = Object.values(comics);
 	// Generate account infos
 	json['accounts'] = []
 	for (id of account_ids.keys()) {
