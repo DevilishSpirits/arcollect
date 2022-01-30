@@ -201,7 +201,7 @@ namespace Arcollect {
 					} break;
 					default: {
 						// Choke on control characters
-						if (((*iter < 32)&&(*iter >= 0))||(*iter == 127))
+						if (((*iter < 32)&&(*iter >= 0)))
 							return end;
 						else *write_head = *iter;
 					} break;
@@ -244,7 +244,7 @@ namespace Arcollect {
 					} break;
 					default: {
 						// Choke on control characters
-						if (((*iter < 32)&&(*iter >= 0))||(*iter == 127))
+						if (((*iter < 32)&&(*iter >= 0)))
 							return false;
 					} break;
 				}
