@@ -51,6 +51,7 @@ namespace Arcollect {
 		};
 		struct SortingImpl;
 		const SortingImpl& sorting(SortingType mode);
+		class artwork_collection;
 	}
 	/** Search engine
 	 *
@@ -94,14 +95,25 @@ namespace Arcollect {
 					return Arcollect::db::sorting(sorting_type);
 				}
 				/** Prepare a SQLite stmt
-				 *
+				 * \param[out] stmt The output stmt
+				 * \warning The stmt link on std::string_view stored in #search and will
+				 *          be invalid when the search is destroyed.
 				 */
 				void build_stmt(std::unique_ptr<SQLite3::stmt> &stmt) const;
+				/** Prepare a SQLite stmt
+				 * \param[out] stmt The output stmt
+				 * \warning The stmt link on std::string_view stored in #search and will
+				 *          be invalid when the search is destroyed.
+				 */
+				std::shared_ptr<Arcollect::db::artwork_collection> make_shared_collection(void) const;
+				/** Return the colorized search
+				 * \return A reference to the colorized Arcollect::gui::font::Elements.
+				 */
 				const Arcollect::gui::font::Elements &elements(void) const {
 					return *cached_elements;
 				}
 				/** String move constructor
-				 *
+				 * \param[in] search_terms The search string to steal.
 				 */
 				ParsedSearch(std::string &&search_terms, SearchType search_type, SortingType sorting_type);
 				/** String copy constructor

@@ -16,6 +16,7 @@
  */
 #include "search.hpp"
 #include "sorting.hpp"
+#include "artwork-collections.hpp"
 #include "db.hpp"
 #include "../config.hpp"
 #include "../gui/font.hpp"
@@ -436,4 +437,10 @@ void Arcollect::search::ParsedSearch::build_stmt(std::unique_ptr<SQLite3::stmt> 
 			stmt->bind(i++,binding);
 		}, binding);
 	stmt->bind(i++,Arcollect::config::current_rating);
+}
+std::shared_ptr<Arcollect::db::artwork_collection> Arcollect::search::ParsedSearch::make_shared_collection(void) const
+{
+	std::unique_ptr<SQLite3::stmt> stmt;
+	build_stmt(stmt);
+	return std::make_shared<Arcollect::db::artwork_collection_sqlite>(std::move(stmt));
 }
