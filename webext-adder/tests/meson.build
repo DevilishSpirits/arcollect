@@ -50,13 +50,19 @@ nst_json_test_suite = files(
 	'nst_JSONTestSuite/y_number_0e+1.json',
 	'nst_JSONTestSuite/y_number_0e1.json',
 	'nst_JSONTestSuite/y_number_after_space.json',
+	'nst_JSONTestSuite/y_number_double_close_to_zero.json',
 	'nst_JSONTestSuite/y_number_int_with_exp.json',
+	'nst_JSONTestSuite/y_number.json',
 	'nst_JSONTestSuite/y_number_minus_zero.json',
 	'nst_JSONTestSuite/y_number_negative_int.json',
 	'nst_JSONTestSuite/y_number_negative_one.json',
 	'nst_JSONTestSuite/y_number_negative_zero.json',
+	'nst_JSONTestSuite/y_number_real_capital_e.json',
+	'nst_JSONTestSuite/y_number_real_capital_e_neg_exp.json',
 	'nst_JSONTestSuite/y_number_real_capital_e_pos_exp.json',
+	'nst_JSONTestSuite/y_number_real_exponent.json',
 	'nst_JSONTestSuite/y_number_real_fraction_exponent.json',
+	'nst_JSONTestSuite/y_number_real_neg_exp.json',
 	'nst_JSONTestSuite/y_number_real_pos_exponent.json',
 	'nst_JSONTestSuite/y_number_simple_int.json',
 	'nst_JSONTestSuite/y_number_simple_real.json',
@@ -117,6 +123,7 @@ nst_json_test_suite = files(
 	'nst_JSONTestSuite/y_string_with_del_character.json',
 	'nst_JSONTestSuite/y_structure_lonely_false.json',
 	'nst_JSONTestSuite/y_structure_lonely_int.json',
+	'nst_JSONTestSuite/y_structure_lonely_negative_real.json',
 	'nst_JSONTestSuite/y_structure_lonely_null.json',
 	'nst_JSONTestSuite/y_structure_lonely_string.json',
 	'nst_JSONTestSuite/y_structure_lonely_true.json',
@@ -125,16 +132,6 @@ nst_json_test_suite = files(
 	'nst_JSONTestSuite/y_structure_true_in_array.json',
 	'nst_JSONTestSuite/y_structure_whitespace_array.json'
 )
-nst_json_test_suite_failing = files(
-	'nst_JSONTestSuite/y_number.json',
-	'nst_JSONTestSuite/y_number_double_close_to_zero.json',
-	'nst_JSONTestSuite/y_number_real_capital_e.json',
-	'nst_JSONTestSuite/y_number_real_capital_e_neg_exp.json',
-	'nst_JSONTestSuite/y_number_real_exponent.json',
-	'nst_JSONTestSuite/y_number_real_neg_exp.json',
-	'nst_JSONTestSuite/y_structure_lonely_negative_real.json',
-)
 test_wtf_json_parser_exe = executable('test_wtf_json_parser', 'test_wtf_json_parser.cpp', build_by_default: false)
 test_wtf_json_parser_py = files('test_wtf_json_parser.py')
 test('wtf-json-parser',test_wtf_json_parser_py, args: [test_wtf_json_parser_exe,offline_tests,online_tests,online_nsfw_tests,nst_json_test_suite], protocol: 'tap')
-test('wtf-json-parser-todo',test_wtf_json_parser_py, should_fail: true, args: [test_wtf_json_parser_exe,nst_json_test_suite_failing], protocol: 'tap')

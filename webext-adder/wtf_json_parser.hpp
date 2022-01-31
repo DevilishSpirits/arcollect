@@ -17,19 +17,22 @@
 /** \file wtf_json_parser.hpp
  *  \brief A simple UTF-8 JSON parser that is WTF.
  *
- * A very efficient I think and WTF in-place JSON parser that don't give a shit
- * about common sense and expect you to don't do worse shit with him.
+ * A simple, efficient and WTF in-place JSON parser that don't give a shit about
+ * common sense and expect you to don't shit worse things with it.
  *
- * More seriously it's another JSON parser that is neither SAX or DOM but rather
- * an helper, you have to implement a part of the JSON parsing logic. You ask
- * what is there and then you call another function that parse what is there or
- * you give up. It's a reversed SAX, you call back the parser instead of having
- * the parser calling-back your code. This lead to an kind of hand-made JSON
- * parser with a simpler interface than SAX and no more code, you do the
- * same amount of error checking as with a SAX parser in a more streamlined way.
+ * More seriously it's another minimalist JSON parser that is neither SAX or DOM
+ * but rather an helper, you have to implement a part of the JSON parsing logic.
+ * You ask what is there and then you call another function that parse what is
+ * there or you give up. It's a reversed SAX, you call back the parser instead
+ * of the parser calling-back your code. This lead to a kind of hand-made JSON
+ * parser with a simpler interface than SAX and less code, you do the same
+ * amount of error checking as with a SAX parser in a more streamlined way and
+ * without reinventing the stack. The compiler also have more possibilities to
+ * inline the parser code with your own one.
  *
- * This header-only library is entirely constexpr, allocation free and doesn't
- * include any header (even standard ones).
+ * This header-only library is almost entirely constexpr, allocation free and
+ * only include `<charconv>` and `<limits>` standard headers to parse numbers.
+ * Make wrappers to ease usage as this header is extremely minimalistic.
  *
  * You just need to carry around a writeable forward iterator and his end().
  * Keep in mind that it works fine with but does not detect malicious invalid
@@ -39,6 +42,8 @@
  * You can serialize your dataset by yourself.
  */
 #pragma once
+#include <charconv>
+#include <limits>
 namespace Arcollect {
 	namespace json {
 		/** Check if this is a JSON whitespace
@@ -296,90 +301,47 @@ namespace Arcollect {
 					return is_valid_after_value(*iter);
 			return true;
 		}
-		/** Is an integral number
-		 * \param[out] out The result location.
-		 * \return true on success.
-		 *
-		 * You are expected to call this after a function returned #Have::NUMBER and
-		 * if you wanna check if the value is an integral.
-		 * \note `1e+3` is considered an integral number.
-		 */
-		template <typename IterT>
-		constexpr bool is_integral_number(IterT iter, const IterT end) {
-			// Check for negative number
-			if (*iter == '-')
-				if (++iter == end)
-					return false;
-			// Read integral parts
-			bool has_e = false;
-			for (; iter != end; ++iter)
-				if ((*iter < '0')||(*iter > '9')) {
-					if (!has_e && ((*iter == 'e')||(*iter == 'E'))) {
-						has_e = true;
-						if (++iter == end)
-							return false;
-						if ((*iter == '+'))
-							if (++iter == end)
-								return false;
-					} else if (is_valid_after_value(*iter))
-						return true;
-					else return false;
-				}
-			return true;
-		}
 		/** Read a number
 		 * \param[out] out The result location.
 		 * \return true on success.
 		 *
 		 * You are expected to call this after a function returned #Have::NUMBER.
 		 * This template is safe with both floating point and integers arguments.
-		 * in such case, `iter` is already well placed just after the `"`, save
+		 * IF supporting both representations, you should try the integer variant
+		 * and then the floating point one.
+		 *
+		 * \note Integer variants of this function may fails if the result cannot be
+		 * represented as an integer.
 		 */
 		template <typename numberT, typename IterT>
-		constexpr bool read_number(numberT &out, IterT &iter, const IterT end) {
+		bool read_number(numberT &out, IterT &iter, const IterT end) {
 			if (skip_whitespace(iter,end)) {
-				out = 0;
-				// Handle negation
-				bool negate = *iter == '-';
-				if (negate)
-					if (++iter == end)
-						return false;
-				// Read integral part
-				bool done = read_simple_natural(out,iter,end);
-				// Read fractional part
-				if (!done &&(*iter == '.')) {
-					if (++iter == end)
-						return false;
-					numberT fractional_part = 0;
-					done = read_simple_natural(fractional_part,iter,end);
-					while (fractional_part > 1)
-						fractional_part /= 10;
-					out += fractional_part;
-				}
-				if (negate)
-					out = -out;
-				if (done)
-					return true;
-				// Read exponent
+				// Parse the number
+				std::from_chars_result parse_result = std::from_chars(iter,end,out);
+				if (parse_result.ec != std::errc())
+					return false;
+				iter = const_cast<char*>(parse_result.ptr);
+				// Parse the exponent
+				// Note: On floating points std::from_chars already parsed this but not
+				//       for integer, what we implement there.
 				if ((*iter == 'e')||(*iter == 'E')) {
 					if (++iter == end)
 						return false;
-					bool negate_eponent = *iter == '-';
-					if (negate_eponent || (*iter == '+'))
+					if (*iter == '+')
 						if (++iter == end)
 							return false;
-					unsigned int exponent = 0;
-					if (!read_simple_natural(exponent,iter,end))
+					unsigned int exponent;
+					parse_result = std::from_chars(iter,end,exponent);
+					if (parse_result.ec != std::errc())
 						return false;
-					// TODO Handle 0^0
-					if (negate_eponent)
-						while (exponent--)
-							out /= 10;
-					else while (exponent--)
-							out *= 10;
-					// Done
-					return true;
+					iter = const_cast<char*>(parse_result.ptr);
+					constexpr auto max_limit = std::numeric_limits<numberT>::max()/10;
+					while (exponent--)
+						if (out > max_limit)
+							return false;
+						else out *= 10;
 				}
+				return (iter == end)||is_valid_after_value(*iter);
 			} return false;
 		}
 		/** Skip a number

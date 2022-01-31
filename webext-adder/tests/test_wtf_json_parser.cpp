@@ -124,21 +124,17 @@ int main(void)
 				std::cerr << "Invalid syntax or parser bug (got Have::VALUE)." << std::endl;
 			} return 1;
 			case Have::NUMBER: {
-				if (is_integral_number(iter,end)) {
-					long long number;
-					if (!read_number(number,iter,end)) {
-						std::cerr << "Failed to read a number." << std::endl;
-						return 1;
-					}
-					std::cout << number;
-				} else {
+				long long number;
+				auto saved_iter = iter;
+				if (!read_number(number,iter,end)) {
 					double number;
+					iter = saved_iter;
 					if (!read_number(number,iter,end)) {
 						std::cerr << "Failed to read a number." << std::endl;
 						return 1;
 					}
 					std::cout << number;
-				}
+				} else  std::cout << number;
 			} break;
 			case Have::WTF: {
 				std::cerr << "Syntax error." << std::endl;

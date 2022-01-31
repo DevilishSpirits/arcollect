@@ -146,7 +146,7 @@ inline sqlite_int64 json_read_int(Arcollect::json::ObjHave have, const std::stri
 {
 	using namespace Arcollect::json;
 	sqlite_int64 out;
-	if ((have != ObjHave::NUMBER)|| !is_integral_number(iter,end))
+	if ((have != ObjHave::NUMBER))
 		throw JSONParsingError(debug_string+" must be an integral number.",iter,end);
 	if (!read_number(out,iter,end))
 		throw JSONParsingError("Error while reading "+debug_string+" integral number, syntax error.",iter,end);
