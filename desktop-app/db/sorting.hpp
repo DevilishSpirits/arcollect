@@ -42,6 +42,8 @@ namespace Arcollect {
 			 */
 			const std::string_view(*sql_select_trailer)(SearchType search_type);
 			/** SQL ORDER BY clause
+			 *
+			 * Include the "ORDER BY" word and might be empty
 			 */
 			const std::string_view(*sql_order_by)(SearchType search_type);
 			

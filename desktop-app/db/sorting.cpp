@@ -27,6 +27,18 @@ sqlite_int64 Arcollect::db::artid_randomize(sqlite_int64 art_artid) {
 	return ((art_artid+artid_randomizer_seed())*2654435761) % 4294967296;
 }
 
+static std::string empty_string = "";
+static const Arcollect::db::SortingImpl sorting_impl_none = {
+	[](const Arcollect::db::artwork& left, const Arcollect::db::artwork& right) -> bool {
+		return false;
+	},
+	[](SearchType search_type) -> const std::string_view {
+		return empty_string;
+	},
+	[](SearchType search_type) -> const std::string_view {
+		return empty_string;
+	},
+};
 static const Arcollect::db::SortingImpl sorting_impl_random = {
 	[](const Arcollect::db::artwork& left, const Arcollect::db::artwork& right) -> bool {
 		if (Arcollect::db::artid_randomize(left.partof()) != Arcollect::db::artid_randomize(right.partof()))
@@ -48,7 +60,7 @@ static const Arcollect::db::SortingImpl sorting_impl_random = {
 		switch (search_type) {
 			default:
 			case Arcollect::db::SEARCH_ARTWORKS: {
-				return "art_order, art_pageno, art_artid";
+				return "ORDER BY art_order, art_pageno, art_artid";
 			} break;
 		}
 	},
@@ -59,7 +71,8 @@ static const Arcollect::db::SortingImpl sorting_impl_random = {
 const Arcollect::db::SortingImpl& Arcollect::db::sorting(SortingType mode)
 {
 	switch (mode) {
+		case SORT_NONE:return sorting_impl_none;
 		case SORT_RANDOM:return sorting_impl_random;
-		default:return sorting_impl_random;
 	}
+	return sorting_impl_random;
 }

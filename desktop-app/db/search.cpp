@@ -403,7 +403,7 @@ Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, Search
 	expr.gen_artworks_sql(sql_query,sql_bindings);
 	if (sql_query_size == sql_query.size())
 		sql_query += "AND 0 ";
-	sql_query += ")OR(INSTR(lower(art_title),lower(?)) > 0)) AND art_rating <= ? ORDER BY ";
+	sql_query += ")OR(INSTR(lower(art_title),lower(?)) > 0)) AND art_rating <= ? ";
 	sql_query += sorting().sql_order_by(search_type);
 	sql_query += ";";
 	sql_bindings.push_back(search);

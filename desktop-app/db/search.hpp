@@ -20,6 +20,7 @@
 #include <string>
 #include <string_view>
 #include <variant>
+#include "../gui/font.hpp"
 
 namespace Arcollect {
 	namespace gui {
@@ -32,6 +33,13 @@ namespace Arcollect {
 			SEARCH_ARTWORKS,
 		};
 		enum SortingType {
+			/** Don't sort
+			 *
+			 * This mode is used when generating a list for internal processing only
+			 * like in Arcollect::gui::search_osd with Arcollect::gui::popup_edit_art_metadata().
+			 * In such case sorting is a waste of energy.
+			 */
+			SORT_NONE,
 			/** Use a pseudo random sorting
 			 *
 			 * This algo is inspired from the Knuth's multiplicative method hash with
