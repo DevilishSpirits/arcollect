@@ -118,7 +118,9 @@ std::vector<std::shared_ptr<Arcollect::gui::menu_item>> Arcollect::gui::search_o
 	using Arcollect::gui::menu_item_simple_label;
 	if (!text.empty()) {
 		return {
-			std::make_shared<menu_item_simple_label>(U"Edit listed artworks…"s,std::bind(Arcollect::gui::popup_edit_art_metadata,collection)),
+			std::make_shared<menu_item_simple_label>(U"Edit listed artworks…"s,std::bind(Arcollect::gui::popup_edit_art_metadata,
+				Arcollect::search::ParsedSearch(text,Arcollect::db::SEARCH_ARTWORKS,Arcollect::db::SORT_NONE).make_shared_collection()
+			)),
 		};
 	} else return {};
 };

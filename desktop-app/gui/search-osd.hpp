@@ -18,6 +18,7 @@
 #include "font.hpp"
 #include "modal.hpp"
 #include "../db/artwork-collection.hpp"
+#include "../db/search.hpp"
 #include <string>
 namespace Arcollect {
 	namespace gui {
@@ -26,9 +27,9 @@ namespace Arcollect {
 				std::string text;
 				std::string saved_text;
 				font::Renderable text_render;
+				Arcollect::db::SearchType search_type = Arcollect::db::SEARCH_ARTWORKS;
 				void text_changed(void);
 				void pop(void);
-				std::shared_ptr<Arcollect::db::artwork_collection> collection;
 			public:
 				bool event(SDL::Event &e, SDL::Rect target) override;
 				void render(SDL::Rect target) override;
