@@ -74,7 +74,9 @@ static constexpr std::string_view search_exprs[] = {
 	"Your personal visual artworks library",
 	"bad-dragon rating:s",
 	
+	"Twentie-oneth release (v0.23)",
 	"Twentieth release (v0.22)",
+	" Comics and nineteenth release (v0.21)",
 	"Comics bêta and eighteenth release (v0.20)",
 	"I18n and seventeenth release (v0.19)",
 	"Sixteenth release (v0.18)",
