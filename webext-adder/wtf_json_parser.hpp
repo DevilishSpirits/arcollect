@@ -40,10 +40,15 @@
  *
  * There is no JSON serialization altough having an escaper is 100% legit.
  * You can serialize your dataset by yourself.
+ *
+ * \todo Remove std::strtod fallback
  */
 #pragma once
 #include <charconv>
 #include <limits>
+#if not(__cpp_lib_to_chars >= 201611)
+#include <cstdlib>
+#endif
 namespace Arcollect {
 	namespace json {
 		/** Check if this is a JSON whitespace
@@ -344,6 +349,16 @@ namespace Arcollect {
 				return (iter == end)||is_valid_after_value(*iter);
 			} return false;
 		}
+		#if not(__cpp_lib_to_chars >= 201611)
+		template <typename IterT>
+		bool read_number(double &out, IterT &iter, const IterT end) {
+			if (skip_whitespace(iter,end)) {
+				// Parse the number
+				out = std::strtod(iter,&iter);
+				return (iter == end)||is_valid_after_value(*iter);
+			} return false;
+		}
+		#endif
 		/** Skip a number
 		 * \return true on success.
 		 *

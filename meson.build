@@ -90,7 +90,7 @@ if enable_native_progs
 		'__cpp_lib_filesystem'         : '>=201703',
 		'__cpp_lib_optional'           : '>=201606',
 		'__cpp_lib_variant'            : '>=201606',
-		'__cpp_lib_to_chars'           : '>=201611',
+		#'__cpp_lib_to_chars'           : '>=201611', # FIXME Almost nobody implement it
 		'__cpp_lib_string_view'        : '>=201606',
 		# C++14 features
 		'__cpp_lib_string_udls'        : '>=201304',
