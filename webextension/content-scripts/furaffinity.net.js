@@ -19,10 +19,81 @@
  *
  * This platform is easy to parse.
  *
+ * Their timestamp system is completely broken as is. At the time of writing,
+ * even their servers clocks was faulty. The script workaround that.
+ *
  * \todo Extensive error checkings
  *
  * \todo Don't download artwork types we don't support
  */
+
+
+/*  Detect FurAffinity time skew
+ *
+ * FurAffinity let the user set a custom timezone and adjust dates server-side,
+ * this information is not present in the page and Arcollect store the absolute
+ * time.
+ *
+ * We guess this value by using "3 minutes agos" along the local browser time.
+ * The skew is cached within `window.localStorage['arcollect-tz']`.
+ */
+const page_date = new Date();
+let timestamp_regex = /[a-z]+ [0-9]+, [0-9]+ [0-9]{2}:[0-9]{2} [PA]M/i;
+let parsed_datetime_skew = page_date.getTimezoneOffset()*60000; // Compensate local TZ
+for (let popup_date of document.getElementsByClassName('popup_date')) {
+	// Get absolute and relative time reference
+	let parsed_time;
+	let rel_time;
+	if (popup_date.textContent.match(timestamp_regex)) {
+		parsed_time = Date.parse(popup_date.textContent);
+		rel_time = popup_date.title;
+	} else if (popup_date.title.match(timestamp_regex)) {
+		parsed_time = Date.parse(popup_date.title);
+		rel_time = popup_date.textContent;
+	} else {
+		console.error('Failed to parse .popup_date',popup_date);
+		continue;
+	}
+	parsed_time -= parsed_datetime_skew;
+	// Compute relative_time
+	if (rel_time.match(/[0-9]+ hours ago/i))
+		rel_time = 3600000 * parseInt(rel_time);
+	else if (rel_time == 'an hour ago')
+		rel_time = 3600000;
+	else if (rel_time == 'half-an-hour ago')
+		rel_time = 1800000;
+	else if (rel_time.match(/[0-9]+ minutes ago/i))
+		rel_time = 60000 * parseInt(rel_time);
+	else if (rel_time == 'a few minutes ago')
+		rel_time = 300000;
+	else if (rel_time == 'couple of minutes ago')
+		rel_time = 120000;
+	else if (rel_time == 'a minute ago')
+		rel_time = 60000;
+	else if (rel_time == 'half-o-minute ago')
+		rel_time = 30000;
+	else if (rel_time.endsWith('seconds ago'))
+		rel_time = 0;
+	else continue;
+	let written_time = page_date.getTime()-rel_time;
+	// Compute the timezone
+	// Note: We round to a 15 minutes skew
+	let fa_time_skew = Math.round((parsed_time-written_time)/900000)*900000;
+	console.log('Detected FurAffinity time skew of',fa_time_skew/3600000,'hours');
+	window.localStorage['Arcollect.time_skew'] = fa_time_skew;
+	break;
+}
+const fa_time_skew = parseInt(window.localStorage['Arcollect.time_skew']);
+if (!isNaN(fa_time_skew))
+	parsed_datetime_skew += fa_time_skew;
+
+function fa_parse_popup_date(popup_date) {
+	if (popup_date.textContent.match(timestamp_regex))
+		return Date.parse(popup_date.textContent) - parsed_datetime_skew;
+	else if (popup_date.title.match(timestamp_regex))
+		return Date.parse(popup_date.title) - parsed_datetime_skew;
+	else console.error('Failed to parse .popup_date',popup_date);
+}
 
 /** Save button <div> element
  *
@@ -213,6 +284,7 @@ function save_artwork()
 			'source': source,
 			'rating': rating,
 			'mimetype': artworkMIME,
+			'postdate': fa_parse_popup_date(document.querySelector('.submission-id-sub-container .popup_date'))/1000 ,
 			'data': artworkLink
 		}],
 		'accounts': accountJson,
