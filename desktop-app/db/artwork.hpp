@@ -50,7 +50,6 @@ namespace Arcollect {
 				// Cached DB infos
 				sqlite_int64 data_version;
 				void db_sync(void);
-				std::string art_mimetype;
 				Arcollect::config::Rating art_rating;
 				sqlite3_int64 art_partof;
 				sqlite3_int64 art_pageno;
