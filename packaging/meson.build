@@ -113,6 +113,9 @@ if apt_prog.found() and dpkg_architecture_prog.found() and tar_prog.found() and 
 		'inih'             : ['libinih-dev'             ,'libinireader'],
 		'lcms2'            : ['liblcms2-dev'            ,'liblcms2'],
 		'libcurl'          : ['libcurl4-openssl-dev'    ,'libcurl4'],
+		'libjpeg'          : ['libjpeg-turbo62-dev'     ,'libjpeg-turbo62'], # TODO Don't assume libjpeg-turbo62, guess from libjpeg
+		'libpng'           : ['libpng-dev'              ,'libpng'],
+		'libtiff-4'        : ['libtiff5-dev'            ,'libtiff5'], # That is not an error: libtiff5 provide libtiff-4
 		'OpenImageIO'      : ['libopenimageio-dev'      ,'libopenimageio'],
 		'sdl2'             : ['libsdl2-dev'             ,'libsdl2'],
 		'sqlite3'          : ['libsqlite3-dev'          ,'libsqlite3'],
