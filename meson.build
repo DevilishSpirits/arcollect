@@ -69,7 +69,7 @@ config_h.set('ARCOLLECT_DBUS_PATH','/')
 # Version requirements
 # These are centralized here. Update README.md if you change things there.
 config_h.set('ARCOLLECT_VERREQ_sdl2','>=2.0.18')
-config_h.set('ARCOLLECT_VERREQ_boost','>=1.53') # Keep in sync with OIIO needs! # FIXME Should we use the recommend version?
+config_h.set('ARCOLLECT_VERREQ_boost','>=1.66') # Keep in sync with OIIO needs!
 config_h.set('ARCOLLECT_VERREQ_libcurl','>=7.60')
 config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
 
