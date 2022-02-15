@@ -20,6 +20,7 @@
 #include "../art-reader/image.hpp"
 #include "../art-reader/text.hpp"
 #include <arcollect-paths.hpp>
+#include <semaphore>
 
 std::list<std::reference_wrapper<Arcollect::db::download>> Arcollect::db::download::last_rendered;
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::download>> downloads_pool;
@@ -115,6 +116,9 @@ struct SurfacePixelBordersIterate {
 	SurfacePixelBordersIterate(SDL::Surface& surface) : surface(surface) {}
 };
 
+// Avoid excessive memory bursts
+static std::counting_semaphore images_loadlimit(std::min<unsigned int>(std::thread::hardware_concurrency(),2));
+
 void Arcollect::db::download::load_stage_one(void)
 {
 	const std::filesystem::path full_path = Arcollect::path::arco_data_home/dwn_path;
@@ -123,6 +127,10 @@ void Arcollect::db::download::load_stage_one(void)
 			// TODO Put a message about unknown artwork
 		} break;
 		case ARTWORK_TYPE_IMAGE: {
+			// Lock the semaphore
+			while (!images_loadlimit.try_acquire_for(std::chrono::seconds(1)))
+				if (load_state == LOADING_STAGE1)
+					break;
 			data = std::unique_ptr<SDL::Surface>(art_reader::image(full_path));
 			if (!std::get<std::unique_ptr<SDL::Surface>>(data))
 				break;
@@ -226,6 +234,7 @@ void Arcollect::db::download::load_stage_two(void)
 			}
 			// Increase image memory usage
 			Arcollect::db::artwork_loader::image_memory_usage += image_memory();
+			images_loadlimit.release();
 		} break;
 		case ARTWORK_TYPE_TEXT: {
 			// Already loaded
@@ -245,6 +254,8 @@ void Arcollect::db::download::unload(void)
 		case ARTWORK_TYPE_IMAGE: {
 			// Decrease image memory usage
 			Arcollect::db::artwork_loader::image_memory_usage -= image_memory();
+			if (load_state == LOAD_PENDING_STAGE2)
+				images_loadlimit.release();
 		} break;
 		case ARTWORK_TYPE_TEXT: {
 			// Already loaded
