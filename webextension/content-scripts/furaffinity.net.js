@@ -190,7 +190,7 @@ function save_artwork()
 	 */
 	let tags = []
 	let art_tag_links = []
-	let tags_rows = document.getElementsByClassName('tags-row')[0].getElementsByTagName('a');
+	let tags_rows = document.querySelectorAll('.tags-row a');
 	for (let i = 0; i < tags_rows.length; i++) {
 		tags.push({
 			'id': tags_rows[i].text
