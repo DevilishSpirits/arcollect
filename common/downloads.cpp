@@ -157,7 +157,7 @@ std::string Arcollect::db::downloads::Transaction::write_cache(const std::string
 			case SQLITE_CONSTRAINT: {
 				if (db->extended_errcode() == SQLITE_CONSTRAINT_UNIQUE) {
 					const std::string_view errmsg(db->errmsg());
-					if (errmsg.compare(errmsg.size()-8,8,"dwn_path") == 0) {
+					if (errmsg.ends_with("dwn_path")) {
 						// dwn_path duplicate, try another one
 						new_path = infos.dwn_path();
 						new_path.replace_filename(filename);

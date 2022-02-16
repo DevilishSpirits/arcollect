@@ -118,11 +118,7 @@ void Arcollect::WebextAdder::Download::parse(char*& iter, char* const end, Arcol
 			throw std::runtime_error("Invalid type for the download_spec (must be a string or an object)");
 	}
 	// Check URI type
-	// Note: https_prefix is 64bits, I compare the string by casting to an int64_t
-	constexpr static char https_prefix[] = {'h','t','t','p','s',':','/','/'}; // "https://" without the '\0'
-	uri_type = (data_string.size() > sizeof(int64_t))&&
-		(*reinterpret_cast<const int64_t*>(data_string.data()) == *reinterpret_cast<const int64_t*>(https_prefix))
-		? URI_HTTPS : URI_BASE64;
+	uri_type = data_string.starts_with("https://") ? URI_HTTPS : URI_BASE64;
 	switch (uri_type) {
 		case URI_HTTPS: {
 			if (!cache_miss && cache_key.empty())

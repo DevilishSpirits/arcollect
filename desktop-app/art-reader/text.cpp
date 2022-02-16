@@ -57,7 +57,7 @@ Arcollect::gui::font::Elements Arcollect::art_reader::text(const std::filesystem
 	// TODO elements.initial_height = ;
 	// Check if we are handling 'text/' MIME type
 	constexpr std::string_view mime_text_prefix = "text/"sv;
-	if (mime.substr(0,mime_text_prefix.size()) == mime_text_prefix) {
+	if (mime.starts_with(mime_text_prefix)) {
 		// Check charset
 		std::string_view charset_name;
 		Charset charset = mime_extract_charset(mime,charset_name);

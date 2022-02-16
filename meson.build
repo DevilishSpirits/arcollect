@@ -87,6 +87,7 @@ if enable_native_progs
 	cpp_required_features = {
 		# C++20 features
 		'__cpp_lib_semaphore'          : '>=201907',
+		'__cpp_lib_starts_ends_with'   : '>=201711',
 		# C++17 features
 		'__cpp_fold_expressions'       : '>=201603',
 		'__cpp_lib_filesystem'         : '>=201703',

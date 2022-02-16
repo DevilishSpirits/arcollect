@@ -271,20 +271,9 @@ void Arcollect::db::download::unload(void)
 
 Arcollect::db::download::ArtworkType Arcollect::db::download::artwork_type_from_mime(const std::string_view& mime)
 {
-	if ((mime.size() >= 6)
-	 &&(mime[0] == 'i')
-	 &&(mime[1] == 'm')
-	 &&(mime[2] == 'a')
-	 &&(mime[3] == 'g')
-	 &&(mime[4] == 'e')
-	 &&(mime[5] == '/'))
+	if (mime.starts_with("image/"))
 		return ARTWORK_TYPE_IMAGE;
-	else if ((mime.size() >= 5)
-	 &&(mime[0] == 't')
-	 &&(mime[1] == 'e')
-	 &&(mime[2] == 'x')
-	 &&(mime[3] == 't')
-	 &&(mime[4] == '/')) {
+	else if (mime.starts_with("text/")) {
 		return ARTWORK_TYPE_TEXT;
 	} else if (mime == "application/rtf") {
 		return ARTWORK_TYPE_TEXT;
