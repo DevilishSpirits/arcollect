@@ -60,6 +60,14 @@ If you want to build the software yourself, grab the source code, install Meson 
 
 Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge dependencies to build and run. Most are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. This does have some limits. After installing Meson 0.59.0 (at least) from PyPI, things should works out-of-the-box and does on GitHub Actions Ubuntu 20.04 and Windows 2019 VMs. It won't builds on Ubuntu 18.04 due to outdated GCC and Clang. I won't complexify the program to support older systems.
 
+### Upgrading
+When upgrading, **keep in sync the webextension and binary programs versions!** Mismatching these is unsupported, it should works to some extents but lack of the latest features and bug fixes.
+
+Some updates upgrades the database schema, this is a transparent operation but then you may not use an older Arcollect to open your database, this won't works and even though the database schema is robust, it may severely mess up with your personnal collection.
+
+* On Linux systems the next step is to upgrade the Arcollect package.
+* On Windows the next steps are to uninstall Arcollect in the Windows configuration panel and install the latest MSI. This operation will not erase your collection.
+
 ## Tests
 Arcollect have many tests and most notably fully automated "real-life" tests that start a program controlled web-browser. Tests requiring network access are not enabled by default. You can enable them with this set of `meson` options :
 
