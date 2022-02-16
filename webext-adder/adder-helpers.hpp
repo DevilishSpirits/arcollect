@@ -92,7 +92,7 @@ struct DBCache {
 	optional_type& operator[](const key_type& key) {
 		return cache_map[key];
 	}
-	static constexpr const std::string key_to_string(const std::string_view &key) {
+	static const std::string key_to_string(const std::string_view &key) {
 		return std::string(key);
 	}
 	template <typename T>

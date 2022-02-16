@@ -135,7 +135,7 @@ namespace Arcollect {
 					};
 					/** Reference to the database
 					 */
-					SQLite3::sqlite3 *const db;
+					SQLite3::sqlite3 *db;
 					std::unique_ptr<SQLite3::stmt> query_cache_stmt;
 					std::unique_ptr<SQLite3::stmt> unsource_stmt;
 					/** List of deleted files
