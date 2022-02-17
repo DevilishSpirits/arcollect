@@ -25,6 +25,21 @@ void Arcollect::gui::view_vgrid::set_collection(std::shared_ptr<artwork_collecti
 	flush_layout();
 }
 
+void Arcollect::gui::view_vgrid::check_layout(const Arcollect::gui::modal::render_context &render_ctx)
+{
+	if (layout_invalid
+	||(data_version != Arcollect::data_version) // Check for data version
+	||(render_ctx.target.w != last_render_size.x) // Check for render width change
+	||(render_ctx.target.h != last_render_size.y) // Check for render height change
+	) {
+		// Update invalidation detectors
+		data_version = Arcollect::data_version;
+		last_render_size.x = render_ctx.target.w;
+		last_render_size.y = render_ctx.target.h;
+		// Flush layout
+		flush_layout();
+	}
+}
 void Arcollect::gui::view_vgrid::flush_layout(void)
 {
 	if (!collection)
@@ -51,34 +66,25 @@ void Arcollect::gui::view_vgrid::flush_layout(void)
 	// Invalidate cached caption
 	caption_cache_artwork.reset();
 }
-void Arcollect::gui::view_vgrid::resize(SDL::Rect rect)
-{
-	this->rect = rect;
-	flush_layout();
-}
 void Arcollect::gui::view_vgrid::render(Arcollect::gui::modal::render_context render_ctx)
 {
-	// Check if we need to rebuild the layout
-	if ((data_version != Arcollect::data_version)|| layout_invalid) {
-		data_version = Arcollect::data_version;
-		flush_layout();
-	}
+	check_layout(render_ctx);
 	// Render
-	SDL::Point displacement{0,-scroll_position};
+	SDL::Point displacement{render_ctx.target.x,render_ctx.target.y-scroll_position};
 	for (auto &lines: viewports)
 		for (artwork_viewport &viewport: lines)
 			viewport.render(displacement);
 	// Render hover effect on viewport
 	SDL::Point cursor_position;
 	SDL_GetMouseState(&cursor_position.x,&cursor_position.y);
-	artwork_viewport* hover = get_pointed(cursor_position);
+	artwork_viewport* hover = get_pointed(render_ctx,cursor_position);
 	if (hover)
-		render_viewport_hover(*hover);
+		render_viewport_hover(*hover,displacement);
 }
-void Arcollect::gui::view_vgrid::render_viewport_hover(const artwork_viewport& viewport)
+void Arcollect::gui::view_vgrid::render_viewport_hover(const artwork_viewport& viewport, SDL::Point offset)
 {
 	// Draw backdrop
-	SDL::Rect rect{viewport.corner_tl.x,viewport.corner_tl.y-scroll_position,viewport.corner_tr.x-viewport.corner_tl.x,viewport.corner_bl.y-viewport.corner_tl.y};
+	SDL::Rect rect{viewport.corner_tl.x+offset.x,viewport.corner_tl.y+offset.y,viewport.corner_tr.x-viewport.corner_tl.x,viewport.corner_bl.y-viewport.corner_tl.y};
 	renderer->SetDrawColor(0,0,0,192);
 	renderer->FillRect(rect);
 	// Draw title
@@ -102,6 +108,7 @@ void Arcollect::gui::view_vgrid::render_viewport_hover(const artwork_viewport& v
 }
 bool Arcollect::gui::view_vgrid::event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx)
 {
+	check_layout(render_ctx);
 	switch (e.type) {
 		case SDL_KEYDOWN: {
 			switch (e.key.keysym.scancode) {
@@ -112,13 +119,13 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e, Arcollect::gui::modal::ren
 					do_scroll(+artwork_height);
 				} break;
 				case SDL_SCANCODE_PAGEDOWN: {
-					do_scroll(+(rect.h/artwork_height)*artwork_height);
+					do_scroll(+(render_ctx.target.h/artwork_height)*artwork_height);
 				} break;
 				case SDL_SCANCODE_UP: {
 					do_scroll(-artwork_height);
 				} break;
 				case SDL_SCANCODE_PAGEUP: {
-					do_scroll(-(rect.h/artwork_height)*artwork_height);
+					do_scroll(-(render_ctx.target.h/artwork_height)*artwork_height);
 				} break;
 				default:break;
 			}
@@ -128,17 +135,6 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e, Arcollect::gui::modal::ren
 		case SDL_MOUSEWHEEL: {
 			do_scroll(-e.wheel.y*artwork_height);
 		} return false;
-		// Only called Arcollect::gui::background_slideshow
-		case SDL_WINDOWEVENT: {
-			switch (e.window.event) {
-				case SDL_WINDOWEVENT_SIZE_CHANGED:
-				case SDL_WINDOWEVENT_RESIZED: {
-					resize({0,0,e.window.data1,e.window.data2});
-				} break;
-				default: {
-				} break;
-			}
-		} return true;
 	}
 	return true;
 }
@@ -154,10 +150,10 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	while ((left_y > scroll_target - artwork_height) && new_line_left(left_y - artwork_height - artwork_margin.y));
 	// Create right viewports if needed
 	// NOTE! right_y is offset by minus one row
-	while ((right_y < scroll_target + rect.h + artwork_height) && (right_iter != end_iter) && new_line_right(right_y));
+	while ((right_y < scroll_target + last_render_size.y + artwork_height) && (right_iter != end_iter) && new_line_right(right_y));
 	// Stop scrolling if bottom is hit
-	if (scroll_target + rect.h > right_y)
-		scroll_target = right_y - rect.h;
+	if (scroll_target + last_render_size.y > right_y)
+		scroll_target = right_y - last_render_size.y;
 	// Stop scrolling if top is hit
 	if (scroll_target < 0)
 		scroll_target = 0;
@@ -168,7 +164,7 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 		left_y += artwork_height + artwork_margin.y;
 	}
 	// Drop right viewports if too much
-	while ((right_y > scroll_origin + rect.h + 2 * artwork_height)&&(right_y > scroll_target + rect.h + 2 * artwork_height)) {
+	while ((right_y > scroll_origin + last_render_size.y + 2 * artwork_height)&&(right_y > scroll_target + last_render_size.y + 2 * artwork_height)) {
 		right_iter -= viewports.back().size();
 		viewports.pop_back();
 		right_y -= artwork_height + artwork_margin.y;
@@ -180,7 +176,7 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 bool Arcollect::gui::view_vgrid::new_line_left(int y)
 {
 	const auto begin_iter = collection->begin();
-	int free_space = rect.w-2*artwork_margin.x;
+	int free_space = last_render_size.x-2*artwork_margin.x;
 	std::vector<artwork_viewport> &new_viewports = viewports.emplace_front();
 	// Generate viewports
 	while (left_iter != begin_iter) {
@@ -204,7 +200,7 @@ bool Arcollect::gui::view_vgrid::new_line_left(int y)
 bool Arcollect::gui::view_vgrid::new_line_right(int y)
 {
 	auto end_iter = collection->end();
-	int free_space = rect.w-2*artwork_margin.x;
+	int free_space = last_render_size.x-2*artwork_margin.x;
 	std::vector<artwork_viewport> &new_viewports = viewports.emplace_back();
 	// Generate viewports
 	while (right_iter != end_iter) {
@@ -264,7 +260,7 @@ bool Arcollect::gui::view_vgrid::new_line_check_fit(int &free_space, int y, std:
 void Arcollect::gui::view_vgrid::new_line_place_horizontal_l(int free_space, std::vector<artwork_viewport> &new_viewports)
 {
 	int spacing = artwork_margin.x + free_space / (new_viewports.size() > 1 ? new_viewports.size()-1 : new_viewports.size());
-	int x = rect.x;
+	int x = 0;
 	for (artwork_viewport& viewport: new_viewports) {
 		// Move corners
 		viewport.corner_tl.x += x;
@@ -278,7 +274,7 @@ void Arcollect::gui::view_vgrid::new_line_place_horizontal_l(int free_space, std
 void Arcollect::gui::view_vgrid::new_line_place_horizontal_r(int free_space, std::vector<artwork_viewport> &new_viewports)
 {
 	int spacing = artwork_margin.x + free_space / (new_viewports.size() > 1 ? new_viewports.size()-1 : new_viewports.size());
-	int x = rect.x;
+	int x = 0;
 	for (auto iter = new_viewports.rbegin(); iter != new_viewports.rend(); ++iter) {
 		artwork_viewport& viewport = *iter;
 		// Move corners
@@ -291,9 +287,10 @@ void Arcollect::gui::view_vgrid::new_line_place_horizontal_r(int free_space, std
 	}
 }
 
-Arcollect::gui::artwork_viewport *Arcollect::gui::view_vgrid::get_pointed(SDL::Point mousepos)
+Arcollect::gui::artwork_viewport *Arcollect::gui::view_vgrid::get_pointed(const Arcollect::gui::modal::render_context &render_ctx, SDL::Point mousepos)
 {
-	mousepos.y -= left_y - scroll_position;
+	mousepos.x -= render_ctx.target.x;
+	mousepos.y -= left_y - scroll_position + render_ctx.target.y;
 	// Locate the row
 	const auto row_height = artwork_height + artwork_margin.y;
 	auto pointed_row = mousepos.y / row_height;

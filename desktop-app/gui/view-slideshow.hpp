@@ -114,7 +114,7 @@ namespace Arcollect {
 				 */
 				std::shared_ptr<db::artwork> target_artwork;
 				void set_collection(std::shared_ptr<artwork_collection> &new_collection) override;
-				void resize(SDL::Rect rect) override;
+				void resize(SDL::Rect rect); // TODO Only resize upon width/height change
 				void set_collection_iterator(const artwork_collection::iterator &iter);
 				void render(Arcollect::gui::modal::render_context render_ctx) override;
 				void render_titlebar(SDL::Rect target, int window_width) override;

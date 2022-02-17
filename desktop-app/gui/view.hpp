@@ -36,9 +36,6 @@ namespace Arcollect {
 				/** Set the collection
 				 */
 				virtual void set_collection(std::shared_ptr<artwork_collection> &new_collection) = 0;
-				/** Called upon viewport resize
-				 */
-				virtual void resize(SDL::Rect rect) = 0;
 				virtual ~view(void) = default;
 				
 				static constexpr auto ARTWORK_TYPE_IMAGE   = Arcollect::db::download::ARTWORK_TYPE_IMAGE;

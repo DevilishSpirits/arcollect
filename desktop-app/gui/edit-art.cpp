@@ -66,7 +66,6 @@ struct edit_artwork_confirm: public Arcollect::gui::menu {
 		render_ctx.target.h -= Arcollect::gui::window_borders::title_height;
 		// Check render cache
 		if (last_width != render_ctx.target.w) {
-			view->resize(render_ctx.target);
 			Arcollect::gui::font::RenderConfig render_config;
 			render_config.base_font_height *= 3;
 			confirm_renderable = std::make_unique<Arcollect::gui::font::Renderable>(Arcollect::gui::font::Elements::build(Arcollect::i18n_desktop_app.edit_confirm_title),render_ctx.target.w,render_config);

@@ -334,6 +334,8 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, Arcollect::gui::modal:
 	auto &target = render_ctx.target;
 	auto mouse_state = SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
 	const auto artwork_type = viewport.download ? viewport.download->artwork_type : ARTWORK_TYPE_UNKNOWN;
+	if (target != rect)
+		resize(target);
 	switch (e.type) {
 		case SDL_KEYDOWN: {
 			switch (e.key.keysym.scancode) {

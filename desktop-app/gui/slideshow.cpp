@@ -32,10 +32,10 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 	bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override {
 		switch (e.type) {
 			case SDL_MOUSEBUTTONDOWN: {
-				mousedown_viewport = get_pointed({e.button.x,e.button.y});
+				mousedown_viewport = get_pointed(render_ctx,{e.button.x,e.button.y});
 			} return false;
 			case SDL_MOUSEBUTTONUP: {
-				if (mousedown_viewport && (mousedown_viewport == get_pointed({e.button.x,e.button.y}))) {
+				if (mousedown_viewport && (mousedown_viewport == get_pointed(render_ctx,{e.button.x,e.button.y}))) {
 					Arcollect::gui::background_slideshow.target_artwork = mousedown_viewport->artwork;
 					Arcollect::gui::background_slideshow.set_collection_iterator(*(mousedown_viewport->iter));
 					to_pop = true;
@@ -82,7 +82,6 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 					case SDL_SCANCODE_AC_HOME:
 					case SDL_SCANCODE_RETURN:
 					case SDL_SCANCODE_ESCAPE: {
-						background_vgrid.resize(rect);
 						Arcollect::gui::modal_stack.push_back(background_vgrid);
 					} break;
 					case SDL_SCANCODE_AC_SEARCH:

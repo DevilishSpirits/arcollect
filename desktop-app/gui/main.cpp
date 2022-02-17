@@ -102,7 +102,6 @@ void Arcollect::gui::start(int argc, char** argv)
 		SDL::Rect window_rect{0,0};
 		renderer->GetOutputSize(window_rect.w,window_rect.h);
 		// Bootstrap the background
-		Arcollect::gui::background_slideshow.resize(window_rect);
 		Arcollect::gui::modal_stack.push_back(Arcollect::gui::background_slideshow);
 		
 		SDL_ShowWindow(window);

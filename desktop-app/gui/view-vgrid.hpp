@@ -42,9 +42,11 @@ namespace Arcollect {
 				 * Used to flush_layout() if the content change
 				 */
 				sqlite_int64 data_version;
-				// The bounding rect
-				SDL::Rect rect;
-				
+				/** Size of the last render area
+				 *
+				 * Used to automatically flush_layout() upon resize.
+				 */
+				SDL::Point last_render_size{-1,-1};
 				// Infos caption caches
 				std::shared_ptr<db::artwork> caption_cache_artwork;
 				bool caption_cache_has_artist; // To cope with DB change
@@ -119,7 +121,9 @@ namespace Arcollect {
 				bool new_line_right(int y);
 			public:
 				void set_collection(std::shared_ptr<artwork_collection> &new_collection) override;
-				void resize(SDL::Rect rect) override;
+				/** check if we need to and does flush_layout()
+				 */
+				void check_layout(const Arcollect::gui::modal::render_context &render_ctx);
 				/** Flush and rebuild viewports
 				 *
 				 * This function destroy all viewports and reset iterators.
@@ -131,9 +135,9 @@ namespace Arcollect {
 				/** Get the pointer artwork viewport
 				 * \param mousepos The mouse position.
 				 */
-				artwork_viewport *get_pointed(SDL::Point mousepos);
+				artwork_viewport *get_pointed(const Arcollect::gui::modal::render_context &render_ctx, SDL::Point mousepos);
 				void render(Arcollect::gui::modal::render_context render_ctx) override;
-				void render_viewport_hover(const artwork_viewport& viewport);
+				void render_viewport_hover(const artwork_viewport& viewport, SDL::Point offset);
 				bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override;
 		};
 	}
