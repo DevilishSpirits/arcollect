@@ -21,6 +21,7 @@
 #include "window-borders.hpp"
 #include "../db/artwork-collections.hpp"
 #include "../db/search.hpp"
+#include "../i18n.hpp"
 
 Arcollect::gui::search_osd Arcollect::gui::search_osd_modal;
 
@@ -118,7 +119,7 @@ std::vector<std::shared_ptr<Arcollect::gui::menu_item>> Arcollect::gui::search_o
 	using Arcollect::gui::menu_item_simple_label;
 	if (!text.empty()) {
 		return {
-			std::make_shared<menu_item_simple_label>(U"Edit listed artworks…"s,std::bind(Arcollect::gui::popup_edit_art_metadata,
+			std::make_shared<menu_item_simple_label>(i18n_desktop_app.edit_searching_artworks,std::bind(Arcollect::gui::popup_edit_art_metadata,
 				Arcollect::search::ParsedSearch(text,Arcollect::db::SEARCH_ARTWORKS,Arcollect::db::SORT_NONE).make_shared_collection()
 			)),
 		};

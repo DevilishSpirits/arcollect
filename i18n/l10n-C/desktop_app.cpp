@@ -16,4 +16,14 @@
  */
 #include "arcollect-i18n-desktop_app.hpp"
 void Arcollect::i18n::desktop_app::apply_C(void) noexcept {
+	edit_artwork_set_rating_confirm_ = [](const desktop_app &self, int rating, SDL::Color color) -> Elements {
+		std::string rating_string;
+		switch (rating) {
+			case 0 :rating_string = self.rating_level_none;break;
+			case 16:rating_string = self.rating_level_mature;break;
+			case 18:rating_string = self.rating_level_adult;break;
+			default:rating_string = "no one under " + std::to_string(static_cast<int>(rating));break;
+		};
+		return Elements::build(U"Mark as "sv,color,rating_string);
+ };
 }

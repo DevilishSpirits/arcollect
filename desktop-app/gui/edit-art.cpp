@@ -17,35 +17,100 @@
 #include "edit-art.hpp"
 #include "../i18n.hpp"
 #include "menu.hpp"
+#include "view-vgrid.hpp"
 #include "rating-selector.hpp"
 #include "window-borders.hpp"
 #include <iostream>
+#include <memory>
+
+struct edit_artwork_confirm: public Arcollect::gui::menu {
+	int last_width = -1;
+	std::unique_ptr<Arcollect::gui::view> view;
+	std::unique_ptr<Arcollect::gui::font::Renderable> confirm_renderable;
+	bool button_press = false;
+	
+	bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override {
+		// Pop the modal upon click
+		switch (e.type) {
+			case SDL_MOUSEBUTTONDOWN: {
+				button_press = true;
+			} break;
+			case SDL_MOUSEBUTTONUP: {
+				to_pop = button_press;
+			} break;
+			case SDL_KEYUP: {
+				switch (e.key.keysym.scancode) {
+					// Exit upon escpae
+					case SDL_SCANCODE_ESCAPE: {
+						to_pop = true;
+					} break;
+					default:break;
+				}
+			} break;
+		}
+		// Strip the top bar
+		render_ctx.target.y += Arcollect::gui::window_borders::title_height;
+		render_ctx.target.h -= Arcollect::gui::window_borders::title_height;
+		if (confirm_renderable) {
+			render_ctx.target.y += confirm_renderable->size().y;
+			render_ctx.target.h -= confirm_renderable->size().y;
+		}
+		if (Arcollect::gui::menu::event(e,render_ctx))
+			return to_pop & view->event(e,render_ctx);
+		else return true;
+	}
+	void render(Arcollect::gui::modal::render_context render_ctx) override {
+		SDL::Rect full_target = render_ctx.target;
+		// Strip the top bar
+		render_ctx.target.y += Arcollect::gui::window_borders::title_height;
+		render_ctx.target.h -= Arcollect::gui::window_borders::title_height;
+		// Check render cache
+		if (last_width != render_ctx.target.w) {
+			view->resize(render_ctx.target);
+			Arcollect::gui::font::RenderConfig render_config;
+			render_config.base_font_height *= 3;
+			confirm_renderable = std::make_unique<Arcollect::gui::font::Renderable>(Arcollect::gui::font::Elements::build(Arcollect::i18n_desktop_app.edit_confirm_title),render_ctx.target.w,render_config);
+			last_width = render_ctx.target.w;
+		}
+		render_ctx.target.y += confirm_renderable->size().y;
+		render_ctx.target.h -= confirm_renderable->size().y;
+		// Render the grid
+		view->render(render_ctx);
+		render_ctx.renderer.SetDrawColor({0,0,0,128});
+		render_ctx.renderer.FillRect(full_target);
+		// Render label
+		confirm_renderable->render_tl(render_ctx.target.x + (render_ctx.target.w-confirm_renderable->size().x)/2,render_ctx.target.y-confirm_renderable->size().y);
+		// Render the menu
+		Arcollect::gui::menu::render(render_ctx);
+	}
+	// Perform deletion
+	edit_artwork_confirm(std::shared_ptr<Arcollect::db::artwork_collection> collection, std::function<void(std::shared_ptr<Arcollect::db::artwork_collection>&)> action, const Arcollect::gui::font::Elements& confirm_label) {
+		auto elements = Arcollect::gui::font::Elements::build();
+		// Setup the view
+		view = std::make_unique<Arcollect::gui::view_vgrid>();
+		view->set_collection(collection);
+		// Setup the popup menu
+		anchor_top = anchor_left = anchor_bot = anchor_right = false;
+		append_menu_item(std::make_shared<Arcollect::gui::menu_item_simple_label>(confirm_label,std::bind(action,collection)));
+	}
+};
 
 struct on_set_rating {
 	std::shared_ptr<Arcollect::db::artwork_collection> collection;
 	void operator()(Arcollect::config::Rating rating)
 	{
-		std::shared_ptr<Arcollect::db::artwork_collection> &arts_to_set = collection;
 		using namespace Arcollect::gui;
 		modal_back().to_pop = true;
-		// TODO i18n
-		auto elements = font::Elements::build(U"Mark artworks as "sv);
+		SDL::Color rating_color;
 		switch (rating) {
-			case Arcollect::config::Rating::RATING_NONE: {
-				elements << SDL::Color(128,255,128,255) << U"Safe"sv;
-			} break;
-			case Arcollect::config::Rating::RATING_MATURE: {
-				elements << SDL::Color(128,128,255,255) << U"Mature"sv;
-			} break;
-			case Arcollect::config::Rating::RATING_ADULT: {
-				elements << SDL::Color(255,128,128,255) << U"Adult"sv;
-			} break;
+			case Arcollect::config::Rating::RATING_NONE:rating_color = SDL::Color(128,255,128,255);break;
+			case Arcollect::config::Rating::RATING_MATURE:rating_color = SDL::Color(128,128,255,255);break;
+			case Arcollect::config::Rating::RATING_ADULT:rating_color = SDL::Color(255,128,128,255);break;
+			default:rating_color = SDL::Color(255,255,255,255);break;
 		}
-		menu::popup_context({std::make_shared<menu_item_simple_label>(elements,[arts_to_set,rating](){
-			arts_to_set->db_set_rating(rating);
-		})},{0,Arcollect::gui::window_borders::title_height});
-		// FIXME Dirty hack to counter the next pop
-		menu::popup_context({std::make_shared<menu_item_simple_label>(U""s,[](){})},{0,-256});
+		Arcollect::gui::modal_stack.emplace_back(std::make_unique<edit_artwork_confirm>(collection,[rating](std::shared_ptr<Arcollect::db::artwork_collection>& collection){
+			collection->db_set_rating(rating);
+		},Arcollect::i18n_desktop_app.edit_artwork_set_rating_confirm(rating,rating_color)));
 	}
 };
 
@@ -57,13 +122,9 @@ void Arcollect::gui::popup_edit_art_metadata(std::shared_ptr<Arcollect::db::artw
 	// Build GUI
 	const std::vector<std::shared_ptr<menu_item>> menu_items = {
 		std::make_shared<menu_item_simple_label>(delete_elements,[collection](){
-			// TODO i18n
-			auto really_delete_elements = Arcollect::gui::font::Elements::build(SDL::Color{255,0,0,255},U"I really want to delete the artworks"sv);
-			Arcollect::gui::menu::popup_context({
-				std::make_shared<Arcollect::gui::menu_item_simple_label>(really_delete_elements,[collection]() {
-					collection->db_delete();
-				})
-			},{0,Arcollect::gui::window_borders::title_height});
+			Arcollect::gui::modal_stack.emplace_back(std::make_unique<edit_artwork_confirm>(collection,[](std::shared_ptr<Arcollect::db::artwork_collection>& collection){
+				collection->db_delete();
+			},Arcollect::gui::font::Elements::build(SDL::Color{255,0,0,255},i18n_desktop_app.edit_artwork_delete_confirm)));
 		}),
 		std::make_shared<rating_selector_menu>(on_set_rating{collection},set_rating_elements),
 	};

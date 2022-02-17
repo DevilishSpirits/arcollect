@@ -18,9 +18,17 @@ msgctxt "db_busy_hint"
 msgid "Close this program or press and release Esc to abort now."
 msgstr "Fermer ce programme ou pressez et relâchez Échap pour abandonner la requête."
 
+msgctxt "edit_confirm_title"
+msgid "Please confirm the operation on the following artworks."
+msgstr "Veuillez confirmer l'opération sur les œuvres suivantes."
+
 msgctxt "edit_artwork_delete"
 msgid "Delete…"
 msgstr "Supprimer…"
+
+msgctxt "edit_artwork_delete_confirm"
+msgid "Delete that forever"
+msgstr "Supprimer pour toujours"
 
 msgctxt "edit_artwork_set_rating"
 msgid "Set rating"
@@ -30,6 +38,22 @@ msgctxt "edit_current_artwork"
 msgid "Edit artwork…"
 msgstr "Modifier l'œuvre…"
 
+msgctxt "edit_searching_artworks"
+msgid "Edit searched artworks…"
+msgstr "Modifier les œuvres recherchées…"
+
 msgctxt "rating_selector_label"
 msgid "Rating"
 msgstr "Classification"
+
+msgctxt "rating_level_adult"
+msgid "Adult"
+msgstr "Adulte"
+
+msgctxt "rating_level_mature"
+msgid "Mature"
+msgstr "Mature"
+
+msgctxt "rating_level_none"
+msgid "Safe"
+msgstr "Tout public"

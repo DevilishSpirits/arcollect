@@ -22,6 +22,14 @@ msgctxt "edit_artwork_delete"
 msgid "Delete…"
 msgstr ""
 
+msgctxt "edit_confirm_title"
+msgid "Please confirm the operation on the following artworks."
+msgstr ""
+
+msgctxt "edit_artwork_delete_confirm"
+msgid "Delete that forever"
+msgstr ""
+
 msgctxt "edit_artwork_set_rating"
 msgid "Set rating"
 msgstr ""
@@ -30,6 +38,22 @@ msgctxt "edit_current_artwork"
 msgid "Edit artwork…"
 msgstr ""
 
+msgctxt "edit_searching_artworks"
+msgid "Edit searched artworks…"
+msgstr ""
+
 msgctxt "rating_selector_label"
 msgid "Rating"
+msgstr ""
+
+msgctxt "rating_level_adult"
+msgid "Adult"
+msgstr ""
+
+msgctxt "rating_level_mature"
+msgid "Mature"
+msgstr ""
+
+msgctxt "rating_level_none"
+msgid "Safe"
 msgstr ""
