@@ -51,8 +51,9 @@ Arcollect::gui::font::Elements& Arcollect::gui::scrolling_text::get_elements(voi
 		return wtf;
 	}
 }
-void Arcollect::gui::scrolling_text::render(SDL::Rect target)
+void Arcollect::gui::scrolling_text::render(Arcollect::gui::modal::render_context render_ctx)
 {
+	auto &target = render_ctx.target;
 	if (!elements_available())
 		return;
 	SDL::Rect progress_bar{target.x,target.y};
@@ -81,29 +82,29 @@ void Arcollect::gui::scrolling_text::render(SDL::Rect target)
 	renderer->SetDrawColor(255,255,255,192);
 	renderer->FillRect(progress_bar);
 }
-bool Arcollect::gui::scrolling_text::event(SDL::Event &e, SDL::Rect target)
+bool Arcollect::gui::scrolling_text::event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx)
 {
 	const auto text_scroll_speed = 5;
 	switch (e.type) {
 		case SDL_KEYDOWN: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_UP: {
-					scroll_text(-text_scroll_speed,target);
+					scroll_text(-text_scroll_speed,render_ctx.target);
 				} return false;
 				case SDL_SCANCODE_DOWN: {
-					scroll_text(+text_scroll_speed,target);
+					scroll_text(+text_scroll_speed,render_ctx.target);
 				} return false;
 				default:break;
 			}
 		} break;
 		case SDL_MOUSEWHEEL: {
-			scroll_text(-e.wheel.y*text_scroll_speed,target);
+			scroll_text(-e.wheel.y*text_scroll_speed,render_ctx.target);
 		} return false;
 		case SDL_MOUSEMOTION: {
 			if (e.motion.state & SDL_BUTTON(1)) {
 				// Scroll text on left-click drag
 				scroll.val_target -= e.motion.yrel;
-				scroll_text(0,target);
+				scroll_text(0,render_ctx.target);
 			}
 		} return false;
 	}

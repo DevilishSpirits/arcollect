@@ -75,8 +75,8 @@ namespace Arcollect {
 					menu_items.emplace_back(std::move(item),SDL::Rect());
 				}
 				
-				bool event(SDL::Event &e, SDL::Rect target) override;
-				void render(SDL::Rect target) override;
+				bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override;
+				void render(Arcollect::gui::modal::render_context render_ctx) override;
 				int get_menu_item_at(SDL::Point cursor);
 				int hovered_cell = -1;
 				

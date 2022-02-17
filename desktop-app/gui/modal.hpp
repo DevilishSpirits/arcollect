@@ -31,6 +31,11 @@ namespace Arcollect {
 		 */
 		class modal {
 			public:
+				struct render_context {
+					SDL::Renderer &renderer;
+					SDL::Rect target;
+					SDL::Point window_size;
+				};
 				/** Pop flag
 				 *
 				 * Set to true when poping a #modal. This flag is reset by the main-loop
@@ -39,17 +44,17 @@ namespace Arcollect {
 				bool to_pop = false;
 				/** Handle an event
 				 * \param e The event
-				 * \param target The rendering target
+				 * \param target The rendering context that would have been used
 				 * \return Weather propagate event to the next element in the stack.
 				 *         True to propagate the event.
 				 */
-				virtual bool event(SDL::Event &e, SDL::Rect target) = 0;
+				virtual bool event(SDL::Event &e, render_context render_ctx) = 0;
 				/** Render the object
-				 * \param target The rendering target
+				 * \param render_ctx The rendering context
 				 *
 				 * Render the object on the screen
 				 */
-				virtual void render(SDL::Rect target) = 0;
+				virtual void render(render_context render_ctx) = 0;
 				/** Render the title bar
 				 * \param target       The rendering rect target
 				 * \param window_width The window width for information

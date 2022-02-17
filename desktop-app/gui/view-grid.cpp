@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "font.hpp"
-#include "views.hpp"
+#include "view-vgrid.hpp"
 #include "../config.hpp"
 #include "../db/account.hpp"
 #include "../db/db.hpp"
@@ -56,7 +56,7 @@ void Arcollect::gui::view_vgrid::resize(SDL::Rect rect)
 	this->rect = rect;
 	flush_layout();
 }
-void Arcollect::gui::view_vgrid::render(SDL::Rect target)
+void Arcollect::gui::view_vgrid::render(Arcollect::gui::modal::render_context render_ctx)
 {
 	// Check if we need to rebuild the layout
 	if ((data_version != Arcollect::data_version)|| layout_invalid) {
@@ -100,7 +100,7 @@ void Arcollect::gui::view_vgrid::render_viewport_hover(const artwork_viewport& v
 		caption_account.render_tl(rect.x+(rect.w-caption_account.size().x)/2,caption_title_y+caption_title.size().y+8);
 	}
 }
-bool Arcollect::gui::view_vgrid::event(SDL::Event &e, SDL::Rect target)
+bool Arcollect::gui::view_vgrid::event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx)
 {
 	switch (e.type) {
 		case SDL_KEYDOWN: {

@@ -54,8 +54,8 @@ namespace Arcollect {
 					data = new_elements;
 					renderable.reset();
 				}
-				void render(SDL::Rect target) override;
-				bool event(SDL::Event &e, SDL::Rect target) override;
+				void render(Arcollect::gui::modal::render_context render_ctx) override;
+				bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override;
 		};
 	}
 }

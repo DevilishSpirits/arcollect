@@ -17,8 +17,9 @@
 #include "menu.hpp"
 extern SDL::Renderer *renderer;
 
-void Arcollect::gui::menu::render(SDL::Rect target)
+void Arcollect::gui::menu::render(Arcollect::gui::modal::render_context render_ctx)
 {
+	auto& target = render_ctx.target;
 	// Compute menu_size
 	SDL::Rect menu_rect{0,0,0,0};
 	for (auto& menu_pair: menu_items) {
@@ -86,7 +87,7 @@ void Arcollect::gui::menu::render(SDL::Rect target)
 	}
 }
 
-bool Arcollect::gui::menu::event(SDL::Event &e, SDL::Rect target)
+bool Arcollect::gui::menu::event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx)
 {
 	bool propagate; // Propagate event to other modals
 	bool broadcast = false; // Broadcast event to all items
@@ -137,7 +138,7 @@ int Arcollect::gui::menu::get_menu_item_at(SDL::Point cursor)
 
 class popup_menu: public Arcollect::gui::menu {
 	public:
-		bool event(SDL::Event &e, SDL::Rect target) override {
+		bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override {
 			bool result;
 			switch (e.type) {
 				case SDL_WINDOWEVENT: {
@@ -156,7 +157,7 @@ class popup_menu: public Arcollect::gui::menu {
 					result = false;
 				} break; // This modal grab all events
 			}
-			result &= Arcollect::gui::menu::event(e,target);
+			result &= Arcollect::gui::menu::event(e,render_ctx);
 			return result;
 		}
 		~popup_menu(void) {

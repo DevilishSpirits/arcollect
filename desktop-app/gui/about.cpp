@@ -25,7 +25,7 @@ extern SDL::Renderer *renderer;
 
 class about_project: public Arcollect::gui::scrolling_text {
 	private:
-		bool event(SDL::Event &e, SDL::Rect target) override {
+		bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override {
 			bool propagate = true;
 			switch (e.type) {
 				case SDL_MOUSEBUTTONUP: {
@@ -39,12 +39,12 @@ class about_project: public Arcollect::gui::scrolling_text {
 				} break;
 				default:break;
 			}
-			return Arcollect::gui::scrolling_text::event(e,target) && propagate;
+			return Arcollect::gui::scrolling_text::event(e,render_ctx) && propagate;
 		}
-		void render(SDL::Rect target) override {
+		void render(Arcollect::gui::modal::render_context render_ctx) override {
 			renderer->SetDrawColor(0,0,0,192);
 			renderer->FillRect();
-			return Arcollect::gui::scrolling_text::render(target);
+			return Arcollect::gui::scrolling_text::render(render_ctx);
 		}
 	public:
 		static void show(const Arcollect::gui::font::Elements &license) {
@@ -64,7 +64,7 @@ void Arcollect::gui::about_window::show(void)
 }
 
 Arcollect::gui::about_window Arcollect::gui::about_window_modal;
-bool Arcollect::gui::about_window::event(SDL::Event &e, SDL::Rect target) {
+bool Arcollect::gui::about_window::event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) {
 	switch (e.type) {
 		case SDL_KEYUP: {
 			switch (e.key.keysym.scancode) {
@@ -82,8 +82,9 @@ bool Arcollect::gui::about_window::event(SDL::Event &e, SDL::Rect target) {
 	}
 	return true;
 }
-void Arcollect::gui::about_window::render(SDL::Rect target)
+void Arcollect::gui::about_window::render(Arcollect::gui::modal::render_context render_ctx)
 {
+	auto &target = render_ctx.target;
 	// About text
 	std::unique_ptr<Arcollect::gui::font::Renderable> cached_renderable;
 	if ((cache_window_width != target.w)||!render_cache) {

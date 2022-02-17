@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "views.hpp"
+#include "view-slideshow.hpp"
 #include "font.hpp"
 #include "../db/account.hpp"
 #include <math.h>
@@ -205,7 +205,7 @@ void Arcollect::gui::view_slideshow::render_click_area(const SDL::Rect &target, 
 	}
 }
 
-void Arcollect::gui::view_slideshow::render(SDL::Rect target)
+void Arcollect::gui::view_slideshow::render(Arcollect::gui::modal::render_context render_ctx)
 {
 	if (viewport.artwork) {
 		// Preload previous artwork
@@ -230,7 +230,7 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 					}
 				} break;
 				case ARTWORK_TYPE_TEXT: {
-					text_display.render(target);
+					text_display.render(render_ctx);
 				} break;
 				case ARTWORK_TYPE_UNKNOWN: {
 					Arcollect::gui::font::Renderable unknown_artwork_text_cache(Arcollect::gui::font::Elements::build(Arcollect::gui::font::FontSize(1.5),
@@ -242,10 +242,10 @@ void Arcollect::gui::view_slideshow::render(SDL::Rect target)
 		// Render click UI
 		SDL::Point mouse_pos;
 		auto mouse_clicking = SDL_GetMouseState(&mouse_pos.x,&mouse_pos.y) & SDL_BUTTON(1);
-		ClickArea hover_area = click_area(target,mouse_pos);
+		ClickArea hover_area = click_area(render_ctx.target,mouse_pos);
 		ClickState click_state = mouse_clicking && (hover_area == clicking_area)
 			? CLICK_PRESSED : CLICK_HOVER;
-		render_click_area(target,hover_area,click_state);
+		render_click_area(render_ctx.target,hover_area,click_state);
 	} else {
 		static std::unique_ptr<Arcollect::gui::font::Renderable> no_artwork_text_cache;
 		if (!no_artwork_text_cache)
@@ -328,9 +328,10 @@ Arcollect::gui::view_slideshow::ClickArea Arcollect::gui::view_slideshow::click_
 		return CLICK_NEXT;
 	return CLICK_NONE;
 }
-bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
+bool Arcollect::gui::view_slideshow::event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx)
 {
 	SDL::Point cursorpos;
+	auto &target = render_ctx.target;
 	auto mouse_state = SDL_GetMouseState(&cursorpos.x,&cursorpos.y);
 	const auto artwork_type = viewport.download ? viewport.download->artwork_type : ARTWORK_TYPE_UNKNOWN;
 	switch (e.type) {
@@ -343,7 +344,7 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 							zoomat(+.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
 						} break;
 						case ARTWORK_TYPE_TEXT:
-							return text_display.event(e,target);
+							return text_display.event(e,render_ctx);
 					}
 				} break;
 				case SDL_SCANCODE_DOWN: { // Zoom-out
@@ -353,7 +354,7 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 							zoomat(-.1f,{rect.x+rect.w/2,rect.y+rect.h/2});
 						} break;
 						case ARTWORK_TYPE_TEXT:
-							return text_display.event(e,target);
+							return text_display.event(e,render_ctx);
 					}
 				} break;
 				default:break;
@@ -389,7 +390,7 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 					zoomat(e.wheel.y*.1f,cursorpos);
 				} break;
 				case ARTWORK_TYPE_TEXT:
-					return text_display.event(e,target);
+					return text_display.event(e,render_ctx);
 			}
 		} break;
 		case SDL_MOUSEMOTION: {
@@ -412,7 +413,7 @@ bool Arcollect::gui::view_slideshow::event(SDL::Event &e, SDL::Rect target)
 						}
 					} break;
 					case ARTWORK_TYPE_TEXT:
-						return text_display.event(e,target);
+						return text_display.event(e,render_ctx);
 				}
 			}
 		} break;

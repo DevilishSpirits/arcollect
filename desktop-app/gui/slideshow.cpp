@@ -29,7 +29,7 @@ static sqlite_int64 slideshow_data_version;
 
 static class background_vgrid: public Arcollect::gui::view_vgrid {
 	Arcollect::gui::artwork_viewport *mousedown_viewport;
-	bool event(SDL::Event &e, SDL::Rect target) override {
+	bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override {
 		switch (e.type) {
 			case SDL_MOUSEBUTTONDOWN: {
 				mousedown_viewport = get_pointed({e.button.x,e.button.y});
@@ -58,7 +58,7 @@ static class background_vgrid: public Arcollect::gui::view_vgrid {
 		} break;
 			default:break;
 		}
-		return Arcollect::gui::view_vgrid::event(e,target);
+		return Arcollect::gui::view_vgrid::event(e,render_ctx);
 	}
 } background_vgrid;
 
@@ -75,7 +75,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 		viewport.artwork->open_url();
 	}
 	#endif
-	bool event(SDL::Event &e, SDL::Rect target) override {
+	bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override {
 		switch (e.type) {
 			case SDL_KEYUP: {
 				switch (e.key.keysym.scancode) {
@@ -101,7 +101,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			} break;
 			default:break;
 		};
-		return Arcollect::gui::view_slideshow::event(e,target);
+		return Arcollect::gui::view_slideshow::event(e,render_ctx);
 	}
 	static void edit_art(background_slideshow *self) {
 		using namespace Arcollect::db;
@@ -118,7 +118,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			};
 		} else return {};
 	};
-	void render(SDL::Rect target) override {
+	void render(Arcollect::gui::modal::render_context render_ctx) override {
 		// Regenerate collection on-demand
 		if (current_background_search && (slideshow_data_version != Arcollect::data_version)) {
 			// Update version
@@ -133,12 +133,12 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			case ARTWORK_TYPE_IMAGE: {
 				if (viewport.download) {
 					renderer->SetDrawColor(viewport.download->background_color);
-					renderer->FillRect(target);
+					renderer->FillRect(render_ctx.target);
 				}
 			}
 			default:break;
 		}
-		Arcollect::gui::view_slideshow::render(target);
+		Arcollect::gui::view_slideshow::render(render_ctx);
 	}
 } background_slideshow;
 

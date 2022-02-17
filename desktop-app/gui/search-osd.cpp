@@ -24,7 +24,7 @@
 
 Arcollect::gui::search_osd Arcollect::gui::search_osd_modal;
 
-bool Arcollect::gui::search_osd::event(SDL::Event &e, SDL::Rect target)
+bool Arcollect::gui::search_osd::event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx)
 {
 	switch (e.type) {
 		case SDL_WINDOWEVENT: {
@@ -70,7 +70,7 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e, SDL::Rect target)
 		} return false;
 	}
 }
-void Arcollect::gui::search_osd::render(SDL::Rect target)
+void Arcollect::gui::search_osd::render(Arcollect::gui::modal::render_context render_ctx)
 {
 	// Force render the title bar
 	SDL::Point screen_size;

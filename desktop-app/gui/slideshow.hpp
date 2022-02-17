@@ -23,7 +23,8 @@
  * 
  * When in slideshow mode, the user directy control the slideshow.
  */
-#include "views.hpp"
+#include "view-vgrid.hpp"
+#include "view-slideshow.hpp"
 #include <sqlite3.hpp>
 namespace Arcollect {
 	namespace gui {

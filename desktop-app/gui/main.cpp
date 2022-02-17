@@ -140,16 +140,19 @@ bool Arcollect::gui::main(void)
 	Uint32 new_ticks = SDL_GetTicks();
 	Arcollect::gui::time_framedelta = Arcollect::gui::time_now-new_ticks;
 	Arcollect::gui::time_now = new_ticks;
-	// Get window size
-	SDL::Rect window_rect{0,0};
-	renderer->GetOutputSize(window_rect.w,window_rect.h);
+	// Compute render context
+	Arcollect::gui::modal::render_context render_ctx{*renderer};
+	renderer->GetOutputSize(render_ctx.window_size);
+	render_ctx.target.x = render_ctx.target.y = 0;
+	render_ctx.target.w = render_ctx.window_size.x;
+	render_ctx.target.h = render_ctx.window_size.y;
 	// Handle event
 	Uint32 event_start_ticks = SDL_GetTicks();
 	while (has_event) {
 		if (Arcollect::gui::window_borders::event(e)) {
 			// Propagate event to modals
 			auto iter = Arcollect::gui::modal_stack.rbegin();
-			while (Arcollect::gui::modal_get(iter).event(e,window_rect))
+			while (Arcollect::gui::modal_get(iter).event(e,render_ctx))
 				++iter;
 			// Pop marked modals
 			for (auto iter = Arcollect::gui::modal_stack.begin(); iter != Arcollect::gui::modal_stack.end(); ++iter) {
@@ -198,7 +201,7 @@ bool Arcollect::gui::main(void)
 		renderer->SetDrawColor(0,0,0,128);
 		renderer->FillRect();
 		// Render
-		Arcollect::gui::modal_get(iter).render(window_rect);
+		Arcollect::gui::modal_get(iter).render(render_ctx);
 	}
 	Arcollect::gui::window_borders::render();
 	Uint32 loader_start_ticks = SDL_GetTicks();
