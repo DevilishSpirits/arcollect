@@ -282,11 +282,7 @@ Arcollect::db::download::ArtworkType Arcollect::db::download::artwork_type_from_
 
 std::size_t Arcollect::db::download::image_memory(void)
 {
-	Uint32 format = SDL_PIXELFORMAT_RGBA32; // Fallback to 32bpp
-	auto text = query_data<std::unique_ptr<SDL::Texture>>();
-	if (text)
-		text->get()->QueryTexture(&format);
-	return SDL_BYTESPERPIXEL(format)*sizeof(Uint8)*size.x*size.y; // Assume 8-bits RGBA
+	return 4*sizeof(Uint8)*size.x*size.y; // Assume 8-bits RGBA
 }
 
 void Arcollect::db::download::nuke_image_cache(void)
