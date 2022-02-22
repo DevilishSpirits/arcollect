@@ -56,6 +56,11 @@ namespace Arcollect {
 			 * This is the original Arcollect sorting system.
 			 */
 			SORT_RANDOM,
+			/** Sort by the date the entry has been added in the database
+			 *
+			 * It sort by the xx_savedate column.
+			 */
+			SORT_SAVEDATE,
 		};
 		struct SortingImpl;
 		const SortingImpl& sorting(SortingType mode);
@@ -83,6 +88,9 @@ namespace Arcollect {
 				/** Text elements
 				 */
 				std::unique_ptr<Arcollect::gui::font::Elements> cached_elements;
+				/** The sorting type of entries
+				 */
+				SortingType real_sorting_type;
 			public:
 				using sql_bindings_type = decltype(sql_bindings);
 				/** The original search
@@ -96,11 +104,13 @@ namespace Arcollect {
 				const SearchType search_type;
 				/** The sorting type of entries
 				 */
-				const SortingType sorting_type;
+				SortingType sorting_type() const {
+					return real_sorting_type;
+				};
 				/** Sorting implementation
 				 */
 				const SortingImpl &sorting(void) const {
-					return Arcollect::db::sorting(sorting_type);
+					return Arcollect::db::sorting(real_sorting_type);
 				}
 				/** Prepare a SQLite stmt
 				 * \param[out] stmt The output stmt

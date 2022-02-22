@@ -292,6 +292,18 @@ bool Arcollect::gui::main(void)
 				result.load_pending = std::max(load_pending,right.load_pending);
 				return result;
 			}
+			void draw_histo_section(SDL::Point &origin, Uint32 var, const SDL::Color &color) {
+				renderer->SetDrawColor(color);
+				renderer->DrawLine(origin,{origin.x,origin.y-var});
+				origin.y -= var;
+			}
+			void draw_histo_bar(SDL::Point origin) {
+				draw_histo_section(origin,event ,event_color);
+				draw_histo_section(origin,render,render_color);
+				draw_histo_section(origin,loader,loader_color);
+				draw_histo_section(origin,other ,other_color);
+			}
+			
 			static inline void draw_time_bar(SDL::Rect &time_bar, Uint32 var, const SDL::Color &color) {
 				time_bar.w  = var;
 				renderer->SetDrawColor(color.r,color.g,color.b,color.a);
@@ -303,20 +315,6 @@ bool Arcollect::gui::main(void)
 				draw_time_bar(time_bar,render,render_color);
 				draw_time_bar(time_bar,loader,loader_color);
 				draw_time_bar(time_bar,other ,other_color);
-			}
-			std::string print(void) {
-				return "	Idle  : " + std::to_string(idle  ) + "ms\n"
-				+      "	Event : " + std::to_string(event ) + "ms\n"
-				+      "	Render: " + std::to_string(render) + "ms\n"
-				+      "	Loader: " + std::to_string(loader) + "ms " + std::to_string(load_pending) + " artworks pending\n"
-				+      "	Other : " + std::to_string(other ) + "ms"
-					#ifdef WITH_XDG
-					+ " (D-Bus)\n"
-					#else
-					+ "\n"
-					#endif
-				+ "	Total = " + std::to_string(frame ) + "ms/"+std::to_string(1000.f/frame)+"FPS\n"
-				;
 			}
 			void print(Arcollect::gui::font::Elements &elements) {
 				elements <<   idle_color << U"	Idle  : "sv << std::to_string(idle  ) << U"ms\n"sv
@@ -336,11 +334,11 @@ bool Arcollect::gui::main(void)
 		debug_sample frame_sample(loop_start_ticks,event_start_ticks,render_start_ticks,loader_start_ticks,final_ticks,loop_end_ticks,load_pending_count);
 		
 		static Uint32 last_second_tick = 0;
-		static debug_sample last_second_samples[30];
+		static debug_sample last_second_samples[600];
 		const auto last_second_samples_n = sizeof(last_second_samples)/sizeof(last_second_samples[0]);
 		static int last_second_sample_i = 0;
-		if (last_second_tick != final_ticks/100) {
-			last_second_tick    = final_ticks/100;
+		if (last_second_tick != final_ticks/10) {
+			last_second_tick    = final_ticks/10;
 			last_second_sample_i++;
 			last_second_sample_i %= last_second_samples_n;
 			last_second_samples[last_second_sample_i] = debug_sample(0,0,0,0,0,0,0);
@@ -350,12 +348,14 @@ bool Arcollect::gui::main(void)
 		for (const debug_sample &sample: last_second_samples)
 			maximums = maximums.max(sample);
 		
-		std::cerr << "Tick: " << final_ticks << "\nFrame stats:\n" << frame_sample.print()
-			<< "Maximums (last 3 seconds):\n" << maximums.print()
-			<< "\n"
-			//<< "animation_running:" << (saved_animation_running ? "y" : "n") << "\n"
-			<< "Image memory usage: " << std::to_string(Arcollect::db::artwork_loader::image_memory_usage >> 20) <<" MiB"
-			<< std::endl;
+		// Print histogram
+		for (int i = 0; i < last_second_samples_n; ++i) {
+			SDL::Point origin{(i-last_second_sample_i+last_second_samples_n)%last_second_samples_n,render_ctx.target.h};
+			if (!(i % (last_second_samples_n/10))) {
+				renderer->SetDrawColor(0xFFFFFFFF);
+				renderer->DrawLine(origin,{origin.x,origin.y-100});
+			}
+		}
 		// Generate debug window text
 		Arcollect::gui::font::Elements stats_elements;
 		//stats_elements.initial_height() = 14;

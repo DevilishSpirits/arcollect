@@ -49,7 +49,7 @@ static void test_parsed_search(const ParsedSearch& search) {
 		std::cout << "not ";
 		failed = true;
 	}
-	std::cout << "ok " << test_num++ << " - ParsedSearch(\"" << search.search << "\"," << search.search_type << "," << search.sorting_type << ")" << std::endl;
+	std::cout << "ok " << test_num++ << " - ParsedSearch(\"" << search.search << "\"," << search.search_type << "," << search.sorting_type() << ")" << std::endl;
 }
 static constexpr auto test_num_per_test_parsed_search = 1;
 

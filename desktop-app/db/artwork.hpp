@@ -53,6 +53,7 @@ namespace Arcollect {
 				Arcollect::config::Rating art_rating;
 				sqlite3_int64 art_partof;
 				sqlite3_int64 art_pageno;
+				sqlite3_int64 art_savedate;
 				std::unordered_map<std::string,std::vector<std::shared_ptr<account>>> linked_accounts;
 				/** Query a column
 				 * \param column name
@@ -113,6 +114,9 @@ namespace Arcollect {
 				}
 				inline const sqlite3_int64 &pageno(void) const {
 					return art_pageno;
+				}
+				const sqlite3_int64 savedate(void) const {
+					return art_savedate;
 				}
 				
 				const std::vector<std::shared_ptr<account>> &get_linked_accounts(const std::string &link);

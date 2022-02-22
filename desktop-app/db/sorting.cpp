@@ -28,16 +28,14 @@ sqlite_int64 Arcollect::db::artid_randomize(sqlite_int64 art_artid) {
 }
 
 static std::string empty_string = "";
+static const std::string_view nothing(SearchType search_type)
+{
+	return empty_string;
+}
 static const Arcollect::db::SortingImpl sorting_impl_none = {
 	[](const Arcollect::db::artwork& left, const Arcollect::db::artwork& right) -> bool {
 		return false;
-	},
-	[](SearchType search_type) -> const std::string_view {
-		return empty_string;
-	},
-	[](SearchType search_type) -> const std::string_view {
-		return empty_string;
-	},
+	},nothing,nothing,
 };
 static const Arcollect::db::SortingImpl sorting_impl_random = {
 	[](const Arcollect::db::artwork& left, const Arcollect::db::artwork& right) -> bool {
@@ -65,6 +63,19 @@ static const Arcollect::db::SortingImpl sorting_impl_random = {
 		}
 	},
 };
+static const Arcollect::db::SortingImpl sorting_impl_savedate = {
+	[](const Arcollect::db::artwork& left, const Arcollect::db::artwork& right) -> bool {
+		return left.savedate() < right.savedate();
+	},nothing,
+	[](SearchType search_type) -> const std::string_view {
+		switch (search_type) {
+			default:
+			case Arcollect::db::SEARCH_ARTWORKS: {
+				return "ORDER BY art_savedate, art_artid";
+			} break;
+		}
+	},
+};
 
 /** Get implementation by mode
 */
@@ -73,6 +84,7 @@ const Arcollect::db::SortingImpl& Arcollect::db::sorting(SortingType mode)
 	switch (mode) {
 		case SORT_NONE:return sorting_impl_none;
 		case SORT_RANDOM:return sorting_impl_random;
+		case SORT_SAVEDATE:return sorting_impl_savedate;
 	}
 	return sorting_impl_random;
 }

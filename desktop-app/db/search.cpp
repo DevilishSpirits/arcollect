@@ -379,7 +379,7 @@ struct MatchExpr {
 Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, SearchType search_type, SortingType sorting_type) :
 	search(std::move(search_terms)),
 	search_type(search_type),
-	sorting_type(sorting_type)
+	real_sorting_type(sorting_type)
 {
 	if (Arcollect::debug.search)
 		std::cerr << "Query:" << search_terms << std::endl;
@@ -394,6 +394,12 @@ Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, Search
 			expr.ratings[negated].emplace(parse_rating(data));
 			expr.ratings_string[negated].emplace(data);
 		}},
+		{"sort",[&](const std::string_view data,bool negated) {
+			if (data.starts_with("r"))
+				real_sorting_type = Arcollect::db::SORT_RANDOM;
+			else if (data.starts_with("s"))
+				real_sorting_type = Arcollect::db::SORT_SAVEDATE;
+		}}
 	};
 	tokenize(search,tagset_map);
 	sql_query = "SELECT art_artid";
@@ -402,7 +408,7 @@ Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, Search
 	const auto sql_query_size = sql_query.size();
 	expr.gen_artworks_sql(sql_query,sql_bindings);
 	if (sql_query_size == sql_query.size())
-		sql_query += "AND 0 ";
+		sql_query += "AND 1 ";
 	sql_query += ")OR(INSTR(lower(art_title),lower(?)) > 0)) AND art_rating <= ? ";
 	sql_query += sorting().sql_order_by(search_type);
 	sql_query += ";";
