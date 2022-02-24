@@ -110,15 +110,17 @@ namespace Arcollect {
 				bool new_line_check_fit(int &free_space, int y, std::vector<artwork_viewport> &new_viewports, db::artwork_collection::iterator &iter);
 				
 				/** Create a new line in the top
-				 * \param y Distance from the logical top
-				 *
-				 * This function generate a new line of artworks. It edit left_iter.
+				 * \return Weather a line was sucessfully, `false` is we hit the top.
+				 * This function generate a new line of artworks. It edit left_iter and
+				 * left_y.
 				 */
-				bool new_line_left(int y);
-				/** Create a new line
-				 * \param y Distance from the logical top
+				bool new_line_left(void);
+				/** Create a new line in the bottom
+				 * \return Weather a line was sucessfully, `false` is we hit the bottom.
+				 * This function generate a new line of artworks. It edit right_iter and
+				 * right_y.
 				 */
-				bool new_line_right(int y);
+				bool new_line_right(void);
 			public:
 				void set_collection(std::shared_ptr<artwork_collection> &new_collection) override;
 				/** check if we need to and does flush_layout()

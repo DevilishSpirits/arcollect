@@ -147,10 +147,10 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	
 	layout_invalid = false;
 	// Create left viewports if needed
-	while ((left_y > scroll_target - artwork_height) && new_line_left(left_y - artwork_height - artwork_margin.y));
+	while ((left_y > scroll_target - artwork_height) && new_line_left());
 	// Create right viewports if needed
 	// NOTE! right_y is offset by minus one row
-	while ((right_y < scroll_target + last_render_size.y + artwork_height) && (right_iter != end_iter) && new_line_right(right_y));
+	while ((right_y < scroll_target + last_render_size.y + artwork_height) && (right_iter != end_iter) && new_line_right());
 	// Stop scrolling if bottom is hit
 	if (scroll_target + last_render_size.y > right_y)
 		scroll_target = right_y - last_render_size.y;
@@ -173,8 +173,9 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	scroll_position = scroll_target;
 }
 
-bool Arcollect::gui::view_vgrid::new_line_left(int y)
+bool Arcollect::gui::view_vgrid::new_line_left(void)
 {
+	const int y = left_y - artwork_height - artwork_margin.y;
 	const auto begin_iter = collection->begin();
 	int free_space = last_render_size.x-2*artwork_margin.x;
 	std::vector<artwork_viewport> &new_viewports = viewports.emplace_front();
@@ -197,14 +198,14 @@ bool Arcollect::gui::view_vgrid::new_line_left(int y)
 		return false;
 	}
 }
-bool Arcollect::gui::view_vgrid::new_line_right(int y)
+bool Arcollect::gui::view_vgrid::new_line_right(void)
 {
 	auto end_iter = collection->end();
 	int free_space = last_render_size.x-2*artwork_margin.x;
 	std::vector<artwork_viewport> &new_viewports = viewports.emplace_back();
 	// Generate viewports
 	while (right_iter != end_iter) {
-		if (new_line_check_fit(free_space,y,new_viewports,right_iter))
+		if (new_line_check_fit(free_space,right_y,new_viewports,right_iter))
 			++right_iter;
 		else break; // Line is full, break
 	}
