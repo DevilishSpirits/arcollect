@@ -448,5 +448,7 @@ std::shared_ptr<Arcollect::db::artwork_collection> Arcollect::search::ParsedSear
 {
 	std::unique_ptr<SQLite3::stmt> stmt;
 	build_stmt(stmt);
-	return std::make_shared<Arcollect::db::artwork_collection_sqlite>(std::move(stmt));
+	std::shared_ptr<Arcollect::db::artwork_collection> result = std::make_shared<Arcollect::db::artwork_collection_sqlite>(std::move(stmt));
+	result->sorting_type = sorting_type();
+	return result;
 }

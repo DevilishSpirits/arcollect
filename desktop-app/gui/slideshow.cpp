@@ -123,9 +123,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			// Update version
 			slideshow_data_version = Arcollect::data_version;
 			// Regenerate the stmt
-			std::unique_ptr<SQLite3::stmt> stmt;
-			current_background_search->build_stmt(stmt);
-			std::shared_ptr<Arcollect::db::artwork_collection> new_collection = std::make_shared<Arcollect::db::artwork_collection_sqlite>(std::move(stmt));
+			std::shared_ptr<Arcollect::db::artwork_collection> new_collection = current_background_search->make_shared_collection();
 			Arcollect::gui::update_background(new_collection);
 		}
 		switch (viewport.download->artwork_type) {

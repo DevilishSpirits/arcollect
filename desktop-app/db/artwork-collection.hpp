@@ -19,6 +19,7 @@
  */
 #pragma once
 #include "artwork.hpp"
+#include "search.hpp"
 #include "../config.hpp"
 namespace Arcollect {
 	namespace db {
@@ -85,6 +86,10 @@ namespace Arcollect {
 				 */
 				decltype(cache)::const_iterator find_artid_randomized(artwork_id id, bool nearest);
 			public:
+				/** Indicative sorting type
+				 */
+				SortingType sorting_type = SORT_NONE;
+				
 				using iterator = decltype(cache)::const_iterator;
 				iterator begin(void) {
 					return cache.cbegin();
