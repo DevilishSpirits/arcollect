@@ -73,6 +73,8 @@ config_h.set('ARCOLLECT_VERREQ_boost','>=1.66') # Keep in sync with OIIO needs!
 config_h.set('ARCOLLECT_VERREQ_libcurl','>=7.60')
 config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
 
+config_h.set('ARCOLLECT_WEBEXT_GECKO_MIN_VERSION','57.0a1')
+
 foreach key: config_h.keys()
 	config_h.set_quoted(key+'_STR',config_h.get(key))
 	summary(key,config_h.get(key), section: 'config.h')
