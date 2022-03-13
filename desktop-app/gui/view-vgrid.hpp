@@ -126,6 +126,11 @@ namespace Arcollect {
 				/** check if we need to and does flush_layout()
 				 */
 				void check_layout(const Arcollect::gui::modal::render_context &render_ctx);
+				/** Scroll in order to display an artwork
+				 *
+				 * The scroll is animated.
+				 */
+				void bring_to_view(const Arcollect::gui::modal::render_context &render_ctx, const std::shared_ptr<Arcollect::db::artwork> &artwork);
 				/** Flush and rebuild viewports
 				 *
 				 * This function destroy all viewports and reset iterators.

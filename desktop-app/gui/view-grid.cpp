@@ -19,6 +19,7 @@
 #include "../config.hpp"
 #include "../db/account.hpp"
 #include "../db/db.hpp"
+#include "../db/sorting.hpp"
 void Arcollect::gui::view_vgrid::set_collection(std::shared_ptr<artwork_collection> &new_collection)
 {
 	collection = new_collection;
@@ -310,4 +311,26 @@ Arcollect::gui::artwork_viewport *Arcollect::gui::view_vgrid::get_pointed(const 
 			return &viewport;
 	}
 	return NULL;
+}
+
+void Arcollect::gui::view_vgrid::bring_to_view(const Arcollect::gui::modal::render_context &render_ctx, const std::shared_ptr<Arcollect::db::artwork> &artwork)
+{
+	check_layout(render_ctx);
+	auto& compare = Arcollect::db::sorting(collection->sorting_type).compare_arts;
+	// Generate lines until we find the target
+	while (compare(*artwork,*Arcollect::db::artwork::query(*left_iter)) && new_line_left());
+	while (compare(*Arcollect::db::artwork::query(*right_iter),*artwork) && new_line_right());
+	// Search for the artwork
+	for (const auto& row: viewports) {
+		if (!(compare(*row.front().artwork,*artwork) && compare(*row.back().artwork,*artwork))) {
+			// We found the line where it should be
+			const auto top_y = row.front().corner_tl.y;
+			const auto bot_y = row.front().corner_bl.y;
+			// Check if the line is out of sight
+			if ((top_y >= scroll_position.val_target+render_ctx.target.h)||(bot_y <= scroll_position.val_target))
+				// Scroll to the center
+				do_scroll(top_y+((bot_y-top_y)/2)-(render_ctx.target.h/2)-scroll_position.val_target);
+			break;
+		}
+	}
 }

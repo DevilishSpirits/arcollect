@@ -83,6 +83,8 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 					case SDL_SCANCODE_RETURN:
 					case SDL_SCANCODE_ESCAPE: {
 						Arcollect::gui::modal_stack.push_back(background_vgrid);
+						if (collection && (collection_iterator != collection->end()))
+							background_vgrid.bring_to_view(render_ctx,Arcollect::db::artwork::query(*collection_iterator));
 					} break;
 					case SDL_SCANCODE_AC_SEARCH:
 					case SDL_SCANCODE_FIND:
