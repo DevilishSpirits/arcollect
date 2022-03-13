@@ -70,6 +70,18 @@ void Arcollect::gui::view_vgrid::flush_layout(void)
 void Arcollect::gui::view_vgrid::render(Arcollect::gui::modal::render_context render_ctx)
 {
 	check_layout(render_ctx);
+	// Drop left viewports if too much
+	while ((left_y < scroll_position.val_origin - 2 * artwork_height)&&(left_y < scroll_position.val_target - 2 * artwork_height)) {
+		left_iter += viewports.front().size();
+		viewports.pop_front();
+		left_y += artwork_height + artwork_margin.y;
+	}
+	// Drop right viewports if too much
+	while ((right_y > scroll_position.val_origin + last_render_size.y + 2 * artwork_height)&&(right_y > scroll_position.val_target + last_render_size.y + 2 * artwork_height)) {
+		right_iter -= viewports.back().size();
+		viewports.pop_back();
+		right_y -= artwork_height + artwork_margin.y;
+	}
 	// Render
 	SDL::Point displacement{render_ctx.target.x,render_ctx.target.y-scroll_position};
 	for (auto &lines: viewports)
@@ -143,7 +155,6 @@ bool Arcollect::gui::view_vgrid::event(SDL::Event &e, Arcollect::gui::modal::ren
 void Arcollect::gui::view_vgrid::do_scroll(int delta)
 {
 	auto end_iter = collection->end();
-	const auto &scroll_origin = scroll_position.val_origin;
 	int scroll_target = scroll_position.val_target + delta;
 	
 	layout_invalid = false;
@@ -158,18 +169,6 @@ void Arcollect::gui::view_vgrid::do_scroll(int delta)
 	// Stop scrolling if top is hit
 	if (scroll_target < 0)
 		scroll_target = 0;
-	// Drop left viewports if too much
-	while ((left_y < scroll_origin - 2 * artwork_height)&&(left_y < scroll_target - 2 * artwork_height)) {
-		left_iter += viewports.front().size();
-		viewports.pop_front();
-		left_y += artwork_height + artwork_margin.y;
-	}
-	// Drop right viewports if too much
-	while ((right_y > scroll_origin + last_render_size.y + 2 * artwork_height)&&(right_y > scroll_target + last_render_size.y + 2 * artwork_height)) {
-		right_iter -= viewports.back().size();
-		viewports.pop_back();
-		right_y -= artwork_height + artwork_margin.y;
-	}
 	// Do scrolling
 	scroll_position = scroll_target;
 }
