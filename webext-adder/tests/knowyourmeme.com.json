@@ -1,0 +1,50 @@
+{
+	"platform": "knowyourmeme.com",
+	"artworks": [{
+		"title": "U.N. Owen Was Her? - Ranranru-",
+		"source": "https://knowyourmeme.com//photos/1092725-un-owen-was-her",
+		"postdate": 1458081360,
+		"rating": 0,
+		"data": "https://i.kym-cdn.com/photos/images/original/001/092/725/830.png",
+		"data.sha256": "830dfff208fe5c7db092986299ab949eab5b4ee3bc37989cb2953582c32130c3"
+	}],
+	"accounts": [{
+		"id": "mew-seeker",
+		"name": "Mew seeker",
+		"url": "https://knowyourmeme.com/users/mew-seeker",
+		"desc": "Cataloger & Pundit & Media Bus Boy",
+		"icon": "https://i.kym-cdn.com/profiles/icons/original/000/203/439/14442290_s.png"
+	}],
+	"tags": [{
+		"id": "one-punch-man"
+	},{
+		"id": "ronald-mcdonald"
+	},{
+		"id": "flandre-scarlet"
+	},{
+		"id": "touhou"
+	},{
+		"id": "saitama"
+	}],
+	"art_acc_links": [{
+		"artwork": "https://knowyourmeme.com//photos/1092725-un-owen-was-her",
+		"account": "mew-seeker",
+		"link": "account"
+	}],
+	"art_tag_links": [{
+		"artwork": "https://knowyourmeme.com//photos/1092725-un-owen-was-her",
+		"tag": "one-punch-man"
+	},{
+		"artwork": "https://knowyourmeme.com//photos/1092725-un-owen-was-her",
+		"tag": "ronald-mcdonald"
+	},{
+		"artwork": "https://knowyourmeme.com//photos/1092725-un-owen-was-her",
+		"tag": "flandre-scarlet"
+	},{
+		"artwork": "https://knowyourmeme.com//photos/1092725-un-owen-was-her",
+		"tag": "touhou"
+	},{
+		"artwork": "https://knowyourmeme.com//photos/1092725-un-owen-was-her",
+		"tag": "saitama"
+	}]
+}
