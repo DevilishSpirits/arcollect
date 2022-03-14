@@ -56,7 +56,7 @@ function save_KnowYourMeme_meme()
 	 *
 	 * KnowYourMeme ignore the trailing '/' in the url. Remove it if present.
 	 */
-	let source = 'https://knowyourmeme.com/'+window.location.pathname;
+	let source = 'https://knowyourmeme.com'+window.location.pathname;
 	if (source[source.length-1] == '/')
 		source = source.slice(0,-1);
 	
