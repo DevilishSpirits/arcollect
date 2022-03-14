@@ -17,6 +17,7 @@ Currently these platforms are supported :
 * **[DeviantArt](https://www.deviantart.com/)** - You have a `Save in Arcollect` button below the artwork. Support is limited.
 * **[e621](https://e621.net/)**/**[e926](https://e926.net)** - You have a `Save in Arcollect` button below the artwork.
 * **[FurAffinity](https://www.furaffinity.net/)** - You have a `Save in Arcollect` button below the artwork.
+* **[KnowYourMeme](https://knowyourmeme.com/)** - You have a `Save in Arcollect` button below the meme artwork on image details.
 * **[Tumbex](https://www.tumbex.com/)** - Click on the share menu (bottom-right) then `Save in Arcollect`.
 * **[Twitter](https://twitter.com/)** - Click on the photo you want to save and `Save in Arcollect` button appear in the bottom. Support is slightly buggy.
 
