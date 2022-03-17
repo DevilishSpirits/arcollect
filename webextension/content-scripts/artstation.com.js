@@ -121,7 +121,7 @@ function artstation_save_artwork(saveButtonA)
 	};
 	
 	// Submit
-	arcollect_submit(submit_json).then(function() {
+	Arcollect.submit(submit_json).then(function() {
 		saveButtonA.text = arco_i18n_saved;
 	}).catch(function(reason) {
 		saveButtonA.onclick = save_artwork;

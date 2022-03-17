@@ -138,7 +138,7 @@ for (i = 0; i < downloadButtons.length; i++)
 		// FurAffinity enforce UTF-8 character encoding
 		if (ext == 'txt')
 			artworkMIME = 'text/plain; charset=utf-8'; 
-		else artworkMIME = arcollect_mime_by_ext[ext];
+		else artworkMIME = Arcollect.mime_by_ext[ext];
 		if (artworkMIME != undefined) {
 			artworkLink = downloadButtons[i].href;
 			break;
@@ -297,7 +297,7 @@ function save_artwork()
 		submit_json['artworks'][0]['thumbnail'] = submissionImg.src;
 	
 	// Submit
-	arcollect_submit(submit_json).then(function() {
+	Arcollect.submit(submit_json).then(function() {
 		save_buttondiv.text = arco_i18n_saved;
 		save_buttondiv.style = 'cursor:default;'
 	}).catch(function(reason) {

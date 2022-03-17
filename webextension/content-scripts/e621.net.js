@@ -161,7 +161,6 @@ function save_artwork()
 			'desc': description,
 			'source': source,
 			'rating': rating,
-			'mimetype': arcollect_mime_by_href_ext(imageDownloadLink.children[0].href),
 			'postdate': (new Date(document.querySelector('meta[itemprop=uploadDate]').content)).getTime()/1000,
 			'data': imageDownloadLink.children[0].href
 		}],
@@ -173,7 +172,7 @@ function save_artwork()
 	};
 	
 	// Submit
-	arcollect_submit(submit_json).then(function() {
+	Arcollect.submit(submit_json).then(function() {
 		saveButtonA.text = arco_i18n_saved;
 		saveButtonA.className = 'button btn-success';
 		saveButtonA.style = 'cursor:default;';

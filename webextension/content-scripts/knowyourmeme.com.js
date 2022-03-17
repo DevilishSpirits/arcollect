@@ -112,7 +112,7 @@ function save_KnowYourMeme_meme()
 		'art_tag_links': art_tag_links,
 	};
 	// Submit
-	arcollect_submit(submit_json).then(function() {
+	Arcollect.submit(submit_json).then(function() {
 		saveButtonA.text = arco_i18n_saved;
 		saveButtonA.className = 'large green button gallery-button';
 		saveButtonA.style = 'cursor:default;';

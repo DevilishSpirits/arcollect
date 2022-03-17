@@ -41,7 +41,7 @@ var make_twitter_photo_save_button_intervalID = null;
 function save_twitter_artwork(button, text_button, submit_json, retry_to_save)
 {
 	text_button.textContent = arco_i18n_saving;
-	arcollect_submit(submit_json).then(function() {
+	Arcollect.submit(submit_json).then(function() {
 		text_button.textContent = arco_i18n_saved;
 	}).catch(function(reason) {
 		button.onclick = retry_to_save;

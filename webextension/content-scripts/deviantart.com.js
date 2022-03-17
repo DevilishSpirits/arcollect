@@ -135,7 +135,7 @@ function save_artwork()
 	};
 	
 	// Submit
-	arcollect_submit(submit_json).then(function() {
+	Arcollect.submit(submit_json).then(function() {
 		saveButton.innerText = arco_i18n_saved;
 	}).catch(function(reason) {
 		saveButton.onclick = save_artwork;

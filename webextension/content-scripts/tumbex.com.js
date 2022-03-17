@@ -81,7 +81,7 @@ function tumbex_save_article(article)
 	 *
 	 * It's in "tags"... seriously that's super easy.
 	 */
-	data.tags = data.tags.map(arcollect_normalize_tag); // Normalize tags
+	data.tags = data.tags.map(Arcollect.normalize_tag); // Normalize tags
 	let tags = []
 	let art_tag_links = []
 	let rating = 0;
@@ -175,7 +175,7 @@ function tumbex_save_article(article)
 	};
 	
 	// Submit
-	arcollect_submit(submit_json).then(function() {
+	Arcollect.submit(submit_json).then(function() {
 		article.arcollect_save_label.textContent = arco_i18n_saved;
 		article.arcollect_save_label.style = 'cursor:default;';
 	}).catch(function(reason) {
