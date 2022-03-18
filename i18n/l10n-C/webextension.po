@@ -1,3 +1,7 @@
+msgctxt "webext_non_https_fetch"
+msgid "Something goes wrong with the webextension that attempted to use an API without https:// (%URL%)."
+msgstr ""
+
 msgctxt "webext_save_in_arcollect"
 msgid "Save in Arcollect"
 msgstr ""

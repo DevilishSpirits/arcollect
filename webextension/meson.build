@@ -15,6 +15,7 @@ webext_conf_srcs = [
 ]
 webext_srcs = [
 	'background.js',
+	'fetch.js',
 	'twitter.js',
 ]
 webext_content_scripts = [
