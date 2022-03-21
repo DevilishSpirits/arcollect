@@ -64,6 +64,7 @@ SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 		std::cerr << "Failed to open " << path << ". " << OIIO::geterror();
 		return NULL;
 	}
+	image->seek_subimage(0,0); // Just in case weird stuff happen
 	image->threads(1);
 	const OIIO::ImageSpec &spec = image->spec();
 	int pixel_format;
@@ -78,7 +79,17 @@ SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 		std::cerr << "Failed to load pixels from " << path << ". " << image->geterror();
 		return NULL;
 	}
-	image->read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,surface->pixels,surface->format->BytesPerPixel,surface->pitch);
+	/* Note! read_scanlines() may perform allocations and trigger the OOM-killer.
+	 * We check things ourself to avoid this situation.
+	 */
+	// Check if encoding and pixel stride matchs the native format
+	if ((spec.format == OIIO::TypeDesc::UINT8) && (spec.format.size() * spec.nchannels == surface->format->BytesPerPixel) && spec.channelformats.empty()) {
+		// Check for the pitch and adapt mismatchs on our side
+		if (surface->format->BytesPerPixel * spec.width == surface->pitch)
+			image->read_native_scanlines(0,0,0,spec.height,0,surface->pixels);
+		else for (int y = 0; y < spec.height; ++y)
+			image->read_native_scanline(0,0,y,0,&((char*)surface->pixels)[y*surface->pitch]);
+	} else image->read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,surface->pixels,surface->format->BytesPerPixel,surface->pitch);
 	if (spec.nchannels == 1) {
 		// FIXME Optimize that
 		// Monochrome picture, populate green and blue
