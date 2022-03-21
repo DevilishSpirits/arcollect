@@ -69,8 +69,8 @@ SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 	int pixel_format;
 	switch (spec.nchannels) {
 		case 4:pixel_format = SDL_PIXELFORMAT_ABGR8888;break;
-		case 3:pixel_format = SDL_PIXELFORMAT_BGR888;break;
-		case 1:pixel_format = SDL_PIXELFORMAT_BGR888;break;
+		case 3:pixel_format = SDL_PIXELFORMAT_RGB24;break;
+		case 1:pixel_format = SDL_PIXELFORMAT_RGB24;break;
 		default:return NULL;
 	}
 	SDL::Surface* surface = reinterpret_cast<SDL::Surface*>(SDL_CreateRGBSurfaceWithFormat(0,spec.width,spec.height,spec.nchannels*8,pixel_format));
