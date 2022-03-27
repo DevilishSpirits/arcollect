@@ -109,7 +109,7 @@ struct on_set_rating {
 		}
 		Arcollect::gui::modal_stack.emplace_back(std::make_unique<edit_artwork_confirm>(collection,[rating](std::shared_ptr<Arcollect::db::artwork_collection>& collection){
 			collection->db_set_rating(rating);
-		},Arcollect::i18n_desktop_app.edit_artwork_set_rating_confirm(rating,rating_color)));
+		},invoke_i18n(Arcollect::i18n_desktop_app,edit_artwork_set_rating_confirm,rating,rating_color)));
 	}
 };
 

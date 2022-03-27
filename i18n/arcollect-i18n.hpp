@@ -18,6 +18,9 @@
 #include <array>
 #include <climits>
 #include <string_view>
+/** Localized function invocation macro
+ */
+#define invoke_i18n(this,func,...) (this).func((this),__VA_ARGS__)
 namespace Arcollect {
 	namespace i18n {
 		/** Two-chars lang code

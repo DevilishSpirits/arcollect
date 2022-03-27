@@ -16,7 +16,7 @@
  */
 #include "arcollect-i18n-desktop_app.hpp"
 void Arcollect::i18n::desktop_app::apply_C(void) noexcept {
-	edit_artwork_set_rating_confirm_ = [](const desktop_app &self, int rating, SDL::Color color) -> Elements {
+	edit_artwork_set_rating_confirm = [](const desktop_app &self, int rating, SDL::Color color) -> Elements {
 		std::string rating_string;
 		switch (rating) {
 			case 0 :rating_string = self.rating_level_none;break;
