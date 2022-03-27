@@ -2,6 +2,18 @@ msgctxt "about_arcollect"
 msgid "About Arcollect…"
 msgstr "À propos d'Arcollect…"
 
+msgctxt "about_licensing"
+msgid "Arcollect is licensed under the GNU General Public License version 3 or later."
+msgstr "Arcollect est publié sous la GNU General Public License version 3 ou supérieure."
+
+msgctxt "about_many_other"
+msgid "Many other…"
+msgstr "D'autres encore…"
+
+msgctxt "about_powered_by"
+msgid "Powered by:"
+msgstr "Propulsé par :"
+
 msgctxt "browse_to_arwork_page"
 msgid "Browse…"
 msgstr "Voir en ligne…"

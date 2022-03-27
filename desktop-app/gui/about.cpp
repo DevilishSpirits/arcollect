@@ -94,19 +94,13 @@ void Arcollect::gui::about_window::render(Arcollect::gui::modal::render_context 
 			<< FontSize(3.5) << U"Arcollect "sv ARCOLLECT_VERSION_STR "\n\n"
 			<< FontSize(1.5) << Arcollect::i18n_common.summary << U"\n"sv
 			<< FontSize(1.0) << U""sv ARCOLLECT_WEBSITE_STR "\n"
-			<< U"Powered by:\n"sv
-			   CPP_STD_STR " ⸱ " CXX_COMPILER_TITLE_STR " ⸱ SDL2 ⸱ SQLite3 ⸱ OpenImageIO ⸱ LittleCMS ⸱ FreeType2 ⸱ HarfBuzz ⸱ Many other…\n"
-			   "\n"
-			   "Arcollect is licensed under the GNU General Public License version 3 (GPL-3) or later.\n"
-			   #if HAS_SDL_OPENURL
-			   "The top bar menu contain links to projects websites and a copy of the GPL-3.\n"
-			   #else
-			   "The top bar menu contain a copy of the GPL-3.\n"
-			   #endif
-			   "\n"
-			   "It use and bundle third-party dependencies released under another licenses.\n"
-			   "This copy of Arcollect also embed copies of " ABOUT_EMBEDED_DEPENDENCIES_STR "."
-		;
+			<< Arcollect::i18n_desktop_app.about_powered_by << U"\n"sv
+			   CPP_STD_STR " ⸱ " CXX_COMPILER_TITLE_STR " ⸱ SDL2 ⸱ SQLite3 ⸱ OpenImageIO ⸱ LittleCMS ⸱ FreeType2 ⸱ HarfBuzz ⸱ " << Arcollect::i18n_desktop_app.about_many_other << U"\n"sv
+			<< Arcollect::i18n_desktop_app.about_licensing
+			#if EMBEDED_DEPENDENCIES_COUNT > 0
+			<< U"\n"sv << Arcollect::i18n_desktop_app.about_this_embed_deps
+			#endif
+			;
 		render_cache = std::make_unique<Arcollect::gui::font::Renderable>(elements,target.w-target.w/10);
 		cache_window_width = target.w;
 	}

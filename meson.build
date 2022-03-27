@@ -266,29 +266,18 @@ also_embeded = [
 	'roboto',
 ]
 
-# TODO Save that in C++ structures
-#if (static_dependencies.length() + also_embeded.length() > 0)
-	about_embeded_dependencies = []
-	last_embeded_dependencies = ''
-	foreach dep, version: static_dependencies
-		if last_embeded_dependencies != ''
-			about_embeded_dependencies += last_embeded_dependencies
-		endif
-		last_embeded_dependencies = dep_fancy_name[dep]+' '+version+' ('+dep_website[dep]+')'
-	endforeach
-	foreach dep: also_embeded
-		if last_embeded_dependencies != ''
-			about_embeded_dependencies += last_embeded_dependencies
-		endif
-		last_embeded_dependencies = dep_fancy_name[dep]+' ('+dep_website[dep]+')'
-	endforeach
-	about_embeded_dependencies = ', '.join(about_embeded_dependencies) + ' and ' + last_embeded_dependencies
-	message('This copy of Arcollect will embed copies of '+about_embeded_dependencies)
-#endif	
+embeded_dependencies = []
+foreach dep, version: static_dependencies
+	embeded_dependencies += '{"'+dep_fancy_name[dep]+'","'+version+'","'+dep_website[dep]+'"}'
+endforeach
+foreach dep: also_embeded
+	embeded_dependencies += '{"'+dep_fancy_name[dep]+'","","'+dep_website[dep]+'"}'
+endforeach
 
 dependency_report_data = configuration_data()
-dependency_report_data.set_quoted('ABOUT_EMBEDED_DEPENDENCIES_STR',about_embeded_dependencies.replace('\n','\\n'))
-dependency_report_hpp = configure_file(output: 'dependency-report.hpp', configuration: dependency_report_data)
+dependency_report_data.set('EMBEDED_DEPENDENCIES',','.join(embeded_dependencies))
+dependency_report_data.set('EMBEDED_DEPENDENCIES_COUNT',embeded_dependencies.length())
+dependency_report_hpp = configure_file(input: 'dependency-report.hpp', output: 'dependency-report.hpp', configuration: dependency_report_data)
 
 # Add subdir (include order is important !)
 subdir('i18n')

@@ -15,7 +15,52 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "arcollect-i18n-desktop_app.hpp"
+#include <../../dependency-report.hpp>
+static constexpr void cpy_view(char base[], int &i, const std::string_view &view)
+{
+	for (char chr: view)
+		base[i++] = chr;
+}
 void Arcollect::i18n::desktop_app::apply_C(void) noexcept {
+	#if EMBEDED_DEPENDENCIES_COUNT > 0
+	about_this_embed_deps = []() /* TODO consteval */ -> std::string_view {
+		// Okay. Let me explain the black-magic here.
+		// I am just computing 
+		constexpr std::string_view prefix = "This copy of Arcollect embed copies of ";
+		static char store[prefix.size()
+			+Arcollect::Dependency::compute_about_this_embed_deps_size(embeded_dependencies,3,1,3)
+			+((embeded_dependencies.size() > 1) * 3)
+			-(embeded_dependencies.size() == 1)
+		];
+		int cursor = 0;
+		cpy_view(store,cursor,prefix);
+		for (int i = embeded_dependencies.size()-1; i >= 0; --i) {
+			const auto& current_dep = embeded_dependencies[i];
+			// Print data
+			cpy_view(store,cursor,current_dep.name);
+			if (!current_dep.version.empty()) {
+				store[cursor++] = ' ';
+				cpy_view(store,cursor,current_dep.version);
+			}
+			if (!current_dep.website.empty()) {
+				store[cursor++] = ' ';
+				store[cursor++] = '(';
+				cpy_view(store,cursor,current_dep.website);
+				store[cursor++] = ')';
+			}
+			// Print separator
+			std::string_view after;
+			switch (i) {
+				default:after = ", ";break;
+				case 1:after = " and ";break;
+				case 0:after = ".";break;
+			}
+			cpy_view(store,cursor,after);
+			//static_assert(cursor == sizeof(prefix),"store size is too big");
+		}
+		return std::string_view(store,cursor);
+	}();
+	#endif
 	edit_artwork_set_rating_confirm = [](const desktop_app &self, int rating, SDL::Color color) -> Elements {
 		std::string rating_string;
 		switch (rating) {
