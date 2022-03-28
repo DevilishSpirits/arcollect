@@ -161,6 +161,7 @@ static void write_sql_file(const char* sql_file_path, const std::string_view &va
 					subst_stack.emplace_back(iter->second,0);
 					state = NORMAL;
 					cpp << ' '; // Put a blank if needed
+					continue;
 				}
 			} break;
 		}
