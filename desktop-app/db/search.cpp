@@ -397,9 +397,9 @@ struct MatchExpr {
 
 
 Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, SearchType search_type, SortingType sorting_type) :
+	real_sorting_type(sorting_type),
 	search(std::move(search_terms)),
-	search_type(search_type),
-	real_sorting_type(sorting_type)
+	search_type(search_type)
 {
 	if (Arcollect::debug.search)
 		std::cerr << "Query:" << search_terms << std::endl;
