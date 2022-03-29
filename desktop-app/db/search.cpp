@@ -168,6 +168,9 @@ struct TagSet {
 			operator[](negated).emplace(T(data));
 		};
 	}
+	bool empty(void) const {
+		return positive_matchs.empty() && negative_matchs.empty();
+	}
 };
 
 static void tokenize(const std::string_view& search, const std::unordered_map<std::string_view,std::function<void(std::string_view,bool)>> &output)
