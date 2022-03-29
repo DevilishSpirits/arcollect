@@ -245,6 +245,8 @@ static constexpr char sql_or[]  = " OR ";
 using SQLAnd = SQLDontPrintOnce<sql_and>;
 using SQLOr = SQLDontPrintOnce<sql_or>;
 template<class> inline constexpr bool always_false_v = false;
+
+static constexpr std::string_view join_downloads = "JOIN downloads ON artworks.art_dwnid = downloads.dwn_id";
 /** Set of match filters
  *
  * This object store a set of criterias to AND.
@@ -253,6 +255,7 @@ struct MatchExpr {
 	TagSet<std::string_view> tags;
 	TagSet<std::string_view> accounts;
 	TagSet<std::string_view> platforms;
+	TagSet<std::string_view> mimes;
 	TagSet<sqlite_int64> ratings;
 	TagSet<std::string_view> ratings_string;
 	std::vector<std::unique_ptr<MatchExpr>> or_subexprs;
@@ -260,6 +263,7 @@ struct MatchExpr {
 	void gen_artworks_sql(std::string &query, ParsedSearch::sql_bindings_type &bindings) const {
 		tags.gen_link_matching_sql("artworks","art_tag_links","tags","art_artid",{"tag_platid","tag_title"},query,bindings);
 		accounts.gen_link_matching_sql("artworks","art_acc_links","accounts","art_artid",{"acc_platid","acc_name","acc_title"},query,bindings);
+		mimes.gen_prefix_matching_sql("downloads.dwn_mimetype",query,bindings);
 		platforms.gen_prefix_matching_sql("artworks.art_platform",query,bindings);
 		ratings.gen_exact_matching_sql("artworks.art_rating",query,bindings);
 		
@@ -274,6 +278,18 @@ struct MatchExpr {
 			}
 			query += ")";
 		}
+	}
+	void gen_artworks_sql_joins(std::unordered_set<std::string_view> &joins) const {
+		if (!mimes.empty())
+			joins.insert(join_downloads);
+		// Recurse
+		for (const std::unique_ptr<MatchExpr> &subexpr: or_subexprs)
+			subexpr->gen_artworks_sql_joins(joins);
+	}
+	std::unordered_set<std::string_view> gen_artworks_sql_joins(void) const {
+		std::unordered_set<std::string_view> joins;
+		gen_artworks_sql_joins(joins);
+		return joins;
 	}
 	
 	struct our_std_less {
@@ -332,6 +348,7 @@ struct MatchExpr {
 		
 		gen_text_colors_for_tagset(accounts,colors,sizeof("account"),{0,255,0,255});
 		gen_text_colors_for_tagset(platforms,colors,sizeof("site"),{0,0,255,255});
+		gen_text_colors_for_tagset(mimes,colors,sizeof("mime"),{255,255,0,255});
 		
 		for (const auto& match: ratings_string.positive_matchs) {
 			colors.emplace(std::string_view(match.data()-7,6),SDL::Color{128,128,128,255});
@@ -393,6 +410,7 @@ Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, Search
 		{"",expr.tags.tokenize_func()},
 		{"account",expr.accounts.tokenize_func()},
 		{"site",expr.platforms.tokenize_func()},
+		{"mime",expr.mimes.tokenize_func()},
 		{"rating",[&](const std::string_view data,bool negated){
 			expr.ratings[negated].emplace(parse_rating(data));
 			expr.ratings_string[negated].emplace(data);
@@ -407,7 +425,12 @@ Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, Search
 	tokenize(search,tagset_map);
 	sql_query = "SELECT art_artid";
 	sql_query += sorting().sql_select_trailer(search_type);
-	sql_query += " FROM artworks WHERE ((1 ";
+	sql_query += " FROM artworks ";
+	for (const std::string_view& join: expr.gen_artworks_sql_joins()) {
+		sql_query.append(join);
+		sql_query += " ";
+	}
+	sql_query += "WHERE ((1 ";
 	const auto sql_query_size = sql_query.size();
 	expr.gen_artworks_sql(sql_query,sql_bindings);
 	if (sql_query_size == sql_query.size())
