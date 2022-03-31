@@ -292,7 +292,7 @@ bool Arcollect::gui::main(void)
 				result.load_pending = std::max(load_pending,right.load_pending);
 				return result;
 			}
-			void draw_histo_section(SDL::Point &origin, Uint32 var, const SDL::Color &color) {
+			void draw_histo_section(SDL::Point &origin, int var, const SDL::Color &color) {
 				renderer->SetDrawColor(color);
 				renderer->DrawLine(origin,{origin.x,origin.y-var});
 				origin.y -= var;
@@ -304,7 +304,7 @@ bool Arcollect::gui::main(void)
 				draw_histo_section(origin,other ,other_color);
 			}
 			
-			static inline void draw_time_bar(SDL::Rect &time_bar, Uint32 var, const SDL::Color &color) {
+			static inline void draw_time_bar(SDL::Rect &time_bar, int var, const SDL::Color &color) {
 				time_bar.w  = var;
 				renderer->SetDrawColor(color.r,color.g,color.b,color.a);
 				renderer->FillRect(time_bar);
@@ -349,8 +349,8 @@ bool Arcollect::gui::main(void)
 			maximums = maximums.max(sample);
 		
 		// Print histogram
-		for (int i = 0; i < last_second_samples_n; ++i) {
-			SDL::Point origin{(i-last_second_sample_i+last_second_samples_n)%last_second_samples_n,render_ctx.target.h};
+		for (std::decay<decltype(last_second_samples_n)>::type i = 0; i < last_second_samples_n; ++i) {
+			SDL::Point origin{static_cast<int>((i-last_second_sample_i+last_second_samples_n)%last_second_samples_n),render_ctx.target.h};
 			if (!(i % (last_second_samples_n/10))) {
 				renderer->SetDrawColor(0xFFFFFFFF);
 				renderer->DrawLine(origin,{origin.x,origin.y-100});
