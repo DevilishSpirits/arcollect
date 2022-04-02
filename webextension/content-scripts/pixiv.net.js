@@ -51,17 +51,13 @@ function fetch_pixiv(url) {
 
 /** Make a Pixiv download specification that hit the CDN
  *
- * Pixiv CDN require [Sec-Fetch headers](https://developer.mozilla.org/docs/Glossary/Fetch_metadata_request_header).
- * I also set the `Referer` to `https://www.pixiv.net/` to match Pixiv behavior.
+ * I set the `Referer` to `https://www.pixiv.net/` to match Pixiv behavior.
  */
 function PixivCDNDownload(url, SecFetchDest) {
 	return {
 		'data': url,
 		'headers': {
 			'Referer': 'https://www.pixiv.net/',
-			'Sec-Fetch-Dest': SecFetchDest,
-			'Sec-Fetch-Mode': 'no-cors',
-			'Sec-Fetch-Site': 'cross-site',
 		},
 	};
 }
