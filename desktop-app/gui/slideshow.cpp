@@ -128,15 +128,16 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			std::shared_ptr<Arcollect::db::artwork_collection> new_collection = current_background_search->make_shared_collection();
 			Arcollect::gui::update_background(new_collection);
 		}
-		switch (viewport.download->artwork_type) {
-			case ARTWORK_TYPE_IMAGE: {
-				if (viewport.download) {
-					renderer->SetDrawColor(viewport.download->background_color);
-					renderer->FillRect(render_ctx.target);
+		if (viewport.download)
+			switch (viewport.download->artwork_type) {
+				case ARTWORK_TYPE_IMAGE: {
+					if (viewport.download) {
+						renderer->SetDrawColor(viewport.download->background_color);
+						renderer->FillRect(render_ctx.target);
+					}
 				}
+				default:break;
 			}
-			default:break;
-		}
 		Arcollect::gui::view_slideshow::render(render_ctx);
 	}
 } background_slideshow;
