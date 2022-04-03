@@ -16,6 +16,8 @@
  */
 /** \file json_escaper.hpp
  *  \brief A simple JSON escaper
+ *
+ * This escaper escape `"`, `\` and ASCII control-chars.
  */
 #include <string>
 #include <string_view>
@@ -40,14 +42,16 @@ namespace Arcollect {
 						result += "\\\"";
 					} break;
 					default:
-						if (((uint8_t)chr < 32)||((uint8_t)chr==127)) {
+						if (((uint8_t)chr & ~0x1f)) {
+							result += chr;
+						} else {
 							// Escape control char
 							result += "\\u00";
 							uint8_t halfbyte = ((uint8_t)chr >> 4) & 0xF;
 							result += (halfbyte < 0xA) ? ('0' + halfbyte) : ('a' - 0xa + halfbyte);
 							halfbyte = ((uint8_t)chr >> 0) & 0xF;
 							result += (halfbyte < 0xA) ? ('0' + halfbyte) : ('a' - 0xa + halfbyte);
-						} else result += chr;
+						}
 				}
 			}
 			return result;
