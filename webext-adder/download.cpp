@@ -240,6 +240,7 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 			curl_easy_setopt(easyhandle,CURLOPT_REFERER,referer.data());
 			curl_easy_setopt(easyhandle,CURLOPT_USERAGENT,Arcollect::WebextAdder::user_agent.c_str());
 			curl_easy_setopt(easyhandle,CURLOPT_ERRORBUFFER,session.curl_errorbuffer);
+			curl_easy_setopt(easyhandle,CURLOPT_ACCEPT_ENCODING,""); // To send "Accept-Encoding:" header
 			curl_easy_setopt(easyhandle,CURLOPT_SSLVERSION,CURL_SSLVERSION_TLSv1_2); 
 			curl_easy_setopt(easyhandle,CURLOPT_HTTPHEADER,http_headers.list);
 			if (!cache_miss) {
