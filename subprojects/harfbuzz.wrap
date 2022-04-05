@@ -1,8 +1,8 @@
 [wrap-file]
-directory = harfbuzz-3.2.0
-source_url = https://github.com/harfbuzz/harfbuzz/archive/refs/tags/3.2.0.tar.gz
-source_filename = harfbuzz-3.2.0.tar.gz
-source_hash = 41b38daa13ebdba39fae3b5fb2abbf5f9ccd9121bfa7f47b18d51aa733f80aad
+directory = harfbuzz-4.2.0
+source_url = https://github.com/harfbuzz/harfbuzz/archive/refs/tags/4.2.0.tar.gz
+source_filename = harfbuzz-4.2.0.tar.gz
+source_hash = 7152d1bdcbd2bf6ba777cfe9161d40564fe0a7583e04e55e0a057d5f4414d3c9
 patch_directory = harfbuzz
 
 [provide]

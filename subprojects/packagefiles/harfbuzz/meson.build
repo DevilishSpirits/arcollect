@@ -1,6 +1,6 @@
 # Modifications of HarfBuzz meson.build for Arcollect
 project('harfbuzz', 'c', 'cpp',
-  version: '3.2.0',
+  version: '4.2.0',
 )
 
 hb_version_arr = meson.project_version().split('.')
@@ -52,10 +52,17 @@ if host_machine.cpu_family() == 'arm' and cpp.alignment('struct { char c; }') !=
   endif
 endif
 
+if host_machine.system() == 'windows'
+  add_project_arguments(cpp.get_supported_arguments([
+    '-Wa,-mbig-obj'
+  ]), language : 'cpp')
+endif
+
 check_headers = [
   ['unistd.h'],
   ['sys/mman.h'],
   ['stdbool.h'],
+  ['xlocale.h'],
 ]
 
 check_funcs = [
@@ -65,6 +72,8 @@ check_funcs = [
   ['getpagesize'],
   ['mmap'],
   ['isatty'],
+  ['uselocale'],
+  ['newlocale'],
 ]
 
 m_dep = cpp.find_library('m', required: false)
@@ -73,35 +82,28 @@ freetype_dep = dependency('freetype2', required: get_option('freetype'))
 
 glib_dep = disabler()
 gobject_dep =  disabler()
-graphite2_dep =  dependency('graphite2', required: get_option('graphite'))
+graphite2_dep = dependency('graphite2', required: get_option('graphite2'))
 
-icu_dep = null_dep
-if not get_option('icu').disabled()
-  icu_dep = dependency('icu-uc', required: false)
+if cpp.get_argument_syntax() == 'msvc'
+  icu_dep = dependency('ICU',
+                       required: get_option('icu'),
+                       components: 'uc',
+                       method: 'cmake')
+else
+  icu_dep = dependency('icu-uc',
+                       required: get_option('icu'),
+                       method: 'pkg-config')
+endif
 
-  if (not icu_dep.found() and
-      cpp.get_id() == 'msvc' and
-      cpp.has_header('unicode/uchar.h') and
-      cpp.has_header('unicode/unorm2.h') and
-      cpp.has_header('unicode/ustring.h') and
-      cpp.has_header('unicode/utf16.h') and
-      cpp.has_header('unicode/uversion.h') and
-      cpp.has_header('unicode/uscript.h'))
-    if get_option('buildtype') == 'debug'
-      icu_dep = cpp.find_library('icuucd', required: false)
-    else
-      icu_dep = cpp.find_library('icuuc', required: false)
-    endif
-  endif
-
-  if not icu_dep.found()
-    icu_dep = dependency('icu-uc', required: get_option('icu'))
+if icu_dep.found() and icu_dep.type_name() == 'pkgconfig'
+  icu_defs = icu_dep.get_variable(pkgconfig: 'DEFS', default_value: '').split()
+  if icu_defs.length() > 0
+    add_project_arguments(icu_defs, language: ['c', 'cpp'])
   endif
 endif
 
 cairo_dep = disabler()
-cairo_ft_dep = disabler()
-chafa_dep = disabler()
+chafa_dep = dependency('chafa', version: '>= 1.6.0', required: get_option('chafa'))
 
 conf = configuration_data()
 incconfig = include_directories('.')
@@ -167,15 +169,6 @@ if host_machine.system() == 'windows' and not get_option('gdi').disabled()
     conf.set('HAVE_UNISCRIBE', 1)
     conf.set('HAVE_GDI', 1)
   endif
-endif
-
-# DirectWrite (Windows)
-if host_machine.system() == 'windows' and not get_option('directwrite').disabled()
-  if get_option('directwrite').enabled() and not cpp.has_header('dwrite_1.h')
-    error('DirectWrite was enabled explicitly, but required header is missing.')
-  endif
-
-  conf.set('HAVE_DIRECTWRITE', 1)
 endif
 
 # CoreText (macOS)
@@ -260,9 +253,13 @@ subdir('src')
 
 # Strip uneeded functionalities
 conf.set('HB_DISABLE_DEPRECATED'      ,1) # Deprecation ? No thanks.
+conf.set('HB_NO_BORING_EXPANSION'     ,1) # Looks boring.
 conf.set('HB_NO_BUFFER_MESSAGE'       ,1) # Nuke hb_buffer_message_func_t
 conf.set('HB_NO_BUFFER_SERIALIZE'     ,1) # Nuke hb_buffer_serialize_glyphs
+conf.set('HB_NO_BUFFER_VERIFY'        ,1) # Nuke the unused buffer sanity check
 conf.set('HB_NO_CMAP_LEGACY_SUBTABLES',1) # Remove as much legacy as we can
+conf.set('HB_NO_DRAW'                 ,1) # We use FreeType2 to render fonts
+conf.set('HB_NO_FACE_COLLECT_UNICODES',1) # Nuke unused API
 conf.set('HB_NO_FALLBACK_SHAPE'       ,1) # Remove as much legacy as we can
 conf.set('HB_NO_MT'                   ,1) # HarfBuzz is always used in the main thread
 conf.set('HB_NO_OT_FONT'              ,1) # We always use FreeType2

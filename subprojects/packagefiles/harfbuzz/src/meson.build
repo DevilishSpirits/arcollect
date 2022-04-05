@@ -2,8 +2,7 @@ hb_version_h = configure_file(
                command: [find_program('gen-hb-version.py'), meson.project_version(), '@OUTPUT@', '@INPUT@'],
                input: 'hb-version.h.in',
                output: 'hb-version.h',
-               install: false,
-               install_dir: join_paths(get_option('includedir'), meson.project_name()))
+               install: false)
 
 # Base and default-included sources and headers
 hb_base_sources = files(
@@ -29,6 +28,7 @@ hb_base_sources = files(
   'hb-blob.cc',
   'hb-blob.hh',
   'hb-buffer-serialize.cc',
+  'hb-buffer-verify.cc',
   'hb-buffer.cc',
   'hb-buffer.hh',
   'hb-cache.hh',
@@ -54,7 +54,6 @@ hb_base_sources = files(
   'hb-map.cc',
   'hb-map.hh',
   'hb-meta.hh',
-  'hb-ms-feature-ranges.cc',
   'hb-ms-feature-ranges.hh',
   'hb-mutex.hh',
   'hb-null.hh',
@@ -92,6 +91,28 @@ hb_base_sources = files(
   'hb-ot-layout-gdef-table.hh',
   'hb-ot-layout-gpos-table.hh',
   'hb-ot-layout-gsub-table.hh',
+  'OT/Layout/GSUB/Common.hh',
+  'OT/Layout/GSUB/Sequence.hh',
+  'OT/Layout/GSUB/SingleSubstFormat1.hh',
+  'OT/Layout/GSUB/SingleSubstFormat2.hh',
+  'OT/Layout/GSUB/SingleSubst.hh',
+  'OT/Layout/GSUB/MultipleSubstFormat1.hh',
+  'OT/Layout/GSUB/MultipleSubst.hh',
+  'OT/Layout/GSUB/AlternateSubstFormat1.hh',
+  'OT/Layout/GSUB/AlternateSubst.hh',
+  'OT/Layout/GSUB/AlternateSet.hh',
+  'OT/Layout/GSUB/LigatureSubstFormat1.hh',
+  'OT/Layout/GSUB/LigatureSubst.hh',
+  'OT/Layout/GSUB/LigatureSet.hh',
+  'OT/Layout/GSUB/Ligature.hh',
+  'OT/Layout/GSUB/ReverseChainSingleSubst.hh',
+  'OT/Layout/GSUB/ReverseChainSingleSubstFormat1.hh',
+  'OT/Layout/GSUB/ContextSubst.hh',
+  'OT/Layout/GSUB/ChainContextSubst.hh',
+  'OT/Layout/GSUB/ExtensionSubst.hh',
+  'OT/Layout/GSUB/SubstLookupSubTable.hh',
+  'OT/Layout/GSUB/SubstLookup.hh',
+  'OT/Layout/GSUB/GSUB.hh',
   'hb-ot-layout-gsubgpos.hh',
   'hb-ot-layout-jstf-table.hh',
   'hb-ot-layout.cc',
@@ -273,11 +294,15 @@ hb_subset_sources = files(
   'hb-subset-input.hh',
   'hb-subset-plan.cc',
   'hb-subset-plan.hh',
+  'hb-subset-repacker.cc',
   'hb-subset.cc',
   'hb-subset.hh',
 )
 
-hb_subset_headers = files('hb-subset.h')
+hb_subset_headers = files(
+  'hb-subset.h',
+  'hb-subset-repacker.h'
+)
 
 hb_gobject_sources = files(
   'hb-gobject-structs.cc'
@@ -354,6 +379,7 @@ endif
 if conf.get('HAVE_DIRECTWRITE', 0) == 1
   hb_sources += hb_directwrite_sources
   hb_headers += hb_directwrite_headers
+  harfbuzz_deps += directwrite_dep
   # hb-directwrite needs a C++ linker
   libharfbuzz_link_language = 'cpp'
 endif
@@ -397,6 +423,14 @@ if cpp.get_id() == 'msvc'
   hb_so_version = ''
 else
   hb_so_version = '0'
+endif
+
+if get_option('fuzzer_ldflags') != ''
+  extra_hb_cpp_args += ['-DHB_CUSTOM_MALLOC']
+  hb_sources += 'failing-alloc.c'
+  hb_subset_sources += 'failing-alloc.c'
+  hb_icu_sources += 'failing-alloc.c'
+  hb_gobject_sources += 'failing-alloc.c'
 endif
 
 darwin_versions = [hb_version_int, '@0@.0.0'.format(hb_version_int)]
