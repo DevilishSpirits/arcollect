@@ -280,6 +280,11 @@ libpng_dep = dependency('libpng')
 ftoption_command += ['--enable=FT_CONFIG_OPTION_USE_PNG']
 ft2_deps += [libpng_dep]
 
+# Brotli decompression support
+brotli_dep = dependency('libbrotlidec')
+ftoption_command += ['--enable=FT_CONFIG_OPTION_USE_BROTLI']
+ft2_deps += [brotli_dep]
+
 # We can now generate `ftoption.h`.
 ftoption_h = custom_target('ftoption.h',
   input: 'include/freetype/config/ftoption.h',

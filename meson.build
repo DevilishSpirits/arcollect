@@ -172,6 +172,7 @@ if enable_native_progs
 		'freetype2',
 		'harfbuzz',
 		'lcms2',
+		'libbrotlicommon',
 		'libcurl',
 		'OpenImageIO',
 		'sdl2',
@@ -223,6 +224,7 @@ endforeach
 dep_fancy_name = {
 	'base64'           : 'Base64.h',
 	'boost'            : 'Boost',
+	'libbrotlicommon'  : 'Brotli',
 	'dbus-1'           : 'D-Bus',
 	'freetype2'        : 'FreeType2',
 	'FMT'              : '{fmt}',
@@ -244,6 +246,7 @@ dep_fancy_name = {
 dep_website = {
 	'base64'           : 'https://gist.github.com/tomykaira/f0fd86b6c73063283afe550bc5d77594',
 	'boost'            : 'https://www.boost.org/',
+	'libbrotlicommon'  : 'https://github.com/google/brotli',
 	'dbus-1'           : 'https://www.freedesktop.org/wiki/Software/dbus/',
 	'freetype2'        : 'https://www.freetype.org',
 	'FMT'              : 'https://fmt.dev/latest/index.html',
