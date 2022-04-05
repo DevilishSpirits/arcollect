@@ -28,19 +28,20 @@ project('freetype2', 'c',
   meson_version: '>= 0.55.0',
   default_options: ['default_library=both'],
   version: run_command('builds/meson/extract_freetype_version.py',
-                       'include/freetype/freetype.h').stdout().strip(),
+                       'include/freetype/freetype.h',
+                       check: true).stdout().strip(),
 )
 
 # Only meson >= 0.57 can read a file and assign its contents to a
 # variable; we thus use an external command to have this functionality
 # with older versions, too.
 
-python = import('python')
-python_exe = python.find_installation(required: true)
+python_exe = find_program('python3')
 
 ft2_pkgconfig_version = run_command(python_exe,
   files('builds/meson/extract_libtool_version.py'),
-  files('builds/unix/configure.raw')).stdout().strip()
+  files('builds/unix/configure.raw'),
+  check: true).stdout().strip()
 
 ft2_includes = include_directories('include')
 
@@ -65,7 +66,8 @@ ft2_sources = [ftmodule_h]
 ft_main_modules = run_command(python_exe,
   files('builds/meson/parse_modules_cfg.py'),
   '--format=main-modules',
-  files('modules.cfg')).stdout().strip().split()
+  files('modules.cfg'),
+  check: true).stdout().strip().split()
 
 ft2_sources += files([
   'src/base/ftbase.c',
@@ -86,7 +88,8 @@ endforeach
 ft_aux_modules = run_command(python_exe,
   files('builds/meson/parse_modules_cfg.py'),
   '--format=aux-modules',
-  files('modules.cfg')).stdout().strip().split()
+  files('modules.cfg'),
+  check: true).stdout().strip().split()
 
 foreach auxmod: ft_aux_modules
   source = auxmod
@@ -112,7 +115,8 @@ endforeach
 base_extensions = run_command(python_exe,
   files('builds/meson/parse_modules_cfg.py'),
   '--format=base-extensions-list',
-  files('modules.cfg')).stdout().split()
+  files('modules.cfg'),
+  check: true).stdout().split()
 
 foreach ext: base_extensions
   ft2_sources += files('src/base/' + ext)
@@ -162,6 +166,7 @@ ft2_public_headers = files([
   'include/freetype/fttrigon.h',
   'include/freetype/fttypes.h',
   'include/freetype/ftwinfnt.h',
+  'include/freetype/otsvg.h',
   'include/freetype/t1tables.h',
   'include/freetype/ttnameid.h',
   'include/freetype/tttables.h',
@@ -258,7 +263,10 @@ ftoption_command = process_header_command
 
 # external GZip support
 zlib_dep = dependency('zlib')
-ftoption_command += ['--enable=FT_CONFIG_OPTION_SYSTEM_ZLIB']
+ftoption_command += [
+  '--enable=FT_CONFIG_OPTION_USE_ZLIB',
+  '--enable=FT_CONFIG_OPTION_SYSTEM_ZLIB',
+]
 ft2_deps += [zlib_dep]
 
 # BZip2 support
