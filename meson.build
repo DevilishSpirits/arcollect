@@ -84,6 +84,7 @@ configure_file(output: 'config.h', configuration: config_h)
 config_h_inc = include_directories('.')
 
 # Dependencies
+subdir('cmake-modules')
 if enable_native_progs
 	# Query C++ features
 	cpp_required_features = {
@@ -133,7 +134,9 @@ if enable_native_progs
 		endif
 	endif
 	# Query dependencies
-	dep_curl = dependency('libcurl', required: true)
+	dep_curl = dependency('libcurl', required: true, default_options: [
+		'cmake_module_path='+cmake_module_path
+	])
 	
 	dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
 	
@@ -173,6 +176,7 @@ if enable_native_progs
 		'OpenImageIO',
 		'sdl2',
 		'sqlite3',
+		'zlib',
 	]
 	if with_xdg
 		native_progs_deps += 'dbus-1'
@@ -190,7 +194,6 @@ if enable_native_progs
 	endif
 	if ('libpng' in native_progs_deps) and (dependency('libpng', required: false).type_name() == 'internal')
 		native_progs_deps += [
-			'zlib',
 		]
 	endif
 	foreach dep_name: native_progs_deps

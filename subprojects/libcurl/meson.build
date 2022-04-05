@@ -22,6 +22,7 @@ subproj_opts.add_cmake_defines({
 	'ENABLE_UNIX_SOCKETS': false,
 	'HTTP_ONLY': true,
 	'SSL_ENABLED': true,
+	'CMAKE_MODULE_PATH': get_option('cmake_module_path')
 })
 dep_curl = []
 if host_machine.system() == 'windows'
@@ -40,4 +41,4 @@ endif
 subproj_opts.set_install(false)
 subproj_curl = cmake.subproject('libcurl-cmake', options: subproj_opts)
 dep_curl_cmake = subproj_curl.dependency('libcurl')
-meson.override_dependency('libcurl',declare_dependency(dependencies: [dep_curl_cmake,dep_curl], version: '7.81.0'))
+meson.override_dependency('libcurl',declare_dependency(dependencies: [dep_curl_cmake,dep_curl,dependency('zlib')], version: '7.81.0'))

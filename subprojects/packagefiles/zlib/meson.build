@@ -60,3 +60,5 @@ zlib_dep = declare_dependency(
   include_directories : incdir,
   version: zlib_ver,
   )
+
+zlib_source_dir = meson.current_source_dir()
