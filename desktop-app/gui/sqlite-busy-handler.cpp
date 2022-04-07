@@ -40,9 +40,9 @@ namespace Arcollect {
 					}
 				// Render text
 				// TODO Cache that
-				const auto text_elements = Elements::build(FontSize(22),
+				const auto text_elements = Elements::build(FontSize(1.2),
 					Align::CENTER,i18n_desktop_app.db_busy_title,U"\n"sv,
-					FontSize(18),
+					FontSize(1),
 					i18n_desktop_app.db_busy_explanation,U"\n"sv,
 					SDL::Color{192,192,192,255},i18n_desktop_app.db_busy_hint
 				);
@@ -50,8 +50,8 @@ namespace Arcollect {
 				renderer->GetOutputSize(window_size);
 				Renderable renderable(text_elements,window_size.x/2);
 				// Center
-				window_size.x -= renderable.size().x;
-				window_size.y -= renderable.size().y;
+				window_size.x -= renderable.size().x*2;
+				window_size.y -= renderable.size().y*2;
 				window_size.x /= 2;
 				window_size.y /= 2;
 				// Blank background
