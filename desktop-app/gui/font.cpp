@@ -61,7 +61,7 @@ void Arcollect::gui::font::Glyph::render(int origin_x, int origin_y, SDL::Color 
 	SDL_SetTextureAlphaMod((SDL_Texture*)text,color.a);
 	renderer->Copy(text,NULL,&rect);
 }
-std::unordered_map<Arcollect::gui::font::Glyph::key,std::unique_ptr<Arcollect::gui::font::Glyph>,Arcollect::gui::font::Glyph::key::hash> Arcollect::gui::font::Glyph::glyph_cache;
+std::unordered_map<Arcollect::gui::font::Glyph::key,Arcollect::gui::font::Glyph,Arcollect::gui::font::Glyph::key::hash> Arcollect::gui::font::Glyph::glyph_cache;
 
 FT_Face Arcollect::gui::font::query_face(Uint32 font_size)
 {

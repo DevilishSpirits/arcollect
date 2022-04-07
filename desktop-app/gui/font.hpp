@@ -18,7 +18,6 @@
 #include "../sdl2-hpp/SDL.hpp"
 #include <hb.h>
 #include <limits>
-#include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -375,7 +374,7 @@ namespace Arcollect {
 				// Glyph cache
 				/** Glyph render cache
 				 */
-				static std::unordered_map<key,std::unique_ptr<Glyph>,key::hash> glyph_cache;
+				static std::unordered_map<key,Glyph,key::hash> glyph_cache;
 				/** Query a glyph
 				 * \param key The glyph key
 				 *
@@ -384,8 +383,8 @@ namespace Arcollect {
 				static inline Glyph& query(const key& key) {
 					auto iter = glyph_cache.find(key);
 					if (iter == glyph_cache.end())
-						iter = glyph_cache.emplace(key,std::make_unique<Glyph>(key)).first;
-					return *(iter->second);
+						iter = glyph_cache.emplace(key,key).first;
+					return iter->second;
 				}
 				/** Query a glyph
 				 *
