@@ -34,6 +34,7 @@ namespace Arcollect {
 				struct render_context {
 					SDL::Renderer &renderer;
 					SDL::Rect target;
+					SDL::Rect titlebar_target;
 					SDL::Point window_size;
 				};
 				/** Pop flag
@@ -61,7 +62,7 @@ namespace Arcollect {
 				 *
 				 * Render the titlebar.
 				 */
-				virtual void render_titlebar(SDL::Rect target, int window_width);
+				virtual void render_titlebar(render_context render_ctx);
 				/** Get menu items for topbar context menu
 				 * \return The list of modal dependant menus to add.
 				 *

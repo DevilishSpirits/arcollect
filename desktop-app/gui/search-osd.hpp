@@ -33,7 +33,7 @@ namespace Arcollect {
 			public:
 				bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override;
 				void render(Arcollect::gui::modal::render_context render_ctx) override;
-				void render_titlebar(SDL::Rect target, int window_width) override;
+				void render_titlebar(Arcollect::gui::modal::render_context render_ctx) override;
 				std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override;
 				void push(void);
 		};

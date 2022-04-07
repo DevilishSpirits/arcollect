@@ -18,7 +18,6 @@
 #include <sqlite3.hpp>
 #include "../sdl2-hpp/SDL.hpp"
 #include <memory>
-extern SDL::Renderer *renderer;
 namespace Arcollect {
 	namespace db {
 		typedef sqlite_int64 account_id;

@@ -2,10 +2,9 @@
 #include "font.hpp"
 #include <config.h>
 
-extern SDL::Renderer *renderer;
 std::list<Arcollect::gui::modal_stack_variant> Arcollect::gui::modal_stack;
 
-void Arcollect::gui::modal::render_titlebar(SDL::Rect target, int window_width)
+void Arcollect::gui::modal::render_titlebar(render_context render_ctx)
 {
 	// Render icon
 	#if 0
@@ -14,15 +13,15 @@ void Arcollect::gui::modal::render_titlebar(SDL::Rect target, int window_width)
 	#endif
 	// Render title
 	static int cached_height;
-	const int title_border = target.h/4;
+	const int title_border = render_ctx.titlebar_target.h/4;
 	static std::unique_ptr<Arcollect::gui::font::Renderable> cached_render;
 	static SDL::Point topleft_corner;
-	if (!cached_render||(cached_height != target.h)) {
-		auto text = Arcollect::gui::font::Elements::build(Arcollect::gui::font::ExactFontSize(target.h-2*title_border),U"Arcollect "sv ARCOLLECT_VERSION_STR);
+	if (!cached_render||(cached_height != render_ctx.titlebar_target.h)) {
+		auto text = Arcollect::gui::font::Elements::build(Arcollect::gui::font::ExactFontSize(render_ctx.titlebar_target.h-2*title_border),U"Arcollect "sv ARCOLLECT_VERSION_STR);
 		cached_render = std::make_unique<Arcollect::gui::font::Renderable>(text);
-		topleft_corner.x = target.x+title_border;
-		topleft_corner.y = target.y+title_border;
-		cached_height = target.h;
+		topleft_corner.x = render_ctx.titlebar_target.x+title_border;
+		topleft_corner.y = render_ctx.titlebar_target.y+title_border;
+		cached_height = render_ctx.titlebar_target.h;
 	}
 	cached_render->render_tl(topleft_corner);
 }

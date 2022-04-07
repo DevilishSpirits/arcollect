@@ -92,14 +92,14 @@ void Arcollect::gui::view_vgrid::render(Arcollect::gui::modal::render_context re
 	SDL_GetMouseState(&cursor_position.x,&cursor_position.y);
 	artwork_viewport* hover = get_pointed(render_ctx,cursor_position);
 	if (hover)
-		render_viewport_hover(*hover,displacement);
+		render_viewport_hover(render_ctx,*hover,displacement);
 }
-void Arcollect::gui::view_vgrid::render_viewport_hover(const artwork_viewport& viewport, SDL::Point offset)
+void Arcollect::gui::view_vgrid::render_viewport_hover(const Arcollect::gui::modal::render_context &render_ctx, const artwork_viewport& viewport, SDL::Point offset)
 {
 	// Draw backdrop
 	SDL::Rect rect{viewport.corner_tl.x+offset.x,viewport.corner_tl.y+offset.y,viewport.corner_tr.x-viewport.corner_tl.x,viewport.corner_bl.y-viewport.corner_tl.y};
-	renderer->SetDrawColor(0,0,0,192);
-	renderer->FillRect(rect);
+	render_ctx.renderer.SetDrawColor(0,0,0,192);
+	render_ctx.renderer.FillRect(rect);
 	// Draw title
 	if (caption_cache_artwork != viewport.artwork) {
 		caption_title = gui::font::Renderable(viewport.artwork->title(),1,rect.w);

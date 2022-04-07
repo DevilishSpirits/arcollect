@@ -58,7 +58,7 @@ namespace Arcollect {
 				renderer->SetDrawColor(0,0,0,255);
 				renderer->Clear();
 				// Draw top bar
-				Arcollect::gui::window_borders::render();
+				// TODO Arcollect::gui::window_borders::render();
 				// Draw text
 				renderable.render_tl(window_size);
 				renderer->Present();

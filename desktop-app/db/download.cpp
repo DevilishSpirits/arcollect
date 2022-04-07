@@ -24,7 +24,6 @@
 
 std::list<std::reference_wrapper<Arcollect::db::download>> Arcollect::db::download::last_rendered;
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::download>> downloads_pool;
-extern SDL::Renderer *renderer;
 
 Arcollect::db::download::download(sqlite_int64 id, std::string &&source, std::filesystem::path &&path, std::string &&mimetype) :
 	artwork_type(artwork_type_from_mime(mimetype)),
@@ -204,7 +203,7 @@ void Arcollect::db::download::load_stage_one(void)
 	}
 	load_state = LOAD_PENDING_STAGE2;
 }
-void Arcollect::db::download::load_stage_two(void)
+void Arcollect::db::download::load_stage_two(SDL::Renderer &renderer)
 {
 	// TODO Check for load failures
 	switch (artwork_type) {
@@ -212,7 +211,7 @@ void Arcollect::db::download::load_stage_two(void)
 		} break;
 		case ARTWORK_TYPE_IMAGE: {
 			// Generate texture
-			SDL::Texture *text = SDL::Texture::CreateFromSurface(renderer,std::get<std::unique_ptr<SDL::Surface>>(data).get());
+			SDL::Texture *text = SDL::Texture::CreateFromSurface(&renderer,std::get<std::unique_ptr<SDL::Surface>>(data).get());
 			if (!text) {
 				// TODO Better error handling
 				load_state = UNLOADED;

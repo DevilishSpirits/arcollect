@@ -73,16 +73,13 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e, Arcollect::gui::modal::ren
 }
 void Arcollect::gui::search_osd::render(Arcollect::gui::modal::render_context render_ctx)
 {
-	// Force render the title bar
-	SDL::Point screen_size;
-	renderer->GetOutputSize(screen_size);
-	render_titlebar({0,0,screen_size.x,Arcollect::gui::window_borders::title_height},screen_size.x);
+	render_titlebar(render_ctx);
 }
-void Arcollect::gui::search_osd::render_titlebar(SDL::Rect target, int window_width)
+void Arcollect::gui::search_osd::render_titlebar(Arcollect::gui::modal::render_context render_ctx)
 {
 	// Render text
-	const int title_border = target.h/4;
-	text_render.render_tl(title_border+target.h,title_border);
+	const int title_border = render_ctx.titlebar_target.h/4;
+	text_render.render_tl(title_border+render_ctx.titlebar_target.h,title_border);
 }
 void Arcollect::gui::search_osd::text_changed(void)
 {

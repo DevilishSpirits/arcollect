@@ -144,7 +144,7 @@ namespace Arcollect {
 				 */
 				artwork_viewport *get_pointed(const Arcollect::gui::modal::render_context &render_ctx, SDL::Point mousepos);
 				void render(Arcollect::gui::modal::render_context render_ctx) override;
-				void render_viewport_hover(const artwork_viewport& viewport, SDL::Point offset);
+				void render_viewport_hover(const Arcollect::gui::modal::render_context &render_ctx, const artwork_viewport& viewport, SDL::Point offset);
 				bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override;
 		};
 	}

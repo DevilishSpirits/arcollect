@@ -142,9 +142,10 @@ bool Arcollect::gui::main(void)
 	// Compute render context
 	Arcollect::gui::modal::render_context render_ctx{*renderer};
 	renderer->GetOutputSize(render_ctx.window_size);
-	render_ctx.target.x = render_ctx.target.y = 0;
-	render_ctx.target.w = render_ctx.window_size.x;
+	render_ctx.target.x = render_ctx.target.y = render_ctx.titlebar_target.x = render_ctx.titlebar_target.y = 0;
+	render_ctx.target.w = render_ctx.titlebar_target.w = render_ctx.window_size.x;
 	render_ctx.target.h = render_ctx.window_size.y;
+	render_ctx.titlebar_target.h = Arcollect::gui::window_borders::title_height;
 	// Handle event
 	Uint32 event_start_ticks = SDL_GetTicks();
 	while (has_event) {
@@ -202,7 +203,7 @@ bool Arcollect::gui::main(void)
 		// Render
 		Arcollect::gui::modal_get(iter).render(render_ctx);
 	}
-	Arcollect::gui::window_borders::render();
+	Arcollect::gui::window_borders::render(render_ctx);
 	Uint32 loader_start_ticks = SDL_GetTicks();
 	decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending_count;
 	static decltype(Arcollect::db::artwork_loader::done) main_done;
@@ -210,7 +211,7 @@ bool Arcollect::gui::main(void)
 	for (auto &artwork: Arcollect::db::artwork_loader::pending_main) {
 		auto node = main_done.extract(artwork);
 		if (node) {
-			node.value()->load_stage_two();
+			node.value()->load_stage_two(*renderer);
 			if (SDL_GetTicks()-render_start_ticks > 40)
 				break;
 		}
@@ -240,7 +241,7 @@ bool Arcollect::gui::main(void)
 		// Load arts
 		do {
 			decltype(main_done)::node_type art = main_done.extract(main_done.begin());
-			art.value()->load_stage_two();
+			art.value()->load_stage_two(*renderer);
 			// Ensure nice framerate 
 		} while ((SDL_GetTicks()-render_start_ticks < 50) && main_done.size());
 	}

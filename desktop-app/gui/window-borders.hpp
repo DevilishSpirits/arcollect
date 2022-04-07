@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "../sdl2-hpp/SDL.hpp"
+#include "modal.hpp"
 namespace Arcollect {
 	namespace gui {
 		namespace window_borders {
@@ -22,7 +23,7 @@ namespace Arcollect {
 			extern int title_height;
 			extern const int resize_width;
 			bool event(SDL::Event &e);
-			void render(void);
+			void render(Arcollect::gui::modal::render_context &render_ctx);
 		}
 		void set_fullscreen(bool fullscreen);
 	}

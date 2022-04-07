@@ -16,7 +16,6 @@
  */
 #include "../config.hpp"
 #include "scrolling-text.hpp"
-extern SDL::Renderer *renderer;
 void Arcollect::gui::scrolling_text::scroll_text(int line_delta, const SDL::Rect &rect)
 {
 	if (renderable) {
@@ -76,11 +75,11 @@ void Arcollect::gui::scrolling_text::render(Arcollect::gui::modal::render_contex
 	progress_bar.w = target.w;
 	progress_bar.h = Arcollect::config::writing_font_size/8;
 	progress_bar.y += target.h-progress_bar.h;
-	renderer->SetDrawColor(0,0,0,192);
-	renderer->FillRect(progress_bar);
+	render_ctx.renderer.SetDrawColor(0,0,0,192);
+	render_ctx.renderer.FillRect(progress_bar);
 	progress_bar.w = current_scroll*target.w/max_scroll;
-	renderer->SetDrawColor(255,255,255,192);
-	renderer->FillRect(progress_bar);
+	render_ctx.renderer.SetDrawColor(255,255,255,192);
+	render_ctx.renderer.FillRect(progress_bar);
 }
 bool Arcollect::gui::scrolling_text::event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx)
 {

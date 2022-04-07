@@ -132,8 +132,8 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			switch (viewport.download->artwork_type) {
 				case ARTWORK_TYPE_IMAGE: {
 					if (viewport.download) {
-						renderer->SetDrawColor(viewport.download->background_color);
-						renderer->FillRect(render_ctx.target);
+						render_ctx.renderer.SetDrawColor(viewport.download->background_color);
+						render_ctx.renderer.FillRect(render_ctx.target);
 					}
 				}
 				default:break;

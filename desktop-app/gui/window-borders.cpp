@@ -17,7 +17,6 @@
 #include "window-borders.hpp"
 #include "about.hpp"
 #include "menu.hpp"
-#include "modal.hpp"
 #include "rating-selector.hpp"
 #include "../i18n.hpp"
 static bool display_bar = false;
@@ -222,28 +221,26 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 	}
 	return true;
 }
-void Arcollect::gui::window_borders::render(void)
+void Arcollect::gui::window_borders::render(Arcollect::gui::modal::render_context &render_ctx)
 {
 	const int title_button_padding = Arcollect::gui::window_borders::title_height/3;
 	if (display_bar) {
-		renderer->SetDrawBlendMode(SDL::BLENDMODE_BLEND);
+		render_ctx.renderer.SetDrawBlendMode(SDL::BLENDMODE_BLEND);
 		// Get bar size and cursor position
-		SDL::Point window_size;
-		renderer->GetOutputSize(window_size);
 		SDL::Point cursor_position;
 		SDL_GetMouseState(&cursor_position.x,&cursor_position.y);
 		// Draw modal title
-		SDL::Rect modal_bar{0,0,window_size.x-TITLEBTN_N*title_button_width,Arcollect::gui::window_borders::title_height};
-		renderer->SetDrawColor(0,0,0,128);
-		renderer->FillRect(modal_bar);
-		modal_back().render_titlebar(modal_bar,window_size.x);
+		SDL::Rect modal_bar{0,0,render_ctx.target.w-TITLEBTN_N*title_button_width,Arcollect::gui::window_borders::title_height};
+		render_ctx.renderer.SetDrawColor(0,0,0,128);
+		render_ctx.renderer.FillRect(modal_bar);
+		modal_back().render_titlebar(render_ctx);
 		// Draw buttons background over title if it overflow
 		SDL::Rect title_button_area{modal_bar.w,0,TITLEBTN_N*title_button_width,Arcollect::gui::window_borders::title_height};
-		renderer->SetDrawColor(0,0,0,128);
-		renderer->FillRect(title_button_area);
+		render_ctx.renderer.SetDrawColor(0,0,0,128);
+		render_ctx.renderer.FillRect(title_button_area);
 		// Compute buttons rects
 		SDL::Rect btn_rect = {
-			window_size.x - title_button_width,0,
+			render_ctx.target.w - title_button_width,0,
 			title_button_width,title_button_height
 		};
 		SDL::Rect btn_inner_rect = {
@@ -254,48 +251,48 @@ void Arcollect::gui::window_borders::render(void)
 		};
 		const int btn_ymid = btn_rect.y + (btn_rect.h)/2;
 		const int btn_inner_ybot = btn_inner_rect.y + btn_inner_rect.h;
-		renderer->SetDrawColor(255,255,255,192);
+		render_ctx.renderer.SetDrawColor(255,255,255,192);
 		// Draw close button (a cross)
 		SDL::Point close_tl{btn_inner_rect.x, btn_inner_rect.y};
 		SDL::Point close_br{btn_inner_rect.x + btn_inner_rect.w, btn_inner_rect.y + btn_inner_rect.h};
-		renderer->DrawLine(close_tl,close_br);
-		renderer->DrawLine(close_tl.x,close_br.y,close_br.x,close_tl.y);
+		render_ctx.renderer.DrawLine(close_tl,close_br);
+		render_ctx.renderer.DrawLine(close_tl.x,close_br.y,close_br.x,close_tl.y);
 		btn_rect.x       -= title_button_width;
 		btn_inner_rect.x -= title_button_width;
 		// Draw maximize button (a square)
-		renderer->DrawRect(btn_inner_rect);
+		render_ctx.renderer.DrawRect(btn_inner_rect);
 		btn_rect.x       -= title_button_width;
 		btn_inner_rect.x -= title_button_width;
 		// Draw fullscreen button (a filled square)
 		SDL::Rect fullscreen_rect = btn_inner_rect;
-		renderer->DrawRect(fullscreen_rect);
+		render_ctx.renderer.DrawRect(fullscreen_rect);
 		fullscreen_rect.x += 2;
 		fullscreen_rect.y += 2;
 		fullscreen_rect.w -= 4;
 		fullscreen_rect.h -= 4;
-		renderer->FillRect(fullscreen_rect);
+		render_ctx.renderer.FillRect(fullscreen_rect);
 		btn_rect.x       -= title_button_width;
 		btn_inner_rect.x -= title_button_width;
 		// Draw minimize button (a square)
-		renderer->DrawLine(btn_inner_rect.x,btn_inner_ybot,btn_inner_rect.x+btn_inner_rect.w,btn_inner_ybot);
+		render_ctx.renderer.DrawLine(btn_inner_rect.x,btn_inner_ybot,btn_inner_rect.x+btn_inner_rect.w,btn_inner_ybot);
 		btn_rect.x       -= title_button_width;
 		btn_inner_rect.x -= title_button_width;
 		// Draw menu button (triangle)
-		renderer->DrawLine(btn_inner_rect.x,btn_ymid,btn_inner_rect.x+btn_inner_rect.w,btn_ymid);
-		renderer->DrawLine(btn_inner_rect.x,btn_ymid,btn_inner_rect.x+(btn_inner_rect.w)/2,btn_inner_ybot);
-		renderer->DrawLine(btn_inner_rect.x+btn_inner_rect.w,btn_ymid,btn_inner_rect.x+(btn_inner_rect.w)/2,btn_inner_ybot);
+		render_ctx.renderer.DrawLine(btn_inner_rect.x,btn_ymid,btn_inner_rect.x+btn_inner_rect.w,btn_ymid);
+		render_ctx.renderer.DrawLine(btn_inner_rect.x,btn_ymid,btn_inner_rect.x+(btn_inner_rect.w)/2,btn_inner_ybot);
+		render_ctx.renderer.DrawLine(btn_inner_rect.x+btn_inner_rect.w,btn_ymid,btn_inner_rect.x+(btn_inner_rect.w)/2,btn_inner_ybot);
 		btn_rect.x       -= title_button_width;
 		btn_inner_rect.x -= title_button_width;
 		// Enlight hovered button
 		btn_rect.x += (TITLEBTN_N-titlebtn_hovered)*title_button_width;
 		if (titlebtn_pressed != TITLEBTN_NONE) {
 			if (titlebtn_pressed == titlebtn_hovered) {
-				renderer->SetDrawColor(16,16,16,128);
-				renderer->FillRect(btn_rect);
+				render_ctx.renderer.SetDrawColor(16,16,16,128);
+				render_ctx.renderer.FillRect(btn_rect);
 			}
 		} else if (titlebtn_hovered != TITLEBTN_NONE) {
-			renderer->SetDrawColor(255,255,255,128);
-			renderer->FillRect(btn_rect);
+			render_ctx.renderer.SetDrawColor(255,255,255,128);
+			render_ctx.renderer.FillRect(btn_rect);
 		}
 	}
 }

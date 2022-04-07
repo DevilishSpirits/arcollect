@@ -25,6 +25,9 @@
 #include <memory>
 #include <variant>
 
+namespace SDL {
+	struct Renderer;
+}
 namespace Arcollect {
 	namespace db {
 		/** Download
@@ -133,11 +136,12 @@ namespace Arcollect {
 				void load_stage_one(void);
 				
 				/** Load (non thread-safe part)
+				 * \param renderer A reference to the current renderer
 				 *
 				 * Finish to load the artwork.
 				 * \warning This must be called in LOAD_PENDING_SYNC state!
 				 */
-				void load_stage_two(void);
+				void load_stage_two(SDL::Renderer& renderer);
 				
 				/** Unload
 				 *

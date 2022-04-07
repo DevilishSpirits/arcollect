@@ -20,7 +20,6 @@
 #include "db.hpp"
 
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::artwork>> artworks_pool;
-extern SDL::Renderer *renderer;
 
 Arcollect::db::artwork::artwork(Arcollect::db::artwork_id art_id) :
 	data_version(-2),

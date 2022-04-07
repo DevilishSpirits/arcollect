@@ -102,7 +102,7 @@ namespace Arcollect {
 				/** Render the click area UI
 				 * \param area The area to render
 				 */
-				void render_click_area(const SDL::Rect &target, ClickArea area, ClickState state);
+				void render_click_area(const Arcollect::gui::modal::render_context &render_ctx, ClickArea area, ClickState state);
 			public:
 				/** Artwork to target
 				 *
@@ -117,7 +117,7 @@ namespace Arcollect {
 				void resize(SDL::Rect rect); // TODO Only resize upon width/height change
 				void set_collection_iterator(const artwork_collection::iterator &iter);
 				void render(Arcollect::gui::modal::render_context render_ctx) override;
-				void render_titlebar(SDL::Rect target, int window_width) override;
+				void render_titlebar(Arcollect::gui::modal::render_context render_ctx) override;
 				/** Render some info in the bottom of the window
 				 *
 				 * Should be called right after render()
@@ -129,7 +129,7 @@ namespace Arcollect {
 				 * this value.
 				 *
 				 */
-				void render_info_incard(void);
+				void render_info_incard(const Arcollect::gui::modal::render_context &render_ctx);
 				bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override;
 				
 				/** Go to the first artwork

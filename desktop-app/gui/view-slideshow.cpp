@@ -128,7 +128,7 @@ void Arcollect::gui::view_slideshow::set_collection_iterator(const artwork_colle
 		resize(rect);
 	} else viewport.artwork = NULL;
 }
-void Arcollect::gui::view_slideshow::render_info_incard(void)
+void Arcollect::gui::view_slideshow::render_info_incard(const Arcollect::gui::modal::render_context &render_ctx)
 {
 	Arcollect::db::artwork &artwork = *db::artwork::query(*collection_iterator);
 	// Adjust rect
@@ -141,8 +141,8 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	SDL::Rect render_rect{rect.x,rect.h-box_height,rect.w,box_height};
 	
 	// Draw rect
-	renderer->SetDrawColor(0,0,0,192);
-	renderer->FillRect(render_rect);
+	render_ctx.renderer.SetDrawColor(0,0,0,192);
+	render_ctx.renderer.FillRect(render_rect);
 	// Apply padding
 	const auto box_padding = rect.h/100;
 	render_rect.x += box_padding;
@@ -157,7 +157,7 @@ void Arcollect::gui::view_slideshow::render_info_incard(void)
 	Arcollect::gui::font::Renderable desc_renderable(elements,render_rect.w);
 	desc_renderable.render_tl(render_rect.x,render_rect.y);
 }
-void Arcollect::gui::view_slideshow::render_click_area(const SDL::Rect &target, ClickArea area, ClickState state)
+void Arcollect::gui::view_slideshow::render_click_area(const Arcollect::gui::modal::render_context &render_ctx, ClickArea area, ClickState state)
 {
 	const auto colors = [](ClickState state) -> std::pair<SDL::Color,SDL::Color> {
 		switch (state) {
@@ -177,30 +177,30 @@ void Arcollect::gui::view_slideshow::render_click_area(const SDL::Rect &target, 
 	switch (area) {
 		case CLICK_NONE:break;
 		case CLICK_PREV: {
-			SDL::Rect rect{target.x,target.y + (target.h-border_limit)/2,border_limit,border_limit};
+			SDL::Rect rect{render_ctx.target.x,render_ctx.target.y + (render_ctx.target.h-border_limit)/2,border_limit,border_limit};
 			// Draw backdrop
-			renderer->SetDrawColor(back_color);
-			renderer->FillRect(rect);
+			render_ctx.renderer.SetDrawColor(back_color);
+			render_ctx.renderer.FillRect(rect);
 			// Draw arrow
 			const SDL::Point arrow{border_limit/8,border_limit/4};
 			const auto center = rect.x + rect.w/2;
 			const auto middle = rect.y + rect.h/2;
-			renderer->SetDrawColor(line_color);
-			renderer->DrawLine(center+arrow.x,middle-arrow.y,center-arrow.x,middle);
-			renderer->DrawLine(center-arrow.x,middle,center+arrow.x,middle+arrow.y);
+			render_ctx.renderer.SetDrawColor(line_color);
+			render_ctx.renderer.DrawLine(center+arrow.x,middle-arrow.y,center-arrow.x,middle);
+			render_ctx.renderer.DrawLine(center-arrow.x,middle,center+arrow.x,middle+arrow.y);
 		} break;
 		case CLICK_NEXT: {
-			SDL::Rect rect{target.x + target.w - border_limit,target.y + (target.h-border_limit)/2,border_limit,border_limit};
+			SDL::Rect rect{render_ctx.target.x + render_ctx.target.w - border_limit,render_ctx.target.y + (render_ctx.target.h-border_limit)/2,border_limit,border_limit};
 			// Draw backdrop
-			renderer->SetDrawColor(back_color);
-			renderer->FillRect(rect);
+			render_ctx.renderer.SetDrawColor(back_color);
+			render_ctx.renderer.FillRect(rect);
 			// Draw arrow
 			const SDL::Point arrow{border_limit/8,border_limit/4};
 			const auto center = rect.x + rect.w/2;
 			const auto middle = rect.y + rect.h/2;
-			renderer->SetDrawColor(line_color);
-			renderer->DrawLine(center-arrow.x,middle-arrow.y,center+arrow.x,middle);
-			renderer->DrawLine(center+arrow.x,middle,center-arrow.x,middle+arrow.y);
+			render_ctx.renderer.SetDrawColor(line_color);
+			render_ctx.renderer.DrawLine(center-arrow.x,middle-arrow.y,center+arrow.x,middle);
+			render_ctx.renderer.DrawLine(center+arrow.x,middle,center-arrow.x,middle+arrow.y);
 		} break;
 	}
 }
@@ -245,7 +245,7 @@ void Arcollect::gui::view_slideshow::render(Arcollect::gui::modal::render_contex
 		ClickArea hover_area = click_area(render_ctx.target,mouse_pos);
 		ClickState click_state = mouse_clicking && (hover_area == clicking_area)
 			? CLICK_PRESSED : CLICK_HOVER;
-		render_click_area(render_ctx.target,hover_area,click_state);
+		render_click_area(render_ctx,hover_area,click_state);
 	} else {
 		static std::unique_ptr<Arcollect::gui::font::Renderable> no_artwork_text_cache;
 		if (!no_artwork_text_cache)
@@ -254,28 +254,26 @@ void Arcollect::gui::view_slideshow::render(Arcollect::gui::modal::render_contex
 	}
 	//render_info_incard();
 }
-void Arcollect::gui::view_slideshow::render_titlebar(SDL::Rect target, int window_width)
+void Arcollect::gui::view_slideshow::render_titlebar(Arcollect::gui::modal::render_context render_ctx)
 {
 	if (viewport.artwork) {
 		// Render artist avatar
 		auto accounts = viewport.artwork->get_linked_accounts("account");
 		if (accounts.size() > 0) {
-			SDL::Rect icon_rect{target.x,target.y,target.h,target.h};
+			SDL::Rect icon_rect{render_ctx.titlebar_target.x,render_ctx.titlebar_target.y,render_ctx.titlebar_target.h,render_ctx.titlebar_target.h};
 			std::unique_ptr<SDL::Texture> &icon = accounts[0]->get_icon();
 			if (icon)
-				renderer->Copy(icon.get(),NULL,&icon_rect);
+				render_ctx.renderer.Copy(icon.get(),NULL,&icon_rect);
 			// TODO Render placeholder
 		}
 		// Render title
-		const int title_border = target.h/4;
+		const int title_border = render_ctx.titlebar_target.h/4;
 		if (!title_text_cache)
-			title_text_cache = std::make_unique<font::Renderable>(viewport.artwork->title().c_str(),-target.h+2*title_border);
-		title_text_cache->render_tl(target.x+title_border+target.h,target.y+title_border);
+			title_text_cache = std::make_unique<font::Renderable>(viewport.artwork->title().c_str(),-render_ctx.titlebar_target.h+2*title_border);
+		title_text_cache->render_tl(render_ctx.titlebar_target.x+title_border+render_ctx.titlebar_target.h,render_ctx.titlebar_target.y+title_border);
 		// Render clicks UI
-		// TODO Modify the prototype to include this information
-		renderer->GetOutputSize(target.w,target.h);
-		render_click_area(target,CLICK_PREV,CLICK_UI_VIEW);
-		render_click_area(target,CLICK_NEXT,CLICK_UI_VIEW);
+		render_click_area(render_ctx,CLICK_PREV,CLICK_UI_VIEW);
+		render_click_area(render_ctx,CLICK_NEXT,CLICK_UI_VIEW);
 	}
 }
 void Arcollect::gui::view_slideshow::go_first(void)
