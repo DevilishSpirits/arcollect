@@ -21,8 +21,6 @@
 #include <dependency-report.hpp>
 #include <config.h>
 
-extern SDL::Renderer *renderer;
-
 class about_project: public Arcollect::gui::scrolling_text {
 	private:
 		bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override {
@@ -42,8 +40,8 @@ class about_project: public Arcollect::gui::scrolling_text {
 			return Arcollect::gui::scrolling_text::event(e,render_ctx) && propagate;
 		}
 		void render(Arcollect::gui::modal::render_context render_ctx) override {
-			renderer->SetDrawColor(0,0,0,192);
-			renderer->FillRect();
+			render_ctx.renderer.SetDrawColor(0,0,0,192);
+			render_ctx.renderer.FillRect();
 			return Arcollect::gui::scrolling_text::render(render_ctx);
 		}
 	public:
@@ -105,8 +103,8 @@ void Arcollect::gui::about_window::render(Arcollect::gui::modal::render_context 
 		cache_window_width = target.w;
 	}
 	SDL::Point welcome_text_dst{target.w/20,(target.h-render_cache->size().y)/2};
-	renderer->SetDrawColor(0,0,0,128);
-	renderer->FillRect();
+	render_ctx.renderer.SetDrawColor(0,0,0,128);
+	render_ctx.renderer.FillRect();
 	render_cache->render_tl(welcome_text_dst);
 }
 
