@@ -15,17 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <arcollect-debug.hpp>
-#include <arcollect-roboto.hpp>
 #include "font.hpp"
 #include <functional>
 #include <hb-ft.h>
 #include <locale>
 #include <unordered_map>
-#include FT_SIZES_H
 
 extern SDL::Renderer *renderer;
-
-static FT_Library ft_library;
 
 Arcollect::gui::font::Glyph::Glyph(hb_codepoint_t glyphid, int font_size)
 {
@@ -62,26 +58,6 @@ void Arcollect::gui::font::Glyph::render(int origin_x, int origin_y, SDL::Color 
 	renderer->Copy(text,NULL,&rect);
 }
 std::unordered_map<Arcollect::gui::font::Glyph::key,Arcollect::gui::font::Glyph,Arcollect::gui::font::Glyph::key::hash> Arcollect::gui::font::Glyph::glyph_cache;
-
-FT_Face Arcollect::gui::font::query_face(Uint32 font_size)
-{
-	static FT_Face face = NULL;
-	if (!face) {
-		FT_Init_FreeType(&ft_library);
-		FT_New_Memory_Face(ft_library,(const FT_Byte*)Arcollect::Roboto::Light.data(),Arcollect::Roboto::Light.size(),0,&face);
-	}
-	Uint32 key{font_size};
-	static std::unordered_map<decltype(key),FT_Size> cache;
-	auto iter = cache.find(key);
-	if (iter == cache.end()) {
-		FT_Size new_size;
-		FT_New_Size(face,&new_size);
-		FT_Activate_Size(new_size);
-		FT_Set_Pixel_Sizes(face,font_size,font_size);
-		cache.emplace(key,new_size);
-	} else FT_Activate_Size(iter->second);
-	return face;
-}
 
 Arcollect::gui::font::Elements& Arcollect::gui::font::Elements::operator<<(const std::string_view &string)
 {

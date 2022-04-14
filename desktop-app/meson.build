@@ -1,6 +1,3 @@
-# Roboto embed
-roboto_proj = subproject('roboto')
-
 deskapp_deps = [
 	common_dep,
 	dep_lcms2,
@@ -42,15 +39,26 @@ deskapp_srcs = [
 	'gui/view-grid.cpp',
 	'gui/window-borders.cpp',
 	dependency_report_hpp,
-	roboto_proj.get_variable('gen_roboto_target')[0],
 ]
 deskapp_additional_srcs = [
-	roboto_proj.get_variable('gen_roboto_target')[1],
 ]
 
 main_cpp = 'main.cpp'
+query_font = 'gui/font-query-embed.cpp'
 if with_xdg
 	subdir('xdg')
+endif
+
+deskapp_srcs += [query_font]
+
+if query_font == 'gui/font-query-embed.cpp'
+	roboto_proj = subproject('roboto')
+	deskapp_srcs += [
+		roboto_proj.get_variable('gen_roboto_target')[0],
+	]
+	deskapp_additional_srcs += [
+		roboto_proj.get_variable('gen_roboto_target')[1],
+	]
 endif
 
 desktop_app_staticlib = static_library('desktop-app-staticlib', deskapp_srcs, deskapp_additional_srcs, dependencies: deskapp_deps, build_by_default: false)
