@@ -194,6 +194,9 @@ function twitter_intercept_api_call(requestId) {
 				if (data.hasOwnProperty('threaded_conversation_with_injections')) {
 					twitter_handle_instructions(data.threaded_conversation_with_injections.instructions)
 				}
+				if (data.hasOwnProperty('threaded_conversation_with_injections_v2')) {
+					twitter_handle_instructions(data.threaded_conversation_with_injections_v2.instructions)
+				}
 			}
 			if (api_json.hasOwnProperty('users'))
 				twitter_handle_users(api_json['users']);
