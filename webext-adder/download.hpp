@@ -131,6 +131,9 @@ namespace Arcollect {
 					/** https:// schema
 					 */
 					URI_HTTPS,
+					/** data: schema
+					 */
+					URI_DATA,
 					/** Base64 raw data
 					 */
 					URI_BASE64,

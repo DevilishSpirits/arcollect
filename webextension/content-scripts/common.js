@@ -56,7 +56,7 @@ const Arcollect = {
 			xhr.addEventListener('load', function() {
 				let filereader = new FileReader();
 				filereader.onload = function() {
-					resolve(filereader.result.split(',',2)[1]);
+					resolve(filereader.result);
 				};
 				filereader.onerror = reject;
 				filereader.readAsDataURL(xhr.response);

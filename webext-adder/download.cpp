@@ -118,15 +118,32 @@ void Arcollect::WebextAdder::Download::parse(char*& iter, char* const end, Arcol
 			throw std::runtime_error("Invalid type for the download_spec (must be a string or an object)");
 	}
 	// Check URI type
-	uri_type = data_string.starts_with("https://") ? URI_HTTPS : URI_BASE64;
+	uri_type = data_string.starts_with("https://") ? URI_HTTPS : data_string.starts_with("data:") ? URI_DATA : /* Invalid scheme -> */ URI_BASE64;
 	switch (uri_type) {
 		case URI_HTTPS: {
 			if (!cache_miss && cache_key.empty())
 				// cache_key unset, use the URL as key
 				cache_key = data_string;
 		} break;
+		case URI_DATA: {
+			// Read MIME-type
+			data_string = data_string.substr(5); // Erase the 'data:'
+			auto comma_pos = data_string.find_first_of(',');
+			std::string_view uri_mime = data_string.substr(0,comma_pos);
+			// Check for base64 encoding
+			if (uri_mime.ends_with(";base64")) {
+				uri_type = URI_BASE64;
+				uri_mime = uri_mime.substr(0,uri_mime.size()-7); // Erase the ';base64'
+			}
+			// Set MIME-type
+			if (mimetype.empty())
+				mimetype = uri_mime;
+			// Update the data_string
+			data_string = data_string.substr(comma_pos+1);
+		} break;
 		case URI_BASE64: {
-			// Do nothing special
+			// Fail and don't support the original format
+			throw std::runtime_error(std::string("Unsupported URL scheme : ")+std::string(data_string));
 		} break;
 	}
 }
@@ -285,6 +302,24 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 				} break;
 			}
 		} break;
+		case URI_DATA: {
+			// TODO 
+			throw std::runtime_error("data: URL must be encoded in Base64 for now.");
+			if (mimetype.empty())
+				throw std::runtime_error("A mimetype is required with data: URL.");
+			if (cache_key.empty()) {
+				// Write the URL encoded on-disk
+				std::string error = session.cache.write_cache(cache_key,mimetype,download_infos);
+				if (error.empty()) {
+					std::ofstream output((Arcollect::path::arco_data_home/download_infos.dwn_path()));
+					// TODO
+					return session.url_cache[cache_key] = download_infos.dwn_id();
+				} else throw std::runtime_error(std::string("Failed to perform transaction: ")+error);
+			} else {
+				// Use the cache
+				return session.url_cache[cache_key] = download_infos.dwn_id();
+			}
+		} break;
 		case URI_BASE64: {
 			if (mimetype.empty())
 				throw std::runtime_error("A mimetype is required when using Base64 data.");
@@ -310,13 +345,14 @@ std::string_view Arcollect::WebextAdder::Download::base_filename(void) const noe
 {
 	std::string_view result = cache_key;
 	switch (uri_type) {
+		case URI_DATA:
 		case URI_BASE64: if (result.empty()) {
 			// Pick 8 chars in the middle of the Base4 file
 			decltype(result)::size_type pos = data_string.size()/2;
 			decltype(result)::size_type length = pos;
 			if (pos > 8)
 				pos = 8;
-			result = result.substr(pos,length);
+			result = data_string.substr(pos,length);
 		} // falltrough;
 		case URI_HTTPS: {
 			// If cache_key is not set, use URL

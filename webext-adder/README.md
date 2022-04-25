@@ -6,10 +6,12 @@ Within the webextension, you pass this object to the `arcollect_submit()` functi
 
 **Warning!** This protocol is unstable and reserved for Arcollect internal workings. Though if you really want to add an artwork, using it is still safer than directly changing the even more unstable schema.
 
-## Paranoid HTTPS
-When downloading remote assets, the webext-adder requires `https://` transfer (`http://` is not supported) with **TLS 1.2 at least**.
+## Supported download URL scheme
+**Arcollect is paranoid and requires `https://` transfer with TLS 1.2 at least**. `http://` is voluntary not supported to preserve user privacy (the webextension does the same).
 
 Since all supported platforms and operating systems support this version of TLS, dealing with a weaker TLS is very likely someone trying a [MITM](https://en.wikipedia.org/wiki/Man-in-the-middle_attack), this requirement will be bumped up in the future.
+
+Base64 data URL (but not the percent-encoded ones) are also supported, when the resource is not directly downloadable or require formatting performed by the webextension.
 
 ## Query format
 Here is an example showing all possible cases (unless I forgot something 🤔️) of a query to add something in the database.
@@ -74,7 +76,7 @@ The `artwork` array contain objects you wants to add with some properties :
 * `rating` is the artwork rating. See the schema explanation of `artworks` table in file [init.sql](https://github.com/DevilishSpirits/arcollect/blob/master/sql/init.sql).
 * `postdate` is the UNIX timestamp of when the artworks has been posted (optional).
 * `license` is the license SPDX identifier **be extremely careful about it!** Do not set it if the website does not have a clever way to retrieve it or is known to be innacurate.
-* `data` is the artwork file itself in base64 encoding or an `https://` link to the image (`http://` won't be supported).
+* `data` describe how to download the artwork file itself, most times the `https://` CDN link just works.
 * `thumbnail` is the image thumbnail to show for non image type artworks. Same format as `data`.
 
 The `account` array contain users you might wants to add with some properties :
@@ -83,7 +85,7 @@ The `account` array contain users you might wants to add with some properties :
 * `name` is the username on the platform. Often something not very pretty with a limited charset. For example on Twitter `"@DevilishSpirits"`.
 * `title` is the pretty username, if different from the `name` title. For example on Twitter `"D-Spirits"`.
 * `url` is the account URL.
-* `icon` is the account avatar in base64 encoding.
+* `icon` describe how to download the account avatar, most times the `https://` CDN link just works.
 * `desc` is the account description.
 
 The `tags` array contain tags you might wants to add with some properties :
@@ -112,8 +114,7 @@ The `art_tag_link` array contain links with artworks and tags :
 This JSON is fully parsed before performing a transaction on the database. Items order in the JSON is not important.
 
 ### Download specification
-Simple download specification are a string with either the raw data in Base64
-encoding or an `https://` URL to download from.
+Simple download specification are the string URL to download from.
 This works for normal platforms, for weird ones you can pass a JSON object that
 customize the Arcollect behavior. Arcollect use the collection as an HTTP cache
 and might just do nothing or weird magic (picking right in the web-browser cache
@@ -122,7 +123,7 @@ The defaults are :
 
 ```json
 	{
-		"data": "URL or Base64",
+		"data": "https:// or data:<mime>;Base64,..",
 		"cache_key": "'data' or a JSON null if Base64",
 		"mimetype": "Content-Type header",
 		"ok_codes": [200],
@@ -136,10 +137,10 @@ The defaults are :
 * `data` is the URL/Base64 you want to download
 * `cache_key` allows to override the key for matching in database. A use case is
   the DeviantArt CDN which use time limited keys, the `cache_key` strip this
-  part. Passing `null` (default if `data` is in Base64) completely disable
+  part. Passing `null` (default if `data` is a data URI) completely disable
   caching.
-* `mimetype` allows to override the MIME type. It is mandatory for Base64 or if
-  the server don't send a [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type)
+* `mimetype` allows to override the MIME type. It is mandatory if the server
+  don't send a [`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type)
   header.
 * `ok_codes` is an array of code we consider a success. FurAffinity does return
   a 404 with a valid GIF if an account use the default avatar.
