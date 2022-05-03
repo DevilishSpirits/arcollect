@@ -26,7 +26,6 @@
 #include <arcollect-debug.hpp>
 #include <arcollect-paths.hpp>
 #include <arcollect-sqls.hpp>
-#include "base64.hpp"
 #include "json-shared-helpers.hpp"
 #include "json_escaper.hpp"
 #include "download.hpp"

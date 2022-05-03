@@ -222,7 +222,6 @@ endforeach
 
 # Generate dependencies informations
 dep_fancy_name = {
-	'base64'           : 'Base64.h',
 	'boost'            : 'Boost',
 	'libbrotlicommon'  : 'Brotli',
 	'dbus-1'           : 'D-Bus',
@@ -244,7 +243,6 @@ dep_fancy_name = {
 	'zlib'             : 'zlib',
 }
 dep_website = {
-	'base64'           : 'https://gist.github.com/tomykaira/f0fd86b6c73063283afe550bc5d77594',
 	'boost'            : 'https://www.boost.org/',
 	'libbrotlicommon'  : 'https://github.com/google/brotli',
 	'dbus-1'           : 'https://www.freedesktop.org/wiki/Software/dbus/',
@@ -268,7 +266,6 @@ dep_website = {
 
 # TODO Get version of these
 also_embeded = [
-	'base64',
 	'roboto',
 ]
 

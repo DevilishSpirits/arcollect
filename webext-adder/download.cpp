@@ -20,7 +20,6 @@
 #include <arcollect-debug.hpp>
 #include "arcollect-paths.hpp"
 #include "download.hpp"
-#include "base64.hpp"
 #include "json-shared-helpers.hpp"
 #include <optional>
 #include <fstream>
@@ -327,9 +326,47 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 				// Write the Base64 on-disk
 				std::string error = session.cache.write_cache(cache_key,mimetype,download_infos);
 				if (error.empty()) {
-					std::string binary;
-					macaron::Base64::Decode(data_string.data(),binary);
-					std::ofstream((Arcollect::path::arco_data_home/download_infos.dwn_path())) << binary;
+					// Decode and output Base64 data
+					uint32_t current_word = 0;
+					int bits_count = 0;
+					std::ofstream output((Arcollect::path::arco_data_home/download_infos.dwn_path()));
+					for (char digit: data_string) {
+						// Compute the 6-bits word
+						current_word <<= 6;
+						if ((digit >= 'A')&&(digit <= 'Z'))
+							current_word |= digit - 'A' + 0x00;
+						else if ((digit >= 'a')&&(digit <= 'z'))
+							current_word |= digit - 'a' + 0x1A;
+						else if ((digit >= '0')&&(digit <= '9'))
+							current_word |= digit - '0' + 0x34;
+						else if (digit == '+')
+							current_word |= 0x3E;
+						else if (digit == '/')
+							current_word |= 0x3F;
+						else if (digit == '=') {
+							// Skip
+							current_word >>= 6; // Counter the previous shift
+							continue;
+						}
+						else throw std::runtime_error("Invalid Base64");
+						// Shift or dump
+						if (bits_count == 24-6) {
+							// Write bytes
+							output << static_cast<uint8_t>((current_word >> 16)&0xff)
+							       << static_cast<uint8_t>((current_word >>  8)&0xff)
+							       << static_cast<uint8_t>((current_word >>  0)&0xff);
+							bits_count = 0;
+							current_word = 0;
+						} else bits_count += 6;
+					}
+					// Print the rest of bits
+					std::cerr << "Finish with " << bits_count << " bits" << std::endl;
+					bits_count >>= (8-bits_count)%8;
+					if (bits_count >= 16)
+						output << static_cast<uint8_t>((current_word >> 8)&0xff);
+					if (bits_count >= 8)
+						output << static_cast<uint8_t>((current_word >> 0)&0xff);	
+					// Return
 					return session.url_cache[cache_key] = download_infos.dwn_id();
 				} else throw std::runtime_error(std::string("Failed to perform transaction: ")+error);
 			} else {
