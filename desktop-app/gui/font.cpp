@@ -191,7 +191,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 	hb_buffer_set_language(buf, hb_language_from_string("en", -1));
 	// Invoke Harfbuzz
 	FT_Face face = query_face(font_size);
-	const auto line_spacing = face->height >> 6;
+	const auto line_spacing = face->size->metrics.height >> 6;
 	hb_font_t *font = hb_ft_font_create_referenced(face);
 	hb_ft_font_set_load_flags(font,ft_flags);
 	hb_shape(font,buf,NULL,0);
