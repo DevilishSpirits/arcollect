@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <arcollect-debug.hpp>
-#include "font.hpp"
+#include "font-internal.hpp" // #include "font.hpp"
 #include <functional>
 #include <hb-ft.h>
 #include <locale>
@@ -143,38 +143,6 @@ void Arcollect::gui::font::Renderable::align_glyphs(Align align, unsigned int i_
 		}
 	}
 }
-/** Current text attributes
- *
- * This structure is passed to append_text() and other functions and
- * is stored in a local variable of Renderable() constructor.
- */
-struct Arcollect::gui::font::Renderable::RenderingState {
-	/** Rendering configuration
-	 */
-	const RenderConfig& config;
-	/** Current cursor position
-	 *
-	 * It's the "pen" in FreeType2 vocabulary.
-	 */
-	SDL::Point cursor;
-	/** Text wrap_width
-	 *
-	 * It is set to a large value when no wrapping is wanted.
-	 */
-	const int wrap_width;
-	/** Attribute iterator
-	 *
-	 * This is an iterator to the Arcollect::gui::font::Elements::attributes.
-	 * It is incremented when needed by
-	 * Arcollect::gui::font::Renderable::append_text_run().
-	 */
-	decltype(Elements::attributes)::const_iterator attrib_iter;
-	/** Number of clusters wrote in previous text runs
-	 *
-	 * It is required to keep track of attrib_iter indexes
-	 */
-	unsigned int text_run_cluster_offset;
-};
 void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::text_runs)::value_type& text_run, RenderingState &state)
 {
 	// Extract parameters

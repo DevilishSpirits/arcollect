@@ -16,15 +16,10 @@
  */
 #pragma once
 #include "../sdl2-hpp/SDL.hpp"
-#include <hb.h>
 #include <limits>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_BITMAP_H
 
 using namespace std::literals::string_view_literals;
 using namespace std::literals::string_literals;
@@ -135,11 +130,6 @@ namespace Arcollect {
 				 */
 				RIGHT,
 			};
-			/** Arcollect FreeType2 render flags
-			 */
-			static constexpr auto ft_flags = 0;
-			
-			FT_Face query_face(Uint32 font_size);
 			/** Text rendering instructions buffer
 			 *
 			 * Used to ease text building with Elements::operator<<().
@@ -166,7 +156,7 @@ namespace Arcollect {
 						 * attribute but this require more code. Here we start when the next
 						 * attribute start.
 						 */
-						decltype(hb_glyph_info_t::cluster) end;
+						uint32_t end;
 						/** Alignment
 						 */
 						Align alignment;
@@ -316,84 +306,7 @@ namespace Arcollect {
 			 *
 			 * This structure hold the renderered version of a character Glyph.
 			 */
-			struct Glyph {
-				SDL::Texture* text;
-				SDL::Rect coordinates;
-				
-				/** Key for #glyph_cache
-				 *
-				 * This is an internal helper structure.
-				 */
-				struct key {
-					hb_codepoint_t glyphid;
-					int font_size;
-					struct hash {
-						std::size_t operator()(const key& key) const {
-							return (std::hash<hb_codepoint_t>()(key.glyphid) << 1) ^ std::hash<int>()(key.font_size);
-						}
-					};
-					constexpr bool operator==(const key& other) const {
-						return (glyphid == other.glyphid)&&(font_size == other.font_size);
-					}
-				};
-				
-				/** Create a glyph
-				 *
-				 * The glyph is rendered and cached into a SDL::Texture.
-				 *
-				 * \note Use query() instead that use the cache.
-				 */
-				Glyph(hb_codepoint_t glyphid, int font_size);
-				/** Create a glyph from key
-				 *
-				 * A simple shortcut
-				 *
-				 * \note Use query() instead that use the cache.
-				 */
-				Glyph(const key& key) : Glyph(key.glyphid,key.font_size) {}
-				~Glyph(void);
-				
-				/** Render the glyph
-				 * \param origin_x The cursor X position
-				 * \param origin_y The cursor Y position
-				 * \param color    The color to render
-				 *
-				 * render(int,int,SDL::Color) wrapper for SDL::Point
-				 */
-				void render(int origin_x, int origin_y, SDL::Color color) const;
-				/** Render the glyph
-				 * \param origin The cursor position
-				 * \param color  The cursor position
-				 * \param color    The color to render
-				 *
-				 * render(int,int,SDL::Color) wrapper for SDL::Point
-				 */
-				void render(SDL::Point origin, SDL::Color color) const {
-					return render(origin.x,origin.y,color);
-				}
-				// Glyph cache
-				/** Glyph render cache
-				 */
-				static std::unordered_map<key,Glyph,key::hash> glyph_cache;
-				/** Query a glyph
-				 * \param key The glyph key
-				 *
-				 * Query and create on cache miss a glyph.
-				 */
-				static inline Glyph& query(const key& key) {
-					auto iter = glyph_cache.find(key);
-					if (iter == glyph_cache.end())
-						iter = glyph_cache.emplace(key,key).first;
-					return iter->second;
-				}
-				/** Query a glyph
-				 *
-				 * Query and create on cache miss a glyph.
-				 */
-				static inline Glyph& query(hb_codepoint_t glyphid, int font_size) {
-					return query(key{glyphid,font_size});
-				}
-			};
+			struct Glyph;
 			
 			/** Text rendering configuration
 			 */

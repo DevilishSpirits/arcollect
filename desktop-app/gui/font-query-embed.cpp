@@ -17,7 +17,7 @@
 /** \file desktop-app/gui/font-query-embed.cpp
  *  \brief Cross-platform font query (embed a Latin-only Roboto)
  */
-#include "font.hpp"
+#include "font-internal.hpp"
 #include <arcollect-roboto.hpp>
 #include FT_SIZES_H
 static FT_Library ft_library;
