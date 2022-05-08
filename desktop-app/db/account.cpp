@@ -17,6 +17,7 @@
 #include "account.hpp"
 #include "db.hpp"
 #include "download.hpp"
+#include <unordered_map>
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::account>> accounts_pool;
 
 Arcollect::db::account::account(Arcollect::db::account_id arcoid) :
