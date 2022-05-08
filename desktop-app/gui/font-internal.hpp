@@ -63,6 +63,10 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 namespace Arcollect {
 	namespace gui {
 		namespace font {
+			/** System specific 
+			 * 
+			 */
+			void os_init(void);
 			/** Arcollect FreeType2 render flags
 			 */
 			static constexpr auto ft_flags = 0;

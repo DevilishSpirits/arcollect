@@ -56,6 +56,9 @@ namespace Arcollect {
 		 * supported and automatically converted.
 		 */
 		namespace font {
+			/** Init the font rendering engine
+			 */
+			void init(void);
 			class Renderable;
 			#define Arcollect_gui_font_element_wrapper_boilerplate(TypeName) \
 				constexpr operator decltype(value)&(void) {return value;} \

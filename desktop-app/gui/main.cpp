@@ -80,6 +80,8 @@ int Arcollect::gui::init(void)
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
+	// Init font system
+	Arcollect::gui::font::init();
 	// Load system language
 	Arcollect::set_locale_system();
 	// Load ICC profile

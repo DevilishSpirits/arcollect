@@ -23,6 +23,11 @@
 
 extern SDL::Renderer *renderer;
 
+void Arcollect::gui::font::init(void)
+{
+	Arcollect::gui::font::os_init();
+}
+
 Arcollect::gui::font::Glyph::Glyph(hb_codepoint_t glyphid, int font_size)
 {
 	FT_Face face = query_face(font_size);

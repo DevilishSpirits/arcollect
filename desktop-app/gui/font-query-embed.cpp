@@ -21,15 +21,16 @@
 #include <arcollect-roboto.hpp>
 #include FT_SIZES_H
 static FT_Library ft_library;
+static FT_Face face;
+static std::unordered_map<Uint32,FT_Size> cache;
+void Arcollect::gui::font::os_init(void)
+{
+	FT_Init_FreeType(&ft_library);
+	FT_New_Memory_Face(ft_library,(const FT_Byte*)Arcollect::Roboto::Light.data(),Arcollect::Roboto::Light.size(),0,&face);
+}
 FT_Face Arcollect::gui::font::query_face(Uint32 font_size)
 {
-	static FT_Face face = NULL;
-	if (!face) {
-		FT_Init_FreeType(&ft_library);
-		FT_New_Memory_Face(ft_library,(const FT_Byte*)Arcollect::Roboto::Light.data(),Arcollect::Roboto::Light.size(),0,&face);
-	}
 	Uint32 key{font_size};
-	static std::unordered_map<decltype(key),FT_Size> cache;
 	auto iter = cache.find(key);
 	if (iter == cache.end()) {
 		FT_Size new_size;
