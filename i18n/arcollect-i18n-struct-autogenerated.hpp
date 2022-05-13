@@ -26,7 +26,7 @@ namespace Arcollect {
 			void apply_locale(const Lang &lang) {
 				return apply_locale(lang.lang,lang.country);
 			}
-			constexpr @module@(void) { po_apply_C(); apply_C(); }
+			@module@(void) { po_apply_C(); apply_C(); }
 			constexpr static std::array<Lang,@translations_length@> translations = {@translations_content@};
 /*
 		};
