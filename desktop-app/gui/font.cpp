@@ -16,21 +16,19 @@
  */
 #include <arcollect-debug.hpp>
 #include "font-internal.hpp" // #include "font.hpp"
-#include <functional>
-#include <hb-ft.h>
 #include <locale>
-#include <unordered_map>
 
 extern SDL::Renderer *renderer;
+FT_Library Arcollect::gui::font::ft_library;
 
 void Arcollect::gui::font::init(void)
 {
+	FT_Init_FreeType(&Arcollect::gui::font::ft_library);
 	Arcollect::gui::font::os_init();
 }
 
-Arcollect::gui::font::Glyph::Glyph(hb_codepoint_t glyphid, int font_size)
+Arcollect::gui::font::Glyph::Glyph(hb_codepoint_t glyphid, FT_Face face)
 {
-	FT_Face face = query_face(font_size);
 	// Render glyph
 	FT_Load_Glyph(face,glyphid,ft_flags|FT_LOAD_RENDER);
 	// Copy bitmap
@@ -45,7 +43,7 @@ Arcollect::gui::font::Glyph::Glyph(hb_codepoint_t glyphid, int font_size)
 	delete surf;
 	// Set coordinates
 	coordinates.x = face->glyph->bitmap_left;
-	coordinates.y = font_size - face->glyph->bitmap_top;
+	coordinates.y = (face->size->metrics.height >> 6) - face->glyph->bitmap_top;
 	coordinates.w = bitmap.width;
 	coordinates.h = bitmap.rows;
 }
@@ -62,7 +60,7 @@ void Arcollect::gui::font::Glyph::render(int origin_x, int origin_y, SDL::Color 
 	SDL_SetTextureAlphaMod((SDL_Texture*)text,color.a);
 	renderer->Copy(text,NULL,&rect);
 }
-std::unordered_map<Arcollect::gui::font::Glyph::key,Arcollect::gui::font::Glyph,Arcollect::gui::font::Glyph::key::hash> Arcollect::gui::font::Glyph::glyph_cache;
+std::unordered_map<std::size_t,Arcollect::gui::font::Glyph> Arcollect::gui::font::Glyph::glyph_cache;
 
 Arcollect::gui::font::Elements& Arcollect::gui::font::Elements::operator<<(const std::string_view &string)
 {
@@ -151,24 +149,16 @@ void Arcollect::gui::font::Renderable::align_glyphs(Align align, unsigned int i_
 void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::text_runs)::value_type& text_run, RenderingState &state)
 {
 	// Extract parameters
-	const int             font_size = text_run.first < 0 ? -text_run.first : text_run.first * state.config.base_font_height; // TODO Make the size customizable
+	const auto           &font_size = state.font_height = text_run.first < 0 ? -text_run.first : text_run.first * state.config.base_font_height; // TODO Make the size customizable
 	const std::u32string_view& text = text_run.second;
 	SDL::Point              &cursor = state.cursor;
 	// Create the buffer
 	hb_buffer_t *buf = hb_buffer_create();
 	hb_buffer_pre_allocate(buf,text.size());
 	hb_buffer_add_utf32(buf,reinterpret_cast<const uint32_t*>(text.data()),text.size(),0,text.size());
-	// FIXME Auto-detect better values
-	hb_buffer_set_direction(buf, HB_DIRECTION_LTR);
-	hb_buffer_set_script(buf, HB_SCRIPT_LATIN);
-	hb_buffer_set_language(buf, hb_language_from_string("en", -1));
 	// Invoke Harfbuzz
-	FT_Face face = query_face(font_size);
+	FT_Face face = Arcollect::gui::font::shape_hb_buffer(state,buf);;
 	const auto line_spacing = face->size->metrics.height >> 6;
-	hb_font_t *font = hb_ft_font_create_referenced(face);
-	hb_ft_font_set_load_flags(font,ft_flags);
-	hb_shape(font,buf,NULL,0);
-	hb_font_destroy(font);
 	// Prepare glyphs process
 	auto glyph_base = glyphs.size();
 	unsigned int glyph_count;
@@ -244,7 +234,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 						pixel_delta = right_free_space*space_current/space_count;
 						if (Arcollect::debug.fonts) {
 							const auto &last_pos = glyphs[glyph_id_delta+j].position;
-							add_line(last_pos,{last_pos.x,last_pos.y+font_size},{255,0,0,255});
+							add_line(last_pos,{last_pos.x,static_cast<int>(last_pos.y+font_size)},{255,0,0,255});
 						}
 					} else glyphs[glyph_id_delta+j].position.x += pixel_delta;
 				}
@@ -280,7 +270,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 		 ||(glyph_char == 0x00A0)) // nbsp
 		 ) {
 			// Emplace the new char
-			auto &glyph = Glyph::query(glyph_info.codepoint,font_size);
+			auto &glyph = Glyph::query(glyph_info.codepoint,face);
 			glyphs.emplace_back(cursor,glyph,color);
 			// Update bound
 			result_size.x = std::max(result_size.x,static_cast<int>(cursor.x+glyph.coordinates.x+glyph.coordinates.w));

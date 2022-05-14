@@ -44,14 +44,14 @@ deskapp_additional_srcs = [
 ]
 
 main_cpp = 'main.cpp'
-query_font = 'gui/font-query-embed.cpp'
+query_font = 'gui/font-roboto.cpp'
 if with_xdg
 	subdir('xdg')
 endif
 
 deskapp_srcs += [query_font]
 
-if query_font == 'gui/font-query-embed.cpp'
+if query_font == 'gui/font-roboto.cpp'
 	roboto_proj = subproject('roboto')
 	deskapp_srcs += [
 		roboto_proj.get_variable('gen_roboto_target')[0],

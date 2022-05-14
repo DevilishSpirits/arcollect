@@ -332,6 +332,8 @@ namespace Arcollect {
 			 *       Arcollect::gui::font::Elements::text_run).
 			 */
 			class Renderable {
+				public:
+					struct RenderingState;
 				private:
 					SDL::Point result_size;
 					struct GlyphData {
@@ -380,7 +382,6 @@ namespace Arcollect {
 					 */
 					void add_rect(const SDL::Rect &rect, SDL::Color color);
 					
-					struct RenderingState;
 					/** Realign text
 					 * \param align           The alignment to use
 					 * \param i_start         The index of the first glyph to align

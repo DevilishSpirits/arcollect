@@ -22,6 +22,7 @@
 #pragma once
 #include "font.hpp"
 #include <hb.h>
+#include <hb-ft.h>
 #include <unordered_map>
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -58,11 +59,15 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 	 * It is required to keep track of attrib_iter indexes
 	 */
 	unsigned int text_run_cluster_offset;
+	/** Height of the font in pixels
+	 */
+	FT_UInt font_height;
 };
 
 namespace Arcollect {
 	namespace gui {
 		namespace font {
+			extern FT_Library ft_library;
 			/** System specific 
 			 * 
 			 */
@@ -71,28 +76,24 @@ namespace Arcollect {
 			 */
 			static constexpr auto ft_flags = 0;
 			
-			FT_Face query_face(Uint32 font_size);
+			/** FT_Face->generic commons
+			 *
+			 * Each FT_Face generic point to a FaceGeneric.
+			 * Platform specific implementation may append data fields and have to
+			 * set themselves the destructor of the FT_Generic.
+			 */
+			struct FaceGeneric {
+				/** Hashing key of the face
+				 * 
+				 * This is a hashing key of the face configuration.
+				 * For seasoned FreeType users, this is your FTC_FaceID.
+				 */
+				std::size_t hash_key;
+			};
 			
 			struct Glyph {
 				SDL::Texture* text;
 				SDL::Rect coordinates;
-				
-				/** Key for #glyph_cache
-				 *
-				 * This is an internal helper structure.
-				 */
-				struct key {
-					hb_codepoint_t glyphid;
-					int font_size;
-					struct hash {
-						std::size_t operator()(const key& key) const {
-							return (std::hash<hb_codepoint_t>()(key.glyphid) << 1) ^ std::hash<int>()(key.font_size);
-						}
-					};
-					constexpr bool operator==(const key& other) const {
-						return (glyphid == other.glyphid)&&(font_size == other.font_size);
-					}
-				};
 				
 				/** Create a glyph
 				 *
@@ -100,14 +101,7 @@ namespace Arcollect {
 				 *
 				 * \note Use query() instead that use the cache.
 				 */
-				Glyph(hb_codepoint_t glyphid, int font_size);
-				/** Create a glyph from key
-				 *
-				 * A simple shortcut
-				 *
-				 * \note Use query() instead that use the cache.
-				 */
-				Glyph(const key& key) : Glyph(key.glyphid,key.font_size) {}
+				Glyph(hb_codepoint_t glyphid, FT_Face face);
 				~Glyph(void);
 				
 				/** Render the glyph
@@ -128,29 +122,30 @@ namespace Arcollect {
 				void render(SDL::Point origin, SDL::Color color) const {
 					return render(origin.x,origin.y,color);
 				}
-				// Glyph cache
 				/** Glyph render cache
 				 */
-				static std::unordered_map<key,Glyph,key::hash> glyph_cache;
+				static std::unordered_map<std::size_t,Glyph> glyph_cache;
 				/** Query a glyph
-				 * \param key The glyph key
+				 * \param glyphid to query
+				 * \param data from the shaping
 				 *
 				 * Query and create on cache miss a glyph.
 				 */
-				static inline Glyph& query(const key& key) {
-					auto iter = glyph_cache.find(key);
-					if (iter == glyph_cache.end())
-						iter = glyph_cache.emplace(key,key).first;
-					return iter->second;
-				}
-				/** Query a glyph
-				 *
-				 * Query and create on cache miss a glyph.
-				 */
-				static inline Glyph& query(hb_codepoint_t glyphid, int font_size) {
-					return query(key{glyphid,font_size});
+				static inline Glyph& query(hb_codepoint_t glyphid, FT_Face face) {
+					const FaceGeneric& generic = *static_cast<const FaceGeneric*>(face->generic.data);
+					return glyph_cache.try_emplace(std::hash<decltype(glyphid)>()(glyphid)^generic.hash_key,glyphid,face).first->second;
 				}
 			};
+			/** Perform configuration and shaping of the buffer
+			 * \param state          to use
+			 * \param[in/out] buffer to shape
+			 * \return Loaded FT_Face (do not add a extra reference)
+			 *
+			 * This part configure the buffer and invoke hb_shape() on the buffer.
+			 * You MUST set the returned FT_Face generic to a hash value of the state.
+			 * \note The implementation of this function is platform specific.
+			 */
+			FT_Face shape_hb_buffer(const Arcollect::gui::font::Renderable::RenderingState& state, hb_buffer_t *buffer);
 		}
 	}
 }
