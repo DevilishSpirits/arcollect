@@ -169,19 +169,20 @@ namespace Arcollect {
 						/** Current glyph color
 						 */
 						SDL::Color color;
+						/** Font size
+						 */
+						FontSize font_size;
 					};
 					/** List of #Arcollect::gui::font::Elements::Attributes
 					 *
 					 * Contain the list of attributes in the order they appear
 					 */
 					std::vector<Attributes> attributes;
-					/** List of text runs
+					/** Text storage
 					 *
-					 * A text run is the shapable unit. HarfBuzz hb_shape() have a high
-					 * cost for zero-length text. So we pack everything in a string to
-					 * avoid making to avoid costful hb_shape().
+					 * This store the whole text in UTF-32
 					 */
-					std::vector<std::pair<FontSize,std::u32string>> text_runs;
+					std::u32string text;
 					/** If push_attribute() should push a new attribute
 					 *
 					 * This flag is raised in operator<<(const std::u32string_view&) and
@@ -189,7 +190,7 @@ namespace Arcollect {
 					 * #Arcollect::gui::font::Elements::Attributes when setting multiple
 					 * attributes in a row.
 					 */
-					bool must_push_new_attribute = false;
+					bool must_push_new_attribute;
 					/** Get the #Attributes to change
 					 * \return The #Attributes to change
 					 *
@@ -207,21 +208,6 @@ namespace Arcollect {
 						}
 						return attributes.back();
 					}
-					/** Start a new text run
-					 * \return The new #text_runs element to set
-					 *
-					 * This function is called by operator<<() changing attributes that
-					 * need a new text run.
-					 *
-					 * It's simmilar to push_attribute() and just return the #text_runs
-					 * back if it has no text.
-					 */
-					decltype(text_runs)::value_type &push_text_run(void) {
-						if (!text_runs.back().second.empty())
-							text_runs.emplace_back(text_runs.back().first,U""s);
-						return text_runs.back();
-					}
-					
 				public:
 					/** Change justification
 					 *
@@ -249,12 +235,9 @@ namespace Arcollect {
 					}
 					
 					/** Change font size
-					 *
-					 * \warning Changing font size create another text run that 4ms on my
-					 *          system. Use with caution!
 					 */
 					Elements& operator<<(FontSize font_size) {
-						push_text_run().first = font_size;
+						push_attribute().font_size = font_size;
 						return *this;
 					}
 					/** Append UTF-32 text
@@ -263,7 +246,7 @@ namespace Arcollect {
 					 * \see The Elements(std::u32string&&,FontSize) move-constructor.
 					 */
 					Elements& operator<<(const std::u32string_view &string) {
-						text_runs.back().second += string;
+						text += string;
 						attributes.back().end   += string.size();
 						must_push_new_attribute = true;
 						return *this;
@@ -279,8 +262,8 @@ namespace Arcollect {
 					 * It is empty if it has no text inside.
 					 * \note Packing attribute modifiers do not change empty() result.
 					 */
-					bool empty(void) {
-						return text_runs[0].second.empty();
+					bool empty(void) const {
+						return text.empty();
 					}
 					
 					/** Parameter pack builder
@@ -294,9 +277,10 @@ namespace Arcollect {
 						// Initial attributes
 						Align::LEFT,        // Alignment
 						false,              // Justification
-						{255,255,255,255}}, // Color
-					},text_runs{{1,std::move(U""s)}},
-						must_push_new_attribute(true) {
+						{255,255,255,255},  // Color
+						FontSize(1),        // FontSize
+					}},
+						must_push_new_attribute(false) {
 					}
 					
 					template <typename ... Args>
@@ -323,13 +307,13 @@ namespace Arcollect {
 				RenderConfig(void);
 			};
 			
+			/** Opaque struct for implementations usage
+			 */
+			struct shape_data;
 			/** Text rendering result
 			 *
 			 * This is what you render on the screen.
 			 * It can be generated to fit in a particular box.
-			 *
-			 * \note Generating a #Renderable is costful (>4ms per
-			 *       Arcollect::gui::font::Elements::text_run).
 			 */
 			class Renderable {
 				public:
@@ -383,15 +367,18 @@ namespace Arcollect {
 					void add_rect(const SDL::Rect &rect, SDL::Color color);
 					
 					/** Realign text
-					 * \param align           The alignment to use
-					 * \param i_start         The index of the first glyph to align
-					 * \param i_end           The index of the last glyph to align (excluded)
+					 * \param state           The rendering state
 					 * \param remaining_space The free space left on the line
 					 */
-					void align_glyphs(Align align, unsigned int i_start, unsigned int i_end, int remaining_space);
+					void align_glyphs(RenderingState &state, int remaining_space);
 					/** Append a text run
+					 * \param cp_offset Offset to start shaping in the text
+					 * \param cp_count Number of codepoints to shape
+					 * \param state The rendering state
+					 *
+					 * A text run is a batch for text shaping.
 					 */
-					void append_text_run(const decltype(Elements::text_runs)::value_type& text_run, RenderingState &state);
+					void append_text_run(const unsigned int cp_offset, int cp_count, RenderingState &state, Arcollect::gui::font::shape_data *shape_data);
 				public:
 					inline const SDL::Point size() {
 						return result_size;

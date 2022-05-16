@@ -28,7 +28,7 @@ void Arcollect::gui::font::os_init(void)
 	FT_New_Memory_Face(Arcollect::gui::font::ft_library,(const FT_Byte*)Arcollect::Roboto::Light.data(),Arcollect::Roboto::Light.size(),0,&face);
 	face->generic.data = &face_generic;
 }
-FT_Face Arcollect::gui::font::shape_hb_buffer(const Arcollect::gui::font::Renderable::RenderingState& state, hb_buffer_t* buf)
+FT_Face Arcollect::gui::font::shape_hb_buffer(const Arcollect::gui::font::Renderable::RenderingState& state, hb_buffer_t* buf, Arcollect::gui::font::shape_data*)
 {
 	// Query the font_size
 	FT_UInt key{state.font_height};
@@ -53,4 +53,13 @@ FT_Face Arcollect::gui::font::shape_hb_buffer(const Arcollect::gui::font::Render
 	hb_shape(font,buf,NULL,0);
 	hb_font_destroy(font);
 	return face;
+}
+int Arcollect::gui::font::text_run_length(const Arcollect::gui::font::Renderable::RenderingState &state, unsigned int cp_offset, Arcollect::gui::font::shape_data*&)
+{
+	auto     current_attrib_iter = state.attrib_iter;
+	FontSize current_font_size = current_attrib_iter->font_size;
+	// Break on text size changes
+	while ((current_attrib_iter->end < state.text.size())&&(current_font_size == current_attrib_iter->font_size))
+		++current_attrib_iter;
+	return current_attrib_iter->end - cp_offset;
 }

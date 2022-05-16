@@ -97,8 +97,12 @@ void Arcollect::gui::font::Renderable::add_rect(const SDL::Rect &rect, SDL::Colo
 	add_line({left ,bot},{left ,top},color);
 }
 
-void Arcollect::gui::font::Renderable::align_glyphs(Align align, unsigned int i_start, unsigned int i_end, int remaining_space)
+void Arcollect::gui::font::Renderable::align_glyphs(RenderingState &state, int remaining_space)
 {
+	Align align = state.attrib_iter->alignment;
+	// Update the line 
+	const auto start = state.line_first_glyph_index;
+	state.line_first_glyph_index = glyphs.size();
 	// Handle align
 	switch (align) {
 		/*case Align::START: {
@@ -120,13 +124,13 @@ void Arcollect::gui::font::Renderable::align_glyphs(Align align, unsigned int i_
 		} break;
 	}
 	// Realign
-	for (auto i = i_start; i < i_end; i++)
+	for (auto i = start; i < glyphs.size(); ++i)
 		glyphs[i].position.x += remaining_space;
 	// Debug
 	if (Arcollect::debug.fonts) {
-		const SDL::Point& lgp = glyphs[i_start].position; // Left glyph position
+		const SDL::Point& lgp = glyphs[start].position; // Left glyph position
 		const SDL::Point& ilgp{lgp.x-remaining_space,lgp.y}; // Initial left glyph position
-		const SDL::Point& rgp = glyphs[i_end-1].position; // Right glyph position
+		const SDL::Point& rgp = glyphs.back().position; // Right glyph position
 		constexpr SDL::Color color{{255,0,0,128}};
 		constexpr int length = 8; // Length of small things
 		// Draw a 'A'
@@ -146,18 +150,19 @@ void Arcollect::gui::font::Renderable::align_glyphs(Align align, unsigned int i_
 		}
 	}
 }
-void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::text_runs)::value_type& text_run, RenderingState &state)
+void Arcollect::gui::font::Renderable::append_text_run(const unsigned int cp_offset, int cp_count, RenderingState &state, Arcollect::gui::font::shape_data *shape_data)
 {
 	// Extract parameters
-	const auto           &font_size = state.font_height = text_run.first < 0 ? -text_run.first : text_run.first * state.config.base_font_height; // TODO Make the size customizable
-	const std::u32string_view& text = text_run.second;
+	decltype(Elements::attributes)::const_iterator &attrib_iter = state.attrib_iter;
+	state.font_height = (attrib_iter->font_size.value < 0 ? -attrib_iter->font_size.value : attrib_iter->font_size.value * state.config.base_font_height); // TODO Make the size customizable
+	const std::u32string_view &text = state.text;
 	SDL::Point              &cursor = state.cursor;
 	// Create the buffer
 	hb_buffer_t *buf = hb_buffer_create();
 	hb_buffer_pre_allocate(buf,text.size());
-	hb_buffer_add_utf32(buf,reinterpret_cast<const uint32_t*>(text.data()),text.size(),0,text.size());
+	hb_buffer_add_utf32(buf,reinterpret_cast<const uint32_t*>(state.text.data()),state.text.size(),cp_offset,cp_count);
 	// Invoke Harfbuzz
-	FT_Face face = Arcollect::gui::font::shape_hb_buffer(state,buf);;
+	FT_Face face = Arcollect::gui::font::shape_hb_buffer(state,buf,shape_data);
 	const auto line_spacing = face->size->metrics.height >> 6;
 	// Prepare glyphs process
 	auto glyph_base = glyphs.size();
@@ -168,10 +173,10 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 	glyphs.reserve(glyph_base+glyph_count);
 	unsigned int glyphi_line_start = 0;
 	// Process leading '\n' (avoid a SEGFAULT in the code)
-	for (;(glyphi_line_start < glyph_count)&&(text[glyphi_line_start] == '\n'); ++glyphi_line_start)
+	for (;(glyphi_line_start < glyph_count)&&(text[glyphi_line_start+cp_offset] == '\n'); ++glyphi_line_start)
 		cursor.y += line_spacing;
 	
-	auto clusteri_line_end = text.find(U'\n',glyphi_line_start ? glyphi_line_start+1 : 0); // To break at \n
+	auto clusteri_line_end = text.find(U'\n',cp_offset+(glyphi_line_start ? glyphi_line_start+1 : 0)); // To break at \n
 	// Process glyphs
 	for (unsigned int i = glyphi_line_start; i < glyph_count; i++) {
 		hb_glyph_info_t &glyph_info = glyph_infos[i];
@@ -179,9 +184,8 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 		glyph_pos[i].y_advance >>= 6;
 		const char32_t glyph_char  = text[glyph_info.cluster];
 		// Extract rendering parameters
-		if (state.attrib_iter->end <= glyph_info.cluster + state.text_run_cluster_offset)
+		if (state.attrib_iter->end <= glyph_info.cluster)
 			++state.attrib_iter;
-		const Align  &alignment = state.attrib_iter->alignment;
 		const bool      justify = state.config.always_justify || state.attrib_iter->justify;
 		const SDL::Color  &color = state.attrib_iter->color;
 		// Wrap text (but not if we already started a new_line, the cluster won't fit anyway)
@@ -234,11 +238,11 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 						pixel_delta = right_free_space*space_current/space_count;
 						if (Arcollect::debug.fonts) {
 							const auto &last_pos = glyphs[glyph_id_delta+j].position;
-							add_line(last_pos,{last_pos.x,static_cast<int>(last_pos.y+font_size)},{255,0,0,255});
+							add_line(last_pos,{last_pos.x,static_cast<int>(last_pos.y+line_spacing)},{255,0,0,255});
 						}
 					} else glyphs[glyph_id_delta+j].position.x += pixel_delta;
 				}
-			} else align_glyphs(alignment,glyph_base+glyphi_line_start+skiped_glyph_count,glyph_base+i_newline+1,right_free_space);
+			} else align_glyphs(state,right_free_space);
 			// Update line start index and cursor
 			skiped_glyph_count = 0;
 			glyphi_line_start  = i_newline+1;
@@ -258,10 +262,10 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 		} else if (glyph_info.cluster >= clusteri_line_end) {
 			// We are on a line break '\n'
 			int right_free_space = state.wrap_width - cursor.x + glyph_pos[i-1].x_advance;
-			align_glyphs(alignment,glyph_base+glyphi_line_start+skiped_glyph_count,glyph_base+i,right_free_space);
+			align_glyphs(state,right_free_space);
 			cursor.x = -glyph_pos[i].x_advance;
 			cursor.y += line_spacing;
-			clusteri_line_end = text.find(U'\n',clusteri_line_end+1); // Find the next line break
+			clusteri_line_end = text.find(U'\n',clusteri_line_end+1+cp_offset); // Find the next line break
 			glyphi_line_start = i+1;
 			skiped_glyph_count = -1; // Will be incremented back a few lines later
 		}
@@ -283,8 +287,6 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 		cursor.x += glyph_pos[i].x_advance;
 		cursor.y += glyph_pos[i].y_advance;
 	}
-	// Align the rest
-	align_glyphs(state.attrib_iter->alignment,glyph_base+glyphi_line_start+skiped_glyph_count,glyph_base+glyph_count,state.wrap_width - cursor.x);
 	// Cleanups and late updates
 	hb_buffer_destroy(buf);
 	state.text_run_cluster_offset += glyph_count;
@@ -292,17 +294,38 @@ void Arcollect::gui::font::Renderable::append_text_run(const decltype(Elements::
 Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_width, const RenderConfig& config) :
 	result_size{0,0}
 {
+	// Init rendering state
 	RenderingState state {
 		config,
+		elements.text,
 		{0,0},// cursor
 		wrap_width,
 		elements.attributes.begin(),
+		0, // line_first_glyph_index
 		0,// text_run_cluster_offset
 	};
-	for (const auto& text_run: elements.text_runs)
-		append_text_run(text_run,state);
+	// Render text
+	unsigned int cp_offset = 0;
+	while (cp_offset < elements.text.size()) {
+		// Perform text run
+		Arcollect::gui::font::shape_data *shape_data;
+		int cp_count = Arcollect::gui::font::text_run_length(state,cp_offset,shape_data);
+		// Step attrib_iter if we're on the end
+		// Note: It's after the text_run_length function to avoid skipping attrib changes
+		if (state.attrib_iter->end <= cp_offset)
+			++state.attrib_iter;
+		// Perform text run
+		append_text_run(cp_offset,cp_count,state,shape_data);
+		cp_offset += cp_count;
+	}
+	// Align the rest
+	state.attrib_iter = --elements.attributes.end(); // Get back on a correct attrib_iter
+	align_glyphs(state,state.wrap_width - state.cursor.x);
+	
+	// Outline the text in debug mode
 	if (Arcollect::debug.fonts)
 		add_rect({0,0,result_size.x,result_size.y},{255,255,255,128});
+	// Shrink vectors
 	glyphs.shrink_to_fit();
 	lines.shrink_to_fit();
 }

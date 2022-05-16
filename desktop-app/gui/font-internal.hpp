@@ -37,6 +37,9 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 	/** Rendering configuration
 	 */
 	const RenderConfig& config;
+	/** Text
+	 */
+	const std::u32string_view text;
 	/** Current cursor position
 	 *
 	 * It's the "pen" in FreeType2 vocabulary.
@@ -54,6 +57,11 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 	 * Arcollect::gui::font::Renderable::append_text_run().
 	 */
 	decltype(Elements::attributes)::const_iterator attrib_iter;
+	/** Index of the first glyph of the current line
+	 *
+	 * It is used by the alignment processor
+	 */
+	decltype(Renderable::glyphs)::size_type line_first_glyph_index;
 	/** Number of clusters wrote in previous text runs
 	 *
 	 * It is required to keep track of attrib_iter indexes
@@ -139,13 +147,29 @@ namespace Arcollect {
 			/** Perform configuration and shaping of the buffer
 			 * \param state          to use
 			 * \param[in/out] buffer to shape
+			 * \param|in] data from text_run_length()
 			 * \return Loaded FT_Face (do not add a extra reference)
 			 *
 			 * This part configure the buffer and invoke hb_shape() on the buffer.
 			 * You MUST set the returned FT_Face generic to a hash value of the state.
 			 * \note The implementation of this function is platform specific.
 			 */
-			FT_Face shape_hb_buffer(const Arcollect::gui::font::Renderable::RenderingState& state, hb_buffer_t *buffer);
+			FT_Face shape_hb_buffer(const Arcollect::gui::font::Renderable::RenderingState& state, hb_buffer_t *buffer, shape_data* data);
+			/** Compute max length of a text run
+			 * \param state The rendering state to inspect
+			 * \param cp_offset The text offset to start from
+			 * \param[out] deta An opaque pointer that will be passed back to shape_hb_buffer().
+			 * \return The number of codepoints to shape for the text runs
+			 *
+			 * Complex text must be processed in multiple HarfBuzz hb_shape() runs.
+			 * This function compute how many chars/codepoints we can process while
+			 * keeping the same FT_Face/FT_Size and buffer configuration.
+			 *
+			 * \warning The code must be a pure function as Arcollect may shape less
+			 *          character (excluding some caching). The returned value is used
+			 *          as is and no overflow protection is done.
+			 */
+			int text_run_length(const Arcollect::gui::font::Renderable::RenderingState &state, unsigned int cp_offset, shape_data*& data);
 		}
 	}
 }
