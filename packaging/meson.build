@@ -54,6 +54,7 @@ pkgbuild_depends_list = {
 	'boost'            : 'boost',
 	'curl'             : 'curl',
 	'dbus-1'           : 'dbus',
+	'fontconfig'       : 'fontconfig',
 	'freetype2'        : 'freetype2',
 	'harfbuzz'         : 'harfbuzz',
 	'inih'             : 'libINIReader.so',
@@ -108,6 +109,7 @@ if apt_prog.found() and dpkg_architecture_prog.found() and tar_prog.found() and 
 	debian_depends_list = {
 		# 'dependency_name': ['Debian -dev package name','package-regex'[0-9\-\.]*]
 		'dbus-1'           : ['libdbus-1-dev'           ,'libdbus-1'],
+		'fontconfig'       : ['libfontconfig-dev'       ,'libfontconfig'],
 		'freetype2'        : ['libfreetype-dev'         ,'libfreetype'],
 		'harfbuzz'         : ['libharfbuzz-dev'         ,'libharfbuzz[0-9a-z]+'],
 		'inih'             : ['libinih-dev'             ,'libinireader'],

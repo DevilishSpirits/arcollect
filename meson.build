@@ -180,7 +180,10 @@ if enable_native_progs
 		'zlib',
 	]
 	if with_xdg
-		native_progs_deps += 'dbus-1'
+		native_progs_deps += [
+			'dbus-1',
+			'fontconfig',
+		]
 	endif
 	if dependency('OpenImageIO', required: false).type_name() == 'internal'
 		native_progs_deps += [
@@ -264,10 +267,12 @@ dep_website = {
 	'zlib'             : 'https://zlib.net/',
 }
 
-# TODO Get version of these
 also_embeded = [
-	'roboto',
 ]
+
+if not with_xdg
+	also_embeded += 'roboto'
+endif
 
 embeded_dependencies = []
 foreach dep, version: static_dependencies

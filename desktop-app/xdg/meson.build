@@ -59,3 +59,5 @@ if appstreamcli_prog.found()
 endif
 
 main_cpp = 'main-xdg.cpp'
+query_font = 'xdg/font.cpp'
+deskapp_deps += [dependency('fontconfig')]
