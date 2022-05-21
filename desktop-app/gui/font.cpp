@@ -163,7 +163,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const unsigned int cp_off
 	hb_buffer_add_utf32(buf,reinterpret_cast<const uint32_t*>(state.text.data()),state.text.size(),cp_offset,cp_count);
 	// Invoke Harfbuzz
 	FT_Face face = Arcollect::gui::font::shape_hb_buffer(state,buf,shape_data);
-	const auto line_spacing = face->size->metrics.height >> 6;
+	const auto font_line_skip = face->size->metrics.height >> 6;
 	// Prepare glyphs process
 	auto glyph_base = glyphs.size();
 	unsigned int glyph_count;
@@ -174,7 +174,10 @@ void Arcollect::gui::font::Renderable::append_text_run(const unsigned int cp_off
 	unsigned int glyphi_line_start = 0;
 	// Process leading '\n' (avoid a SEGFAULT in the code)
 	for (;(glyphi_line_start < glyph_count)&&(text[glyphi_line_start+cp_offset] == '\n'); ++glyphi_line_start)
-		cursor.y += line_spacing;
+		state.skip_line(font_line_skip);
+	
+	if (state.current_line_skip < font_line_skip)
+		state.current_line_skip = font_line_skip;
 	
 	auto clusteri_line_end = text.find(U'\n',cp_offset+(glyphi_line_start ? glyphi_line_start+1 : 0)); // To break at \n
 	// Process glyphs
@@ -238,22 +241,24 @@ void Arcollect::gui::font::Renderable::append_text_run(const unsigned int cp_off
 						pixel_delta = right_free_space*space_current/space_count;
 						if (Arcollect::debug.fonts) {
 							const auto &last_pos = glyphs[glyph_id_delta+j].position;
-							add_line(last_pos,{last_pos.x,static_cast<int>(last_pos.y+line_spacing)},{255,0,0,255});
+							add_line(last_pos,{last_pos.x,static_cast<int>(last_pos.y+state.current_line_skip)},{255,0,0,255});
 						}
 					} else glyphs[glyph_id_delta+j].position.x += pixel_delta;
 				}
 			} else align_glyphs(state,right_free_space);
-			// Update line start index and cursor
-			skiped_glyph_count = 0;
-			glyphi_line_start  = i_newline+1;
-			cursor.y          += line_spacing;
+			// Adjust line_first_glyph_index
+			state.line_first_glyph_index -= i-i_newline-1;
 			// Move glyphs on the newline
 			cursor.x = 0;
 			for (i_newline++; i_newline < i; i_newline++) {
 				glyphs[glyph_base+i_newline].position.x  = cursor.x;
-				glyphs[glyph_base+i_newline].position.y += line_spacing;
+				glyphs[glyph_base+i_newline].position.y += state.current_line_skip;
 				cursor.x += glyph_pos[i_newline].x_advance;
 			}
+			// Update line start index and cursor
+			skiped_glyph_count = 0;
+			glyphi_line_start  = i_newline+1;
+			state.skip_line(font_line_skip);
 			// Skip the current char if it's a space
 			if ((glyph_char == U' ')||(glyph_char == U'\t')) {
 				glyph_base--;
@@ -264,7 +269,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const unsigned int cp_off
 			int right_free_space = state.wrap_width - cursor.x + glyph_pos[i-1].x_advance;
 			align_glyphs(state,right_free_space);
 			cursor.x = -glyph_pos[i].x_advance;
-			cursor.y += line_spacing;
+			state.skip_line(font_line_skip);
 			clusteri_line_end = text.find(U'\n',clusteri_line_end+1+cp_offset); // Find the next line break
 			glyphi_line_start = i+1;
 			skiped_glyph_count = -1; // Will be incremented back a few lines later

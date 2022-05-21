@@ -70,6 +70,18 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 	/** Height of the font in pixels
 	 */
 	FT_UInt font_height;
+	/** Height of the current line in pixels
+	 */
+	FT_UInt current_line_skip;
+	/** Skip a line
+	 *
+	 * This is a helper function that update cursor.y and reset current_line_skip.
+	 * It just save lines.
+	 */
+	constexpr void skip_line(FT_UInt line_spacing) {
+		cursor.y += current_line_skip;
+		current_line_skip = line_spacing;
+	}
 };
 
 namespace Arcollect {
