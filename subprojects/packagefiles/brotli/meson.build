@@ -22,8 +22,6 @@ project(
   'google-brotli',
   'c',
   license : 'MIT',
-  version : '1.0.9', # TODO Extract this from the source code
-  meson_version : '>= 0.50',
 )
 
 cc = meson.get_compiler('c')
@@ -35,6 +33,10 @@ endif
 
 cmake_brotli_include_dir = meson.current_source_dir()/'c/include'
 inc = include_directories('c/include')
+
+version = cc.run('#include <version.h>\n#include <stdio.h>\nint main(void) { printf("%d.%d.%d",(int)BROTLI_VERSION>>24,(int)(BROTLI_VERSION>>12)&0xFFF,(int)BROTLI_VERSION&0xFFF); }',
+  include_directories: include_directories('c/common')
+).stdout()
 
 if host_machine.system() == 'linux'
   add_project_arguments('-DOS_LINUX', language : 'c')
@@ -62,7 +64,7 @@ libbrotli_common = library(
   'c/common/transform.c',
   c_args : c_args,
   include_directories : inc,
-  version : meson.project_version(),
+  version : version,
   install : install,
 )
 
@@ -77,7 +79,7 @@ libbrotli_decoder = library(
   c_args : c_args,
   include_directories : inc,
   link_with : libbrotli_common,
-  version : meson.project_version(),
+  version : version,
   install : install,
 )
 
@@ -109,21 +111,24 @@ libbrotli_encoder = library(
   include_directories : inc,
   link_with : libbrotli_common,
   dependencies : dep_m,
-  version : meson.project_version(),
+  version : version,
   install : install,
 )
 
 brotli_common_dep = declare_dependency(
   link_with : libbrotli_common,
   include_directories : inc,
+  version: version,
 )
 
 brotli_encoder_dep = declare_dependency(
   link_with : [libbrotli_common, libbrotli_encoder],
   include_directories : inc,
+  version: version,
 )
 
 brotli_decoder_dep = declare_dependency(
   link_with : [libbrotli_common, libbrotli_decoder],
   include_directories : inc,
+  version: version,
 )
