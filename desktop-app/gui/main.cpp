@@ -106,6 +106,7 @@ void Arcollect::gui::start(int argc, char** argv)
 		
 		SDL_ShowWindow(window);
 	}
+	Arcollect::gui::update_background("");
 	// Handle CLI
 	switch (argc) {
 		case 3: {
