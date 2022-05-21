@@ -1,8 +1,8 @@
 [wrap-file]
-directory = robin-map-0.6.3
-source_url = https://github.com/Tessil/robin-map/archive/refs/tags/v0.6.3.tar.gz
-source_filename = robin-map-0.6.3.tar.gz
-source_hash = e6654c8c2598f63eb0b1d52ff8bdf39cfcc91d81dd5d05274a6dca91241cd72f
+directory = robin-map-1.0.1
+source_url = https://github.com/Tessil/robin-map/archive/refs/tags/v1.0.1.tar.gz
+source_filename = robin-map-1.0.1.tar.gz
+source_hash = b2ffdb623727cea852a66bddcb7fa6d938538a82b40e48294bb581fe086ef005
 patch_directory = robin-map
 
 [provide]
