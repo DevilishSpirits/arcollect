@@ -124,10 +124,22 @@ namespace Fc {
 		}
 		
 		Pattern(void) : handle(FcPatternCreate()) {}
+		Pattern(const Fc::Pattern& other) : handle(other.handle) {
+			FcPatternReference(handle);
+		}
+		Pattern(FcPattern&&) = delete;
 		Pattern(FcPattern *pattern) : handle(pattern) {}
 		~Pattern(void) {
 			FcPatternDestroy(handle);
 		}
+		Pattern &operator=(Pattern& other) {
+			FcPatternReference(other.handle);
+			FcPatternDestroy(handle);
+			handle = other.handle;
+			return *this;
+		}
+		Pattern &operator=(const Pattern& other) = delete;
+		Pattern &operator=(Pattern&& other) = delete;
 		
 		int ObjectCount(void) const {
 			return FcPatternObjectCount(handle);

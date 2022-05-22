@@ -21,41 +21,104 @@
 #include "fontconfig.hpp"
 #include "../gui/font-internal.hpp"
 #include FT_SIZES_H
-static FT_Face face;
-static std::unordered_map<Uint32,FT_Size> cache;
-static Arcollect::gui::font::FaceGeneric face_generic; // TODO Use more faces
+static Fc::Config fc_config(FcInitLoadConfigAndFonts());
+
+static void face_generic_destroy(void* object)
+{
+	delete static_cast<Arcollect::gui::font::FaceGeneric*>(object);
+}
+
+static FT_Face face_by_filename(const std::string& filename) {
+	static std::unordered_map<std::string,FT_Face> cache;
+	auto iter = cache.find(filename);
+	if (iter == cache.end()) {
+		FT_Face face;
+		FT_New_Face(Arcollect::gui::font::ft_library,filename.c_str(),0,&face);
+		face->generic.data = new Arcollect::gui::font::FaceGeneric();
+		face->generic.finalizer = face_generic_destroy;
+		iter = cache.emplace(filename,face).first;
+	}
+	return iter->second;
+}
+
+struct face_size_entry {
+	FT_Face face;
+	FT_Size size;
+	Fc::Pattern pattern;
+	face_size_entry(const std::string& filename, const Arcollect::gui::font::Renderable::RenderingState& state) :
+		face(face_by_filename(filename))
+	{
+		FT_Reference_Face(face);
+		FT_New_Size(face,&size);
+		FT_Activate_Size(size);
+		FT_Set_Pixel_Sizes(face,state.font_height,state.font_height);
+	}
+	face_size_entry(std::pair<const std::string&,const Arcollect::gui::font::Renderable::RenderingState&> pair) : face_size_entry(pair.first,pair.second) {}
+	~face_size_entry(void) {
+		FT_Done_Face(face);
+		FT_Done_Size(size);
+	}
+	FT_Face activate(void) {
+		FT_Activate_Size(size);
+		return face;
+	}
+};
+
+static std::unordered_map<std::size_t,face_size_entry> face_size_entries;
+
+static std::size_t hash_state(const Arcollect::gui::font::Renderable::RenderingState& state) {
+	return std::hash<FT_UInt>()(state.font_height^(state.font_height << 8)^(state.font_height << 15));
+}
+
+static Fc::Pattern &lookup_pattern(const Arcollect::gui::font::Renderable::RenderingState& state, char32_t character)
+{
+	static std::unordered_map<std::size_t,std::vector<Fc::Pattern>> cache;
+	std::vector<Fc::Pattern> &patterns = cache[hash_state(state)];
+	// Lookup pattern 
+	for (auto& pattern: patterns) {
+		FcCharSet* charset;
+		FcPatternGetCharSet(pattern,FC_CHARSET,0,&charset);
+		if (FcCharSetHasChar(charset,character))
+			return pattern;
+	}
+	
+	// -- No pattern found! Lookup for one.
+	FcResult res;
+	Fc::CharSet charset;
+	charset.AddChar(character);
+	Fc::Pattern pattern(FcPatternBuild(NULL,FC_FAMILY,FcTypeString,"system-ui",NULL));
+	pattern.Add(FC_CHARSET,charset);
+	pattern.Add(FC_PIXEL_SIZE,static_cast<int>(state.font_height));
+	FcDefaultSubstitute(pattern);
+	fc_config.Substitute(pattern,FcMatchPattern);
+	patterns.emplace_back(FcFontMatch(fc_config,pattern,&res));
+	return patterns.back();
+}
+
 void Arcollect::gui::font::os_init(void)
 {
-	// TODO Error checkings
-	// Lookup system font infos
-	Fc::Config::EnableHome(true);
-	Fc::Config config(FcInitLoadConfigAndFonts());
-	Fc::Pattern pattern(FcPatternBuild(NULL,FC_FAMILY,FcTypeString,"system-ui",NULL));
-	FcDefaultSubstitute(pattern);
-	config.Substitute(pattern,FcMatchPattern);
-	FcResult res;
-	Fc::Pattern result(FcFontMatch(config,pattern,&res));
-	// Read config
-	FcChar8 *filename;
-	FcPatternGetString(result,FC_FILE,0,&filename);
-	// Init font
-	FT_New_Face(Arcollect::gui::font::ft_library,(const char*)filename,0,&face);
-	face->generic.data = &face_generic;
 }
-FT_Face Arcollect::gui::font::shape_hb_buffer(const Arcollect::gui::font::Renderable::RenderingState& state, hb_buffer_t* buf, Arcollect::gui::font::shape_data*)
+
+struct Arcollect::gui::font::shape_data {
+	Fc::Pattern pattern;
+};
+
+FT_Face Arcollect::gui::font::shape_hb_buffer(const Arcollect::gui::font::Renderable::RenderingState& state, hb_buffer_t* buf, Arcollect::gui::font::shape_data* data)
 {
-	// Query the font_size
-	FT_UInt key{state.font_height};
-	// FIXME This is a poor prehashing to avoid collisions in case of identity std::hash
-	face_generic.hash_key = std::hash<decltype(key)>()(key^(key << 8)^(key << 15));
-	auto iter = cache.find(key);
-	if (iter == cache.end()) {
-		FT_Size new_size;
-		FT_New_Size(face,&new_size);
-		FT_Activate_Size(new_size);
-		FT_Set_Pixel_Sizes(face,state.font_height,state.font_height);
-		cache.emplace(key,new_size);
-	} else FT_Activate_Size(iter->second);
+	Fc::Pattern &pattern = data->pattern;
+	// Read config
+	FcChar8 *fc_filename;
+	FcPatternGetString(pattern,FC_FILE,0,&fc_filename);
+	std::string filename(reinterpret_cast<const char*>(fc_filename));
+	// Cast ray in cache
+	std::size_t key = std::hash<decltype(filename)>()(filename) ^ hash_state(state);
+	auto iter = face_size_entries.find(key);
+	if (iter == face_size_entries.end())
+		iter = face_size_entries.emplace(key,std::make_pair<decltype(filename)&,decltype(state)&>(filename,state)).first;
+	// Setup face
+	FT_Face face = iter->second.activate();
+	Arcollect::gui::font::FaceGeneric &generic = *static_cast<Arcollect::gui::font::FaceGeneric*>(face->generic.data);
+	generic.hash_key = key;
 	// Configure the buffer
 	// FIXME Auto-detect better values
 	hb_buffer_set_direction(buf, HB_DIRECTION_LTR);
@@ -66,14 +129,63 @@ FT_Face Arcollect::gui::font::shape_hb_buffer(const Arcollect::gui::font::Render
 	hb_ft_font_set_load_flags(font,ft_flags);
 	hb_shape(font,buf,NULL,0);
 	hb_font_destroy(font);
+	// Cleanups
+	delete data;
 	return face;
 }
-int Arcollect::gui::font::text_run_length(const Arcollect::gui::font::Renderable::RenderingState &state, unsigned int cp_offset, Arcollect::gui::font::shape_data*&)
+
+int Arcollect::gui::font::text_run_length(const Arcollect::gui::font::Renderable::RenderingState &state, unsigned int cp_offset, Arcollect::gui::font::shape_data*& data)
 {
+	decltype(cp_offset) start_offset = cp_offset;
 	auto     current_attrib_iter = state.attrib_iter;
+	do {
+		const char32_t chr = state.text[start_offset];
+		// Check if we're not on a blank
+		if (!((chr <= 0x20)
+			 ||(chr == 0x00A0)))
+			break;
+		// Loop and check for overflow
+		if (++start_offset >= state.text.size()) {
+			// FIXME This is a dirty workaround
+			data = new Arcollect::gui::font::shape_data{
+				lookup_pattern(state,U'A'),
+			};
+			return state.text.size()-cp_offset;
+		}
+		if (current_attrib_iter->end <= start_offset)
+			++current_attrib_iter;
+	} while (true);
+	
 	FontSize current_font_size = current_attrib_iter->font_size;
-	// Break on text size changes
-	while ((current_attrib_iter->end < state.text.size())&&(current_font_size == current_attrib_iter->font_size))
+	// Allocate data and invoke FontConfig
+	if (current_attrib_iter->end <= start_offset)
 		++current_attrib_iter;
-	return current_attrib_iter->end - cp_offset;
+	data = new Arcollect::gui::font::shape_data{
+		lookup_pattern(state,state.text[start_offset]),
+	};
+	FcCharSet* charset;
+	FcPatternGetCharSet(data->pattern,FC_CHARSET,0,&charset);
+	FcPatternReference(data->pattern);
+	auto hash = FcPatternHash(data->pattern);
+	// Find where we should break
+	for (auto chr_i = start_offset + 1; chr_i < state.text.size(); ++chr_i) {
+		const char32_t chr = state.text[chr_i];
+		// Check for attrib iters
+		if (current_attrib_iter->end < chr_i) {
+			++current_attrib_iter;
+			// Break on size changes
+			if (current_font_size != current_attrib_iter->font_size) {
+				return chr_i - cp_offset - 1;
+			}
+		}
+		// Skip blank codepoints
+		if ((chr <= 0x20)
+			 ||(chr == 0x00A0))
+			continue;
+		// -- No known pattern -> Lookup one
+		if (hash != FcPatternHash(lookup_pattern(state,chr)))
+			return chr_i - cp_offset;
+	}
+	// We processed all text
+	return state.text.size()-cp_offset;
 }
