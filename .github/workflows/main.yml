@@ -82,6 +82,49 @@ jobs:
         with:
           name: build-wrapped_webextension.zip
           path: build/webextension/arcollect.zip
+  build-ubuntu-22_04:
+    runs-on: [ubuntu-22.04]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update apt cache
+        run: sudo apt update
+      - name: Install dependencies and tools
+        run: sudo apt install meson libsdl2-dev libfreetype-dev libfontconfig-dev libharfbuzz-dev libopenimageio-dev libboost-all-dev libcurl4-openssl-dev libdbus-1-dev liblcms2-dev python3-setuptools lintian libbrotli-dev
+      - name: Install Mozilla's web-ext with npm
+        run: sudo npm install -g web-ext
+      - name: Setup project
+        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now'
+      - name: Build project
+        run: ninja -C build
+      - name: Uploading arcollect-webextension.zip artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-ubuntu-22_04_webextension.zip
+          path: build/webextension/arcollect.zip
+      - name: Generate Debian package
+        run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+        shell: bash
+      - name: Uploading Debian package artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-ubuntu-22_04-packaging
+          path: build/packaging
+      - name: Test project
+        run: ninja -C build test
+      - name: Link Debian package
+        run: ln "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)" arcollect.deb
+        shell: bash
+      - name: Lintian Debian package
+        run: lintian --no-tag-display-limit --dont-check-part debian/changelog,debian/copyright -I -E --verbose -- arcollect.deb
+      - name: Install Debian package
+        run: sudo dpkg -i arcollect.deb
+        shell: bash
+      - name: Upload build dir
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ubuntu-22_04-builddir
+          path: build
   build-windows-2019:
     runs-on: [windows-2019]
     env:
@@ -112,7 +155,7 @@ jobs:
           name: windows-2019-builddir
           path: build
   check-webextensions-same:
-    needs: [build, build-wrapped]
+    needs: [build, build-wrapped, build-ubuntu-22_04]
     runs-on: [ubuntu-latest]
     steps:
       - name: Download build_webextension.zip
@@ -125,16 +168,26 @@ jobs:
         with:
           name: build-wrapped_webextension.zip
           path: build-wrapped_webextension
+      - name: Download build-ubuntu-22_04_webextension.zip
+        uses: actions/download-artifact@v2
+        with:
+          name: build-ubuntu-22_04_webextension.zip
+          path: build-ubuntu-22_04_webextension
       - name: Make unpack dirs
-        run: mkdir build build-wrapped
+        run: mkdir build build-wrapped build-ubuntu-22_04
       - name: Unpack build_webextension.zip
         run: unzip ../build_webextension/arcollect.zip
         working-directory: build
       - name: Unpack build-wrapped_webextension.zip
         run: unzip ../build-wrapped_webextension/arcollect.zip
         working-directory: build-wrapped
+      - name: Unpack build-ubuntu-22_04_webextension.zip
+        run: unzip ../build-ubuntu-22_04_webextension/arcollect.zip
+        working-directory: build-ubuntu-22_04
       - name: Compare build and build-wrapped results
         run: diff -ry build build-wrapped
+      - name: Compare build and build-ubuntu-22_04 results
+        run: diff -ry build build-ubuntu-22_04
   merge-to-master:
     needs: [check-webextensions-same, build-windows-2019]
     runs-on: [ubuntu-latest]

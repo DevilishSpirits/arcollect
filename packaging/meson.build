@@ -52,6 +52,7 @@ pkgbuild_depends = ['\'xdg-utils\'']
 pkgbuild_depends_list = {
 	# 'dependency_name': 'ArchLinux package name'
 	'boost'            : 'boost',
+	'libbrotlicommon'  : 'brotli',
 	'curl'             : 'curl',
 	'dbus-1'           : 'dbus',
 	'fontconfig'       : 'fontconfig',
@@ -114,6 +115,7 @@ if apt_prog.found() and dpkg_architecture_prog.found() and tar_prog.found() and 
 		'harfbuzz'         : ['libharfbuzz-dev'         ,'libharfbuzz[0-9a-z]+'],
 		'inih'             : ['libinih-dev'             ,'libinireader'],
 		'lcms2'            : ['liblcms2-dev'            ,'liblcms2'],
+		'libbrotlicommon'  : ['libbrotli-dev'           ,'libbrotli'],
 		'libcurl'          : ['libcurl4-openssl-dev'    ,'libcurl4'],
 		'libjpeg'          : ['libjpeg-turbo62-dev'     ,'libjpeg-turbo62'], # TODO Don't assume libjpeg-turbo62, guess from libjpeg
 		'libpng'           : ['libpng-dev'              ,'libpng'],
@@ -121,6 +123,7 @@ if apt_prog.found() and dpkg_architecture_prog.found() and tar_prog.found() and 
 		'OpenImageIO'      : ['libopenimageio-dev'      ,'libopenimageio'],
 		'sdl2'             : ['libsdl2-dev'             ,'libsdl2'],
 		'sqlite3'          : ['libsqlite3-dev'          ,'libsqlite3'],
+		'zlib'             : ['zlib1g-dev'              ,'zlib1g'],
 	}
 	# Boost
 	if 'boost' in deb_system_dependencies

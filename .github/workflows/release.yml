@@ -22,6 +22,35 @@ jobs:
         with:
           name: archlinux-package
           path: build/packaging
+  ubuntu-22_04-package:
+    runs-on: [ubuntu-22.04]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update apt cache
+        run: sudo apt update
+      - name: Install dependencies and tools
+        run: sudo apt install meson libsdl2-dev libfreetype-dev libfontconfig-dev libharfbuzz-dev libopenimageio-dev libboost-all-dev libcurl4-openssl-dev libdbus-1-dev liblcms2-dev python3-setuptools lintian libbrotli-dev
+      - name: Install Mozilla's web-ext with npm
+        run: sudo npm install -g web-ext
+      - name: Setup project
+        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dbuildtype=release -Denable_webextension=false -Db_lto=true
+      - name: Build project
+        run: ninja -C build
+      - name: Test project
+        run: ninja -C build test
+      - name: Generate Debian package
+        run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+        shell: bash
+      - name: Lintian Debian package
+        run: lintian --no-tag-display-limit --dont-check-part debian/changelog,debian/copyright -I -E --verbose -- "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
+      - name: Move Debian package
+        run: mkdir debian-package && mv "build/packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)" "debian-package/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja | sed 's/-1/-ubuntu22.04/')"
+        shell: bash
+      - name: Uploading Debian package artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-ubuntu-22_04-packaging
+          path: debian-package 
   windows-x64-msi-package:
     runs-on: [windows-2019]
     env:
@@ -47,7 +76,7 @@ jobs:
         run: msiexec /i /q build/packaging/arcollect.msi
   build-webextension:
     # Simply build the webextension (only)
-    needs: [archlinux-package, windows-x64-msi-package]
+    needs: [archlinux-package, ubuntu-22_04-package, windows-x64-msi-package]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -98,6 +127,10 @@ jobs:
         with:
           name: archlinux-package
           path: archlinux-package
+      - name: Download Ubuntu 22.04 package
+        uses: actions/download-artifact@v2.0.9
+        with:
+          name: build-ubuntu-22_04-packaging
       - name: Download Windows x64 MSI
         uses: actions/download-artifact@v2.0.9
         with:
