@@ -5,6 +5,7 @@ online_tests = files(
 	'e621.net.json',
 	'furaffinity.net.json',
 	'knowyourmeme.com.json',
+	'pixiv.net.json',
 	'tumbex.com.json',
 )
 online_nsfw_tests = files(
