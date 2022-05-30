@@ -334,7 +334,7 @@ Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_
 	glyphs.shrink_to_fit();
 	lines.shrink_to_fit();
 }
-void Arcollect::gui::font::Renderable::render_tl(int x, int y)
+void Arcollect::gui::font::Renderable::render_tl(int x, int y) const
 {
 	for (const GlyphData& glyph: glyphs)
 		glyph.glyph->render(glyph.position.x + x, glyph.position.y + y, glyph.color);

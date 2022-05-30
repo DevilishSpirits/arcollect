@@ -380,7 +380,7 @@ namespace Arcollect {
 					 */
 					void append_text_run(const unsigned int cp_offset, int cp_count, RenderingState &state, Arcollect::gui::font::shape_data *shape_data);
 				public:
-					inline const SDL::Point size() {
+					inline const SDL::Point size() const {
 						return result_size;
 					}
 					/** Renderable empty constructor
@@ -413,9 +413,12 @@ namespace Arcollect {
 					Renderable(const std::string_view& text, FontSize font_size, int wrap_width = std::numeric_limits<int>::max())
 						: Renderable(Elements() << font_size << text,wrap_width) {}
 					Renderable(const Renderable&) = default;
-					void render_tl(int x, int y);
-					inline void render_tl(SDL::Point topleft_corner) {
+					void render_tl(int x, int y) const;
+					inline void render_tl(SDL::Point topleft_corner) const {
 						return render_tl(topleft_corner.x,topleft_corner.y);
+					}
+					inline void render_cl(int x, int y, int h) const {
+						return render_tl(x,y+(h-result_size.y)/2);
 					}
 			};
 		}
