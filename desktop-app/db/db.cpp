@@ -23,9 +23,9 @@ sqlite_int64 Arcollect::private_data_version = 0;
 sqlite_int64 Arcollect::update_data_version(void)
 {
 	std::unique_ptr<SQLite3::stmt> stmt;
-	database->prepare("PRAGMA data_version;",stmt); // TODO Error checking
-	stmt->step(); // TODO Error checking
-	return data_version = stmt->column_int64(0) + Arcollect::private_data_version;
+	if (!database->prepare("PRAGMA data_version;",stmt) && (stmt->step() == SQLITE_ROW))
+		data_version = stmt->column_int64(0) + Arcollect::private_data_version;
+	return data_version;
 }
 void Arcollect::local_data_version_changed(void)
 {
