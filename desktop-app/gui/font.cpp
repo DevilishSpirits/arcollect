@@ -154,7 +154,7 @@ void Arcollect::gui::font::Renderable::append_text_run(const unsigned int cp_off
 {
 	// Extract parameters
 	decltype(Elements::attributes)::const_iterator &attrib_iter = state.attrib_iter;
-	state.font_height = (attrib_iter->font_size.value < 0 ? -attrib_iter->font_size.value : attrib_iter->font_size.value * state.config.base_font_height); // TODO Make the size customizable
+	state.font_height = (attrib_iter->font_size.value < 0 ? -attrib_iter->font_size.value : attrib_iter->font_size.value * state.config.base_font_height);
 	const std::u32string_view &text = state.text;
 	SDL::Point              &cursor = state.cursor;
 	// Create the buffer
