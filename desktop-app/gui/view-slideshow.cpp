@@ -268,8 +268,9 @@ void Arcollect::gui::view_slideshow::render_titlebar(Arcollect::gui::modal::rend
 		}
 		// Render title
 		const int title_border = render_ctx.titlebar_target.h/4;
-		if (!title_text_cache)
-			title_text_cache = std::make_unique<font::Renderable>(viewport.artwork->title().c_str(),-render_ctx.titlebar_target.h+2*title_border);
+		if (!title_text_cache) {
+			title_text_cache = std::make_unique<font::Renderable>(font::Elements::build(font::ExactFontSize(render_ctx.titlebar_target.h-2*title_border),viewport.artwork->title()));
+		}
 		title_text_cache->render_cl(render_ctx.titlebar_target.x+title_border+render_ctx.titlebar_target.h,render_ctx.titlebar_target.y,render_ctx.titlebar_target.h);
 		// Render clicks UI
 		render_click_area(render_ctx,CLICK_PREV,CLICK_UI_VIEW);

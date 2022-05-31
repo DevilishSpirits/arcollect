@@ -403,15 +403,6 @@ namespace Arcollect {
 					 *
 					 */
 					Renderable(const Elements& elements, const RenderConfig& config) : Renderable(elements,std::numeric_limits<int>::max(),config) {}
-					/** Render UTF-8 text
-					 * \param text UTF-8 text
-					 * \param font_size Text height
-					 * \param wrap_width The maximum width
-					 *
-					 * \note The text will be convertd to UTF-32.
-					 */
-					Renderable(const std::string_view& text, FontSize font_size, int wrap_width = std::numeric_limits<int>::max())
-						: Renderable(Elements() << font_size << text,wrap_width) {}
 					Renderable(const Renderable&) = default;
 					void render_tl(int x, int y) const;
 					inline void render_tl(SDL::Point topleft_corner) const {

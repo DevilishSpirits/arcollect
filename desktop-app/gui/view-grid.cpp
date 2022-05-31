@@ -102,7 +102,7 @@ void Arcollect::gui::view_vgrid::render_viewport_hover(const Arcollect::gui::mod
 	render_ctx.renderer.FillRect(rect);
 	// Draw title
 	if (caption_cache_artwork != viewport.artwork) {
-		caption_title = gui::font::Renderable(viewport.artwork->title(),1,rect.w);
+		caption_title = gui::font::Renderable(font::Elements::build(viewport.artwork->title()),rect.w);
 		caption_cache_has_artist = false; // Invalidate caption_account
 		caption_cache_artwork = viewport.artwork;
 	}
