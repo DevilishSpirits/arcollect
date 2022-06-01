@@ -153,7 +153,7 @@ void Arcollect::gui::font::Renderable::align_glyphs(RenderingState &state, int r
 void Arcollect::gui::font::Renderable::append_text_run(const unsigned int cp_offset, int cp_count, RenderingState &state, Arcollect::gui::font::shape_data *shape_data)
 {
 	// Extract parameters
-	decltype(Elements::attributes)::const_iterator &attrib_iter = state.attrib_iter;
+	const Arcollect::gui::font::Attributes* &attrib_iter = state.attrib_iter;
 	state.font_height = (attrib_iter->font_size.value < 0 ? -attrib_iter->font_size.value : attrib_iter->font_size.value * state.config.base_font_height);
 	const std::u32string_view &text = state.text;
 	SDL::Point              &cursor = state.cursor;
@@ -296,22 +296,22 @@ void Arcollect::gui::font::Renderable::append_text_run(const unsigned int cp_off
 	hb_buffer_destroy(buf);
 	state.text_run_cluster_offset += glyph_count;
 }
-Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_width, const RenderConfig& config) :
+Arcollect::gui::font::Renderable::Renderable(const Attributes* attrib_begin, std::size_t attrib_count, std::u32string_view text, int wrap_width, const RenderConfig& config) :
 	result_size{0,0}
 {
 	// Init rendering state
 	RenderingState state {
 		config,
-		elements.text,
+		text,
 		{0,0},// cursor
 		wrap_width,
-		elements.attributes.begin(),
+		attrib_begin,
 		0, // line_first_glyph_index
 		0,// text_run_cluster_offset
 	};
 	// Render text
 	unsigned int cp_offset = 0;
-	while (cp_offset < elements.text.size()) {
+	while (cp_offset < text.size()) {
 		// Perform text run
 		Arcollect::gui::font::shape_data *shape_data;
 		int cp_count = Arcollect::gui::font::text_run_length(state,cp_offset,shape_data);
@@ -324,7 +324,7 @@ Arcollect::gui::font::Renderable::Renderable(const Elements& elements, int wrap_
 		cp_offset += cp_count;
 	}
 	// Align the rest
-	state.attrib_iter = --elements.attributes.end(); // Get back on a correct attrib_iter
+	state.attrib_iter = &attrib_begin[attrib_count-1]; // Get back on a correct attrib_iter
 	align_glyphs(state,state.wrap_width - state.cursor.x);
 	
 	// Outline the text in debug mode

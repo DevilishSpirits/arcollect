@@ -56,12 +56,12 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 	 * It is incremented when needed by
 	 * Arcollect::gui::font::Renderable::append_text_run().
 	 */
-	decltype(Elements::attributes)::const_iterator attrib_iter;
+	const Arcollect::gui::font::Attributes *attrib_iter;
 	/** Index of the first glyph of the current line
 	 *
 	 * It is used by the alignment processor
 	 */
-	decltype(Renderable::glyphs)::size_type line_first_glyph_index;
+	std::size_t line_first_glyph_index;
 	/** Number of clusters wrote in previous text runs
 	 *
 	 * It is required to keep track of attrib_iter indexes

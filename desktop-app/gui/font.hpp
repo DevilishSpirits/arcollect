@@ -133,6 +133,37 @@ namespace Arcollect {
 				 */
 				RIGHT,
 			};
+			/** Attributes description
+			 *
+			 * This structure contain text attributes description like the color.
+			 *
+			 * It is never manipulated directly in user code.
+			 */
+			struct Attributes {
+				/** This attribute end/next attribute start index
+				 *
+				 * This field is used to know when we should change to the next
+				 * attribute when rendering text.
+				 *
+				 * This value is the index when we should use the next attribute.
+				 * A more natural logic would be to store when we start using this
+				 * attribute but this require more code. Here we start when the next
+				 * attribute start.
+				 */
+				uint32_t end;
+				/** Alignment
+				 */
+				Align alignment;
+				/** Justification flag
+				 */
+				Justify justify;
+				/** Current glyph color
+				 */
+				SDL::Color color;
+				/** Font size
+				 */
+				FontSize font_size;
+			};
 			/** Text rendering instructions buffer
 			 *
 			 * Used to ease text building with Elements::operator<<().
@@ -141,38 +172,6 @@ namespace Arcollect {
 			class Elements {
 				private:
 					friend Renderable;
-					/** Attributes description
-					 *
-					 * This structure contain text attributes description like the color.
-					 * \note Some operations like font-size change require another shaping
-					 *       call. #Attributes don't store these attributes which are
-					 *       stored along the text run itself.
-					 */
-					struct Attributes {
-						/** This attribute end/next attribute start index
-						 *
-						 * This field is used to know when we shoud change to the next
-						 * attribute when rendering text.
-						 *
-						 * This value is the index when we should use the next attribute.
-						 * A more natural logic would be to store when we start using this
-						 * attribute but this require more code. Here we start when the next
-						 * attribute start.
-						 */
-						uint32_t end;
-						/** Alignment
-						 */
-						Align alignment;
-						/** Justification flag
-						 */
-						Justify justify;
-						/** Current glyph color
-						 */
-						SDL::Color color;
-						/** Font size
-						 */
-						FontSize font_size;
-					};
 					/** List of #Arcollect::gui::font::Elements::Attributes
 					 *
 					 * Contain the list of attributes in the order they appear
@@ -379,6 +378,19 @@ namespace Arcollect {
 					 * A text run is a batch for text shaping.
 					 */
 					void append_text_run(const unsigned int cp_offset, int cp_count, RenderingState &state, Arcollect::gui::font::shape_data *shape_data);
+					
+					/** Render text real function
+					 * \param attrib_begin Start of attributes array
+					 * \param attrib_count Length ofattributes array
+					 * \param text to render
+					 * \param wrap_width The maximum width
+					 * \param config The configuration to use
+					 *
+					 * Real Elements class independant constructor.
+					 * 
+					 * \warning The wrap_width not an absolute limit!
+					 */
+					Renderable(const Attributes* attrib_begin, std::size_t attrib_count, std::u32string_view text, int wrap_width, const RenderConfig& config);
 				public:
 					inline const SDL::Point size() const {
 						return result_size;
@@ -389,14 +401,15 @@ namespace Arcollect {
 					 *          You must set the object to something valid before render.
 					 */
 					Renderable(void) = default;
-					/** Rendert text
+					/** Render text
 					 * \param elements Elements to add
 					 * \param wrap_width The maximum width
 					 * \param config The configuration to use
 					 *
 					 * \warning The wrap_width not an absolute limit!
 					 */
-					Renderable(const Elements& elements, int wrap_width = std::numeric_limits<int>::max(), const RenderConfig& config = RenderConfig());
+					Renderable(const Elements& elements, int wrap_width = std::numeric_limits<int>::max(), const RenderConfig& config = RenderConfig()) :
+						Renderable(elements.attributes.data(),elements.attributes.size(),elements.text,wrap_width,config) {}
 					/** Render undelimited text
 					 * \param elements Elements to add
 					 * \param config The configuration to use
