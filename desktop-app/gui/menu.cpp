@@ -15,16 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "menu.hpp"
-extern SDL::Renderer *renderer;
-
-void Arcollect::gui::menu::render(Arcollect::gui::modal::render_context render_ctx)
+Arcollect::gui::menu_item::render_context Arcollect::gui::menu::begin_render_context(const Arcollect::gui::modal::render_context &render_ctx)
 {
-	auto& target = render_ctx.target;
+	const SDL::Rect& target = render_ctx.target;
 	// Compute menu_size
 	SDL::Rect menu_rect{0,0,0,0};
-	for (auto& menu_pair: menu_items) {
-		SDL::Point size = menu_pair.first->size();
-		menu_pair.second.h = size.y;
+	for (auto& menu: menu_items) {
+		SDL::Point size = menu->size();
 		menu_rect.h += size.y + 1 + 2*padding.y;
 		menu_rect.w  = std::max(menu_rect.w,size.x);
 	}
@@ -50,90 +47,89 @@ void Arcollect::gui::menu::render(Arcollect::gui::modal::render_context render_c
 	else// if (!anchor_right && !anchor_left) {
 		menu_rect.x = (target.w - menu_rect.w)/2;
 	
+	// Make the menu_item::render_context
+	return {
+		render_ctx.renderer,
+		{menu_rect.x,menu_rect.y,menu_rect.w,-1},
+		{menu_rect.x+padding.x,menu_rect.y+padding.y,menu_rect.w-2*padding.x,-1},
+		menu_rect,
+	};
+}
+void Arcollect::gui::menu::step_render_context(menu_item::render_context& context, const std::shared_ptr<Arcollect::gui::menu_item> &item)
+{
+	SDL::Point item_size = item->size();
+	// Step size
+	context.event_target.y  += context.event_target.h+1;
+	context.render_target.y += context.event_target.h+1;
+	// Update the context with the item
+	context.event_target.h  = item_size.y + 2*padding.y;
+	context.render_target.h = item_size.y;
+	context.has_focus = item == focused_cell;
+}
+
+void Arcollect::gui::menu::render(Arcollect::gui::modal::render_context render_ctx)
+{
+	menu_item_render_context menu_item_render_ctx = begin_render_context(render_ctx);
+	SDL::Rect &render_target = menu_item_render_ctx.render_target;
+	SDL::Rect &event_target = menu_item_render_ctx.event_target;
 	// Render background
-	renderer->SetDrawColor(0,0,0,192);
-	renderer->FillRect(menu_rect);
-	renderer->SetDrawColor(255,255,255,255);
-	renderer->DrawRect(menu_rect);
+	render_ctx.renderer.SetDrawColor(0,0,0,192);
+	render_ctx.renderer.FillRect(menu_item_render_ctx.menu_rect);
 	
 	// Render cells
-	SDL::Rect current_rect{menu_rect.x+padding.x,menu_rect.y+padding.y,menu_rect.w-2*padding.x,0};
-	for (auto& menu_pair: menu_items) {
-		SDL::Rect &rect = menu_pair.second;
-		// Compute rect and render
-		current_rect.h = rect.h;
-		rect = current_rect;
-		menu_pair.first->render(current_rect);
-		// Enlarge rect
-		rect.x -= padding.x;
-		rect.y -= padding.y;
-		rect.w += padding.x*2;
-		rect.h += padding.y*2;
-		// Move current_rect
-		current_rect.y += rect.h + 1;
+	for (auto& menu: menu_items) {
+		// Render cell
+		step_render_context(menu_item_render_ctx,menu);
+		menu->render(menu_item_render_ctx);
+		// Render separators
+		render_ctx.renderer.SetDrawColor(255,255,255,128);
+		render_ctx.renderer.DrawLine(render_target.x, event_target.y - 1, render_target.x + render_target.w, event_target.y - 1);
+		// Render focus
+		if (menu_item_render_ctx.has_focus) {
+			render_ctx.renderer.SetDrawColor(255,255,255,128);
+			render_ctx.renderer.FillRect(event_target);
+		}
 	}
-	
-	// Render separators
-	renderer->SetDrawColor(128,128,128,255);
-	for (auto& menu_pair: menu_items) {
-		const SDL::Rect &rect = menu_pair.second;
-		renderer->DrawLine(rect.x + padding.x, rect.y - 1, rect.x + rect.w - padding.x, rect.y - 1);
-	}
-	
-	// Render hovered cell
-	if (hovered_cell > -1) {
-		renderer->SetDrawColor(255,255,255,128);
-		renderer->FillRect(menu_items[hovered_cell].second);
-	}
+	// Render borders
+	render_ctx.renderer.SetDrawColor(255,255,255,255);
+	render_ctx.renderer.DrawRect(menu_item_render_ctx.menu_rect);
 }
 
 bool Arcollect::gui::menu::event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx)
 {
-	bool propagate; // Propagate event to other modals
-	bool broadcast = false; // Broadcast event to all items
+	// Early handlings
+	bool propagate = true;
+	SDL::Point mouse_focus_event{-1}; // Negative coords = noevent
 	switch (e.type) {
+		// Reset the ce
 		case SDL_MOUSEMOTION: {
-			hovered_cell = get_menu_item_at({e.motion.x,e.motion.y});
-			propagate = false;
+			mouse_focus_event = {e.motion.x,e.motion.y};
 		} break;
+		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP: {
-			propagate = false;
-			broadcast = true;
+			mouse_focus_event = {e.button.x,e.button.y};
 		} break;
-		default: propagate = true;
+		// TODO Up/down key docus change
+		default:break;
 	}
+	// Clear focus for now
+	if (mouse_focus_event.x > -1)
+		focused_cell = NULL;
 	
-	if (broadcast) {
-		// Pass event to all cells
-		// Note: menu_rects[i].x and menu_rects[i].w are the same everywhere
-		const auto& menu_rect0 = menu_items[0].second;
-		SDL::Rect render_location{menu_rect0.x + padding.x,menu_rect0.y,menu_rect0.w - 2*padding.x,0};
-		for (auto& menu_pair: menu_items) {
-			const SDL::Rect &rect =  menu_pair.second;
-			render_location.h = rect.h - 2*padding.x;
-			menu_pair.first->event(e,rect,render_location);
-			render_location.y +=  rect.h;
+	// Dispatch events to cells
+	menu_item_render_context menu_item_render_ctx = begin_render_context(render_ctx);
+	for (auto& menu: menu_items) {
+		step_render_context(menu_item_render_ctx,menu);
+		// Update mouse focus
+		if (mouse_focus_event.InRect(menu_item_render_ctx.event_target)) {
+			focused_cell = menu;
+			menu_item_render_ctx.has_focus = true;
 		}
-	} else if (hovered_cell > -1) {
-		const SDL::Rect &hovered_cell_rect = menu_items[hovered_cell].second;
-		// Pass event to the hovered_cell
-		menu_items[hovered_cell].first->event(e,hovered_cell_rect,{
-			hovered_cell_rect.x + padding.x,
-			hovered_cell_rect.y + padding.y,
-			hovered_cell_rect.w - 2*padding.x,
-			hovered_cell_rect.h - 2*padding.y,
-		});
+		// Fire event
+		propagate &= menu->event(e,menu_item_render_ctx);
 	}
 	
 	return propagate;
-}
-int Arcollect::gui::menu::get_menu_item_at(SDL::Point cursor)
-{
-	for (int i = 0; i < static_cast<int>(menu_items.size()); i++)
-		if (cursor.InRect(menu_items[i].second))
-			return i;
-	// No match found
-	return -1;
 }
 
 class popup_menu: public Arcollect::gui::menu {
@@ -189,22 +185,23 @@ SDL::Point Arcollect::gui::menu_item_label::size(void)
 	return text_line.size();
 }
 
-void Arcollect::gui::menu_item_label::render(SDL::Rect target)
+void Arcollect::gui::menu_item_label::render(const render_context& render_ctx)
 {
+	const SDL::Rect& target = render_ctx.render_target;
 	text_line.render_tl(target.x+(target.w-text_line.size().x)/2,target.y+(target.h-text_line.size().y)/2);
 }
-void Arcollect::gui::menu_item_label::event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location)
+bool Arcollect::gui::menu_item_label::event(SDL::Event &e, const render_context& render_ctx)
 {
 	switch (e.type) {
 		case SDL_MOUSEBUTTONDOWN: {
 			SDL::Point mouse_pos{e.button.x,e.button.y};
-			pressed = mouse_pos.InRect(event_location);
-		} break;
+			pressed = mouse_pos.InRect(render_ctx.event_target);
+		} return true;
 		case SDL_MOUSEBUTTONUP: {
 			SDL::Point mouse_pos{e.button.x,e.button.y};
-			if (pressed && mouse_pos.InRect(event_location))
+			if (pressed && mouse_pos.InRect(render_ctx.event_target))
 				clicked();
-		} break;
-		default: break;
+		} return true;
+		default: return false;
 	}
 }

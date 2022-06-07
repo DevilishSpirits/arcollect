@@ -186,12 +186,14 @@ SDL::Point Arcollect::gui::rating_selector_menu::size(void)
 	size.x += (1+selector.has_kid+selector.has_mature+selector.has_adult)*size.y;
 	return size;
 }
-void Arcollect::gui::rating_selector_menu::event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location)
+bool Arcollect::gui::rating_selector_menu::event(SDL::Event &e, const render_context& render_ctx)
 {
-	selector.event(e,render_location);
+	selector.event(e,render_ctx.render_target);
+	return false;
 }
-void Arcollect::gui::rating_selector_menu::render(SDL::Rect target)
+void Arcollect::gui::rating_selector_menu::render(const render_context& render_ctx)
 {
+	const SDL::Rect &target = render_ctx.render_target;
 	// Update rating
 	selector.rating = static_cast<Arcollect::config::Rating>(static_cast<int>(Arcollect::config::current_rating));
 	// Render label

@@ -32,23 +32,57 @@ namespace Arcollect {
 	namespace gui {
 		class menu_item {
 			public:
+				/** Menu render context
+				 *
+				 * Same role as #Arcollect::gui::modal::render_context but unlike this
+				 * one the context is usually read-only and have a more specialized set
+				 * of fields.
+				 */
+				struct render_context {
+					SDL::Renderer &renderer;
+					/** Rectangle of focus sensitivity
+					 */
+					SDL::Rect event_target;
+					/** Rectangle of rendering
+					 *
+					 * Include a small padding.
+					 */
+					SDL::Rect render_target;
+					/** Rectangle of the whole menu
+					 *
+					 * For use by Arcollect::gui::menu itself.
+					 */
+					SDL::Rect menu_rect;
+					/** Weather the menu item have the focus
+					 *
+					 * Arcollect control the focus. Use this value, don't guess and fail.
+					 */
+					bool has_focus;
+				};
 				/** Standard menu item height
 				 */
 				static const int standard_height;
 				virtual SDL::Point size(void) = 0;
 				/** Process events
 				 * \param e The event
-				 * \param event_location   The rect that is sensitive to event (with padding)
-				 * \param render_location  The rect where rendering occured (without padding)
+				 * \param render_ctx The render context
 				 */
-				virtual void event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location) = 0;
-				virtual void render(SDL::Rect target) = 0;
+				virtual bool event(SDL::Event &e, const render_context& render_ctx) = 0;
+				virtual void render(const render_context& render_ctx) = 0;
 				virtual ~menu_item(void) = default;
 		};
 		
 		class menu: public modal {
 			protected:
-				std::vector<std::pair<std::shared_ptr<menu_item>,SDL::Rect>> menu_items;
+				using menu_item_render_context = menu_item::render_context;
+				std::vector<std::shared_ptr<menu_item>> menu_items;
+				/** Make an Arcollect::gui::menu_item::render_context to the first item.
+				 */
+				menu_item_render_context begin_render_context(const Arcollect::gui::modal::render_context &render_ctx);
+				/** Go to the next item from the begin_render_context() result
+				 * \todo Document how it should be used (see render()/event())
+				 */
+				void step_render_context(menu_item_render_context& context, const std::shared_ptr<menu_item> &item);
 			public:
 				/** Anchor distance
 				 *
@@ -72,13 +106,12 @@ namespace Arcollect {
 				
 				SDL::Point padding{8,4};
 				void append_menu_item(std::shared_ptr<menu_item> item) {
-					menu_items.emplace_back(std::move(item),SDL::Rect());
+					menu_items.emplace_back(std::move(item));
 				}
 				
 				bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override;
 				void render(Arcollect::gui::modal::render_context render_ctx) override;
-				int get_menu_item_at(SDL::Point cursor);
-				int hovered_cell = -1;
+				std::shared_ptr<menu_item> focused_cell;
 				
 				static void popup_context(const std::vector<std::shared_ptr<menu_item>> &menu_items, SDL::Point at, bool anchor_top = true, bool anchor_left = true, bool anchor_bot = false,  bool anchor_right = false);
 				static unsigned int popup_context_count;
@@ -94,8 +127,8 @@ namespace Arcollect {
 			public:
 				virtual void clicked(void) = 0;
 				SDL::Point size(void) override;
-				void event(SDL::Event &e, const SDL::Rect &event_location, const SDL::Rect &render_location) override;
-				void render(SDL::Rect target) override;
+				bool event(SDL::Event &e, const render_context& render_ctx) override;
+				void render(const render_context& render_ctx) override;
 				menu_item_label(const font::Elements& elements);
 		};
 		
