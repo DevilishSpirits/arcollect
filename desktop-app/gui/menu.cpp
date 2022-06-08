@@ -109,6 +109,53 @@ bool Arcollect::gui::menu::event(SDL::Event &e, Arcollect::gui::modal::render_co
 		case SDL_MOUSEBUTTONUP: {
 			mouse_focus_event = {e.button.x,e.button.y};
 		} break;
+		case SDL_KEYDOWN: {
+			switch (e.key.keysym.scancode) {
+				case SDL_SCANCODE_UP: {
+					// Select the previous menu
+					if (!menu_items.empty()) {
+						// Search the selected menu
+						auto iter = menu_items.crbegin();
+						if (focused_cell) {
+							while (iter != menu_items.crend())
+								if (*iter == focused_cell) {
+									// Found! Switch to the previous and break.
+									++iter;
+									break;
+								} else ++iter;
+							// No menu found? Loop from the bottom
+							if (iter == menu_items.crend())
+								iter = menu_items.crbegin();
+						}
+						// Update the focused_cell
+						// Note: We are checked that there is a menu and the iterator
+						focused_cell = *iter;
+					}
+				} break;
+				case SDL_SCANCODE_DOWN: {
+					// Select the next menu
+					if (!menu_items.empty()) {
+						// Search the selected menu
+						auto iter = menu_items.cbegin();
+						if (focused_cell) {
+							while (iter != menu_items.cend())
+								if (*iter == focused_cell) {
+									// Found! Switch to the next and break.
+									++iter;
+									break;
+								} else ++iter;
+							// No menu found? Loop from the top
+							if (iter == menu_items.cend())
+								iter = menu_items.cbegin();
+						}
+						// Update the focused_cell
+						// Note: We are checked that there is a menu and the iterator
+						focused_cell = *iter;
+					}
+				} break;
+				default:break;
+			}
+		} break;
 		// TODO Up/down key docus change
 		default:break;
 	}
@@ -148,6 +195,16 @@ class popup_menu: public Arcollect::gui::menu {
 				case SDL_MOUSEBUTTONUP: {
 					to_pop = true;
 					result = false;
+				} break;
+				case SDL_KEYUP: {
+					switch (e.key.keysym.scancode) {
+						case SDL_SCANCODE_ESCAPE:
+						case SDL_SCANCODE_RETURN: {
+							to_pop = true;
+						} break;
+						default: break;
+					}
+					result = true;
 				} break;
 				default: {
 					result = false;
@@ -201,6 +258,26 @@ bool Arcollect::gui::menu_item_label::event(SDL::Event &e, const render_context&
 			SDL::Point mouse_pos{e.button.x,e.button.y};
 			if (pressed && mouse_pos.InRect(render_ctx.event_target))
 				clicked();
+		} return true;
+		case SDL_KEYDOWN: {
+			if (render_ctx.has_focus)
+				switch (e.key.keysym.scancode) {
+					case SDL_SCANCODE_RETURN: {
+						pressed = true;
+					} break;
+					default: break;
+				}
+		} return true;
+		case SDL_KEYUP: {
+			if (render_ctx.has_focus)
+				switch (e.key.keysym.scancode) {
+					case SDL_SCANCODE_RETURN: {
+						if (pressed)
+							clicked();
+					} break;
+					default: break;
+				}
+			pressed = false;
 		} return true;
 		default: return false;
 	}
