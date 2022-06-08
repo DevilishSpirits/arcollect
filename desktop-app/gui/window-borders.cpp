@@ -90,12 +90,26 @@ void Arcollect::gui::window_borders::init(SDL_Window *window)
 	SDL_SetWindowMinimumSize(window,title_button_width*TITLEBTN_N,title_button_height);
 }
 
+// Return if the menu has been popped up
+static bool popup_title_context_menu(void)
+{
+	if (Arcollect::gui::menu::popup_context_count == 0) {
+		// Pop menu
+		std::vector<std::shared_ptr<Arcollect::gui::menu_item>> menu = Arcollect::gui::modal_back().top_menu();
+		for (auto& item: topbar_menu_items)
+			menu.emplace_back(item);
+		Arcollect::gui::menu::popup_context(menu,{title_button_width,Arcollect::gui::window_borders::title_height},true,false,false,true);
+		return true;
+	} else return false;
+}
+
 bool Arcollect::gui::window_borders::event(SDL::Event &e)
 {
 	// TODO Proper cursor allocations
 	// TODO Use X11 full cursor range
 	SDL::Point cursor_position{e.motion.x,e.motion.y};
 	// Get window size
+	auto window_flags = SDL_GetWindowFlags(window);
 	SDL::Point window_size;
 	renderer->GetOutputSize(window_size);
 	switch (e.type) {
@@ -167,7 +181,6 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 			bool button_clicked = titlebtn_pressed == titlebtn_hovered;
 			titlebtn_pressed = TITLEBTN_NONE;
 			if (button_clicked) {
-				auto window_flags = SDL_GetWindowFlags(window);
 				switch (titlebtn_hovered) {
 					case TITLEBTN_CLOSE: {
 						// Generate a quit event
@@ -197,13 +210,7 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 					} break;
 					case TITLEBTN_MENU: {
 						// Don't pop if there is a context menu
-						if (Arcollect::gui::menu::popup_context_count == 0) {
-							// Pop menu
-							std::vector<std::shared_ptr<menu_item>> menu = Arcollect::gui::modal_back().top_menu();
-							for (auto& item: topbar_menu_items)
-								menu.emplace_back(item);
-							Arcollect::gui::menu::popup_context(menu,{title_button_width,title_height},true,false,false,true);
-						} else {
+						if (!popup_title_context_menu())
 							/* Hide the menu
 							 *
 							 * Context menu popdown upon SDL_MOUSEBUTTONUP. By default we
@@ -211,13 +218,36 @@ bool Arcollect::gui::window_borders::event(SDL::Event &e)
 							 * hide the menu, we make a special exception
 							 */
 							return true;
-						}
 					} break;
 					// Suppress warnings about missing TITLEBTN_NONE
 					case TITLEBTN_NONE: break;
 				}
 			}
 		} return cursor_position.y >= Arcollect::gui::window_borders::title_height;
+		case SDL_KEYUP: {
+			switch (e.key.keysym.scancode) {
+				case SDL_SCANCODE_F10: {
+					// Title button menu
+					// Don't pop if there is a context menu
+					if (popup_title_context_menu())
+						return false;
+					else {
+						// We mutate e into a click on TITLEBTN_MENU to pop the menu.
+						e.type = SDL_MOUSEBUTTONUP;
+						e.button.x = window_size.x;
+						e.button.y = Arcollect::gui::window_borders::title_height/2;
+						return true;
+					}
+				}
+				case SDL_SCANCODE_F11: {
+					// Toggle fullscreen
+					if (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+						set_fullscreen(false);
+					else set_fullscreen(true);
+				} return false;
+				default: break;
+			}
+		} return true;
 	}
 	return true;
 }
