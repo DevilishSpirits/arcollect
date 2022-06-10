@@ -17,6 +17,7 @@
 #pragma once
 #include <sqlite3.hpp>
 #include "../sdl2-hpp/SDL.hpp"
+#include "download.hpp"
 #include <memory>
 namespace Arcollect {
 	namespace db {
@@ -57,6 +58,13 @@ namespace Arcollect {
 				inline const std::string &url(void) {
 					db_sync();
 					return acc_url;
+				}
+				/** Query the account icon download
+				 * \return The icon texture or NULL if not available yet
+				 */
+				std::shared_ptr<db::download> icon(void) {
+					db_sync();
+					return Arcollect::db::download::query(acc_icon);
 				}
 				/** Query the account icon
 				 * \return The icon texture or NULL if not available yet
