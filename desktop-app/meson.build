@@ -30,6 +30,7 @@ deskapp_srcs = [
 	'gui/font.cpp',
 	'gui/main.cpp',
 	'gui/menu.cpp',
+	'gui/menu-db-object.cpp',
 	'gui/modal.cpp',
 	'gui/rating-selector.cpp',
 	'gui/scrolling-text.cpp',
