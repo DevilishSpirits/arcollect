@@ -89,14 +89,26 @@ const std::vector<std::shared_ptr<Arcollect::db::account>> &Arcollect::db::artwo
 	std::vector<std::shared_ptr<account>> &result = iterbool.first->second;
 	if (iterbool.second) {
 		std::unique_ptr<SQLite3::stmt> stmt;
-		database->prepare("SELECT acc_arcoid FROM art_acc_links WHERE art_artid = ? AND artacc_link = ?;",stmt); // TODO Error checking
-		;
+		database->prepare("SELECT acc_arcoid FROM art_acc_links WHERE art_artid = ? AND artacc_link = ?; ORDER BY acc_arcoid",stmt); // TODO Error checking
 		stmt->bind(1,art_id);
 		stmt->bind(2,link.c_str());
 		while (stmt->step() == SQLITE_ROW) {
 			result.emplace_back(Arcollect::db::account::query(stmt->column_int64(0)));
-			
-			data_version = Arcollect::data_version;
+		}
+	}
+	return result;
+}
+const std::vector<std::shared_ptr<Arcollect::db::account>> &Arcollect::db::artwork::get_linked_accounts(void)
+{
+	db_sync();
+	auto iterbool = linked_accounts.emplace("",std::vector<std::shared_ptr<account>>());
+	std::vector<std::shared_ptr<account>> &result = iterbool.first->second;
+	if (iterbool.second) {
+		std::unique_ptr<SQLite3::stmt> stmt;
+		database->prepare("SELECT acc_arcoid FROM art_acc_links WHERE art_artid = ? ORDER BY acc_arcoid;",stmt); // TODO Error checking
+		stmt->bind(1,art_id);
+		while (stmt->step() == SQLITE_ROW) {
+			result.emplace_back(Arcollect::db::account::query(stmt->column_int64(0)));
 		}
 	}
 	return result;

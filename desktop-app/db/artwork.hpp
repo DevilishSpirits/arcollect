@@ -119,6 +119,7 @@ namespace Arcollect {
 				}
 				
 				const std::vector<std::shared_ptr<account>> &get_linked_accounts(const std::string &link);
+				const std::vector<std::shared_ptr<account>> &get_linked_accounts(void);
 				
 				#ifdef ARTWORK_HAS_OPEN_URL
 				/** Open the artwork URL
