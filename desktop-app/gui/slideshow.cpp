@@ -19,6 +19,7 @@
 #include "../db/artwork-collections.hpp"
 #include "edit-art.hpp"
 #include "menu.hpp"
+#include "menu-db-object.hpp"
 #include "search-osd.hpp"
 #include "slideshow.hpp"
 #include "window-borders.hpp"
@@ -111,12 +112,15 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 	}
 	std::vector<std::shared_ptr<Arcollect::gui::menu_item>> top_menu(void) override {
 		if (viewport.artwork) {
-			return {
+			std::vector<std::shared_ptr<Arcollect::gui::menu_item>> menu{
 				#ifdef ARTWORK_HAS_OPEN_URL
 				std::make_shared<Arcollect::gui::menu_item_simple_label>(Arcollect::i18n_desktop_app.browse_to_arwork_page,::open_in_browser),
 				#endif
 				std::make_shared<Arcollect::gui::menu_item_simple_label>(Arcollect::i18n_desktop_app.edit_current_artwork,std::bind(edit_art,this)),
 			};
+			for (auto &account: viewport.artwork->get_linked_accounts())
+				menu.emplace_back(std::make_shared<Arcollect::gui::menu_account_item>(account));
+			return menu;
 		} else return {};
 	};
 	void render(Arcollect::gui::modal::render_context render_ctx) override {
