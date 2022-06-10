@@ -23,7 +23,7 @@ Arcollect::gui::menu_item::render_context Arcollect::gui::menu::begin_render_con
 	for (auto& menu: menu_items) {
 		SDL::Point size = menu->size();
 		menu_rect.h += size.y + 1 + 2*padding.y;
-		menu_rect.w  = std::max(menu_rect.w,size.x);
+		menu_rect.w  = std::max(menu_rect.w,size.x) + + 2*padding.x;
 	}
 	
 	// Compute real menu_rect
