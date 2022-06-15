@@ -60,7 +60,7 @@ If you want to build the software yourself, grab the source code, install Meson 
 	#ninja install -C build
 ```
 
-Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge compilers and dependencies to build and run. Most dependencies are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. After installing Meson 0.59.0 (at least) from PyPI, things should works out-of-the-box as long as you have a sufficiently recent compiler, for instance Ubuntu 20.04 C++ compilers are too old for Arcollect. I won't complexify the program to support older systems
+Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge compilers and dependencies to build and run. Most dependencies are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. After installing Meson 0.59.0 at least, things should works out-of-the-box as long as you have a sufficiently recent compiler, for instance Ubuntu 20.04 C++ compilers are too old for Arcollect. I won't complexify the program to support older systems
 
 ### Upgrading
 When upgrading, **keep in sync the webextension and binary programs versions!** Mismatching these is unsupported, it should works to some extents but lack of the latest features and bug fixes.
