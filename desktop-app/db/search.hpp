@@ -87,7 +87,7 @@ namespace Arcollect {
 				std::deque<std::variant<std::string_view,sqlite_int64>> sql_bindings;
 				/** Text elements
 				 */
-				std::unique_ptr<Arcollect::gui::font::Elements> cached_elements;
+				Arcollect::gui::font::Elements cached_elements;
 				/** The sorting type of entries
 				 */
 				SortingType real_sorting_type;
@@ -128,7 +128,7 @@ namespace Arcollect {
 				 * \return A reference to the colorized Arcollect::gui::font::Elements.
 				 */
 				const Arcollect::gui::font::Elements &elements(void) const {
-					return *cached_elements;
+					return cached_elements;
 				}
 				/** String move constructor
 				 * \param[in] search_terms The search string to steal.

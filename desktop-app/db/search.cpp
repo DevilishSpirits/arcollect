@@ -377,8 +377,7 @@ struct MatchExpr {
 		}
 		return result;
 	}
-	static Arcollect::gui::font::Elements colorize_search(const std::string_view& search, const text_colors_maps& map) {
-		Arcollect::gui::font::Elements elements;
+	static void colorize_search(const std::string_view& search, Arcollect::gui::font::Elements &elements, const text_colors_maps& map) {
 		const char* iter = search.data();
 		for (const auto &pair: map) {
 			// Print elements between two colored set in white (color is already white)
@@ -391,7 +390,7 @@ struct MatchExpr {
 			iter = &*pair.first.end();
 		}
 		// Print the rest of the string
-		return elements << std::string_view(iter,search.size()-std::distance(search.data(),iter));
+		elements << std::string_view(iter,search.size()-std::distance(search.data(),iter));
 	}
 };
 
@@ -456,7 +455,7 @@ Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, Search
 		std::cerr << std::endl;
 	}
 	// Generate the text
-	cached_elements = std::make_unique<Arcollect::gui::font::Elements>(expr.colorize_search(search,expr.gen_text_colors(search_type)));
+	expr.colorize_search(search,cached_elements,expr.gen_text_colors(search_type));
 }
 
 void Arcollect::search::ParsedSearch::build_stmt(std::unique_ptr<SQLite3::stmt> &stmt) const
