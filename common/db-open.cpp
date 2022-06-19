@@ -30,7 +30,7 @@ bool arcollect_match_prefix(const std::string_view &X, const std::string_view &Y
  */
 static void arcollect_match_prefix_sqlite_func(sqlite3_context* ctx, int, sqlite3_value** values)
 {
-	*reinterpret_cast<SQLite3::context*>(ctx) = arcollect_match_prefix(reinterpret_cast<const char*>(sqlite3_value_text(values[0])),reinterpret_cast<const char*>(sqlite3_value_text(values[1])));
+	*reinterpret_cast<SQLite3::context*>(ctx) = sqlite3_value_text(values[0]) && arcollect_match_prefix(reinterpret_cast<const char*>(sqlite3_value_text(values[0])),reinterpret_cast<const char*>(sqlite3_value_text(values[1])));
 }
 
 std::unique_ptr<SQLite3::sqlite3> Arcollect::db::open(int flags)
