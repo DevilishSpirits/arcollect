@@ -227,8 +227,7 @@ void Arcollect::gui::menu::popup_context(const std::vector<std::shared_ptr<menu_
 	new_popup_menu->anchor_left = anchor_left;
 	new_popup_menu->anchor_bot = anchor_bot;
 	new_popup_menu->anchor_right = anchor_right;
-	for (auto& menu_item: menu_items)
-		new_popup_menu->append_menu_item(menu_item);
+	new_popup_menu->menu_items = menu_items;
 	Arcollect::gui::modal_stack.push_back(std::unique_ptr<modal>(new_popup_menu));
 	popup_context_count++;
 }

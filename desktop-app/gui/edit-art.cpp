@@ -90,7 +90,7 @@ struct edit_artwork_confirm: public Arcollect::gui::menu {
 		view->set_collection(collection);
 		// Setup the popup menu
 		anchor_top = anchor_left = anchor_bot = anchor_right = false;
-		append_menu_item(std::make_shared<Arcollect::gui::menu_item_simple_label>(confirm_label,std::bind(action,collection)));
+		menu_items.push_back(std::make_shared<Arcollect::gui::menu_item_simple_label>(confirm_label,std::bind(action,collection)));
 	}
 };
 

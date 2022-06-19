@@ -75,7 +75,6 @@ namespace Arcollect {
 		class menu: public modal {
 			protected:
 				using menu_item_render_context = menu_item::render_context;
-				std::vector<std::shared_ptr<menu_item>> menu_items;
 				/** Make an Arcollect::gui::menu_item::render_context to the first item.
 				 */
 				menu_item_render_context begin_render_context(const Arcollect::gui::modal::render_context &render_ctx);
@@ -103,14 +102,15 @@ namespace Arcollect {
 				bool anchor_left;
 				bool anchor_bot;
 				bool anchor_right;
-				
 				SDL::Point padding{8,4};
-				void append_menu_item(std::shared_ptr<menu_item> item) {
-					menu_items.emplace_back(std::move(item));
-				}
 				
 				bool event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx) override;
 				void render(Arcollect::gui::modal::render_context render_ctx) override;
+				/** Menu items
+				 */
+				std::vector<std::shared_ptr<menu_item>> menu_items;
+				/** Menu item with the focus
+				 */
 				std::shared_ptr<menu_item> focused_cell;
 				
 				static void popup_context(const std::vector<std::shared_ptr<menu_item>> &menu_items, SDL::Point at, bool anchor_top = true, bool anchor_left = true, bool anchor_bot = false,  bool anchor_right = false);
