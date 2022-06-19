@@ -392,6 +392,34 @@ struct MatchExpr {
 		// Print the rest of the string
 		elements << std::string_view(iter,search.size()-std::distance(search.data(),iter));
 	}
+	/** Find an autocompletion
+	 * \return A pair with the mode and the string
+	 * \warning The returned string might contain characters after the cursor_position. You have to trim it yourself.
+	 */
+	std::pair<Arcollect::search::AutoCompleteMode, std::string_view> find_autocompletion(const char* const cursor_position) const {
+		constexpr auto AUTOCOMP_NONE     = Arcollect::search::AutoCompleteMode::AUTOCOMP_NONE;
+		constexpr auto AUTOCOMP_ACCOUNT  = Arcollect::search::AutoCompleteMode::AUTOCOMP_ACCOUNT;
+		const std::pair<Arcollect::search::AutoCompleteMode, const TagSet<std::string_view>&> tagsets[] = {
+			{AUTOCOMP_ACCOUNT, accounts},
+		};
+		// Check our strings
+		for (const auto& tagset: tagsets) {
+			for (const std::string_view &match: tagset.second.positive_matchs)
+				if ((match.data() <= cursor_position)&&(match.data()+match.size() >= cursor_position))
+					return {tagset.first,match};
+			for (const std::string_view &match: tagset.second.negative_matchs)
+				if ((match.data() <= cursor_position)&&(match.data()+match.size() >= cursor_position))
+					return {tagset.first,match};	
+		};
+		// Check subexpr
+		for (const std::unique_ptr<MatchExpr>& subexpr: or_subexprs) {
+			std::pair<Arcollect::search::AutoCompleteMode, std::string_view> result = subexpr->find_autocompletion(cursor_position);
+			if (result.first != AUTOCOMP_NONE)
+				return result;
+		}
+		// No auto-completion found
+		return {AUTOCOMP_NONE,std::string_view()};
+	}
 };
 
 
@@ -401,7 +429,7 @@ Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, Search
 	search_type(search_type)
 {
 	if (Arcollect::debug.search)
-		std::cerr << "Query:" << search_terms << std::endl;
+		std::cerr << "Query:" << search << std::endl;
 	// Parse the expression
 	MatchExpr expr;
 	sql_query.reserve(65536); // Preallocate a large chunk of memory
@@ -456,6 +484,10 @@ Arcollect::search::ParsedSearch::ParsedSearch(std::string &&search_terms, Search
 	}
 	// Generate the text
 	expr.colorize_search(search,cached_elements,expr.gen_text_colors(search_type));
+	// Generate auto-completion
+	std::pair<Arcollect::search::AutoCompleteMode, std::string_view> auto_complete_result = expr.find_autocompletion(search.data()+search.size());
+	auto_complete_mode = auto_complete_result.first;
+	auto_complete_text = auto_complete_result.second;
 }
 
 void Arcollect::search::ParsedSearch::build_stmt(std::unique_ptr<SQLite3::stmt> &stmt) const
@@ -476,4 +508,23 @@ std::shared_ptr<Arcollect::db::artwork_collection> Arcollect::search::ParsedSear
 	std::shared_ptr<Arcollect::db::artwork_collection> result = std::make_shared<Arcollect::db::artwork_collection_sqlite>(std::move(stmt));
 	result->sorting_type = sorting_type();
 	return result;
+}
+Arcollect::search::AutoCompleteMode Arcollect::search::ParsedSearch::auto_complete(std::unique_ptr<SQLite3::stmt> &stmt, int limit) const
+{
+	// Select the right query
+	const char* sql; // Not initialized to trigger compiler warnings if we miss that
+	switch (auto_complete_mode) {
+		case AUTOCOMP_NONE: {
+			// Do nothing
+		} return AUTOCOMP_NONE;
+		case AUTOCOMP_ACCOUNT: {
+			sql = "SELECT acc_arcoid FROM accounts WHERE arcollect_match_prefix(acc_name,?1) OR arcollect_match_prefix(acc_title,?1) ORDER BY acc_arcoid LIMIT ?2;";
+		} break;
+	}
+	// Prepare
+	if (database->prepare(sql,stmt))
+		std::cerr << "Auto-completion SQL prepare failure: " << database->errmsg() << ". Query was " << sql << std::endl;
+	stmt->bind(1,auto_complete_text);
+	stmt->bind(2,limit);
+	return auto_complete_mode; 
 }

@@ -18,21 +18,41 @@
 #include "edit-art.hpp"
 #include "slideshow.hpp"
 #include "menu.hpp"
+#include "menu-db-object.hpp"
 #include "window-borders.hpp"
 #include "../db/artwork-collections.hpp"
 #include "../db/search.hpp"
 #include "../i18n.hpp"
 
 Arcollect::gui::search_osd Arcollect::gui::search_osd_modal;
+static Arcollect::gui::menu autocompletion_menu = []() {
+	Arcollect::gui::menu autocompletion_menu;
+	autocompletion_menu.anchor_distance = {0,64};
+	autocompletion_menu.anchor_top = true;
+	autocompletion_menu.anchor_left = true;
+	autocompletion_menu.anchor_bot = false;
+	autocompletion_menu.anchor_right = false;
+	return autocompletion_menu;
+}();
+// Flag raised when Arcollect::gui::search_osd::event should call text_changed()
+static bool text_has_changed;
 
 bool Arcollect::gui::search_osd::event(SDL::Event &e, Arcollect::gui::modal::render_context render_ctx)
 {
+	bool result;
+	text_has_changed = false;
 	switch (e.type) {
 		case SDL_WINDOWEVENT: {
-		} return true;
+			result = true;
+		} break;
 		case SDL_MOUSEBUTTONDOWN: {
-			pop();
-		} return true;
+			if (autocompletion_menu.focused_cell)
+				result = false;
+			else {
+				pop();
+				result = true;
+			}
+		} break;
 		case SDL_KEYDOWN: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_BACKSPACE: {
@@ -44,12 +64,13 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e, Arcollect::gui::modal::ren
 								text.pop_back();
 						text.pop_back();
 					}
-					text_changed();
+					text_has_changed = true;
 				} break;
 				default: {
 				} break;
 			}
-		} return false;
+			result = false;
+		} break;
 		case SDL_KEYUP: {
 			switch (e.key.keysym.scancode) {
 				case SDL_SCANCODE_ESCAPE: {
@@ -57,23 +78,35 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e, Arcollect::gui::modal::ren
 					pop();
 				} break;
 				case SDL_SCANCODE_RETURN: {
-					pop();
+					if (autocompletion_menu.focused_cell) {
+						Arcollect::gui::menu_account_item &cell = static_cast<Arcollect::gui::menu_account_item&>(*autocompletion_menu.focused_cell);
+						cell.onclick(cell.object,Arcollect::gui::menu_item::render_context(render_ctx.renderer));
+					} else pop();
 				} break;
 				default: {
 				} break;
 			}
-		} return false;
+			result = false;
+		} break;
 		case SDL_TEXTINPUT: {
 			text += std::string(e.text.text);
-			text_changed();
-		} return false;
+			text_has_changed = true;
+			result = false;
+		} break;
 		default: {
-		} return false;
+			result = false;
+		} break;
 	}
+	result &= autocompletion_menu.event(e,render_ctx) && result;
+	if (text_has_changed)
+		text_changed();
+	return result;
 }
 void Arcollect::gui::search_osd::render(Arcollect::gui::modal::render_context render_ctx)
 {
 	render_titlebar(render_ctx);
+	if (!autocompletion_menu.menu_items.empty())
+		autocompletion_menu.render(render_ctx);
 }
 void Arcollect::gui::search_osd::render_titlebar(Arcollect::gui::modal::render_context render_ctx)
 {
@@ -83,6 +116,7 @@ void Arcollect::gui::search_osd::render_titlebar(Arcollect::gui::modal::render_c
 }
 void Arcollect::gui::search_osd::text_changed(void)
 {
+	std::unique_ptr<SQLite3::stmt> stmt;
 	// Parse the search
 	std::string_view search_term = " ";
 	if (!text.empty())
@@ -97,6 +131,26 @@ void Arcollect::gui::search_osd::text_changed(void)
 	
 	// Perform search
 	Arcollect::gui::update_background(text);
+	
+	// Perform auto-completion
+	using Arcollect::search::AutoCompleteMode;
+	autocompletion_menu.menu_items.clear();
+	autocompletion_menu.focused_cell.reset();
+	switch (search.auto_complete(stmt)) {
+		case AutoCompleteMode::AUTOCOMP_NONE: {
+			// Do nothing
+		} break;
+		case AutoCompleteMode::AUTOCOMP_ACCOUNT: {
+			Arcollect::gui::menu_account_item::click_function onclick = [this](const std::shared_ptr<Arcollect::db::account>&account, const Arcollect::gui::menu_item::render_context&) {
+					text.erase(text.find_last_of(':')+1);
+					text.append(account->name());
+					text += ' ';;
+					text_has_changed = true;
+				};
+			while (stmt->step() == SQLITE_ROW)
+				autocompletion_menu.menu_items.push_back(std::make_shared<Arcollect::gui::menu_account_item>(Arcollect::db::account::query(stmt->column_int(0)),onclick));
+		} break;
+	}
 }
 void Arcollect::gui::search_osd::push(void)
 {

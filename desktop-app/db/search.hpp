@@ -75,6 +75,12 @@ namespace Arcollect {
 		using Arcollect::db::SearchType;
 		using Arcollect::db::SortingType;
 		using Arcollect::db::SortingImpl;
+		/** Auto-completion modes
+		 */
+		enum AutoCompleteMode {
+			AUTOCOMP_NONE,
+			AUTOCOMP_ACCOUNT,
+		};
 		struct ParsedSearch {
 			private:
 				/** The generated SQL query
@@ -91,6 +97,12 @@ namespace Arcollect {
 				/** The sorting type of entries
 				 */
 				SortingType real_sorting_type;
+				/** Auto-completion mode
+				 */
+				AutoCompleteMode auto_complete_mode;
+				/** Auto-completion text
+				 */
+				std::string_view auto_complete_text;
 			public:
 				using sql_bindings_type = decltype(sql_bindings);
 				/** The original search
@@ -124,6 +136,12 @@ namespace Arcollect {
 				 *          be invalid when the search is destroyed.
 				 */
 				std::shared_ptr<Arcollect::db::artwork_collection> make_shared_collection(void) const;
+				/** Perform auto-completion
+				 * \param[out] stmt that yield auto-completion items
+				 * \param limit Number of results (have a reasonable default)
+				 * \return The auto-completion mode
+				 */
+				AutoCompleteMode auto_complete(std::unique_ptr<SQLite3::stmt> &stmt, int limit = 10) const;
 				/** Return the colorized search
 				 * \return A reference to the colorized Arcollect::gui::font::Elements.
 				 */
