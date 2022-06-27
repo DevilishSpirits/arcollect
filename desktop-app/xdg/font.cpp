@@ -86,7 +86,10 @@ static Fc::Pattern &lookup_pattern(const Arcollect::gui::font::Renderable::Rende
 	FcResult res;
 	Fc::CharSet charset;
 	charset.AddChar(character);
-	Fc::Pattern pattern(FcPatternBuild(NULL,FC_FAMILY,FcTypeString,"system-ui",NULL));
+	Fc::Pattern pattern(FcPatternBuild(NULL,
+		FC_FAMILY,FcTypeString,"system-ui",
+		FC_COLOR ,FcTypeBool  ,false,
+	NULL));
 	pattern.Add(FC_CHARSET,charset);
 	pattern.Add(FC_PIXEL_SIZE,static_cast<int>(state.font_height));
 	FcDefaultSubstitute(pattern);
