@@ -41,13 +41,13 @@ static void write_locale_string(std::ostream &out, const std::string_view& key, 
 void generate_desktop_file(std::ostream &out)
 {
 	out << "[Desktop Entry]\n"
-	    << "Type=Application\n"
-	    << "Version=1.1\n"
-	    << "Name=Arcollect\n"
-	    << "DBusActivatable=true\n"
-	    << "Exec=arcollect\n"
-	    << "Terminal=false\n"
-	    << "Categories=" << std::getenv("DESKTOP_Categories") << "\n"
-	    << "StartupWMClass=" ARCOLLECT_X11_WM_CLASS_STR "\n";
+	       "Type=Application\n"
+	       "Version=1.1\n"
+	       "Name=Arcollect\n"
+	       "DBusActivatable=true\n"
+	       "Exec=arcollect\n"
+	       "Terminal=false\n"
+	       "Categories=" << std::getenv("DESKTOP_Categories") << "\n"
+	       "StartupWMClass=" ARCOLLECT_X11_WM_CLASS_STR "\n";
 	WRITE_LOCALE_STRING("Comment",summary);
 }
