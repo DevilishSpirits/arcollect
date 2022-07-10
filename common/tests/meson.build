@@ -1,5 +1,6 @@
 simple_common_tests = [
 	'test-download-scenario0',
+	'test-md5',
 ]
 
 foreach test: simple_common_tests

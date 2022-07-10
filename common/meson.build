@@ -6,6 +6,7 @@ common_srcs = [
 	'db-open.cpp',
 	'debug.cpp',
 	'downloads.cpp',
+	'md5.cpp',
 	'paths.cpp',
 	db_schema_sources_target,
 ]
