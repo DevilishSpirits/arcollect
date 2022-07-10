@@ -12,7 +12,7 @@ msgstr "L'ajout dans Arcollect a échoué !"
 
 msgctxt "webext_save_in_arcollect_retry"
 msgid "Retry to save in Arcollect"
-msgstr "Réésayer d'ajouter à Arcollect"
+msgstr "Réessayer d'ajouter à Arcollect"
 
 msgctxt "webext_saved_in_arcollect"
 msgid "Saved"
