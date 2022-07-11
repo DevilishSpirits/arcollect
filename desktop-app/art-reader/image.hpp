@@ -24,6 +24,16 @@ namespace Arcollect {
 		 */
 		SDL::Surface *image(const std::filesystem::path &path);
 		
+		#if OIIO_VERSION
+		/** Load a SDL surface from an OIIO image
+		 * \return A surface with raw pixels data, or NULL on error
+		 *
+		 * This is a low-level function to avoid code duplication. It simply load
+		 * pixels without further processing as in image().
+		 */
+		SDL::Surface *load_surface(OIIO::ImageInput &image);
+		#endif
+		
 		/** Set screen ICC profile
 		 * \param icc_profile The ICC profile to read
 		 *

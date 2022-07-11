@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include <OpenImageIO/imageio.h> // Enable some stuff
 #include "image.hpp"
 #include "../config.hpp"
 #include "../db/artwork.hpp"
@@ -21,7 +22,6 @@
 #include <iostream>
 #include "lcms2.h"
 #include <arcollect-debug.hpp>
-#include <OpenImageIO/imageio.h>
 cmsHPROFILE cms_screenprofile = NULL;
 
 void Arcollect::art_reader::set_screen_icc_profile(SDL_Window *window)
@@ -57,16 +57,11 @@ void Arcollect::art_reader::set_screen_icc_profile(const std::string_view& icc_p
 	}
 }
 
-SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
+SDL::Surface* Arcollect::art_reader::load_surface(OIIO::ImageInput &image)
 {
-	auto image = OIIO::ImageInput::open(path.string());
-	if (!image) {
-		std::cerr << "Failed to open " << path << ". " << OIIO::geterror();
-		return NULL;
-	}
-	image->seek_subimage(0,0); // Just in case weird stuff happen
-	image->threads(1);
-	const OIIO::ImageSpec &spec = image->spec();
+	const OIIO::ImageSpec &spec = image.spec();
+	image.seek_subimage(0,0); // Just in case weird stuff happen
+	image.threads(1);
 	int pixel_format;
 	switch (spec.nchannels) {
 		case 4:pixel_format = SDL_PIXELFORMAT_ABGR8888;break;
@@ -75,10 +70,8 @@ SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 		default:return NULL;
 	}
 	SDL::Surface* surface = reinterpret_cast<SDL::Surface*>(SDL_CreateRGBSurfaceWithFormat(0,spec.width,spec.height,spec.nchannels*8,pixel_format));
-	if (!surface) {
-		std::cerr << "Failed to load pixels from " << path << ". " << image->geterror();
+	if (!surface)
 		return NULL;
-	}
 	/* Note! read_scanlines() may perform allocations and trigger the OOM-killer.
 	 * We check things ourself to avoid this situation.
 	 */
@@ -86,17 +79,31 @@ SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
 	if ((spec.format == OIIO::TypeDesc::UINT8) && (spec.format.size() * spec.nchannels == surface->format->BytesPerPixel) && spec.channelformats.empty()) {
 		// Check for the pitch and adapt mismatchs on our side
 		if (surface->format->BytesPerPixel * spec.width == surface->pitch)
-			image->read_native_scanlines(0,0,0,spec.height,0,surface->pixels);
+			image.read_native_scanlines(0,0,0,spec.height,0,surface->pixels);
 		else for (int y = 0; y < spec.height; ++y)
-			image->read_native_scanline(0,0,y,0,&((char*)surface->pixels)[y*surface->pitch]);
-	} else image->read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,surface->pixels,surface->format->BytesPerPixel,surface->pitch);
+			image.read_native_scanline(0,0,y,0,&((char*)surface->pixels)[y*surface->pitch]);
+	} else image.read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,surface->pixels,surface->format->BytesPerPixel,surface->pitch);
 	if (spec.nchannels == 1) {
 		// FIXME Optimize that
 		// Monochrome picture, populate green and blue
-	image->read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,&((char*)surface->pixels)[1],surface->format->BytesPerPixel,surface->pitch);
-	image->read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,&((char*)surface->pixels)[2],surface->format->BytesPerPixel,surface->pitch);
+		image.read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,&((char*)surface->pixels)[1],surface->format->BytesPerPixel,surface->pitch);
+		image.read_scanlines(0,0,0,spec.height,0,0,spec.nchannels,OIIO::TypeDesc::UINT8,&((char*)surface->pixels)[2],surface->format->BytesPerPixel,surface->pitch);
 	}
-	
+	return surface;
+}
+SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
+{
+	auto image = OIIO::ImageInput::open(path.string());
+	if (!image) {
+		std::cerr << "Failed to open " << path << ". " << OIIO::geterror();
+		return NULL;
+	}
+	const OIIO::ImageSpec &spec = image->spec();
+	SDL::Surface* surface = load_surface(*image);
+	if (!surface) {
+		std::cerr << "Failed to load pixels from " << path << ". " << image->geterror() << std::endl;
+		return NULL;
+	}
 	// Set pixel format for lcms2
 	cmsUInt32Number cms_pixel_format;
 	switch (surface->format->BytesPerPixel) {
