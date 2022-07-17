@@ -46,11 +46,15 @@ deskapp_additional_srcs = [
 
 main_cpp = 'main.cpp'
 query_font = 'gui/font-roboto.cpp'
+thumbnails = 'art-reader/image-thumb-xdg.cpp'
 if with_xdg
 	subdir('xdg')
 endif
 
-deskapp_srcs += [query_font]
+deskapp_srcs += [
+	query_font,
+	thumbnails,
+]
 
 if query_font == 'gui/font-roboto.cpp'
 	roboto_proj = subproject('roboto')

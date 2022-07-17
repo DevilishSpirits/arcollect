@@ -73,6 +73,7 @@ namespace Arcollect {
 		Flag icc_profile {"icc-profile"," Print color management informations."};
 		Flag redraws     {"redraws","     Display redraws and main-loop timings."};
 		Flag search      {"search","      Print SQL queries made the search engine."};
+		Flag thumbnails  {"thumbnails","  Debug thumbnails searching and generation."};
 		Flag webext_adder{"webext-adder","Debug the arcollect-webext-adder"};
 	} debug;
 }

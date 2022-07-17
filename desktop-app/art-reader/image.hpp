@@ -32,6 +32,24 @@ namespace Arcollect {
 		 * pixels without further processing as in image().
 		 */
 		SDL::Surface *load_surface(OIIO::ImageInput &image);
+		
+		/** Read a thumbnail
+		 * \param path to the original image
+		 * \param size requested
+		 * \return An image of the thumbnail or NULL on failure
+		 * 
+		 * This code is OS dependant and intended for image() usage only.
+		 */
+		OIIO::ImageInput::unique_ptr load_thumbnail(const std::filesystem::path &path, SDL::Point size);
+		
+		/** Write a thumbnail
+		 * \param path to the original image
+		 * \param surface containing the picture
+		 * \param spec of the original image
+		 * 
+		 * This code is OS dependant and intended for image() usage only.
+		 */
+		void write_thumbnail(const std::filesystem::path &path, SDL::Surface& surface, OIIO::ImageSpec spec);
 		#endif
 		
 		/** Set screen ICC profile
