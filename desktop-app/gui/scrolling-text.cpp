@@ -93,6 +93,12 @@ bool Arcollect::gui::scrolling_text::event(SDL::Event &e, Arcollect::gui::modal:
 				case SDL_SCANCODE_DOWN: {
 					scroll_text(+text_scroll_speed,render_ctx.target);
 				} return false;
+				case SDL_SCANCODE_PAGEUP: {
+					scroll_text(-text_scroll_speed*4,render_ctx.target);
+				} return false;
+				case SDL_SCANCODE_PAGEDOWN: {
+					scroll_text(+text_scroll_speed*4,render_ctx.target);
+				} return false;
 				default:break;
 			}
 		} break;
