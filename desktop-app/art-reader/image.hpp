@@ -19,10 +19,12 @@
 #include "../sdl2-hpp/SDL.hpp"
 namespace Arcollect {
 	namespace art_reader {
+		static constexpr SDL::Point nothumbnail_size{65535,65535};
 		/** Load an image artwork
+		 * \param size of the image for thumbnail lookups
 		 * \return A surface with pixels data, or NULL on error
 		 */
-		SDL::Surface *image(const std::filesystem::path &path);
+		SDL::Surface *image(const std::filesystem::path &path, SDL::Point size);
 		
 		#if OIIO_VERSION
 		/** Load a SDL surface from an OIIO image

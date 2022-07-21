@@ -118,6 +118,17 @@ namespace Arcollect {
 				 * security barrier.
 				 */
 				Arcollect::config::Rating rating_taint_level = Arcollect::config::RATING_NONE;
+				/** Transient thumbnail
+				 *
+				 * Used to display the existing thumbnail while loading a bigger image.
+				 */
+				std::unique_ptr<SDL::Texture> transient_thumbnail;
+				/** The loaded thumbnail/image size
+				 */
+				SDL::Point loaded_size;
+				/** The requested thumbnail size
+				 */
+				SDL::Point requested_size;
 			public:
 				download(sqlite_int64 id, std::string &&source, std::filesystem::path &&path, std::string &&mimetype);
 				/** Query download for loading
@@ -127,6 +138,11 @@ namespace Arcollect {
 				 * loading.
 				 */
 				bool queue_for_load(void);
+				/** Query the full resolution image download for loading
+				 *
+				 * Wrapper for queue_for_load() that set the requested_size to the max.
+				 */
+				void queue_full_image_for_load(void);
 				
 				/** Load (thread-safe part)
 				 *
@@ -162,16 +178,26 @@ namespace Arcollect {
 						return std::get<T>(data);
 					} else return std::nullopt;
 				}
-				/** Query the download
-				 * \return A reference to the texture
+				/** Query the download image
+				 * \param query_size to display
+				 * \return A reference to the texture, may be a thumbnail
 				 * 
 				 * queue_for_load() if the artwork isn't loaded yet.
 				 */
-				std::unique_ptr<SDL::Texture> &query_image(void) {
-					static std::unique_ptr<SDL::Texture> null_text;
+				std::unique_ptr<SDL::Texture> &query_image(SDL::Point query_size) {
+					requested_size.x = std::max(requested_size.x,query_size.x);
+					requested_size.y = std::max(requested_size.y,query_size.y);
 					if ((artwork_type == ARTWORK_TYPE_IMAGE)&& queue_for_load()) {
-						return std::get<std::unique_ptr<SDL::Texture>>(data);
-					} else return null_text;
+						std::unique_ptr<SDL::Texture> &res = std::get<std::unique_ptr<SDL::Texture>>(data);
+						// Check if we loaded a thumbnail and it is too small
+						if (((loaded_size.x != size.x)||(loaded_size.y != size.y))&&((loaded_size.x < query_size.x)||(loaded_size.y < query_size.y))) {
+							std::unique_ptr<SDL::Texture> thumbnail = std::move(res);
+							unload();
+							requested_size = query_size;
+							queue_for_load();
+							return transient_thumbnail = std::move(thumbnail);
+						} else return res;
+					} else return transient_thumbnail;
 				}
 				bool QuerySize(SDL::Point &art_size) {
 					if (size.x && size.y) {

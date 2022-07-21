@@ -91,19 +91,28 @@ SDL::Surface* Arcollect::art_reader::load_surface(OIIO::ImageInput &image)
 	}
 	return surface;
 }
-SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path)
+SDL::Surface* Arcollect::art_reader::image(const std::filesystem::path &path, SDL::Point size)
 {
-	auto image = OIIO::ImageInput::open(path.string());
-	if (!image) {
-		std::cerr << "Failed to open " << path << ". " << OIIO::geterror();
-		return NULL;
+	// Attempt to open the thumbnail
+	SDL::Surface* surface = NULL;
+	OIIO::ImageInput::unique_ptr image = load_thumbnail(path,size);
+	if (image)
+		surface = load_surface(*image);
+	// Load the original on failure
+	if (!surface) {
+		image = OIIO::ImageInput::open(path.native());
+		if (!image) {
+			std::cerr << "Failed to open " << path << ". " << OIIO::geterror();
+			return NULL;
+		}
+		surface = load_surface(*image);
+		if (!surface) {
+			std::cerr << "Failed to load pixels from " << path << ". " << image->geterror() << std::endl;
+			return NULL;
+		}
+		write_thumbnail(path,*surface,image->spec());
 	}
 	const OIIO::ImageSpec &spec = image->spec();
-	SDL::Surface* surface = load_surface(*image);
-	if (!surface) {
-		std::cerr << "Failed to load pixels from " << path << ". " << image->geterror() << std::endl;
-		return NULL;
-	}
 	// Set pixel format for lcms2
 	cmsUInt32Number cms_pixel_format;
 	switch (surface->format->BytesPerPixel) {

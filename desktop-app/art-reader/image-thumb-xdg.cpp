@@ -106,7 +106,7 @@ OIIO::ImageInput::unique_ptr Arcollect::art_reader::load_thumbnail(const std::fi
 	// Attempt to load thumbnails
 	for (const auto& dir: dirs_sizes) {
 		// Check the thumbnail size
-		if (dir.first >= target_thumbnail_size)
+		if (dir.first <= target_thumbnail_size)
 			continue;
 		if (Arcollect::debug.thumbnails)
 			std::cerr << dir.first << "/" << dir.second.string() << "... ";

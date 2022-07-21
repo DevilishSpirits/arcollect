@@ -118,7 +118,7 @@ namespace Arcollect {
 					const auto &render_target = render_ctx.render_target; 
 					//check_db_version(); // This is checked in size()
 					auto icon_size = get_icon_size();
-					std::unique_ptr<SDL::Texture> &icon = thumbnail->query_image();
+					std::unique_ptr<SDL::Texture> &icon = thumbnail->query_image({icon_size,icon_size});
 					if (icon) {
 						SDL::Rect rect{render_target.x,render_target.y + (render_target.h-icon_size)/2,icon_size,icon_size};
 						render_ctx.renderer.Copy(icon.get(),NULL,&rect);

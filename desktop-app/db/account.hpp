@@ -67,9 +67,10 @@ namespace Arcollect {
 					return Arcollect::db::download::query(acc_icon);
 				}
 				/** Query the account icon
+				 * \param size of the requested icon
 				 * \return The icon texture or NULL if not available yet
 				 */
-				std::unique_ptr<SDL::Texture> &get_icon(void);
+				std::unique_ptr<SDL::Texture> &get_icon(SDL::Point size);
 				/** Query an account
 				 * \param arcoid The account identifier
 				 * \return The account wrapped in a std::shared_ptr

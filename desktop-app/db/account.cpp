@@ -48,8 +48,8 @@ void Arcollect::db::account::db_sync(void)
 		}
 	}
 }
-std::unique_ptr<SDL::Texture> &Arcollect::db::account::get_icon(void)
+std::unique_ptr<SDL::Texture> &Arcollect::db::account::get_icon(SDL::Point size)
 {
 	db_sync();
-	return Arcollect::db::download::query(acc_icon)->query_image();
+	return Arcollect::db::download::query(acc_icon)->query_image(size);
 }

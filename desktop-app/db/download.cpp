@@ -73,6 +73,11 @@ bool Arcollect::db::download::queue_for_load(void)
 	return false;
 }
 
+void Arcollect::db::download::queue_full_image_for_load(void)
+{
+	query_image(Arcollect::art_reader::nothumbnail_size);
+}
+
 struct SurfacePixelBordersIterate {
 	SDL::Surface& surface;
 	struct iterator {
@@ -130,7 +135,10 @@ void Arcollect::db::download::load_stage_one(void)
 			while (!images_loadlimit.try_acquire_for(std::chrono::seconds(1)))
 				if (load_state == LOADING_STAGE1)
 					break;
-			data = std::unique_ptr<SDL::Surface>(art_reader::image(full_path));
+			// Don't load thumbnail if we ignore the artwork size
+			if (!requested_size.x || !requested_size.y || !size.x || !size.y)
+				requested_size = Arcollect::art_reader::nothumbnail_size;
+			data = std::unique_ptr<SDL::Surface>(art_reader::image(full_path,requested_size));
 			if (!std::get<std::unique_ptr<SDL::Surface>>(data))
 				break;
 			SDL::Surface &surf = *std::get<std::unique_ptr<SDL::Surface>>(data);
@@ -218,10 +226,11 @@ void Arcollect::db::download::load_stage_two(SDL::Renderer &renderer)
 				return;
 			}
 			data = std::unique_ptr<SDL::Texture>(text);
+			text->QuerySize(loaded_size);
 			// Set size if missing in the DB
 			if (!size.x || !size.y) {
 				// Read size
-				text->QuerySize(size);
+				size = loaded_size;
 				// Set size in the database
 				std::unique_ptr<SQLite3::stmt> set_size_stmt;
 				database->prepare("UPDATE downloads SET dwn_width=?, dwn_height=? WHERE dwn_id = ?;",set_size_stmt); // TODO Error checking
@@ -231,8 +240,15 @@ void Arcollect::db::download::load_stage_two(SDL::Renderer &renderer)
 				set_size_stmt->step();
 				database->exec("COMMIT;");
 			}
+			// Erase transient thumbnail
+			if (transient_thumbnail) {
+				SDL::Point thumbnail_size;
+				transient_thumbnail->QuerySize(thumbnail_size);
+				Arcollect::db::artwork_loader::image_memory_usage -= 4*sizeof(Uint8)*thumbnail_size.x*thumbnail_size.y;
+				transient_thumbnail.reset();
+			}
 			// Increase image memory usage
-			Arcollect::db::artwork_loader::image_memory_usage += image_memory();
+			Arcollect::db::artwork_loader::image_memory_usage += 4*sizeof(Uint8)*loaded_size.x*loaded_size.y;
 			images_loadlimit.release();
 		} break;
 		case ARTWORK_TYPE_TEXT: {
@@ -251,8 +267,16 @@ void Arcollect::db::download::unload(void)
 		case ARTWORK_TYPE_UNKNOWN: {
 		} break;
 		case ARTWORK_TYPE_IMAGE: {
+			// Reset thumbnail stuff
+			requested_size.x = requested_size.y = 0;
+			if (transient_thumbnail) {
+				SDL::Point thumbnail_size;
+				transient_thumbnail->QuerySize(thumbnail_size);
+				Arcollect::db::artwork_loader::image_memory_usage -= 4*sizeof(Uint8)*thumbnail_size.x*thumbnail_size.y;
+				transient_thumbnail.reset();
+			}
 			// Decrease image memory usage
-			Arcollect::db::artwork_loader::image_memory_usage -= image_memory();
+			Arcollect::db::artwork_loader::image_memory_usage -= 4*sizeof(Uint8)*loaded_size.x*loaded_size.y;
 			if (load_state == LOAD_PENDING_STAGE2)
 				images_loadlimit.release();
 		} break;

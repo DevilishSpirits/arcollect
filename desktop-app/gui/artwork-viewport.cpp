@@ -31,9 +31,9 @@ int Arcollect::gui::artwork_viewport::render(const SDL::Point displacement)
 	rect.w = (local_corner_tr.x > local_corner_br.x ? local_corner_tr.x : local_corner_br.x)-rect.x;
 	rect.h = (local_corner_bl.y > local_corner_br.y ? local_corner_bl.y : local_corner_br.y)-rect.y;
 	// Render
-	auto text = download->query_data<std::unique_ptr<SDL::Texture>>();
+	auto &text = download->query_image({rect.w,rect.h});
 	if (text) {
-		return renderer->Copy(text->get().get(),NULL,&rect);
+		return renderer->Copy(text.get(),NULL,&rect);
 	} else {
 		// Render a placeholder
 		renderer->SetDrawColor(0,0,0,192);

@@ -210,13 +210,13 @@ void Arcollect::gui::view_slideshow::render(Arcollect::gui::modal::render_contex
 	if (viewport.artwork) {
 		// Preload previous artwork
 		if (collection_iterator != collection->begin()) {
-			db::artwork::query(*--collection_iterator)->get(displayed_file)->queue_for_load();
+			db::artwork::query(*--collection_iterator)->get(displayed_file)->queue_full_image_for_load();
 			++collection_iterator;
 		}
 		// Preload next artwork
 		++collection_iterator;
 		if (collection_iterator != collection->end())
-			db::artwork::query(*collection_iterator)->get(displayed_file)->queue_for_load();
+			db::artwork::query(*collection_iterator)->get(displayed_file)->queue_full_image_for_load();
 		--collection_iterator;
 		// Resize is size is unknow
 			switch (viewport.download->artwork_type) {
@@ -261,7 +261,7 @@ void Arcollect::gui::view_slideshow::render_titlebar(Arcollect::gui::modal::rend
 		auto accounts = viewport.artwork->get_linked_accounts("account");
 		if (accounts.size() > 0) {
 			SDL::Rect icon_rect{render_ctx.titlebar_target.x,render_ctx.titlebar_target.y,render_ctx.titlebar_target.h,render_ctx.titlebar_target.h};
-			std::unique_ptr<SDL::Texture> &icon = accounts[0]->get_icon();
+			std::unique_ptr<SDL::Texture> &icon = accounts[0]->get_icon({icon_rect.w,icon_rect.h});
 			if (icon)
 				render_ctx.renderer.Copy(icon.get(),NULL,&icon_rect);
 			// TODO Render placeholder
