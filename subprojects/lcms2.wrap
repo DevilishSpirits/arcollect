@@ -1,6 +1,6 @@
 [wrap-file]
 directory = lcms2-2.13.1
-source_url = https://deac-ams.dl.sourceforge.net/project/lcms/lcms/2.13/lcms2-2.13.1.tar.gz
+source_url = https://netix.dl.sourceforge.net/project/lcms/lcms/2.13/lcms2-2.13.1.tar.gz
 source_filename = lcms2-2.13.1.tar.gz
 source_hash = d473e796e7b27c5af01bd6d1552d42b45b43457e7182ce9903f38bb748203b88
 patch_directory = lcms2
