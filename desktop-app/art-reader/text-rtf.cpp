@@ -58,6 +58,7 @@ struct ControlWord {
 struct RTFGroupState;
 struct RTFGlobalState {
 	Arcollect::art_reader::TextElements main_elements;
+	const Arcollect::gui::font::Attributes plain_attributes = main_elements.current_attributes(); // Used for \plain
 };
 
 using RTFCommand     = std::function<void(ControlWord,RTFGroupState&)>;
@@ -72,6 +73,7 @@ static const std::unordered_map<int,WindowsHCodepage> windows_hcodepages{
 };
 struct RTFGroupState {
 	RTFGlobalState& global;
+	Arcollect::art_reader::TextElements &current_elements;
 	RTFTextHandler text_handler;
 	RTFCommandSet command_set;
 	RTFCommand unknow_command;
@@ -81,7 +83,7 @@ struct RTFGroupState {
 static void rtf_echo_text(const std::string_view& text, RTFGroupState& state, bool utf8)
 {
 	if (utf8)
-		state.global.main_elements << text;
+		state.current_elements << text;
 	else {
 		// Map non-ASCII chars to Unicode equivalent
 		const char *current = text.data();
@@ -90,14 +92,14 @@ static void rtf_echo_text(const std::string_view& text, RTFGroupState& state, bo
 			unsigned char byte = reinterpret_cast<const unsigned char&>(current[i]);
 			if (byte >= 0x80) {
 				// Print special character
-				state.global.main_elements << std::string_view(current,i) << std::u32string_view(&state.hcodepage[byte-0x80],1);
+				state.current_elements << std::string_view(current,i) << std::u32string_view(&state.hcodepage[byte-0x80],1);
 				// Reset counters
 				current += ++i;
 				remaining -= i;
 				i = 0;
 			}
 		}
-		state.global.main_elements << std::string_view(current,remaining);
+		state.current_elements << std::string_view(current,remaining);
 	}
 }
 static void rtf_skip_text(const std::string_view& text, RTFGroupState& state, bool utf8)
@@ -136,9 +138,36 @@ static void rtf_unknow_command(ControlWord control_word, RTFGroupState& state)
 struct rtf_put_chars {
 	const std::string_view chars;
 	void operator()(ControlWord control_word, RTFGroupState& state) {
+		if (Arcollect::debug.rtf) {
+			state.global.main_elements << SDL::Color(255,255,0,255);
+			state.text_handler("\\",state,true);
+			state.text_handler(control_word.command,state,true);
+			if (control_word.param) {
+				state.global.main_elements << SDL::Color(255,0,0,255);
+				state.text_handler(std::to_string(*control_word.param),state,true);
+			}
+			state.text_handler(" ",state,true);
+			state.global.main_elements << SDL::Color(255,255,255,255);
+		}
 		state.text_handler(chars,state,true);
 	}
 	rtf_put_chars(const std::string_view& chars) : chars(chars) {}
+};
+template <typename T, T on = T(true), T off = T(false)>
+static void rtf_binary_attribute(ControlWord control_word, RTFGroupState& state) {
+	bool turn_on = control_word.param != 0; // FIXME What to do if the param is not zero ? [Currently enable the flag]
+	if (Arcollect::debug.rtf) {
+		state.global.main_elements << SDL::Color(255,255,0,255);
+		state.text_handler("\\",state,true);
+		state.global.main_elements << (turn_on ? SDL::Color(128,255,0,255) : SDL::Color(255,128,0,255));
+		state.text_handler(control_word.command,state,true);
+		if (control_word.param) {
+			state.text_handler(std::to_string(*control_word.param),state,true);
+		}
+		state.text_handler(" ",state,true);
+		state.global.main_elements << SDL::Color(255,255,255,255);
+	}
+	state.current_elements << (turn_on ? on : off);
 };
 
 static RTFCommandSet main_command_set{
@@ -168,6 +197,9 @@ static RTFCommandSet main_command_set{
 	{"line",rtf_put_chars("\n")},
 	{"lquote",rtf_put_chars("‘")},
 	{"rquote",rtf_put_chars("’")},
+	// Formatting
+	{"plain",[](ControlWord, RTFGroupState& state) { state.current_elements << state.global.plain_attributes; }},
+	{"b",rtf_binary_attribute<Arcollect::gui::font::Weight,200,10>},
 	};
 static RTFCommandSet start_command_set{
 	{"rtf", [](ControlWord control_word, RTFGroupState& state) {
@@ -187,6 +219,7 @@ Arcollect::art_reader::TextElements Arcollect::art_reader::text_rtf(const char* 
 		std::vector<RTFGroupState> group_stack{{
 			// Head of the stack
 			global,
+			global.main_elements,
 			rtf_echo_text,
 			start_command_set,
 			[](ControlWord, RTFGroupState& state) {

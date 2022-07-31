@@ -265,6 +265,21 @@ namespace Arcollect {
 						push_attribute().font_size = font_size;
 						return *this;
 					}
+					
+					/** Restore text attributes
+					 * \param backup of text attributes
+					 *
+					 * Overwrite all text attributes.
+					 *
+					 * \see current_attributes() to get a snapshot of attributes to
+					 *      restore with this function.
+					 */
+					Elements& operator<<(const Attributes& backup) {
+						// Perform a trivial copy of everything but end
+						memcpy((&push_attribute().end)+1,(&backup.end)+1,sizeof(backup)-sizeof(backup.end));
+						return *this;
+					}
+					
 					/** Append UTF-32 text
 					 *
 					 * The string will be copied.
@@ -291,6 +306,19 @@ namespace Arcollect {
 						return text.empty();
 					}
 					
+					/** Get current attributes
+					 * \return A reference to the current attributes of the text (valid
+					 *         until any write).
+					 *
+					 * This function return a reference to avoid copies in few use case.
+					 * If you want to snapshot the state to restore it afterward save it
+					 * in a copy and << it afterward.
+					 *
+					 * The end member of the result is undefined.
+					 */
+					const Attributes &current_attributes(void) const {
+						return attributes.back();
+					}
 					/** Parameter pack builder
 					 * \param args Parameter pack
 					 *

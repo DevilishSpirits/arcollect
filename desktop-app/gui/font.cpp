@@ -359,6 +359,8 @@ void Arcollect::gui::font::Elements::dump_to_stderr(void) const
 	uint32_t text_begin = 0;
 	for (const auto& attr: attributes) {
 		std::cerr << "\033[38;2;"<<(int)attr.color.r<<";"<<(int)attr.color.g<<";"<<(int)attr.color.b<<"m";
+		if (attr.weight > 100)
+			std::cerr << "\033[1m";
 		for (; text_begin < attr.end; ++text_begin)
 			std::cerr << (char)text[text_begin];
 		std::cerr << "\033[0m";
