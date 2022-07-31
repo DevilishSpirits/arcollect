@@ -150,7 +150,7 @@ void Arcollect::gui::font::Renderable::align_glyphs(RenderingState &state, int r
 		}
 	}
 }
-void Arcollect::gui::font::Renderable::append_text_run(const unsigned int cp_offset, int cp_count, RenderingState &state, Arcollect::gui::font::shape_data *shape_data)
+void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, int cp_count, RenderingState &state, Arcollect::gui::font::shape_data *shape_data)
 {
 	// Extract parameters
 	const Arcollect::gui::font::Attributes* &attrib_iter = state.attrib_iter;
@@ -170,18 +170,27 @@ void Arcollect::gui::font::Renderable::append_text_run(const unsigned int cp_off
 	unsigned int skiped_glyph_count = 0;
 	hb_glyph_info_t *glyph_infos    = hb_buffer_get_glyph_infos(buf, &glyph_count);
 	hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
+	// Process leading '\n' (avoid a SEGFAULT in the code)
+	for (;cp_count&&(text[cp_offset] == '\n'); ++cp_offset, --cp_count) {
+		// Skip lines
+		state.skip_line(font_line_skip);
+		// Virtually trim glyphs
+		while (glyph_infos->cluster <= cp_offset) {
+			++glyph_infos;
+			++glyph_pos;
+			--glyph_count;
+		}
+	}
+	
 	glyphs.reserve(glyph_base+glyph_count);
 	unsigned int glyphi_line_start = 0;
-	// Process leading '\n' (avoid a SEGFAULT in the code)
-	for (;(glyphi_line_start < glyph_count)&&(text[glyphi_line_start+cp_offset] == '\n'); ++glyphi_line_start)
-		state.skip_line(font_line_skip);
 	
 	if (state.current_line_skip < font_line_skip)
 		state.current_line_skip = font_line_skip;
 	
-	auto clusteri_line_end = text.find(U'\n',cp_offset+(glyphi_line_start ? glyphi_line_start+1 : 0)); // To break at \n
+	auto clusteri_line_end = text.find(U'\n',cp_offset); // To break at \n
 	// Process glyphs
-	for (unsigned int i = glyphi_line_start; i < glyph_count; i++) {
+	for (unsigned int i = 0; i < glyph_count; i++) {
 		hb_glyph_info_t &glyph_info = glyph_infos[i];
 		glyph_pos[i].x_advance >>= 6;
 		glyph_pos[i].y_advance >>= 6;

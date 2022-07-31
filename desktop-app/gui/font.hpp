@@ -404,7 +404,7 @@ namespace Arcollect {
 					 *
 					 * A text run is a batch for text shaping.
 					 */
-					void append_text_run(const unsigned int cp_offset, int cp_count, RenderingState &state, Arcollect::gui::font::shape_data *shape_data);
+					void append_text_run(unsigned int cp_offset, int cp_count, RenderingState &state, Arcollect::gui::font::shape_data *shape_data);
 					
 					/** Render text real function
 					 * \param attrib_begin Start of attributes array
