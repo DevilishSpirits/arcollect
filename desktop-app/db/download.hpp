@@ -128,7 +128,7 @@ namespace Arcollect {
 				SDL::Point loaded_size;
 				/** The requested thumbnail size
 				 */
-				SDL::Point requested_size;
+				SDL::Point requested_size{0,0};
 			public:
 				download(sqlite_int64 id, std::string &&source, std::filesystem::path &&path, std::string &&mimetype);
 				/** Query download for loading
