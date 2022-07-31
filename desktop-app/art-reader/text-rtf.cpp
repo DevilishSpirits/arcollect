@@ -165,6 +165,7 @@ static RTFCommandSet main_command_set{
 	{"ldblquote",rtf_put_chars("“")},
 	{"rdblquote",rtf_put_chars("”")},
 	{"par",rtf_put_chars("\n\n")},
+	{"line",rtf_put_chars("\n")},
 	{"lquote",rtf_put_chars("‘")},
 	{"rquote",rtf_put_chars("’")},
 	};
