@@ -95,6 +95,21 @@ namespace Arcollect {
 				bool value;
 				Arcollect_gui_font_element_wrapper_boilerplate(Justify)
 			};
+			/** Bolden flag (int)
+			 *
+			 * Append this to an Arcollect::gui::font::Elements to turn on/off
+			 * text justification.
+			 *
+			 * This flag does not affect text alignment behavior.
+			 *
+			 * \warning The justification require the use of wrap_width when creating
+			 *          the #Arcollect::gui::font::Renderable.
+			 */
+			struct Weight {
+				int value;
+				Arcollect_gui_font_element_wrapper_boilerplate(Weight)
+				constexpr Weight(void) : value(80) {}
+			};
 			/** Alignment option
 			 *
 			 * \warning Alignment require the use of wrap_width when creating the
@@ -157,6 +172,9 @@ namespace Arcollect {
 				/** Justification flag
 				 */
 				Justify justify;
+				/** Text weight
+				 */
+				Weight weight;
 				/** Current glyph color
 				 */
 				SDL::Color color;
@@ -214,6 +232,14 @@ namespace Arcollect {
 					 */
 					Elements& operator<<(Justify justify) {
 						push_attribute().justify = justify;
+						return *this;
+					}
+					/** Change justification
+					 *
+					 * The current line justification is changed.
+					 */
+					Elements& operator<<(Weight weight) {
+						push_attribute().weight = weight;
 						return *this;
 					}
 					/** Change alignment
@@ -276,6 +302,7 @@ namespace Arcollect {
 						// Initial attributes
 						Align::LEFT,        // Alignment
 						false,              // Justification
+						Weight(),           // Weight
 						{255,255,255,255},  // Color
 						FontSize(1),        // FontSize
 					}},
