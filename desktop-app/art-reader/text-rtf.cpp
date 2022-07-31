@@ -267,6 +267,9 @@ Arcollect::art_reader::TextElements Arcollect::art_reader::text_rtf(const char* 
 				} break;
 			}
 		}
+		if (Arcollect::debug.fonts) {
+			global.main_elements.dump_to_stderr();
+		}
 		return global.main_elements;
 	} catch (std::exception &e) {
 		return Arcollect::art_reader::TextElements::build(SDL::Color(255,0,0,255),std::string_view(e.what()));

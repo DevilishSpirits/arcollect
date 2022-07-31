@@ -352,3 +352,16 @@ void Arcollect::gui::font::Renderable::render_tl(int x, int y) const
 		renderer->DrawLine(line.p0.x + x, line.p0.y + y,line.p1.x + x, line.p1.y + y);
 	}
 }
+#include <iostream> // Put it at the end to avoid forgetting straying include during dev
+void Arcollect::gui::font::Elements::dump_to_stderr(void) const
+{
+	std::cerr << "\033[0m";
+	uint32_t text_begin = 0;
+	for (const auto& attr: attributes) {
+		std::cerr << "\033[38;2;"<<(int)attr.color.r<<";"<<(int)attr.color.g<<";"<<(int)attr.color.b<<"m";
+		for (; text_begin < attr.end; ++text_begin)
+			std::cerr << (char)text[text_begin];
+		std::cerr << "\033[0m";
+	}
+	std::cerr << std::endl;	
+}

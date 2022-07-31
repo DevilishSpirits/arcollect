@@ -313,6 +313,12 @@ namespace Arcollect {
 					static Elements build(Args... args) {
 						return (Elements() << ... << args);
 					}
+					/** Dump the content to stderr
+					 *
+					 * Debugging function to render Elements right down to the terminal.
+					 * \note It requires a TrueColor capable terminal to works.
+					 */
+					void dump_to_stderr(void) const;
 			};
 			
 			/** Cached glyph
