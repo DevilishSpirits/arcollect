@@ -157,6 +157,10 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 	state.font_height = (attrib_iter->font_size.value < 0 ? -attrib_iter->font_size.value : attrib_iter->font_size.value * state.config.base_font_height);
 	const std::u32string_view &text = state.text;
 	SDL::Point              &cursor = state.cursor;
+	if (Arcollect::debug.fonts) {
+		add_line(cursor,{cursor.x,static_cast<int>(cursor.y+state.current_line_skip)},{255,255,0,255}); // Add text run mark
+		add_line(cursor,{static_cast<int>(cursor.x+state.current_line_skip),cursor.y},{255,255,0,255}); // Add text run mark
+	}
 	// Create the buffer
 	hb_buffer_t *buf = hb_buffer_create();
 	hb_buffer_pre_allocate(buf,text.size());
@@ -167,7 +171,7 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 	// Prepare glyphs process
 	auto glyph_base = glyphs.size();
 	unsigned int glyph_count;
-	unsigned int skiped_glyph_count = 0;
+	unsigned int &skiped_glyph_count = state.skiped_glyph_count;
 	hb_glyph_info_t *glyph_infos    = hb_buffer_get_glyph_infos(buf, &glyph_count);
 	hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
 	// Process leading '\n' (avoid a SEGFAULT in the code)
@@ -229,34 +233,37 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 			if (justify) {
 				// Count the number of spaces in the line
 				unsigned int space_count = 0;
-				for (auto j = i_newline-1; j > glyphi_line_start; j--) {
-					auto char_j = glyph_infos[j].cluster;
-					if ((text[char_j] == U' ')||(text[char_j] == U'\t')||(glyph_char == 0x00A0/*nbsp*/))
+				for (auto cluster = glyphs[state.line_first_glyph_index].cluster; cluster < glyph_info.cluster; ++cluster) {
+					auto cp = text[cluster];
+					if ((cp == U' ')||(cp == U'\t')||(cp == 0x00A0/*nbsp*/))
 						space_count++;
 				}
 				// Avoid division by zero
 				if (!space_count)
 					space_count = 1;
 				// Compute pixel delta
-				int glyph_id_delta = glyph_base+skiped_glyph_count;
 				unsigned int space_current = 0;
 				int pixel_delta = 0;
 				// Move glyphs
-				for (auto j = glyphi_line_start; j < i_newline; j++) {
-					auto char_j = glyph_infos[j].cluster;
-					if ((text[char_j] == U' ')||(text[char_j] == U'\t')||(glyph_char == 0x00A0/*nbsp*/)) {
-						space_current++;
-						glyph_id_delta--;
-						pixel_delta = right_free_space*space_current/space_count;
-						if (Arcollect::debug.fonts) {
-							const auto &last_pos = glyphs[glyph_id_delta+j].position;
-							add_line(last_pos,{last_pos.x,static_cast<int>(last_pos.y+state.current_line_skip)},{255,0,0,255});
+				auto last_cluster = glyphs[state.line_first_glyph_index].cluster;
+				for (auto glyph_i = state.line_first_glyph_index; glyph_i < glyphs.size(); ++glyph_i) {
+					auto &glyph = glyphs[glyph_i];
+					// Process whitespaces
+					for (; last_cluster < glyph.cluster; ++last_cluster) {
+						auto cp = text[last_cluster];
+						if ((cp == U' ')||(cp == U'\t')||(cp == 0x00A0/*nbsp*/)) {
+							space_current++;
+							pixel_delta = right_free_space*space_current/space_count;
+							if (Arcollect::debug.fonts)
+								// Show the displacement
+								add_line({glyph.position.x+pixel_delta,glyph.position.y},{glyph.position.x+pixel_delta,static_cast<int>(glyph.position.y+state.current_line_skip)},{255,0,0,255});
 						}
-					} else glyphs[glyph_id_delta+j].position.x += pixel_delta;
+					}
+					glyph.position.x += pixel_delta;
 				}
 			} else align_glyphs(state,right_free_space);
 			// Adjust line_first_glyph_index
-			state.line_first_glyph_index -= i-i_newline-1;
+			state.line_first_glyph_index = glyphs.size();
 			// Move glyphs on the newline
 			cursor.x = 0;
 			for (i_newline++; i_newline < i; i_newline++) {
@@ -289,7 +296,7 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 		 ) {
 			// Emplace the new char
 			auto &glyph = Glyph::query(glyph_info.codepoint,face);
-			glyphs.emplace_back(cursor,glyph,color);
+			glyphs.emplace_back(cursor,glyph,color,glyph_info.cluster);
 			// Update bound
 			result_size.x = std::max(result_size.x,static_cast<int>(cursor.x+glyph.coordinates.x+glyph.coordinates.w));
 			result_size.y = std::max(result_size.y,static_cast<int>(cursor.y+glyph.coordinates.y+glyph.coordinates.h));

@@ -384,6 +384,9 @@ namespace Arcollect {
 						SDL::Point position;
 						Glyph     *glyph;
 						SDL::Color  color;
+						/** Cluster/character index that generated this glyph
+						 */
+						uint32_t   cluster;
 						inline GlyphData& operator=(const GlyphData& other) {
 							position = other.position;
 							glyph = other.glyph;
@@ -391,8 +394,8 @@ namespace Arcollect {
 							return *this;
 						}
 						GlyphData(void) = default;
-						inline GlyphData(SDL::Point position, Glyph &glyph, SDL::Color color)
-						: position(position), glyph(&glyph), color(color) {}
+						inline GlyphData(SDL::Point position, Glyph &glyph, SDL::Color color, uint32_t cluster)
+						: position(position), glyph(&glyph), color(color), cluster(cluster) {}
 					};
 					/** Glyph storage result
 					 */

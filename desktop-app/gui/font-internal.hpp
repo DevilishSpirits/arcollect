@@ -73,14 +73,21 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 	/** Height of the current line in pixels
 	 */
 	FT_UInt current_line_skip;
+	
+	/** Number of blanks glyphs we replaced by spaces
+	 *
+	 * Used for correct justification.
+	 */
+	unsigned int skiped_glyph_count = 0;
 	/** Skip a line
 	 *
-	 * This is a helper function that update cursor.y and reset current_line_skip.
-	 * It just save lines.
+	 * This is a helper function that update the cursor and reset many counters
+	 * because skipping a line is a fairly complex process
 	 */
 	constexpr void skip_line(FT_UInt line_spacing) {
 		cursor.y += current_line_skip;
 		current_line_skip = line_spacing;
+		skiped_glyph_count = 0;
 	}
 };
 
