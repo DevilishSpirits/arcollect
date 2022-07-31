@@ -199,7 +199,7 @@ static RTFCommandSet main_command_set{
 	{"rquote",rtf_put_chars("’")},
 	// Formatting
 	{"plain",[](ControlWord, RTFGroupState& state) { state.current_elements << state.global.plain_attributes; }},
-	{"b",rtf_binary_attribute<Arcollect::gui::font::Weight,200,10>},
+	{"b",rtf_binary_attribute<Arcollect::gui::font::Weight,200,80>},
 	};
 static RTFCommandSet start_command_set{
 	{"rtf", [](ControlWord control_word, RTFGroupState& state) {
