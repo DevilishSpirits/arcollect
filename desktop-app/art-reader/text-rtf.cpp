@@ -21,6 +21,7 @@
  * It is based on the RTF 1.9.1 specification.
  */
 #include "text.hpp"
+#include <arcollect-debug.hpp>
 #include <charconv>
 #include <optional>
 #include <system_error>
@@ -120,17 +121,17 @@ static void rtf_unsupported_charset(ControlWord control_word, RTFGroupState& sta
 }
 static void rtf_unknow_command(ControlWord control_word, RTFGroupState& state)
 {
-	/*
-	state.global.main_elements << SDL::Color(0,255,0,255);
-	state.text_handler("\\",state,true);
-	state.text_handler(control_word.command,state,true);
-	if (control_word.param) {
-		state.global.main_elements << SDL::Color(0,0,255,255);
-		state.text_handler(std::to_string(*control_word.param),state,true);
+	if (Arcollect::debug.rtf) {
+		state.global.main_elements << SDL::Color(0,255,0,255);
+		state.text_handler("\\",state,true);
+		state.text_handler(control_word.command,state,true);
+		if (control_word.param) {
+			state.global.main_elements << SDL::Color(0,0,255,255);
+			state.text_handler(std::to_string(*control_word.param),state,true);
+		}
+		state.text_handler(" ",state,true);
+		state.global.main_elements << SDL::Color(255,255,255,255);
 	}
-	state.text_handler(" ",state,true);
-	state.global.main_elements << SDL::Color(255,255,255,255);
-	*/
 }
 struct rtf_put_chars {
 	const std::string_view chars;
@@ -237,21 +238,21 @@ Arcollect::art_reader::TextElements Arcollect::art_reader::text_rtf(const char* 
 				} break;
 				case '{': {
 					// Push a copy of the current state
-					/*
-					global.main_elements << SDL::Color(255,0,0,255);
-					state.text_handler("{",state,true);
-					global.main_elements << SDL::Color(255,255,255,255);
-					*/
+					if (Arcollect::debug.rtf) {
+						global.main_elements << SDL::Color(255,0,0,255);
+						state.text_handler("{",state,true);
+						global.main_elements << SDL::Color(255,255,255,255);
+					}
 					group_stack.push_back(state);
 				} break;
 				case '}': {
 					group_stack.pop_back();
 					// Pop state from stack
-					/*
-					global.main_elements << SDL::Color(255,255,0,255);
-					group_stack.back().text_handler("}",group_stack.back(),true);
-					global.main_elements << SDL::Color(255,255,255,255);
-					*/
+					if (Arcollect::debug.rtf) {
+						global.main_elements << SDL::Color(255,255,0,255);
+						group_stack.back().text_handler("}",group_stack.back(),true);
+						global.main_elements << SDL::Color(255,255,255,255);
+					}
 					if (group_stack.empty())
 						return Arcollect::art_reader::TextElements::build(U"Mismatched '}' in RTF file"sv);
 				} break;
