@@ -187,7 +187,6 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 	}
 	
 	glyphs.reserve(glyph_base+glyph_count);
-	unsigned int glyphi_line_start = 0;
 	
 	if (state.current_line_skip < font_line_skip)
 		state.current_line_skip = font_line_skip;
@@ -205,7 +204,7 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 		const bool      justify = state.config.always_justify || state.attrib_iter->justify;
 		const SDL::Color  &color = state.attrib_iter->color;
 		// Wrap text (but not if we already started a new_line, the cluster won't fit anyway)
-		if ((((cursor.x + glyph_pos[i].x_advance) > state.wrap_width) && (glyph_info.cluster != glyph_infos[glyphi_line_start].cluster))) {
+		if ((((cursor.x + glyph_pos[i].x_advance) > state.wrap_width) && (glyph_info.cluster != glyphs[state.line_first_glyph_index].cluster))) {
 			// Search backward to a safe cluster and char to wrap
 			unsigned int i_newline;
 			for (i_newline = i; i_newline; i_newline--) {
@@ -273,7 +272,6 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 			}
 			// Update line start index and cursor
 			skiped_glyph_count = 0;
-			glyphi_line_start  = i_newline+1;
 			state.skip_line(font_line_skip);
 			// Skip the current char if it's a space
 			if ((glyph_char == U' ')||(glyph_char == U'\t')) {
@@ -282,12 +280,14 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 			}
 		} else if (glyph_info.cluster >= clusteri_line_end) {
 			// We are on a line break '\n'
+			if (Arcollect::debug.fonts)
+				// Show the place of line return
+				add_line(cursor,{cursor.x,static_cast<int>(cursor.y+state.current_line_skip)},{0,255,255,255});
 			int right_free_space = state.wrap_width - cursor.x + glyph_pos[i-1].x_advance;
 			align_glyphs(state,right_free_space);
 			cursor.x = -glyph_pos[i].x_advance;
 			state.skip_line(font_line_skip);
-			clusteri_line_end = text.find(U'\n',clusteri_line_end+1+cp_offset); // Find the next line break
-			glyphi_line_start = i+1;
+			clusteri_line_end = text.find(U'\n',clusteri_line_end+1); // Find the next line break
 			skiped_glyph_count = -1; // Will be incremented back a few lines later
 		}
 		// Don't render blanks codepoints
@@ -328,6 +328,8 @@ Arcollect::gui::font::Renderable::Renderable(const Attributes* attrib_begin, std
 	// Render text
 	unsigned int cp_offset = 0;
 	while (cp_offset < text.size()) {
+		if (state.attrib_iter->end <= cp_offset)
+			++state.attrib_iter;
 		// Perform text run
 		Arcollect::gui::font::shape_data *shape_data;
 		int cp_count = Arcollect::gui::font::text_run_length(state,cp_offset,shape_data);
