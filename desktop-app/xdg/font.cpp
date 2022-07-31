@@ -28,15 +28,16 @@ static void face_generic_destroy(void* object)
 	delete static_cast<Arcollect::gui::font::FaceGeneric*>(object);
 }
 
-static FT_Face face_by_filename(const std::string& filename) {
-	static std::unordered_map<std::string,FT_Face> cache;
-	auto iter = cache.find(filename);
+static FT_Face face_by_filename(const std::string& filename, FT_Long index) {
+	static std::unordered_map<std::size_t,FT_Face> cache;
+	std::size_t key = std::hash<std::string>()(filename)^std::hash<FT_Long>()(index);
+	auto iter = cache.find(key);
 	if (iter == cache.end()) {
 		FT_Face face;
-		FT_New_Face(Arcollect::gui::font::ft_library,filename.c_str(),0,&face);
+		FT_New_Face(Arcollect::gui::font::ft_library,filename.c_str(),index,&face);
 		face->generic.data = new Arcollect::gui::font::FaceGeneric();
 		face->generic.finalizer = face_generic_destroy;
-		iter = cache.emplace(filename,face).first;
+		iter = cache.emplace(key,face).first;
 	}
 	return iter->second;
 }
@@ -45,15 +46,14 @@ struct face_size_entry {
 	FT_Face face;
 	FT_Size size;
 	Fc::Pattern pattern;
-	face_size_entry(const std::string& filename, const Arcollect::gui::font::Renderable::RenderingState& state) :
-		face(face_by_filename(filename))
+	face_size_entry(const std::string& filename, FT_Long index, const Arcollect::gui::font::Renderable::RenderingState& state) :
+		face(face_by_filename(filename,index))
 	{
 		FT_Reference_Face(face);
 		FT_New_Size(face,&size);
 		FT_Activate_Size(size);
 		FT_Set_Pixel_Sizes(face,state.font_height,state.font_height);
 	}
-	face_size_entry(std::pair<const std::string&,const Arcollect::gui::font::Renderable::RenderingState&> pair) : face_size_entry(pair.first,pair.second) {}
 	~face_size_entry(void) {
 		FT_Done_Face(face);
 		FT_Done_Size(size);
@@ -67,9 +67,8 @@ struct face_size_entry {
 static std::unordered_map<std::size_t,face_size_entry> face_size_entries;
 
 static std::size_t hash_state(const Arcollect::gui::font::Renderable::RenderingState& state) {
-	return std::hash<FT_UInt>()(state.font_height^(state.font_height << 8)^(state.font_height << 15));
+	return std::hash<FT_UInt>()(state.font_height^(state.attrib_iter->weight.value << 8)^(state.font_height << 15));
 }
-
 static Fc::Pattern &lookup_pattern(const Arcollect::gui::font::Renderable::RenderingState& state, char32_t character)
 {
 	static std::unordered_map<std::size_t,std::vector<Fc::Pattern>> cache;
@@ -87,8 +86,9 @@ static Fc::Pattern &lookup_pattern(const Arcollect::gui::font::Renderable::Rende
 	Fc::CharSet charset;
 	charset.AddChar(character);
 	Fc::Pattern pattern(FcPatternBuild(NULL,
-		FC_FAMILY,FcTypeString,"system-ui",
-		FC_COLOR ,FcTypeBool  ,false,
+		FC_FAMILY,FcTypeString ,"system-ui",
+		FC_COLOR ,FcTypeBool   ,false,
+		FC_WEIGHT,FcTypeInteger,state.attrib_iter->weight,
 	NULL));
 	pattern.Add(FC_CHARSET,charset);
 	pattern.Add(FC_PIXEL_SIZE,static_cast<int>(state.font_height));
@@ -111,13 +111,13 @@ FT_Face Arcollect::gui::font::shape_hb_buffer(const Arcollect::gui::font::Render
 	Fc::Pattern &pattern = data->pattern;
 	// Read config
 	FcChar8 *fc_filename;
+	int face_index;
 	FcPatternGetString(pattern,FC_FILE,0,&fc_filename);
+	FcPatternGetInteger(pattern,FC_INDEX,0,&face_index);
 	std::string filename(reinterpret_cast<const char*>(fc_filename));
 	// Cast ray in cache
-	std::size_t key = std::hash<decltype(filename)>()(filename) ^ hash_state(state);
-	auto iter = face_size_entries.find(key);
-	if (iter == face_size_entries.end())
-		iter = face_size_entries.emplace(key,std::make_pair<decltype(filename)&,decltype(state)&>(filename,state)).first;
+	std::size_t key = std::hash<decltype(filename)>()(filename) ^ hash_state(state) ^ face_index;
+	auto iter = face_size_entries.try_emplace(key,filename,face_index,state).first;
 	// Setup face
 	FT_Face face = iter->second.activate();
 	Arcollect::gui::font::FaceGeneric &generic = *static_cast<Arcollect::gui::font::FaceGeneric*>(face->generic.data);
@@ -136,7 +136,6 @@ FT_Face Arcollect::gui::font::shape_hb_buffer(const Arcollect::gui::font::Render
 	delete data;
 	return face;
 }
-
 int Arcollect::gui::font::text_run_length(const Arcollect::gui::font::Renderable::RenderingState &state, unsigned int cp_offset, Arcollect::gui::font::shape_data*& data)
 {
 	decltype(cp_offset) start_offset = cp_offset;
@@ -160,6 +159,7 @@ int Arcollect::gui::font::text_run_length(const Arcollect::gui::font::Renderable
 	} while (true);
 	
 	FontSize current_font_size = current_attrib_iter->font_size;
+	Weight current_weight = current_attrib_iter->weight;
 	// Allocate data and invoke FontConfig
 	if (current_attrib_iter->end <= start_offset)
 		++current_attrib_iter;
@@ -176,8 +176,10 @@ int Arcollect::gui::font::text_run_length(const Arcollect::gui::font::Renderable
 		// Check for attrib iters
 		if (current_attrib_iter->end < chr_i) {
 			++current_attrib_iter;
-			// Break on size changes
-			if (current_font_size != current_attrib_iter->font_size) {
+			// Break on..
+			if ((current_font_size != current_attrib_iter->font_size) // Size changes
+			  ||(current_weight    != current_attrib_iter->weight   ) // Weight changes
+				) {
 				return chr_i - cp_offset - 1;
 			}
 		}
