@@ -74,6 +74,7 @@ void Arcollect::gui::view_slideshow::resize(SDL::Rect rect)
 					text_display.set(elements->get());
 			} break;
 			case db::download::ARTWORK_TYPE_UNKNOWN: {
+				size_know = true;
 			} break;
 		}
 		// Reset cached title render
@@ -219,10 +220,10 @@ void Arcollect::gui::view_slideshow::render(Arcollect::gui::modal::render_contex
 			db::artwork::query(*collection_iterator)->get(displayed_file)->queue_full_image_for_load();
 		--collection_iterator;
 		// Resize is size is unknow
-			switch (viewport.download->artwork_type) {
+			if (!size_know)
+				resize(rect);
+			else switch (viewport.download->artwork_type) {
 				case ARTWORK_TYPE_IMAGE: {
-					if (!size_know)
-						resize(rect);
 					// Render artwork
 					if (size_know) {
 						viewport.set_corners(viewport_animation);
