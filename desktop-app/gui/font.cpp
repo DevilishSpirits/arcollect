@@ -328,15 +328,12 @@ Arcollect::gui::font::Renderable::Renderable(const Attributes* attrib_begin, std
 	// Render text
 	unsigned int cp_offset = 0;
 	while (cp_offset < text.size()) {
+		// Step attrib_iter if we're on the end
 		if (state.attrib_iter->end <= cp_offset)
 			++state.attrib_iter;
 		// Perform text run
 		Arcollect::gui::font::shape_data *shape_data;
 		int cp_count = Arcollect::gui::font::text_run_length(state,cp_offset,shape_data);
-		// Step attrib_iter if we're on the end
-		// Note: It's after the text_run_length function to avoid skipping attrib changes
-		if (state.attrib_iter->end <= cp_offset)
-			++state.attrib_iter;
 		// Perform text run
 		append_text_run(cp_offset,cp_count,state,shape_data);
 		cp_offset += cp_count;
