@@ -64,8 +64,11 @@ std::shared_ptr<Arcollect::db::download> &Arcollect::db::download::query(sqlite_
 
 bool Arcollect::db::download::queue_for_load(void)
 {
-	if (load_state == LOADED)
+	if (load_state == LOADED) {
+		// Bring to the front of  last_rendered list
+		last_rendered.splice(last_rendered.begin(),last_rendered,last_rendered_iterator);
 		return true;
+	}
 	Arcollect::db::artwork_loader::pending_main.push_back(query(dwn_id));
 	last_render_timestamp = SDL_GetTicks();
 	if (load_state == UNLOADED)
