@@ -9,13 +9,17 @@ subproj_opts.add_cmake_defines({
 	'BUILD_SHARED_LIBS': false,
 	'BUILD_TESTING': false,
 	'CURL_BROTLI': true,
+	'USE_LIBIDN2': false, # No supported platform use IDN currently
+	'USE_MANUAL': false, # Disable doc generation
 	'CURL_USE_LIBSSH': false,
 	'CURL_USE_LIBSSH2': false,
 	'CURL_LTO': get_option('b_lto'),
 	'CURL_ENABLE_EXPORT_TARGET': false,
+	'CURL_DISABLE_ALTSVC': true, # Disabled by default and not used
 	'CURL_DISABLE_COOKIES': true,
 	'CURL_DISABLE_GETOPTIONS': true,
 	'CURL_DISABLE_HSTS': true, # Arcollect is HTTPS-only, HSTS is useless
+	'CURL_DISABLE_NETRC': true, # Disabled by default and not used
 	'CURL_DISABLE_PROGRESS_METER': true,
 	'ENABLE_DEBUG': false,
 	'ENABLE_IPV6': true,
@@ -43,4 +47,5 @@ endif
 subproj_opts.set_install(false)
 subproj_curl = cmake.subproject('libcurl-cmake', options: subproj_opts)
 dep_curl_cmake = subproj_curl.dependency('libcurl')
-meson.override_dependency('libcurl',declare_dependency(dependencies: [dep_curl_cmake,dep_curl,dependency('zlib'),dependency('libbrotlidec')], version: '7.81.0'))
+curl_version = cc.get_define('LIBCURL_VERSION', dependencies: dep_curl_cmake.partial_dependency(includes: true)	, prefix: '#include <curl/curl.h>').strip('"')
+meson.override_dependency('libcurl',declare_dependency(dependencies: [dep_curl_cmake,dep_curl,dependency('zlib'),dependency('libbrotlidec')], version: curl_version))
