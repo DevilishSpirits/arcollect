@@ -27,7 +27,7 @@
 #
 # This license notice only apply to this file. Arcollect is published under the
 # GPL-3.0 license with some part being explicitely shared under another license.
-project('libpng', version: '1.6.37')
+project('libpng', 'c', version: '1.6.37')
 cc = meson.get_compiler('c')
 zlib_dep = dependency('zlib', method: 'system')
 m_dep = cc.find_library('m', required: false)
