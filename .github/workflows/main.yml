@@ -46,6 +46,42 @@ jobs:
         with:
           name: build_webextension.zip
           path: build/webextension/arcollect.zip
+  build-wrapped:
+    runs-on: [archlinux]
+    env:
+      LDFLAGS: "-lwayland-client" # FIXME See https://github.com/libsdl-org/SDL/issues/5088, remove on next SDL2 release
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: build
+          setup-options: --prefix=/usr --libexecdir lib --force-fallback-for libcurl,sdl2,freetype2,harfbuzz,sqlite3,INIReader,libjpeg,libpng,libtiff-4,zlib
+          meson-version: 0.59.0
+      - name: Test project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: test
+          meson-version: 0.59.0
+      - name: Install project
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: install
+          meson-version: 0.59.0
+        env:
+          DESTDIR: "archive-out"
+      - name: Archiving
+        run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
+      - name: Uploading DESDIR artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-wrapped_DESTDIR.tar
+          path: archive-out.tar
+      - name: Uploading arcollect-webextension.zip artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-wrapped_webextension.zip
+          path: build/webextension/arcollect.zip
   build-ubuntu-22_04:
     runs-on: [ubuntu-22.04]
     steps:
@@ -96,7 +132,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install Meson
-        run: pip install meson!=0.63.0 ninja
+        run: pip install meson ninja
       - name: Configure project
         run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,robin-map,roboto,sdl2,harfbuzz,sqlite3,boost -Dcpp_link_args=-static -Dc_link_args=-static
       - name: Build project
@@ -119,7 +155,7 @@ jobs:
           name: windows-2019-builddir
           path: build
   check-webextensions-same:
-    needs: [build, build-ubuntu-22_04]
+    needs: [build, build-wrapped, build-ubuntu-22_04]
     runs-on: [ubuntu-latest]
     steps:
       - name: Download build_webextension.zip
@@ -127,19 +163,29 @@ jobs:
         with:
           name: build_webextension.zip
           path: build_webextension
+      - name: Download build-wrapped_webextension.zip
+        uses: actions/download-artifact@v2
+        with:
+          name: build-wrapped_webextension.zip
+          path: build-wrapped_webextension
       - name: Download build-ubuntu-22_04_webextension.zip
         uses: actions/download-artifact@v2
         with:
           name: build-ubuntu-22_04_webextension.zip
           path: build-ubuntu-22_04_webextension
       - name: Make unpack dirs
-        run: mkdir build build-ubuntu-22_04
+        run: mkdir build build-wrapped build-ubuntu-22_04
       - name: Unpack build_webextension.zip
         run: unzip ../build_webextension/arcollect.zip
         working-directory: build
+      - name: Unpack build-wrapped_webextension.zip
+        run: unzip ../build-wrapped_webextension/arcollect.zip
+        working-directory: build-wrapped
       - name: Unpack build-ubuntu-22_04_webextension.zip
         run: unzip ../build-ubuntu-22_04_webextension/arcollect.zip
         working-directory: build-ubuntu-22_04
+      - name: Compare build and build-wrapped results
+        run: diff -ry build build-wrapped
       - name: Compare build and build-ubuntu-22_04 results
         run: diff -ry build build-ubuntu-22_04
   merge-to-master:
