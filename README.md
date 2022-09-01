@@ -25,7 +25,7 @@ Currently these platforms are supported :
 ## About privacy
 Arcollect by itself does not collect any data or statistics, it is not a spyware. Only your artworks and settings are stored inside your personal folder and stay there.
 
-When saving artworks, Arcollect must download them and does not hide himself to the platforms, it fill the [`User-Agent`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent). But unless you are using [Tor Browser](https://www.torproject.org/) for legitimate reasons, it's okay.
+When saving artworks, Arcollect download artworks politely to the server (explicit [`User-Agent`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent), caching, ...) like your normal browser would do, plus with stricter encryption requirements.
 
 ### Webextension permissions
 The webextension require some permissions to works:
