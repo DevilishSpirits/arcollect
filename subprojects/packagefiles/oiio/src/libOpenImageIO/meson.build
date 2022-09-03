@@ -2,9 +2,6 @@
 ## SPDX-License-Identifier: BSD-3-Clause
 ## https://github.com/OpenImageIO/oiio/blob/master/LICENSE.md
 
-#if (VERBOSE)
-#   message (STATUS "Create imagio_pvt.h from imageio_pvt.h.in")
-#endif ()
 imageio_pvt_h = configure_file(input: 'imageio_pvt.h.in', output: 'imageio_pvt.h', copy: true)
 
 #if (NOT USE_EXTERNAL_PUGIXML)
@@ -31,12 +28,6 @@ imageio_pvt_h = configure_file(input: 'imageio_pvt.h.in', output: 'imageio_pvt.h
 #if (CMAKE_COMPILER_IS_GNUCC AND ${GCC_VERSION} VERSION_GREATER_EQUAL 9.0)
 #    set_source_files_properties (../libutil/SHA1.cpp
 #                                 PROPERTIES COMPILE_FLAGS -Wno-stringop-truncation)
-#endif ()
-
-#if (CMAKE_COMPILER_IS_GNUCC AND ${GCC_VERSION} VERSION_GREATER_EQUAL 6.0
-#    AND ${GCC_VERSION} VERSION_LESS 7.0)
-#    set_source_files_properties (../openvdb.imageio/openvdbinput.cpp
-#                                 PROPERTIES COMPILE_FLAGS -Wno-error=strict-overflow)
 #endif ()
 
 libOpenImageIO_srcs = [
@@ -74,6 +65,7 @@ libOpenImageIO_srcs = [
 	'../libutil/filesystem.cpp', 
 	'../libutil/farmhash.cpp', 
 	'../libutil/filter.cpp', 
+	'../libutil/fmath.cpp',
 	'../libutil/hashes.cpp', 
 	'../libutil/paramlist.cpp', 
 	'../libutil/plugin.cpp', 
@@ -118,9 +110,10 @@ libOpenImageIO_srcs = [
 	'../include/OpenImageIO/imagecache.h',
 	'../include/OpenImageIO/imageio.h',
 	'../include/OpenImageIO/image_view.h',
-	configure_file(input: '../include/OpenImageIO/Imath.h.in', output: 'Imath.h', copy: true),
+	Imath_h,
+	half_h,
 	'../include/OpenImageIO/missing_math.h',
-	configure_file(input: '../include/OpenImageIO/oiioversion.h.in', output: 'oiioversion.h', copy: true),
+	oiioversion_h,
 	'../include/OpenImageIO/optparser.h',
 	'../include/OpenImageIO/parallel.h',
 	'../include/OpenImageIO/paramlist.h',
@@ -150,4 +143,4 @@ OpenImageIO_Util_deps = [
 	oiio_deps,
 	cpp.find_library('dl', required: false),
 ]
-OpenImageIO = static_library('OpenImageIO', libOpenImageIO_srcs, dependencies: OpenImageIO_Util_deps, include_directories: include_directories('../include'))
+OpenImageIO = static_library('OpenImageIO', libOpenImageIO_srcs, dependencies: OpenImageIO_Util_deps, include_directories: include_directories('../include'), cpp_args: compile_args_priv)

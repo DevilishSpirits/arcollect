@@ -71,6 +71,7 @@ config_h.set('ARCOLLECT_DBUS_PATH','/')
 config_h.set('ARCOLLECT_VERREQ_sdl2','>=2.0.18')
 config_h.set('ARCOLLECT_VERREQ_boost','>=1.66') # Keep in sync with OIIO needs!
 config_h.set('ARCOLLECT_VERREQ_libcurl','>=7.60')
+config_h.set('ARCOLLECT_VERREQ_OpenImageIO','>=2.4.3') # Contain a fix for libpng ICC profile handling
 config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
 
 config_h.set('ARCOLLECT_WEBEXT_GECKO_MIN_VERSION','57.0a1')
@@ -140,7 +141,7 @@ if enable_native_progs
 	
 	dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
 	
-	dep_oiio = dependency('OpenImageIO', fallback: ['oiio', 'dep_oiio'], default_options: [
+	dep_oiio = dependency('OpenImageIO', version: config_h.get('ARCOLLECT_VERREQ_OpenImageIO'), fallback: ['oiio', 'dep_oiio'], default_options: [
 		'enable_bmp=enabled',
 		'enable_cineon=enabled',
 		'enable_dds=enabled',
