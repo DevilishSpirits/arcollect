@@ -31,12 +31,14 @@ dep_boost = dependency('boost', version: '>=1.53', modules: boost_modules, defau
 	'BOOST_FILESYSTEM_NO_DEPRECATED=true',
 	'BOOST_FILESYSTEM_DISABLE_BCRYPT=true',
 ])
+dep_zlib  = dependency('zlib')
 oiio_deps = [
 	dep_fmt,
 	dep_imath,
 	dep_tiff,
 	dep_robin_map,
 	dep_boost,
+	dep_zlib,
 ]
 
 subdir('src')
