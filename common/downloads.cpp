@@ -20,24 +20,13 @@
 #include <iostream>
 void Arcollect::db::downloads::DownloadInfo::set_dwn_path(const std::filesystem::path& dir, const std::string_view& filename)
 {
+	// Set the dir
+	dwn_path_write = dir;
+	dwn_path_write += dir.preferred_separator;
 	// Sanitize filename
-	std::filesystem::path sane_filename;
-	//sane_filename.reserve(filename.size());
-	std::string_view::size_type i_begin = 0;
-	std::string_view::size_type i_end   = i_begin;
-	while (i_end < filename.size()) {
-		// Restrict to a reduced subset of ASCII
-		const char c = filename[i_end];
-		bool valid_char = ((c >= 'A') && (c <= 'Z'))||((c >= 'a') && (c <= 'z'))||((c >= '0') && (c <= '9'))||(c == '.')||(c == '_')||(c == '-');
-		if (!valid_char) {
-			// Skip the glyph
-			sane_filename.concat(&filename[i_begin],&filename[i_end]);
-			i_begin = ++i_end;
-		} else ++i_end;
-	}
-	sane_filename.concat(&filename[i_begin],&filename[i_end]);
-	// Set the path
-	dwn_path_write = dir/sane_filename;
+	for (const char c: filename)
+		if (((c >= 'A') && (c <= 'Z'))||((c >= 'a') && (c <= 'z'))||((c >= '0') && (c <= '9'))||(c == '.')||(c == '_')||(c == '-'))
+			dwn_path_write += c;
 }
 
 Arcollect::db::downloads::Transaction::Transaction(std::unique_ptr<SQLite3::sqlite3> &database) : db(database.get())
