@@ -39,6 +39,7 @@
 	"permissions": [
 		"https://twitter.com/*",
 		"https://mobile.twitter.com/*",
+		"dns",
 		"webRequest",
 		"webRequestBlocking",
 		"nativeMessaging"

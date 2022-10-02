@@ -22,6 +22,9 @@ When adding artwork, send the plain artwork with this kind of JSON :
 {
 	"platform": "example.net",
 	"transaction_id": "123456",
+	"dns_prefill": {
+		"example.com": ["ip1", "ip2..."]
+	}
 	"artworks": [{
 		"title": "Sample art",
 		"desc": "My sample warmup for the morning.",
@@ -67,6 +70,8 @@ When adding artwork, send the plain artwork with this kind of JSON :
 The `platform` is the platform identifier, the root URL of the platform like `twitter.com`. 
 
 The `transaction_id` is a  string that is returned verbatim in the response to help the extension identify the tab destination.
+
+The `dns_prefill` is a dictionary that map domain name to an array of string with their already resolved IP addresses. It allows to reuse application DNS cache to improve performances and privacy. Note that the webextension resolve all domain names, even those not in browser cache, in order to provide consistent behavior since the browser use it's own DNS resolver.
 
 The `artwork` array contain objects you wants to add with some properties :
 
