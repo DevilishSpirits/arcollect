@@ -659,6 +659,7 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 	enum class Root {
 		transaction_id,
 		platform,
+		dns_prefill,
 		artworks,
 		accounts,
 		tags,
@@ -671,6 +672,7 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 	static const ForEachObjectSwitch<Root> root_switch{
 		{"transaction_id",Root::transaction_id},
 		{"platform"      ,Root::platform},
+		{"dns_prefill"   ,Root::dns_prefill},
 		{"artworks"      ,Root::artworks},
 		{"accounts"      ,Root::accounts},
 		{"tags"          ,Root::tags},
@@ -689,6 +691,40 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 				json_read_string(entry.have,platform,"\"platform\"",iter,end);
 				if (Arcollect::debug.webext_adder)
 					std::cerr << "\tPlatform: " << platform << std::endl;
+			} break;
+			case Root::dns_prefill: {
+				if (entry.have != Arcollect::json::ObjHave::OBJECT)
+					throw std::runtime_error("\"dns_prefill\": must be an object of arrays.");
+				std::string_view hostname;
+				bool has_hostname = true;
+				while (has_hostname) {
+					switch (Arcollect::json::read_object_keyval(hostname,iter,end)) {
+						case Arcollect::json::ObjHave::ARRAY: {
+							std::string new_entry("+");
+							new_entry += hostname;
+							new_entry += ":443:"; // Assume HTTPS.
+							for (ArrHave have: Arcollect::json::Array(iter,end)) {
+								std::string_view addr;
+								json_read_string(static_cast<Arcollect::json::ObjHave>(have),addr,"\"dns_prefill\":{[\"addr...\"",iter,end);
+								new_entry += addr;
+								new_entry.push_back(',');
+							}
+							if (new_entry.back() != ',')
+								continue; // No address found, skip this entry
+							new_entry.pop_back();
+							network_session.dns_prefill.append(new_entry.c_str());
+							if (Arcollect::debug.webext_adder)
+								std::cerr << "DNS prefill: " << new_entry << std::endl;
+						} break;
+						case Arcollect::json::ObjHave::OBJECT_CLOSE: {
+							has_hostname = false;
+						} break;
+						default: {
+							throw std::runtime_error("\"dns_prefill\">:{ elements must be arrays of strings.");
+						} break;
+					}
+				}
+				curl_easy_setopt(network_session.easyhandle,CURLOPT_RESOLVE,network_session.dns_prefill.list); // Note that the cache survive curl_easy_reset() so we set it once there.
 			} break;
 			case Root::artworks: {
 				if (entry.have != ObjHave::ARRAY)

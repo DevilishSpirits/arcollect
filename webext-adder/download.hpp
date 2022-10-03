@@ -49,6 +49,9 @@ namespace Arcollect {
 			 * very same resource.
 			 */
 			std::unordered_map<std::string_view,sqlite3_int64> url_cache;
+			/** Application submitted premade DNS resolution
+			 */
+			curl::slist dns_prefill;
 			/** curl error buffer handle
 			 *
 			 * For internal use by Download::perform() and
