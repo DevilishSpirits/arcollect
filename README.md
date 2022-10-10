@@ -21,6 +21,7 @@ Currently these platforms are supported :
 * **[Pixiv](https://www.pixiv.com/)** - You have a `Save in Arcollect` next to the *Nice!* button (only illustrations are supported so far).
 * **[Tumbex](https://www.tumbex.com/)** - Click on the share menu (bottom-right) then `Save in Arcollect`.
 * **[Twitter](https://twitter.com/)** - Click on the photo you want to save and `Save in Arcollect` button appear in the bottom. Support is slightly buggy.
+* **[xkcd](https://xkcd.com/)** - You have a `Save in Arcollect` button on buttons bars.
 
 ## About privacy
 Arcollect by itself does not collect any data or statistics, it is not a spyware. Only your artworks and settings are stored inside your personal folder and stay there.

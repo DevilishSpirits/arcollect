@@ -35,6 +35,9 @@
 	},{
 		"matches": ["https://twitter.com/*","https://mobile.twitter.com/*"],
 		"js": ["content-scripts/common.js","content-scripts/twitter.com.js"]
+	},{
+		"matches": ["https://xkcd.com/*"],
+		"js": ["content-scripts/common.js","fetch.js","content-scripts/xkcd.com.js"]
 	}],
 	"permissions": [
 		"https://twitter.com/*",

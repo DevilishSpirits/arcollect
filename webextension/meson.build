@@ -30,6 +30,7 @@ webext_content_scripts = [
 	'twitter.com.js',
 	'tumblr.com-shared.js',
 	'tumbex.com.js',
+	'xkcd.com.js',
 ]
 python_copy_command = [find_program('python3'),'-c','import shutil; import sys; shutil.copyfile(sys.argv[1],sys.argv[2])','@INPUT@','@OUTPUT@']
 subdir('content-scripts')
