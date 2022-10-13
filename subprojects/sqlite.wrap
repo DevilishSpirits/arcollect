@@ -1,9 +1,9 @@
 [wrap-file]
-directory = sqlite-amalgamation-3380500
-source_url = https://www.sqlite.org/2022/sqlite-amalgamation-3380500.zip
-source_fallback_url = https://www2.sqlite.org/2022/sqlite-amalgamation-3380500.zip
-source_filename = sqlite-amalgamation-3380500.zip
-source_hash = bebb039b748441e3d25d71d11f7a4a33f5df11f318ec18fa7f343d2083755e2c
+directory = sqlite-amalgamation-3390400
+source_url = https://www.sqlite.org/2022/sqlite-amalgamation-3390400.zip
+source_fallback_url = https://www2.sqlite.org/2022/sqlite-amalgamation-3390400.zip
+source_filename = sqlite-amalgamation-3390400.zip
+source_hash = 9c99955b21d2374f3a385d67a1f64cbacb1d4130947473d25c77ad609c03b4cd
 patch_directory = sqlite
 
 [provide]
