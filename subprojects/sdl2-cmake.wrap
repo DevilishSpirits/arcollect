@@ -1,5 +1,5 @@
 [wrap-file]
-directory = SDL-714502d3737d64d857460e38f4d5aee31d77b9fe
-source_url = https://codeload.github.com/libsdl-org/SDL/zip/714502d3737d64d857460e38f4d5aee31d77b9fe
-source_filename = SDL-714502d3737d64d857460e38f4d5aee31d77b9fe.zip
-source_hash = 597e3007448a63662352645abf7854cc08ab444f31938b75217306a43f9029b3
+directory = SDL2-2.24.1
+source_url = https://github.com/libsdl-org/SDL/releases/download/release-2.24.1/SDL2-2.24.1.tar.gz
+source_filename = SDL2-2.24.1.tar.gz
+source_hash = bc121588b1105065598ce38078026a414c28ea95e66ed2adab4c44d80b309e1b

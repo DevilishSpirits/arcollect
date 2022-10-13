@@ -14,8 +14,8 @@ subproj_opts.add_cmake_defines({
 	'SDL_HAPTIC'       : false,
 	'SDL_LOCALE'       : true,
 	'SDL_POWER'        : false,
-	'SDL_THREADS'      : false,
-	'SDL_TIMERS'       : true,  # For SDL_GetTicks()
+	'SDL_THREADS'      : true,  # Require by some build-systems
+	'SDL_TIMERS'       : true,  # For SDL_GetTicks(). TODO Switch to the C++ standard library
 	'SDL_FILE'         : true,
 	'SDL_LOADSO'       : true,
 	'SDL_CPUINFO'      : false,
