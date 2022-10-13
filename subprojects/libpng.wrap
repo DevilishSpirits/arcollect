@@ -1,8 +1,8 @@
 [wrap-file]
-directory = libpng-1.6.37
-source_url = https://github.com/glennrp/libpng/archive/v1.6.37.tar.gz
-source_filename = libpng-1.6.37.tar.gz
-source_hash = ca74a0dace179a8422187671aee97dd3892b53e168627145271cad5b5ac81307
+directory = libpng-1.6.38
+source_url = https://github.com/glennrp/libpng/archive/v1.6.38.tar.gz
+source_filename = libpng-1.6.38.tar.gz
+source_hash = d4160037fa5d09fa7cff555037f2a7f2fefc99ca01e21723b19bfcda33015234
 patch_directory = libpng
 
 [provide]
