@@ -1,4 +1,4 @@
-project('libjpeg-turbo', 'c', version : '2.1.3', license : 'bsd-like')
+project('libjpeg-turbo', 'c', version : '2.1.4', license : 'bsd-like')
 
 python = import('python').find_installation()
 
@@ -96,7 +96,7 @@ else
   cdata.set('RIGHT_SHIFT_IS_UNSIGNED', false)
 endif
 
-p = run_command(python, '-c', 'import datetime; print(datetime.datetime.now().strftime("%Y%m%d"))')
+p = run_command(python, '-c', 'import datetime; print(datetime.datetime.now().strftime("%Y%m%d"))', check: true)
 cdata.set('BUILD', p.stdout().strip())
 
 if cc.get_id() == 'msvc'
