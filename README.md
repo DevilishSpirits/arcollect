@@ -18,6 +18,7 @@ Currently these platforms are supported :
 * **[e621](https://e621.net/)**/**[e926](https://e926.net)** - You have a `Save in Arcollect` button below the artwork.
 * **[FurAffinity](https://www.furaffinity.net/)** - You have a `Save in Arcollect` button below the artwork.
 * **[KnowYourMeme](https://knowyourmeme.com/)** - You have a `Save in Arcollect` button below the meme artwork on image details.
+* **[Patreon](https://www.patreon.com/)** - You have a `Save in Arcollect` button below the artwork (you must be on the post page currently).
 * **[Pixiv](https://www.pixiv.com/)** - You have a `Save in Arcollect` next to the *Nice!* button (only illustrations are supported so far).
 * **[Tumbex](https://www.tumbex.com/)** - Click on the share menu (bottom-right) then `Save in Arcollect`.
 * **[Twitter](https://twitter.com/)** - Click on the photo you want to save and `Save in Arcollect` button appear in the bottom. Support is slightly buggy.

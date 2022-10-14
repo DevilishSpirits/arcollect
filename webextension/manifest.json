@@ -27,6 +27,9 @@
 		"matches": ["https://knowyourmeme.com/photos/*"],
 		"js": ["content-scripts/common.js","content-scripts/knowyourmeme.com.js"]
 	},{
+		"matches": ["https://*.patreon.com/posts/*"],
+		"js": ["content-scripts/common.js","content-scripts/patreon.com.js"]
+	},{
 		"matches": ["https://www.pixiv.net/*"],
 		"js": ["content-scripts/common.js","fetch.js","content-scripts/pixiv.net.js"]
 	},{

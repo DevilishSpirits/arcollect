@@ -26,6 +26,7 @@ webext_content_scripts = [
 	'e621.net-keyboard_shortcuts.js',
 	'furaffinity.net.js',
 	'knowyourmeme.com.js',
+	'patreon.com.js',
 	'pixiv.net.js',
 	'twitter.com.js',
 	'tumblr.com-shared.js',
