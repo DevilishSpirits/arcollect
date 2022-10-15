@@ -14,6 +14,8 @@ project('arcollect', 'cpp',
 
 cpp = meson.get_compiler('cpp')
 
+fs = import('fs')
+
 # Options
 enable_webextension = get_option('enable_webextension')
 enable_native_progs = get_option('enable_native_progs')
@@ -45,12 +47,8 @@ endif
 # Basic configuration
 config_h = configuration_data()
 config_h.set('ARCOLLECT_VERSION',meson.project_version())
-config_h.set('ARCOLLECT_WEBSITE','https://github.com/DevilishSpirits/arcollect')
-config_h.set('ARCOLLECT_SUMMARY','Your personal visual artwork library.')
-config_h.set('ARCOLLECT_MOZILLA_WEBEXT_ID','arcollect@d-spirits.me')
 config_h.set('HAS_SDL_OPENURL','1') # TODO Probe that
 config_h.set('WITH_XDG',with_xdg ? '1' : '0')
-config_h.set('ARCOLLECT_X11_WM_CLASS','arcollect-desktop-app')
 config_h.set('CPP_STD',get_option('cpp_std').to_upper())
 if (cpp.get_id() == 'gcc')
 	config_h.set('CXX_COMPILER_TITLE','GCC '+cpp.version())
@@ -62,19 +60,26 @@ else
 	config_h.set('CXX_COMPILER_TITLE',cpp.get_id()+' C++ compiler '+cpp.version())
 endif
 
+# Read configuration file
+foreach line: fs.read('config.txt').strip().split('\n')
+	line = line.split('#')[0].strip() # Remove comments and strip the line
+	if line != ''
+		key = ''
+		foreach fragment: line.split(':')
+			if key == ''
+				key = fragment
+				line = []	
+			else
+				line += fragment
+			endif
+		endforeach
+		config_h.set(key.strip(),':'.join(line).strip())
+	endif
+endforeach
+
 # D-Bus stuff
 config_h.set('ARCOLLECT_DBUS_NAME','me.d_spirits.arcollect')
 config_h.set('ARCOLLECT_DBUS_PATH','/')
-
-# Version requirements
-# These are centralized here. Update README.md if you change things there.
-config_h.set('ARCOLLECT_VERREQ_sdl2','>=2.0.18')
-config_h.set('ARCOLLECT_VERREQ_boost','>=1.66') # Keep in sync with OIIO needs!
-config_h.set('ARCOLLECT_VERREQ_libcurl','>=7.60')
-config_h.set('ARCOLLECT_VERREQ_OpenImageIO','>=2.4.3') # Contain a fix for libpng ICC profile handling
-config_h.set('ARCOLLECT_VERREQ_sqlite3','>=3.35.0')
-
-config_h.set('ARCOLLECT_WEBEXT_GECKO_MIN_VERSION','60.0')
 
 foreach key: config_h.keys()
 	config_h.set_quoted(key+'_STR',config_h.get(key))
