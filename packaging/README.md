@@ -15,14 +15,14 @@ Don't immediately configure and build the project, there is special configuratin
 ```
 
 ### [ArchLinux](https://archlinux.org/) and derived
-Install dependencies and then configure the project into the `build` directory with the ArchLinux specific configuration (`--prefix=/usr --libexecdir lib`) you may want to enable optimizations (`--buildtype=release -Db_lto=true -Db_pie=true`). Then `cd` into `build/packaging` that contain the configured [`PKGBUILD`](PKGBUILD.in) and run [`makepkg`](https://man.archlinux.org/man/makepkg.8) **with the `PKGBUILD.local` file !** Else you will download a release from GitHub. The `PKGBUILD.local` reuse the existing build-directory.
-
-**Warning!** The makepkg step should not trigger a reconfigure, if so dependency listing may be broken. To avoid that, always build the project before invoking `makepkg`.
+Generate a PKGBUILD using the [generate-PKGBUILD.sh](generate-PKGBUILD.sh) script in `local` mode (cd into the packaging directory first). It is written on the standard output you have to redirect to a PKGBUILD file (location doesn't matter). 
 
 ```sh
-	meson build --prefix=/usr --libexecdir lib --buildtype=release -Db_lto=true -Db_pie=true
-	# This one liner avoid a reconfiguration during makepkg
-	ninja -C build && (cd build/packaging; makepkg -fp PKGBUILD.local)
+	cd packaging                                                  # You must be in the package directory
+	mkdir /tmp/arcollect-build                                    # PKGBUILD working directory, choose at your convenience
+	sh generate-PKGBUILD.sh local > /tmp/arcollect-build/PKGBUILD # Generate the PKGBUILD
+	cd /tmp/arcollect-build                                       # Go into the PKGBUILD working directory
+	makepkg -i                                                    # Build (-i option to also install)
 ```
 
 ### [Debian](https://www.debian.org/) and derived

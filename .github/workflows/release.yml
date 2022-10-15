@@ -10,18 +10,20 @@ on:
   
 jobs:
   archlinux-package:
+  build:
     runs-on: [archlinux]
     steps:
       - uses: actions/checkout@v2
-      - name: Configure project
-        run: meson build --prefix=/usr --libexecdir lib --buildtype=release -Db_lto=true -Db_pie=true
-      - name: Generate package (makepkg -p PKGBUILD.local)
-        run: makepkg -p PKGBUILD.local -c CFLAGS= CXXFLAGS= LDFLAGS= PKGEXT=".pkg.tar.zst"
-        working-directory: build/packaging
-      - uses: actions/upload-artifact@v2
+      - name: Generate PKGBUILD
+        run: sh generate-PKGBUILD.sh local > ../PKGBUILD
+        working-directory: packaging
+      - name: Invoke makepkg
+        run: makepkg
+      - name: Uploading ArchLinux package
+        uses: actions/upload-artifact@v2
         with:
           name: archlinux-package
-          path: build/packaging
+          path: arcollect-*.pkg.tar.*
   ubuntu-22_04-package:
     runs-on: [ubuntu-22.04]
     steps:
@@ -127,6 +129,9 @@ jobs:
         with:
           name: archlinux-package
           path: archlinux-package
+      - name: Generate PKGBUILD for GitHub releases
+        run: sh generate-PKGBUILD.sh release-ci > ../PKGBUILD
+        working-directory: packaging
       - name: Download Ubuntu 22.04 package
         uses: actions/download-artifact@v2.0.9
         with:
@@ -147,7 +152,7 @@ jobs:
           body_path: release.body
           files: |
             web-ext-artifacts/*
-            archlinux-package/PKGBUILD
+            PKGBUILD
             archlinux-package/arcollect-*
             arcollect-x64.msi
             *.deb

@@ -16,36 +16,16 @@ jobs:
     runs-on: [archlinux]
     steps:
       - uses: actions/checkout@v2
-      - name: Build project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: build
-          meson-version: 0.59.0
-          setup-options: --prefix=/usr --libexecdir lib
-      - name: Test project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: test
-          meson-version: 0.59.0
-      - name: Install project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: install
-          meson-version: 0.59.0
-        env:
-          DESTDIR: "archive-out"
-      - name: Archiving
-        run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
-      - name: Uploading DESDIR artifact
+      - name: Generate PKGBUILD
+        run: sh generate-PKGBUILD.sh local > ../PKGBUILD
+        working-directory: packaging
+      - name: Invoke makepkg
+        run: makepkg
+      - name: Uploading ArchLinux package
         uses: actions/upload-artifact@v2
         with:
-          name: build_DESTDIR.tar
-          path: archive-out.tar
-      - name: Uploading arcollect-webextension.zip artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: build_webextension.zip
-          path: build/webextension/arcollect.zip
+          name: build_package.zip
+          path: arcollect-*.pkg.tar.*
   build-wrapped:
     runs-on: [archlinux]
     env:
@@ -155,14 +135,9 @@ jobs:
           name: windows-2019-builddir
           path: build
   check-webextensions-same:
-    needs: [build, build-wrapped, build-ubuntu-22_04]
+    needs: [build-wrapped, build-ubuntu-22_04]
     runs-on: [ubuntu-latest]
     steps:
-      - name: Download build_webextension.zip
-        uses: actions/download-artifact@v2
-        with:
-          name: build_webextension.zip
-          path: build_webextension
       - name: Download build-wrapped_webextension.zip
         uses: actions/download-artifact@v2
         with:
@@ -174,22 +149,17 @@ jobs:
           name: build-ubuntu-22_04_webextension.zip
           path: build-ubuntu-22_04_webextension
       - name: Make unpack dirs
-        run: mkdir build build-wrapped build-ubuntu-22_04
-      - name: Unpack build_webextension.zip
-        run: unzip ../build_webextension/arcollect.zip
-        working-directory: build
+        run: mkdir build-wrapped build-ubuntu-22_04
       - name: Unpack build-wrapped_webextension.zip
         run: unzip ../build-wrapped_webextension/arcollect.zip
         working-directory: build-wrapped
       - name: Unpack build-ubuntu-22_04_webextension.zip
         run: unzip ../build-ubuntu-22_04_webextension/arcollect.zip
         working-directory: build-ubuntu-22_04
-      - name: Compare build and build-wrapped results
-        run: diff -ry build build-wrapped
-      - name: Compare build and build-ubuntu-22_04 results
-        run: diff -ry build build-ubuntu-22_04
+      - name: Compare build-wrapped and build-ubuntu-22_04 results
+        run: diff -ry build-wrapped build-ubuntu-22_04
   merge-to-master:
-    needs: [check-webextensions-same, build-windows-2019]
+    needs: [build, check-webextensions-same, build-windows-2019]
     runs-on: [ubuntu-latest]
     if: ${{ (github.event_name == 'push') && (github.ref == 'refs/heads/master-staging') }}
     steps:

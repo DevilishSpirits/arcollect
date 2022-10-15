@@ -44,50 +44,6 @@ if sh_prog.found()
 	)
 endif
 
-# ArchLinux PKGBUILD
-# Two favlors are generated:
-# 	PKGBUILD usable by anybody
-# 	PKGBUILD.local that use local directory as source directory
-pkgbuild_depends = ['\'xdg-utils\'']
-pkgbuild_depends_list = {
-	# 'dependency_name': 'ArchLinux package name'
-	'boost'            : 'boost',
-	'libbrotlicommon'  : 'brotli',
-	'curl'             : 'curl',
-	'dbus-1'           : 'dbus',
-	'fontconfig'       : 'fontconfig',
-	'freetype2'        : 'freetype2',
-	'harfbuzz'         : 'harfbuzz',
-	'inih'             : 'libINIReader.so',
-	'lcms2'            : 'lcms2',
-	'OpenImageIO'      : 'openimageio',
-	'sdl2'             : 'sdl2',
-	'sqlite3'          : 'sqlite',
-}
-foreach dep_name, package_name: pkgbuild_depends_list
-	if dep_name in system_dependencies
-		pkgbuild_depends += '\''+package_name+config_h.get('ARCOLLECT_VERREQ_'+dep_name,'')+'\''
-	endif
-endforeach
-
-pkgbuild_conf = configuration_data()
-pkgbuild_conf.merge_from(config_h)
-pkgbuild_conf.set_quoted('PKGBUILD_SOURCE', 'https://github.com/DevilishSpirits/arcollect/archive/refs/tags/v$pkgver.tar.gz')
-pkgbuild_conf.set('PKGBUILD_DEPENDS', ' '.join(pkgbuild_depends))
-pkgbuild_conf.set_quoted('PKGBUILD_MD5SUMS', 'SKIP')
-pkgbuild_conf.set('PKGBUILD_BUILDDIR', 'PKGBUILD.build')
-pkgbuild_conf.set('PKGBUILD_MESON_COMMAND', 'meson --prefix=/usr --buildtype=release -Db_lto=true -Db_pie=true --libexecdir lib "$srcdir/arcollect-$pkgver" PKGBUILD.build')
-configure_file(input: 'PKGBUILD.in', output: 'PKGBUILD', configuration: pkgbuild_conf)
-
-pkgbuild_local_conf = configuration_data()
-pkgbuild_local_conf.merge_from(config_h)
-pkgbuild_local_conf.set('PKGBUILD_SOURCE', '')
-pkgbuild_local_conf.set('PKGBUILD_DEPENDS', ' '.join(pkgbuild_depends))
-pkgbuild_local_conf.set('PKGBUILD_MD5SUMS', '')
-pkgbuild_local_conf.set('PKGBUILD_BUILDDIR', meson.project_build_root())
-pkgbuild_local_conf.set('PKGBUILD_MESON_COMMAND', 'meson configure \''+meson.project_build_root()+'\' --prefix=/usr --libexecdir lib # Enforce a correct configurations')
-pkgbuild_local = configure_file(input: 'PKGBUILD.in', output: 'PKGBUILD.local', configuration: pkgbuild_local_conf)
-
 foreach packages_file: packages_files
 	configure_file(input: packages_file+'.in', output: packages_file, configuration: packages_conf)
 endforeach
