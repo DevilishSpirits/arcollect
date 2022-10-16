@@ -1,71 +1,62 @@
-# This is a basic workflow to help you get started with Actions
+name: CI build
 
-name: CI
-
-# Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches: [ master-staging, gh-action-test ]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  build:
+  build-archlinux-x86_64:
+    name: ArchLinux (x86_64)
     runs-on: [archlinux]
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
       - name: Generate PKGBUILD
         run: sh generate-PKGBUILD.sh local > ../PKGBUILD
         working-directory: packaging
       - name: Invoke makepkg
         run: makepkg
       - name: Uploading ArchLinux package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
         with:
-          name: build_package.zip
+          name: archlinux-x86_64-package
           path: arcollect-*.pkg.tar.*
   build-wrapped:
+    name: ArchLinux (with wraps on)
     runs-on: [archlinux]
-    env:
-      LDFLAGS: "-lwayland-client" # FIXME See https://github.com/libsdl-org/SDL/issues/5088, remove on next SDL2 release
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+      - name: Configure project
+        run: arch-meson build --wrap-mode default --force-fallback-for libcurl,sdl2,freetype2,harfbuzz,sqlite3,INIReader,libjpeg,libpng,libtiff-4,zlib
       - name: Build project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: build
-          setup-options: --prefix=/usr --libexecdir lib --force-fallback-for libcurl,sdl2,freetype2,harfbuzz,sqlite3,INIReader,libjpeg,libpng,libtiff-4,zlib
-          meson-version: 0.59.0
+        run: meson compile -C build
       - name: Test project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: test
-          meson-version: 0.59.0
+        run: meson test -C build --print-errorlogs
       - name: Install project
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: install
-          meson-version: 0.59.0
+        run: meson install -C build
         env:
           DESTDIR: "archive-out"
-      - name: Archiving
+      - name: Archiving the "installed project"
         run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
-      - name: Uploading DESDIR artifact
-        uses: actions/upload-artifact@v2
+      - name: Uploading DESTDIR artifact
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
         with:
           name: build-wrapped_DESTDIR.tar
           path: archive-out.tar
       - name: Uploading arcollect-webextension.zip artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
         with:
           name: build-wrapped_webextension.zip
           path: build/webextension/arcollect.zip
-  build-ubuntu-22_04:
+  build-ubuntu-22_04-amd64:
+    name: Ubuntu 22.04 (amd64)
     runs-on: [ubuntu-22.04]
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
       - name: Update apt cache
         run: sudo apt update
       - name: Install dependencies and tools
@@ -73,11 +64,11 @@ jobs:
       - name: Install Mozilla's web-ext with npm
         run: sudo npm install -g web-ext
       - name: Setup project
-        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now'
+        run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dbuildtype=release -Db_lto=true
       - name: Build project
         run: ninja -C build
       - name: Uploading arcollect-webextension.zip artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
         with:
           name: build-ubuntu-22_04_webextension.zip
           path: build/webextension/arcollect.zip
@@ -85,9 +76,9 @@ jobs:
         run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
         shell: bash
       - name: Uploading Debian package artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
         with:
-          name: build-ubuntu-22_04-packaging
+          name: ubuntu-22_04-amd64-package
           path: build/packaging
       - name: Test project
         run: ninja -C build test
@@ -101,28 +92,30 @@ jobs:
         shell: bash
       - name: Upload build dir
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
         with:
-          name: ubuntu-22_04-builddir
+          name: ubuntu-22_04-amd64-builddir
           path: build
-  build-windows-2019:
+  build-windows-2019-x64:
+    name: Windows 2019 (x64)
     runs-on: [windows-2019]
     env:
       PATH: C:\Program Files\PowerShell\7;C:\Users\runneradmin\.dotnet\tools;C:\Program Files\MongoDB\Server\4.4\bin;C:\aliyun-cli;C:\vcpkg;C:\cf-cli;C:\Program Files (x86)\NSIS\;C:\tools\zstd;C:\Program Files\Mercurial\;C:\hostedtoolcache\windows\stack\2.7.1\x64;C:\tools\ghc-9.0.1\bin;C:\Program Files\dotnet;C:\mysql-5.7.21-winx64\bin;C:\Program Files\R\R-4.1.0\bin\x64;C:\SeleniumWebDrivers\GeckoDriver;C:\Program Files (x86)\sbt\bin;C:\Rust\.cargo\bin;C:\Program Files (x86)\GitHub CLI;C:\Program Files\Git\bin;C:\Program Files (x86)\pipx_bin;C:\hostedtoolcache\windows\go\1.15.13\x64\bin;C:\hostedtoolcache\windows\Python\3.7.9\x64\Scripts;C:\hostedtoolcache\windows\Python\3.7.9\x64;C:\hostedtoolcache\windows\Ruby\2.5.9\x64\bin;C:\hostedtoolcache\windows\Java_Adopt_jdk\8.0.292-10\x64\bin;C:\npm\prefix;C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin;C:\ProgramData\kind;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Microsoft\Web Platform Installer\;C:\Program Files\Docker;C:\Program Files\PowerShell\7\;C:\Program Files\dotnet\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files (x86)\Microsoft SQL Server\110\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\120\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\130\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\140\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\nodejs\;C:\Program Files\Microsoft Service Fabric\bin\Fabric\Fabric.Code;C:\Program Files\Microsoft SDKs\Service Fabric\Tools\ServiceFabricLocalClusterManager;C:\Program Files\OpenSSL\bin;C:\Program Files\Git\cmd;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;c:\tools\php;C:\Program Files (x86)\sbt\bin;C:\Program Files\TortoiseSVN\bin;C:\SeleniumWebDrivers\ChromeDriver\;C:\SeleniumWebDrivers\EdgeDriver\;C:\Program Files\CMake\bin;C:\Program Files\Amazon\AWSCLIV2\;C:\Program Files\Amazon\SessionManagerPlugin\bin\;C:\Program Files\Amazon\AWSSAMCLI\bin\;C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files (x86)\Microsoft BizTalk Server\;C:\Users\runneradmin\AppData\Local\Microsoft\WindowsApps;C:\msys64\usr\bin;C:\msys64\mingw64\bin;C:\Program Files (x86)\WiX Toolset v3.11\bin # Remove Chocolatey and Strawberry largely outdated GCC from the PATH and use MSYS2 instead. Also add WiX Toolset
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
       - name: Install Meson
         run: pip install meson ninja
       - name: Configure project
-        run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,robin-map,roboto,sdl2,harfbuzz,sqlite3,boost -Dcpp_link_args=-static -Dc_link_args=-static
+        run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,robin-map,roboto,sdl2,harfbuzz,sqlite3,boost -Denable_webextension=false -Dcpp_link_args=-static -Dc_link_args=-static -Dbuildtype=release -Dstrip=true -Db_lto=true
       - name: Build project
         run: ninja -C build
       - name: Generate MSI
         run: ninja -C build packaging/arcollect.msi
       - name: Upload MSI artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
         with:
-          name: msi-windows-2019
+          name: windows-2019-x64-package
           path: build/packaging/arcollect.msi
       - name: Test project
         run: ninja -C build test
@@ -130,12 +123,12 @@ jobs:
         run: msiexec /i /q build/packaging/arcollect.msi
       - name: Upload build dir
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
         with:
           name: windows-2019-builddir
           path: build
   check-webextensions-same:
-    needs: [build-wrapped, build-ubuntu-22_04]
+    needs: [build-wrapped, build-ubuntu-22_04-amd64]
     runs-on: [ubuntu-latest]
     steps:
       - name: Download build-wrapped_webextension.zip
@@ -159,11 +152,13 @@ jobs:
       - name: Compare build-wrapped and build-ubuntu-22_04 results
         run: diff -ry build-wrapped build-ubuntu-22_04
   merge-to-master:
-    needs: [build, check-webextensions-same, build-windows-2019]
+    name: Merge 'master-staging' to 'master'
+    needs: [build-archlinux-x86_64, build-wrapped, build-ubuntu-22_04-amd64, build-windows-2019-x64, check-webextensions-same]
     runs-on: [ubuntu-latest]
     if: ${{ (github.event_name == 'push') && (github.ref == 'refs/heads/master-staging') }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
         with:
           fetch-depth: 0
       - name: Checkout to master branch
