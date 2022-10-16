@@ -338,23 +338,13 @@ else
   foreach rl : hb_base_ragel_sources
     hh = rl.split('.')[0] + '.hh'
     custom_target('@0@'.format(hh),
-      build_by_default: true,
+      build_by_default: false,
       input: rl,
       output: hh,
       command: [ragel_helper, ragel, '@OUTPUT@', meson.current_source_dir(), '@INPUT@'],
     )
   endforeach
 endif
-
-custom_target('harfbuzz.cc',
-  build_by_default: true,
-  output: 'harfbuzz.cc',
-  input: hb_base_sources + hb_ft_sources +
-         hb_graphite2_sources + hb_uniscribe_sources + hb_gdi_sources +
-         hb_directwrite_sources + hb_coretext_sources,
-  command: [find_program('gen-harfbuzzcc.py'),
-            '@OUTPUT@', meson.current_source_dir(), '@INPUT@'],
-)
 
 incsrc = include_directories('.')
 
