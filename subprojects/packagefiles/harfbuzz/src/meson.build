@@ -526,7 +526,7 @@ libharfbuzz_subset = library('harfbuzz-subset', hb_subset_sources,
 )
 
 libharfbuzz_subset_dep = declare_dependency(
-  link_with: libharfbuzz_subset,
+  link_whole: libharfbuzz_subset,
   include_directories: incsrc,
   dependencies: [m_dep])
 
