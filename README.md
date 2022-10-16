@@ -41,7 +41,7 @@ The webextension require some permissions to works:
 I am open to contributions but keep in mind that this is a personal project, not a community driven thing. Arcollect mostly have what I use and can do with time, but it is built with extensibility and platform agnostism in mind.
 
 Your favorite platform is likely missing, with a content-script in `webextension` you can add support into Arcollect.
-Chromiums and macOS support are also welcome.
+macOS support is also welcome.
 Better Windows integration too, especially font rendering.
 Some KDE integrations also.
 
