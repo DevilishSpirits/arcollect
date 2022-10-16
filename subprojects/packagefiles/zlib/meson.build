@@ -49,6 +49,7 @@ zlib = library('z', src,
   c_args : compile_args,
   link_args : link_args,
   vs_module_defs : 'win32/zlib.def',
+  build_by_default: false,
   install : false)
 
 incdir = include_directories('.')

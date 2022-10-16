@@ -143,4 +143,4 @@ OpenImageIO_Util_deps = [
 	oiio_deps,
 	cpp.find_library('dl', required: false),
 ]
-OpenImageIO = static_library('OpenImageIO', libOpenImageIO_srcs, dependencies: OpenImageIO_Util_deps, include_directories: include_directories('../include'), cpp_args: compile_args_priv)
+OpenImageIO = static_library('OpenImageIO', libOpenImageIO_srcs, dependencies: OpenImageIO_Util_deps, include_directories: include_directories('../include'), cpp_args: compile_args_priv, build_by_default: false)

@@ -68,5 +68,5 @@ sqlite3_incdir = include_directories('.')
 sqlite3_version = cc.get_define('SQLITE_VERSION', include_directories: sqlite3_incdir, prefix: '#include <sqlite3.h>').strip('"')
 
 dep_sqlite3 = declare_dependency(link_with:
-	static_library('sqlite3', 'sqlite3.c', include_directories: sqlite3_incdir, c_args : sqlite_args, dependencies : [thread_dep, dl_dep, m_dep], install: false)
+	static_library('sqlite3', 'sqlite3.c', include_directories: sqlite3_incdir, c_args : sqlite_args, dependencies : [thread_dep, dl_dep, m_dep], install: false, build_by_default: false)
 ,include_directories : sqlite3_incdir, version: sqlite3_version)

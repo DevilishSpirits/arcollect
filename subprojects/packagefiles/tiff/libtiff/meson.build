@@ -55,4 +55,5 @@ tiff4_lib = library('tiff4',
     'tif_zstd.c',
     platform_src,
     dependencies: cc.find_library('m', required: false),
+    build_by_default: false,
 )

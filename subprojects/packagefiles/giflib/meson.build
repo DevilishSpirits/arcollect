@@ -54,6 +54,6 @@ sources = [
 
 dep_m = cc.find_library('m', required: false)
 
-giflib = static_library('giflib', sources, dependencies: dep_m)
+giflib = static_library('giflib', sources, dependencies: dep_m, build_by_default: false)
 
 dep_giflib = declare_dependency(link_with: giflib, dependencies: dep_m, include_directories: include_directories('.'))

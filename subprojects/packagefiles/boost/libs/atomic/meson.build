@@ -132,4 +132,4 @@ endif
 #endif()
 
 
-boost_libs += static_library('boost-atomic', BOOST_ATOMIC_SOURCES, include_directories: [boost_inc, include_directories('src')], cpp_args: BOOST_ATOMIC_ARGS)
+boost_libs += static_library('boost-atomic', BOOST_ATOMIC_SOURCES, include_directories: [boost_inc, include_directories('src')], cpp_args: BOOST_ATOMIC_ARGS, build_by_default: false)

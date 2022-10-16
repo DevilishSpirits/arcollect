@@ -121,7 +121,7 @@ endif
 
 # TODO: Add simd support
 cdata.set('WITH_SIMD', false)
-simd = static_library('simd', 'jsimd_none.c')
+simd = static_library('simd', 'jsimd_none.c', build_by_default: false)
 
 jconfig_h_in = host_system == 'windows' ? 'win/jconfig.h.in' : 'jconfig.h.in'
 jconfig_h = configure_file(input: jconfig_h_in,
@@ -154,6 +154,7 @@ sources = [
 jpeg = static_library('jpeg', sources,
   link_with: simd,
   install: false,
+  build_by_default: false,
 )
 
 jpeg_dep = declare_dependency(

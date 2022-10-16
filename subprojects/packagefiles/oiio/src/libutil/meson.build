@@ -21,4 +21,4 @@ OpenImageIO_Util_deps = [
 	dep_imath,
 	dep_fmt,
 ]
-OpenImageIO_Util = static_library(libOpenImageIO_Util_srcs, dependencies: OpenImageIO_Util_deps, include_directories: include_directories('../include'))
+OpenImageIO_Util = static_library(libOpenImageIO_Util_srcs, dependencies: OpenImageIO_Util_deps, include_directories: include_directories('../include'), build_by_default: false)

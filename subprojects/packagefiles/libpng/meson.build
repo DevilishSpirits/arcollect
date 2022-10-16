@@ -66,7 +66,7 @@ libpng_sources = [
 	#${libpng_powerpc_sources}
 ]
 png_incs   = include_directories('.')
-png_static = static_library('png_static', libpng_sources, dependencies: [zlib_dep, m_dep], include_directories: png_incs)
+png_static = static_library('png_static', libpng_sources, dependencies: [zlib_dep, m_dep], include_directories: png_incs, build_by_default: false)
 
 libpng_dep = declare_dependency(link_with: png_static, dependencies: [zlib_dep, m_dep], include_directories: png_incs)
 png_dep    = libpng_dep

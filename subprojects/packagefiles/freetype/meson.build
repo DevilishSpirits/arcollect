@@ -327,6 +327,7 @@ ft2_lib = static_library('freetype',
   include_directories: ft2_includes,
   dependencies: ft2_deps,
   install: false,
+  build_by_default: false,
   link_args: common_ldflags,
 )
 

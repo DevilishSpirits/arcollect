@@ -48,4 +48,4 @@ srcs = [
 	ImathConfig_h,
 ]
 # The include_directories is for ImathConfig_h
-Imath = static_library('Imath', srcs, include_directories: include_directories('../..'))
+Imath = static_library('Imath', srcs, include_directories: include_directories('../..'), build_by_default: false)

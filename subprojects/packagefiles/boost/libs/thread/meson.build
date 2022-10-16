@@ -47,4 +47,4 @@ elif threadapi == 'pthread'
 	)
 endif
 
-boost_libs += static_library('boost-thread', BOOST_THREAD_SOURCES, include_directories: [boost_inc, include_directories('src')], cpp_args: BOOST_THREAD_ARGS)
+boost_libs += static_library('boost-thread', BOOST_THREAD_SOURCES, include_directories: [boost_inc, include_directories('src')], build_by_default: false, cpp_args: BOOST_THREAD_ARGS)

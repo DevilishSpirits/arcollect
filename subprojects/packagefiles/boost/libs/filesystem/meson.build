@@ -90,7 +90,7 @@ if (host_machine.system() == 'windows') or (host_machine.system() == 'cygwin')
 	]
 endif
 
-boost_libs += static_library('boost-filesystem', BOOST_FILESYSTEM_SOURCES, include_directories: [boost_inc, include_directories('src')], cpp_args: BOOST_FILESYSTEM_ARGS)
+boost_libs += static_library('boost-filesystem', BOOST_FILESYSTEM_SOURCES, include_directories: [boost_inc, include_directories('src')], cpp_args: BOOST_FILESYSTEM_ARGS, build_by_default: false)
 
 #target_link_libraries(boost_filesystem
 #    PUBLIC

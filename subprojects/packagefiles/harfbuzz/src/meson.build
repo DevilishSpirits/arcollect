@@ -323,50 +323,6 @@ hb_uniscribe_headers = files('hb-uniscribe.h')
 hb_icu_sources = files('hb-icu.cc')
 hb_icu_headers = files('hb-icu.h')
 
-# Sources for libharfbuzz-subset
-hb_subset_sources = files(
-  'hb-number.cc',
-  'hb-number.hh',
-  'hb-ot-cff1-table.cc',
-  'hb-ot-cff2-table.cc',
-  'hb-static.cc',
-  'hb-subset-cff-common.cc',
-  'hb-subset-cff-common.hh',
-  'hb-subset-cff1.cc',
-  'hb-subset-cff1.hh',
-  'hb-subset-cff2.cc',
-  'hb-subset-cff2.hh',
-  'hb-subset-input.cc',
-  'hb-subset-input.hh',
-  'hb-subset-plan.cc',
-  'hb-subset-plan.hh',
-  'hb-subset-repacker.cc',
-  'graph/gsubgpos-context.cc',
-  'graph/gsubgpos-context.hh',
-  'graph/gsubgpos-graph.hh',
-  'graph/pairpos-graph.hh',
-  'graph/markbasepos-graph.hh',
-  'graph/coverage-graph.hh',
-  'graph/classdef-graph.hh',
-  'graph/split-helpers.hh',
-  'hb-subset.cc',
-  'hb-subset.hh',
-)
-
-hb_subset_headers = files(
-  'hb-subset.h',
-  'hb-subset-repacker.h'
-)
-
-hb_gobject_sources = files(
-  'hb-gobject-structs.cc'
-)
-
-hb_gobject_headers = files(
-  'hb-gobject.h',
-  'hb-gobject-structs.h',
-)
-
 ragel = find_program('ragel', version: '6.10', required: false)
 has_ragel = ragel.found()
 if not has_ragel and get_option('ragel_subproject')
@@ -499,36 +455,13 @@ libharfbuzz = library('harfbuzz', hb_sources,
   install: false,
   darwin_versions: darwin_versions,
   link_language: libharfbuzz_link_language,
+  build_by_default: false,
 )
 
 libharfbuzz_dep = declare_dependency(
   link_with: libharfbuzz,
   include_directories: incsrc,
   dependencies: harfbuzz_deps)
-
-# harfbuzz-subset
-harfbuzz_subset_def = custom_target('harfbuzz-subset.def',
-    command: [gen_def, '@OUTPUT@', '@INPUT@'],
-    input: hb_subset_headers,
-    output: 'harfbuzz-subset.def')
-defs_list += [harfbuzz_subset_def]
-
-libharfbuzz_subset = library('harfbuzz-subset', hb_subset_sources,
-  include_directories: incconfig,
-  dependencies: [m_dep],
-  link_with: [libharfbuzz],
-  cpp_args: cpp_args + extra_hb_cpp_args,
-  soversion: hb_so_version,
-  version: version,
-  install: false,
-  darwin_versions: darwin_versions,
-  link_language: 'c',
-)
-
-libharfbuzz_subset_dep = declare_dependency(
-  link_whole: libharfbuzz_subset,
-  include_directories: incsrc,
-  dependencies: [m_dep])
 
 libharfbuzz_icu_dep = null_dep
 if have_icu and not have_icu_builtin
@@ -547,6 +480,7 @@ if have_icu and not have_icu_builtin
     version: version,
     install: false,
     darwin_versions: darwin_versions,
+    build_by_default: false,
     # ICU links to stdc++ anyway so the default linker is good
     # link_language: 'c',
   )

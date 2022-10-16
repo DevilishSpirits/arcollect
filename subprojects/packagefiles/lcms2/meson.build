@@ -59,6 +59,7 @@ liblcms2_lib = static_library('lcms2', lcms2_srcs,
   dependencies: deps,
   c_args: cargs,
   install: false,
+  build_by_default: false,
 )
 
 lcms2_dep = declare_dependency(

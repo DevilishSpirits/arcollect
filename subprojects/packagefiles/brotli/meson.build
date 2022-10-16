@@ -66,6 +66,7 @@ libbrotli_common = library(
   include_directories : inc,
   version : version,
   install : install,
+  build_by_default: false,
 )
 
 libbrotli_decoder = library(
@@ -81,6 +82,7 @@ libbrotli_decoder = library(
   link_with : libbrotli_common,
   version : version,
   install : install,
+  build_by_default: false,
 )
 
 libbrotli_encoder = library(
@@ -113,6 +115,7 @@ libbrotli_encoder = library(
   dependencies : dep_m,
   version : version,
   install : install,
+  build_by_default: false,
 )
 
 brotli_common_dep = declare_dependency(
