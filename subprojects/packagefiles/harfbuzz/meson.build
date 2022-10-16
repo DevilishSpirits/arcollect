@@ -1,6 +1,6 @@
 # Modifications of HarfBuzz meson.build for Arcollect
 project('harfbuzz', 'c', 'cpp',
-  version: '4.3.0',
+  version: '5.3.0',
 )
 
 hb_version_arr = meson.project_version().split('.')
@@ -16,7 +16,7 @@ pkgmod = import('pkgconfig')
 cpp = meson.get_compiler('cpp')
 null_dep = dependency('', required: false)
 
-if cpp.get_id() == 'msvc'
+if cpp.get_argument_syntax() == 'msvc'
   # Ignore several spurious warnings for things HarfBuzz does very commonly.
   # If a warning is completely useless and spammy, use '/wdXXXX' to suppress it
   # If a warning is harmless but hard to fix, use '/woXXXX' so it's shown once
@@ -84,15 +84,18 @@ glib_dep = disabler()
 gobject_dep =  disabler()
 graphite2_dep = dependency('graphite2', required: get_option('graphite2'))
 
-if cpp.get_argument_syntax() == 'msvc'
+# Try pkgconfig name
+icu_dep = dependency('icu-uc', required: false)
+if not icu_dep.found()
+  # Try cmake name
   icu_dep = dependency('ICU',
-                       required: get_option('icu'),
+                       required: false,
                        components: 'uc',
                        method: 'cmake')
-else
-  icu_dep = dependency('icu-uc',
-                       required: get_option('icu'),
-                       method: 'pkg-config')
+endif
+if not icu_dep.found()
+  # Subproject fallback if icu option is enabled
+  icu_dep = dependency('icu-uc', required: get_option('icu'))
 endif
 
 if icu_dep.found() and icu_dep.type_name() == 'pkgconfig'
@@ -101,9 +104,6 @@ if icu_dep.found() and icu_dep.type_name() == 'pkgconfig'
     add_project_arguments(icu_defs, language: ['c', 'cpp'])
   endif
 endif
-
-cairo_dep = disabler()
-chafa_dep = dependency('chafa', version: '>= 1.6.0', required: get_option('chafa'))
 
 conf = configuration_data()
 incconfig = include_directories('.')
@@ -138,6 +138,7 @@ if freetype_dep.found()
     ['FT_Get_Var_Blend_Coordinates', {'deps': freetype_dep}],
     ['FT_Set_Var_Blend_Coordinates', {'deps': freetype_dep}],
     ['FT_Done_MM_Var', {'deps': freetype_dep}],
+    ['FT_Get_Transform', {'deps': freetype_dep}],
   ]
 
   if freetype_dep.type_name() == 'internal'
@@ -253,7 +254,6 @@ subdir('src')
 
 # Strip uneeded functionalities
 conf.set('HB_DISABLE_DEPRECATED'      ,1) # Deprecation ? No thanks.
-conf.set('HB_NO_BORING_EXPANSION'     ,1) # Looks boring.
 conf.set('HB_NO_BUFFER_MESSAGE'       ,1) # Nuke hb_buffer_message_func_t
 conf.set('HB_NO_BUFFER_SERIALIZE'     ,1) # Nuke hb_buffer_serialize_glyphs
 conf.set('HB_NO_BUFFER_VERIFY'        ,1) # Nuke the unused buffer sanity check
