@@ -5,6 +5,8 @@ on:
     branches: [ master-staging, gh-action-test ]
 
   workflow_dispatch:
+  
+  workflow_call:
 
 jobs:
   build-archlinux-x86_64:
