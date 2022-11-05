@@ -59,6 +59,20 @@ The `install` target will not works on Microsoft Windows system. You must genera
 
 If the `packaging/arcollect.msi` target is missing, this mean that `candle.exe` and `light.exe` have not been found, hence the target was not generated, look for 'Program **candle** found: **NO**' configuration message. You may create in the `packaging` directory `candle` and `light` wrapper scripts to solve this (I did that to generate tests MSI on ArchLinux using Wine).
 
+### [Flatpak](https://flatpak.org/)
+There is an experimental Flatpak support with the [generate-flatpak.sh](generate-flatpak.sh). Run the script in `local` mode (cd into the packaging directory first). It is written on the standard output you have to redirect to a .yml file (location doesn't matter). 
+
+```sh
+	cd packaging                                                    # You must be in the package directory
+	mkdir /tmp/arcollect-build                                      # PKGBUILD working directory, choose at your convenience
+	sh generate-flatpak.sh local > /tmp/arcollect-build/flatpak.yml # Generate the PKGBUILD
+	cd /tmp/arcollect-build                                         # Go into the PKGBUILD working directory
+	mkdir build-dir                                                 # Create the Flatpak build-dir
+	flatpak-builder build-dir flatpak.yml ...                       # Invoke Flatpak builder
+```
+
+Arcollect is currently unusable this way since WebExtensions native messaging doesn't work yet with Flatpak (see this [portal PR](https://github.com/flatpak/xdg-desktop-portal/pull/705) and [Firefox bug](https://bugzilla.mozilla.org/show_bug.cgi?id=1621763)).
+
 ### Other
 There is no packaging support. Actually, I will be suprised that someone packaged Arcollect. You should create one, or just install in `/usr/local` prefix, this is strongly discouraged :
 
