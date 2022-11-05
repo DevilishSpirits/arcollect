@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "generate-xdg-files.hpp"
+#include <chrono>
+#include <iomanip>
 
 static void write_locale_element(std::ostream &out, const std::string_view& indent, const std::string_view& key, const std::string_view& (*gettext)(const Arcollect::i18n::common&))
 {
@@ -40,6 +42,9 @@ static void write_locale_element(std::ostream &out, const std::string_view& inde
 
 void generate_metainfo_xml(std::ostream &out)
 {
+	// Generate release date
+	std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	// Output file
 	out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 	       "<component type=\"desktop-application\">\n"
 	       "	<id>" ARCOLLECT_DBUS_NAME_STR "</id>\n"
@@ -70,5 +75,11 @@ void generate_metainfo_xml(std::ostream &out)
 	       "		<content_attribute id=\"social-info\">mild</content_attribute>\n"
 	       "	</content_rating>\n"
 	       "	<launchable type=\"desktop-id\">" ARCOLLECT_DBUS_NAME_STR ".desktop</launchable>\n"
+	       "	<releases>\n"
+	       "		<release version=\"" ARCOLLECT_VERSION_STR "\" date=\"" << std::put_time(std::gmtime(&now),"%F") << "\">\n"
+	       "		<!-- Note! The release date is when this file has been generated, not when the version has been published! -->\n"
+	       "			<url>https://github.com/DevilishSpirits/arcollect/releases/tag/v" ARCOLLECT_VERSION_STR "</url>\n"
+	       "		</release>\n"
+	       "	</releases>\n"
 	       "</component>";
 }
