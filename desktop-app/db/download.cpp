@@ -20,7 +20,37 @@
 #include "../art-reader/image.hpp"
 #include "../art-reader/text.hpp"
 #include <arcollect-paths.hpp>
+
+// Provide a dummy semaphore if compiler doesn't support it.
+#define counting_semaphore arcollect_counting_semaphore
+#if __has_include(<semaphore>)
 #include <semaphore>
+#if __cpp_lib_semaphore>=201907
+	//#undef counting_semaphore // Compiler provide semaphore support
+#endif
+#endif
+#ifdef counting_semaphore
+#include <atomic>
+namespace std {
+	// Mock a semaphore
+	template<std::ptrdiff_t max_value = 65536>
+	struct counting_semaphore {
+		std::atomic<std::ptrdiff_t> atomic_value;
+		constexpr explicit counting_semaphore(std::ptrdiff_t desired) : atomic_value(desired) {}
+		template<class Rep, class Period> bool try_acquire_for( const std::chrono::duration<Rep, Period>& rel_time ) {
+			std::ptrdiff_t old_value = atomic_value--;
+			if (old_value <= 0) {
+				// Failed to acquire, restore then return false;
+				atomic_value++;
+				return false;
+			} else return true;
+		}
+		void release( std::ptrdiff_t update = 1 ) {
+			atomic_value += update;
+		}
+	};
+}
+#endif
 
 std::list<std::reference_wrapper<Arcollect::db::download>> Arcollect::db::download::last_rendered;
 static std::unordered_map<sqlite_int64,std::shared_ptr<Arcollect::db::download>> downloads_pool;
