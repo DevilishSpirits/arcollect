@@ -41,7 +41,7 @@ struct MD5_CTX {
 				return hexa - 'A' + 0xA;
 			else return 0;
 		}
-		constexpr static DIGEST from_string(const char *hexa) {
+		static DIGEST from_string(const char *hexa) {
 			DIGEST res;
 			for (unsigned int i = 0; i < sizeof(content); ++i) {
 				res[i]  = util_hexdigit(*hexa++) << 4;
@@ -49,7 +49,7 @@ struct MD5_CTX {
 			}
 			return res;
 		}
-		constexpr static DIGEST from_string(const std::string_view hexa) {
+		static DIGEST from_string(const std::string_view hexa) {
 			return from_string(hexa.data());
 		}
 		constexpr bool operator==(const DIGEST& right) const {
@@ -71,7 +71,7 @@ struct MD5_CTX {
 	std::uint_fast32_t a, b, c, d;
 	unsigned char buffer[64];
 	std::uint_fast32_t block[16];
-	constexpr MD5_CTX(void)
+	MD5_CTX(void)
 	: lo(0)
 	, hi(0)
 	, a(0x67452301)
@@ -95,9 +95,6 @@ struct MD5_CTX {
 		return (MD5_CTX() << ... << args).Final();
 	}
 };
-constexpr MD5_CTX::DIGEST operator "" _md5(const char* hexa) {
-	return MD5_CTX::DIGEST::from_string(hexa);
-}
 namespace std {
 	inline std::string to_string(const MD5_CTX::DIGEST& value) {
 		char hex[32];
