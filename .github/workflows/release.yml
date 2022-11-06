@@ -55,6 +55,10 @@ jobs:
         uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
         with:
           name: ubuntu-22_04-amd64-package
+      - name: Download Ubuntu 20.04 (amd64) package
+        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        with:
+          name: ubuntu-20_04-amd64-package
       - name: Download Windows x64 MSI
         uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
         with:
