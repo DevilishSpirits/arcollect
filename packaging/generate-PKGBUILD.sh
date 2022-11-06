@@ -10,7 +10,7 @@ pkgdesc='$ARCOLLECT_SUMMARY'
 arch=('x86_64')
 url='$ARCOLLECT_WEBSITE'
 license=('GPL')
-depends=(xdg-utils brotli dbus 'curl$ARCOLLECT_VERREQ_libcurl' 'fontconfig$ARCOLLECT_VERREQ_fontconfig' 'freetype2$ARCOLLECT_VERREQ_freetype2' 'harfbuzz$ARCOLLECT_VERREQ_harfbuzz' 'lcms2$ARCOLLECT_VERREQ_lcms2' 'sdl2$ARCOLLECT_VERREQ_sdl2' 'sqlite$ARCOLLECT_VERREQ_sqlite3') # TODO Add OpenImageIO when ArchLinux upgrade the version
+depends=(xdg-utils brotli dbus 'curl$ARCOLLECT_VERREQ_libcurl' 'fontconfig$ARCOLLECT_VERREQ_fontconfig' 'freetype2$ARCOLLECT_VERREQ_freetype2' 'harfbuzz$ARCOLLECT_VERREQ_harfbuzz' 'lcms2$ARCOLLECT_VERREQ_lcms2' 'sdl2$ARCOLLECT_VERREQ_sdl2' 'sqlite$ARCOLLECT_VERREQ_sqlite3') 'openimageio$ARCOLLECT_VERREQ_OpenImageIO'
 makedepends=('meson$(meson_version_req)')"
 
 case "$1" in
@@ -30,10 +30,6 @@ $0 release-ci -- Generate a public PKGBUILD for sharing (for CI only)
 esac
 
 echo "
-prepare() {
-  meson subprojects download --sourcedir \"$arco_srcdir\" oiio robin-map
-}
-
 build() {
   arch-meson -Denable_webextension=false \"$arco_srcdir\" build
   meson compile -C build
