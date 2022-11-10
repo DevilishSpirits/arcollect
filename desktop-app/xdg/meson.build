@@ -34,7 +34,7 @@ xdg_localized_files = custom_target('xdg-localized-files', output: [
 		'@OUTPUT@',
 	],env: {
 		'DESKTOP_Categories': ';'.join(xdg_menu_categories),
-		'APPSTREAM_categories': '<category>'+'</category>\n\t\t<category>'.join(xdg_menu_categories)+'</category>',
+		'APPSTREAM_categories': '<category>'+'</category><category>'.join(xdg_menu_categories)+'</category>',
 	},install: true, install_dir: [
 		get_option('datadir')/'applications',
 		get_option('datadir')/'metainfo',
