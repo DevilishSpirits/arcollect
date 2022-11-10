@@ -300,7 +300,7 @@ Arcollect::art_reader::TextElements Arcollect::art_reader::text_rtf(const char* 
 				} break;
 			}
 		}
-		if (Arcollect::debug.fonts) {
+		if (Arcollect::debug.rtf) {
 			global.main_elements.dump_to_stderr();
 		}
 		return global.main_elements;
