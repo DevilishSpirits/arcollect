@@ -115,6 +115,9 @@
 		"id": "cuddling",
 		"kind": null
 	},{
+		"id": "different-sound-effects",
+		"kind": null
+	},{
 		"id": "duo",
 		"kind": null
 	},{
@@ -137,6 +140,9 @@
 		"kind": null
 	},{
 		"id":"male",
+		"kind":null
+	},{
+		"id":"mlem-sound-effect",
 		"kind":null
 	},{
 		"id":"muscular",
@@ -193,6 +199,12 @@
 		"id": "tongue-out",
 		"kind": null
 	},{
+		"id": "vowelless",
+		"kind": null
+	},{
+		"id": "vowelless-sound-effect",
+		"kind": null
+	},{
 		"id":"white-background",
 		"kind":null
 	},{
@@ -215,6 +227,9 @@
 		"kind":null
 	},{
 		"id": "english-text",
+		"kind": null
+	},{
+		"id": "first-page",
 		"kind": null
 	},{
 		"id": "male-lore",
@@ -385,6 +400,9 @@
 		"tag": "english-text"
 	},{
 		"artwork": "https://e621.net/posts/2211520",
+		"tag": "first-page"
+	},{
+		"artwork": "https://e621.net/posts/2211520",
 		"tag": "male-lore"
 	},{
 		"artwork": "https://e621.net/posts/2287570",
@@ -418,6 +436,9 @@
 		"tag": "blue-fur"
 	},{
 		"artwork": "https://e621.net/posts/2287570",
+		"tag": "different-sound-effects"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
 		"tag": "duo"
 	},{
 		"artwork": "https://e621.net/posts/2287570",
@@ -436,6 +457,12 @@
 		"tag": "licking"
 	},{
 		"artwork": "https://e621.net/posts/2287570",
+		"tag": "mlem-sound-effect"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "onomatopoeia"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
 		"tag": "profanity"
 	},{
 		"artwork": "https://e621.net/posts/2287570",
@@ -452,6 +479,12 @@
 	},{
 		"artwork": "https://e621.net/posts/2287570",
 		"tag": "tongue-out"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "vowelless"
+	},{
+		"artwork": "https://e621.net/posts/2287570",
+		"tag": "vowelless-sound-effect"
 	},{
 		"artwork": "https://e621.net/posts/2287570",
 		"tag": "wide-eyed"
