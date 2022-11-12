@@ -179,6 +179,41 @@ jobs:
         with:
           name: windows-2019-builddir
           path: build
+  build-flatpak:
+    name: Flatpak
+    runs-on: [ubuntu-22.04]
+    env:
+      GH_FLATPAK_WORKSPACE: /tmp/flatpak-workspace
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+      - name: Update apt cache
+        run: sudo apt update
+      - name: Install Flatpak and Meson
+        run: sudo apt install flatpak-builder meson
+      - name: Add the Flathub repo
+        run: sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      - name: Install Flatpak runtime and SDK
+        run: sudo flatpak install -y flathub org.freedesktop.Platform//21.08 org.freedesktop.Sdk//21.08
+      - name: Make Flatpak work directory
+        run: mkdir "$GH_FLATPAK_WORKSPACE" "$GH_FLATPAK_WORKSPACE/build-dir"
+      - name: Generate the Flatpak manifest
+        run: sh generate-flatpak.sh local > "$GH_FLATPAK_WORKSPACE/manifest.yml"
+        working-directory: packaging
+      - name: Predownload wraps
+        run: meson subprojects download
+        continue-on-error: true # Meson yell on CMake subprojects
+      - name: Build the Flatpak
+        run: flatpak-builder "$GH_FLATPAK_WORKSPACE/build-dir" "$GH_FLATPAK_WORKSPACE/manifest.yml"
+      - name: Cleanup Flatpak workspace
+        if: always()
+        run: rm -rf "$GH_FLATPAK_WORKSPACE/.flatpak-builder/cache" "$GH_FLATPAK_WORKSPACE/.flatpak-builder/ccache" "$GH_FLATPAK_WORKSPACE/build-dir/var"
+      - name: Upload Flatpak workspace
+        if: always()
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
+        with:
+          name: flatpak-workspace
+          path: ${{ env.GH_FLATPAK_WORKSPACE }}
   check-webextensions-same:
     needs: [build-wrapped, build-ubuntu-22_04-amd64, build-ubuntu-20_04-amd64]
     runs-on: [ubuntu-latest]
@@ -215,7 +250,7 @@ jobs:
         run: diff -ry build-wrapped build-ubuntu-20_04
   merge-to-master:
     name: Merge 'master-staging' to 'master'
-    needs: [build-archlinux-x86_64, build-wrapped, build-ubuntu-22_04-amd64, build-ubuntu-20_04-amd64, build-windows-2019-x64, check-webextensions-same]
+    needs: [build-archlinux-x86_64, build-wrapped, build-ubuntu-22_04-amd64, build-ubuntu-20_04-amd64, build-windows-2019-x64, build-flatpak, check-webextensions-same]
     runs-on: [ubuntu-latest]
     if: ${{ (github.event_name == 'push') && (github.ref == 'refs/heads/master-staging') }}
     steps:
