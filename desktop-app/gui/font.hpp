@@ -400,6 +400,9 @@ namespace Arcollect {
 					/** Glyph storage result
 					 */
 					std::vector<GlyphData> glyphs;
+					/** Return the GlyphData on (or right after) the cluster index
+					 */
+					decltype(glyphs)::iterator glyph_after_cluster(size_t cluster);
 					/** Line data
 					 */
 					struct LineData {

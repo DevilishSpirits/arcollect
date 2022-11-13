@@ -84,10 +84,11 @@ struct Arcollect::gui::font::Renderable::RenderingState {
 	 * This is a helper function that update the cursor and reset many counters
 	 * because skipping a line is a fairly complex process
 	 */
-	constexpr void skip_line(FT_UInt line_spacing) {
+	void skip_line(Renderable& renderable, FT_UInt line_spacing) {
 		cursor.y += current_line_skip;
 		current_line_skip = line_spacing;
 		skiped_glyph_count = 0;
+		line_first_glyph_index = renderable.glyphs.size();
 	}
 };
 

@@ -97,12 +97,19 @@ void Arcollect::gui::font::Renderable::add_rect(const SDL::Rect &rect, SDL::Colo
 	add_line({left ,bot},{left ,top},color);
 }
 
+decltype(Arcollect::gui::font::Renderable::glyphs)::iterator Arcollect::gui::font::Renderable::glyph_after_cluster(size_t cluster)
+{
+	for (auto iter = glyphs.rbegin(); iter != glyphs.rend(); ++iter)
+		if (iter->cluster < cluster)
+			return iter.base();
+	return glyphs.rbegin().base();
+}
+
 void Arcollect::gui::font::Renderable::align_glyphs(RenderingState &state, int remaining_space)
 {
 	Align align = state.attrib_iter->alignment;
 	// Update the line 
 	const auto start = state.line_first_glyph_index;
-	state.line_first_glyph_index = glyphs.size();
 	// Handle align
 	switch (align) {
 		/*case Align::START: {
@@ -177,7 +184,7 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 	// Process leading '\n' (avoid a SEGFAULT in the code)
 	for (;cp_count&&(text[cp_offset] == '\n'); ++cp_offset, --cp_count) {
 		// Skip lines
-		state.skip_line(font_line_skip);
+		state.skip_line(*this,font_line_skip);
 		// Virtually trim glyphs
 		while (glyph_infos->cluster <= cp_offset) {
 			++glyph_infos;
@@ -206,33 +213,27 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 		// Wrap text (but not if we already started a new_line, the cluster won't fit anyway)
 		if ((((cursor.x + glyph_pos[i].x_advance) > state.wrap_width) && (glyph_info.cluster != glyphs[state.line_first_glyph_index].cluster))) {
 			// Search backward to a safe cluster and char to wrap
-			unsigned int i_newline;
-			for (i_newline = i; i_newline; i_newline--) {
-				auto char_i = glyph_infos[i_newline].cluster;
-				if ((text[char_i] == U' ')||(text[char_i] == U'\t')) {
+			// TODO Use a real break searching algo
+			const auto line_start = glyphs[state.line_first_glyph_index].cluster;
+			size_t break_cluster;
+			for (break_cluster = glyph_info.cluster; break_cluster > line_start; break_cluster--) {
+				char32_t cp = text[break_cluster];
+				if ((cp == U' ')||(cp == U'\t'))
 					break;
-				}
 			}
-			if (!i_newline)
-				for (i_newline = i; i_newline; i_newline--) {
-					auto char_i = glyph_infos[i_newline].cluster;
-					if ((text[char_i] == U':')||(text[char_i] == U'/')||(text[char_i] == U'\\')||(text[char_i] == U'.')||(text[char_i] == U',')||(text[char_i] == U';')) {
+			if (break_cluster == line_start)
+				for (break_cluster = glyph_info.cluster; break_cluster > line_start; break_cluster--) {
+					char32_t cp = text[break_cluster];
+					if ((cp == U':')||(cp == U'/')||(cp == U'\\')||(cp == U'.')||(cp == U',')||(cp == U';'))
 						break;
-					}
 				}
-			// TODO Handle when we can't break on a space (this code avoid a SEGFAULTs)
-			if (!i_newline)
-				break;
 			// Justify/align text
-			int right_free_space = state.wrap_width - glyph_pos[i_newline-1].x_advance;
-			if (i_newline == i)
-				// We are breaking on a space, i_newline point to an non existing char
-				right_free_space -= glyphs[glyph_base+i_newline-1].position.x;
-			else right_free_space -= glyphs[glyph_base+i_newline].position.x;
+			const auto glyph_line_ending = glyph_after_cluster(break_cluster);
+			int right_free_space = state.wrap_width - (glyph_line_ending == glyphs.end() ? cursor.x : glyph_line_ending->position.x);
 			if (justify) {
 				// Count the number of spaces in the line
 				unsigned int space_count = 0;
-				for (auto cluster = glyphs[state.line_first_glyph_index].cluster; cluster < glyph_info.cluster; ++cluster) {
+				for (auto cluster = glyphs[state.line_first_glyph_index].cluster; cluster < break_cluster; ++cluster) {
 					auto cp = text[cluster];
 					if ((cp == U' ')||(cp == U'\t')||(cp == 0x00A0/*nbsp*/))
 						space_count++;
@@ -245,8 +246,8 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 				int pixel_delta = 0;
 				// Move glyphs
 				auto last_cluster = glyphs[state.line_first_glyph_index].cluster;
-				for (auto glyph_i = state.line_first_glyph_index; glyph_i < glyphs.size(); ++glyph_i) {
-					auto &glyph = glyphs[glyph_i];
+				for (auto glyph_iter = glyphs.begin()+state.line_first_glyph_index; glyph_iter != glyphs.end(); ++glyph_iter) {
+					auto &glyph = *glyph_iter;
 					// Process whitespaces
 					for (; last_cluster < glyph.cluster; ++last_cluster) {
 						auto cp = text[last_cluster];
@@ -261,18 +262,21 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 					glyph.position.x += pixel_delta;
 				}
 			} else align_glyphs(state,right_free_space);
-			// Adjust line_first_glyph_index
-			state.line_first_glyph_index = glyphs.size();
 			// Move glyphs on the newline
 			cursor.x = 0;
-			for (i_newline++; i_newline < i; i_newline++) {
-				glyphs[glyph_base+i_newline].position.x  = cursor.x;
-				glyphs[glyph_base+i_newline].position.y += state.current_line_skip;
-				cursor.x += glyph_pos[i_newline].x_advance;
+			if (glyphs.end() != glyph_line_ending) {
+				// TODO Check for buffer underflow
+				auto glyph_pos_iter = &glyph_pos[i-std::distance(glyph_line_ending,glyphs.end())];
+				for (auto glyph_iter = glyph_line_ending; glyph_iter != glyphs.end(); ++glyph_iter, ++glyph_pos_iter) {
+					glyph_iter->position.x  = cursor.x;
+					glyph_iter->position.y += state.current_line_skip;
+					cursor.x += glyph_pos_iter->x_advance;
+				}
 			}
 			// Update line start index and cursor
 			skiped_glyph_count = 0;
-			state.skip_line(font_line_skip);
+			state.skip_line(*this,font_line_skip);
+			state.line_first_glyph_index -= std::distance(glyph_line_ending,glyphs.end()); // Push back our moved glyphs
 			// Skip the current char if it's a space
 			if ((glyph_char == U' ')||(glyph_char == U'\t')) {
 				glyph_base--;
@@ -286,7 +290,7 @@ void Arcollect::gui::font::Renderable::append_text_run(unsigned int cp_offset, i
 			int right_free_space = state.wrap_width - cursor.x + glyph_pos[i-1].x_advance;
 			align_glyphs(state,right_free_space);
 			cursor.x = -glyph_pos[i].x_advance;
-			state.skip_line(font_line_skip);
+			state.skip_line(*this,font_line_skip);
 			clusteri_line_end = text.find(U'\n',clusteri_line_end+1); // Find the next line break
 			skiped_glyph_count = -1; // Will be incremented back a few lines later
 		}
