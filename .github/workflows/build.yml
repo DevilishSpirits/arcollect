@@ -111,8 +111,8 @@ jobs:
         run: sudo apt update
       - name: Install dependencies and tools
         run: sudo apt install ninja-build gcc-10 g++-10 libsdl2-dev libfreetype-dev libfontconfig-dev libharfbuzz-dev libopenimageio-dev libboost-all-dev libcurl4-openssl-dev libdbus-1-dev liblcms2-dev python3-setuptools lintian libbrotli-dev
-      - name: Install Meson 0.59.0
-        run: sudo pip3 install meson>=0.59.0
+      - name: Install Meson
+        uses: ./.github/actions/install-meson
       - name: Install Mozilla's web-ext with npm
         run: sudo npm install -g web-ext
       - name: Setup project

@@ -1,0 +1,8 @@
+name: Install Meson
+description: Install the required version of Meson for Arcollect.
+
+runs:
+  using: "composite"
+  steps:
+    - run: sudo pip3 install "meson$(cd packaging && . ./script-common.sh && meson_version_req)"
+      shell: sh
