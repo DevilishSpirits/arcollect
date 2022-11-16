@@ -153,6 +153,67 @@ struct SurfacePixelBordersIterate {
 	SurfacePixelBordersIterate(SDL::Surface& surface) : surface(surface) {}
 };
 
+static bool pixel_art_scan(SDL::Surface& surf)
+{
+	if ((surf.w > 64)&&(surf.h > 64)) {
+		/* We perform horizontal and vertical scans of the image and break if we
+		 * spot that not two pixels are the same.
+		 *
+		 * This is trivial and not 100% effective. Further research is welcome.
+		 */
+		static constexpr auto nx_scans = 64;
+		static constexpr auto ny_scans = 64;
+		
+		Uint8 *pixels = static_cast<Uint8*>(surf.pixels);
+		Uint32 color_mask = surf.format->Rmask|surf.format->Gmask|surf.format->Bmask|surf.format->Amask;
+		color_mask &= 0xF0F0F0F0; // Strip low order bits to counter lossy compression
+		// Horizontal scans
+		std::ptrdiff_t xscan_stride = surf.pitch*((surf.h/nx_scans)-1); // Note that the cursor is one-line below the start so we remove 1
+		std::ptrdiff_t xscan_step = surf.format->BytesPerPixel;
+		Uint8 *xscan_end = pixels+(xscan_stride+xscan_step*surf.w)*nx_scans;
+		for (Uint8 *pix = pixels; pix != xscan_end; pix += xscan_stride) {
+			// Init
+			Uint8 *line_end = pix + xscan_step*surf.w;
+			// Handle the first pixel
+			Uint32 last_color = *reinterpret_cast<Uint32*>(pix) & color_mask;
+			pix += xscan_step;
+			bool was_same = true; // Skip possible 1-pixel border
+			for (; pix != line_end; pix += xscan_step) {
+				Uint32 curr_color = *reinterpret_cast<Uint32*>(pix) & color_mask;
+				if (last_color != curr_color) {
+					if (!was_same)
+						return false;
+					last_color = curr_color;
+					was_same = false;
+				} else was_same = true;
+			}
+		}
+		// Vertical scans
+		std::ptrdiff_t yscan_stride = surf.format->BytesPerPixel*(surf.w/ny_scans) - surf.h*surf.pitch; // Also reset the cursor to the topmost pixel
+		std::ptrdiff_t yscan_step = surf.pitch;
+		Uint8 *yscan_end = pixels+(yscan_stride+yscan_step*surf.h)*ny_scans;
+		for (Uint8 *pix = pixels; pix != yscan_end; pix += yscan_stride) {
+			// Init
+			Uint8 *line_end = pix + yscan_step*surf.h;
+			// Handle the first pixel
+			Uint32 last_color = *reinterpret_cast<Uint32*>(pix) & color_mask;
+			pix += yscan_step;
+			bool was_same = true; // Skip possible 1-pixel border
+			for (; pix != line_end; pix += yscan_step) {
+				Uint32 curr_color = *reinterpret_cast<Uint32*>(pix) & color_mask;
+				if (last_color != curr_color) {
+					if (!was_same)
+						return false;
+					last_color = curr_color;
+					was_same = false;
+				} else was_same = true;
+			}
+		}
+		// We got there, pixel art!
+		return true;
+	} else return true; // Tiny images render best as pixel art since they'd be excessively blurred otherwhise
+}
+
 // Avoid excessive memory bursts
 static std::counting_semaphore images_loadlimit(std::min<unsigned int>(std::thread::hardware_concurrency(),2));
 
@@ -237,6 +298,7 @@ void Arcollect::db::download::load_stage_one(void)
 					background_color.a = 255;
 				}
 			}
+			is_pixel_art = pixel_art_scan(surf);
 		} break;
 		case ARTWORK_TYPE_TEXT: {
 			data = art_reader::text(full_path,dwn_mimetype);
@@ -252,7 +314,9 @@ void Arcollect::db::download::load_stage_two(SDL::Renderer &renderer)
 		} break;
 		case ARTWORK_TYPE_IMAGE: {
 			// Generate texture
+			SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,is_pixel_art ? "nearest" : "best");
 			SDL::Texture *text = SDL::Texture::CreateFromSurface(&renderer,std::get<std::unique_ptr<SDL::Surface>>(data).get());
+			SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,"best");
 			if (!text) {
 				// TODO Better error handling
 				load_state = UNLOADED;

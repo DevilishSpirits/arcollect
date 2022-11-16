@@ -95,6 +95,9 @@ namespace Arcollect {
 				 * \return The deducted artwork_type
 				 */
 				static ArtworkType artwork_type_from_mime(const std::string_view& mime);
+				/** If this picture is pixel art
+				 */
+				bool is_pixel_art = false;
 			private:
 				// FIXME friend artwork_loader; // For queued_for_load
 				
