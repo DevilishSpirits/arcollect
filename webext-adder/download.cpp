@@ -260,6 +260,8 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 			curl_easy_setopt(easyhandle,CURLOPT_LOW_SPEED_TIME,90L); // ... for 90 seconds.
 			curl_easy_setopt(easyhandle,CURLOPT_ACCEPT_ENCODING,""); // To send "Accept-Encoding:" header
 			curl_easy_setopt(easyhandle,CURLOPT_SSLVERSION,CURL_SSLVERSION_TLSv1_2); 
+			curl_easy_setopt(easyhandle,CURLOPT_SSL_VERIFYPEER,true); // Should be already on by default
+			curl_easy_setopt(easyhandle,CURLOPT_SSL_VERIFYHOST,2); // Should be already on by default
 			curl_easy_setopt(easyhandle,CURLOPT_HTTPHEADER,http_headers.list);
 			if (!cache_miss) {
 				curl_easy_setopt(easyhandle,CURLOPT_TIMECONDITION,CURL_TIMECOND_IFMODSINCE); 
