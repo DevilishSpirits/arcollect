@@ -317,8 +317,10 @@ void Arcollect::gui::view_vgrid::bring_to_view(const Arcollect::gui::modal::rend
 	check_layout(render_ctx);
 	auto& compare = Arcollect::db::sorting(collection->sorting_type).compare_arts;
 	// Generate lines until we find the target
-	while (compare(*artwork,*Arcollect::db::artwork::query(*left_iter)) && new_line_left());
-	while (compare(*Arcollect::db::artwork::query(*right_iter),*artwork) && new_line_right());
+	if (left_iter != collection->end())
+		while (compare(*artwork,*Arcollect::db::artwork::query(*left_iter)) && new_line_left());
+	if (right_iter != collection->end())
+		while (compare(*Arcollect::db::artwork::query(*right_iter),*artwork) && new_line_right());
 	// Search for the artwork
 	for (const auto& row: viewports) {
 		if (!(compare(*row.front().artwork,*artwork) && compare(*row.back().artwork,*artwork))) {
