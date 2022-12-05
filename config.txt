@@ -4,7 +4,7 @@
 # <key>[blanks]:<value>[#comment] 
 
 ARCOLLECT_WEBSITE          : https://github.com/DevilishSpirits/arcollect
-ARCOLLECT_SUMMARY          : Your personal visual artwork library.
+ARCOLLECT_SUMMARY          : Your personal visual artwork library
 ARCOLLECT_MOZILLA_WEBEXT_ID: arcollect@d-spirits.me
 ARCOLLECT_X11_WM_CLASS     : arcollect-desktop-app
 
