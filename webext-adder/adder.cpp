@@ -328,7 +328,7 @@ struct new_comic_page {
 					// Check if relative_to is a part name
 					std::optional<Arcollect::db::comics::Part> delta = Arcollect::db::comics::part_from_string(relative_to_str);
 					if (delta)
-						offset += reinterpret_cast<sqlite3_int64&>(delta);
+						offset += static_cast<sqlite3_int64>(*delta);
 					else relative_to = &db_artworks[relative_to_str];
 				} break;
 				case ComicPage::page: {
