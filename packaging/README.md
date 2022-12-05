@@ -4,18 +4,11 @@ This directory contain files used to generate packages. If you intend to install
 
 **Important!** You must have a working internet connection to build packages, because the configuration process download additionnal dependencies.
 
-**Warning!** In addition of the application, some other libraries may be built and takes a lot of disk spaces, 2GB of disk space should be sufficient for worst cases.
-
 ## How to generate a package for my system ?
-Don't immediately configure and build the project, there is special configuratino that you must change. Install Meson and follow system specific instructions. You should also take a look in [`.github/workflows/release.yml`](https://github.com/DevilishSpirits/arcollect/blob/master/.github/workflows/release.yml) to see how releases are made, it may contain workaround missing there.
-```sh
-	# Ensure that you have a working version of Meson
-	pip3 install meson>=0.59.0
-	# That's all for now
-```
+Do not immediately configure and build the project! Read the guide first as you may not even have to configure the project yourself or have to use special settings. You should also take a look in the [CI `build.yml`](../.github/workflows/build.yml) to see how I achieve to support some platforms and the list of packages to install before building.
 
 ### [ArchLinux](https://archlinux.org/) and derived
-Generate a PKGBUILD using the [generate-PKGBUILD.sh](generate-PKGBUILD.sh) script in `local` mode (cd into the packaging directory first). It is written on the standard output you have to redirect to a PKGBUILD file (location doesn't matter). 
+You can download a PKGBUILD on GitHub releases, Arcollect is not in the [AUR](https://aur.archlinux.org/) (or not by me). You can also generate a PKGBUILD using the [generate-PKGBUILD.sh](generate-PKGBUILD.sh) script in `local` mode so it sources your local repository (cd into the packaging directory first). It is written on the standard output you have to redirect to a PKGBUILD file (location doesn't matter).
 
 ```sh
 	cd packaging                                                  # You must be in the package directory
@@ -60,13 +53,14 @@ The `install` target will not works on Microsoft Windows system. You must genera
 If the `packaging/arcollect.msi` target is missing, this mean that `candle.exe` and `light.exe` have not been found, hence the target was not generated, look for 'Program **candle** found: **NO**' configuration message. You may create in the `packaging` directory `candle` and `light` wrapper scripts to solve this (I did that to generate tests MSI on ArchLinux using Wine).
 
 ### [Flatpak](https://flatpak.org/)
-There is an experimental Flatpak support with the [generate-flatpak.sh](generate-flatpak.sh). Run the script in `local` mode (cd into the packaging directory first). It is written on the standard output you have to redirect to a .yml file (location doesn't matter). 
+There is an experimental Flatpak support with the [generate-flatpak.sh](generate-flatpak.sh). Run the script in `local` mode (cd into the packaging directory first). It is written on the standard output you have to redirect to a .yml file (location doesn't matter). Since network access is disabled within the build sandbox, you need to predownload subprojects using `meson subprojects download`.
 
 ```sh
+	meson subprojects download                                      # Predownload subprojects
 	cd packaging                                                    # You must be in the package directory
-	mkdir /tmp/arcollect-build                                      # PKGBUILD working directory, choose at your convenience
-	sh generate-flatpak.sh local > /tmp/arcollect-build/flatpak.yml # Generate the PKGBUILD
-	cd /tmp/arcollect-build                                         # Go into the PKGBUILD working directory
+	mkdir /tmp/arcollect-build                                      # FlatPak working directory, choose at your convenience
+	sh generate-flatpak.sh local > /tmp/arcollect-build/flatpak.yml # Generate the FlatPak
+	cd /tmp/arcollect-build                                         # Go into the FlatPak working directory
 	mkdir build-dir                                                 # Create the Flatpak build-dir
 	flatpak-builder build-dir flatpak.yml ...                       # Invoke Flatpak builder
 ```
@@ -78,7 +72,9 @@ There is no packaging support. Actually, I will be suprised that someone package
 
 ```sh
 	# Enable release configuration
-	meson configure -Dbuildtype=release -Dstrip=true -Db_lto=true
+	meson setup build -Dbuildtype=release -Dstrip=true #-Db_lto=true if you want LTO
+	# Build
+	meson compile -C build
 	# Build and install (run as root)
-	ninja install
+	ninja install -C build
 ```

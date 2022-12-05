@@ -1,14 +1,12 @@
 # Arcollect - Your personal visual artwork library
 
-If you like visual arts like me, you may want to save some artworks you find on the net. Right-click and save picture works but is not very convenient, forget the artwork source and classification is complicated.
+If you like visual arts like me, you may want to save artworks you find on the net. Enjoy an artwork? Just click on *Save in Arcollect*, it is saved along metadatas like the source, artist, tags and the rating. No longer right-click and save picture in a complicated folder structure. This personal project aim to fulfill my needs of artwork collection management and to ease it’s creation, browsing and growth. It's open-source because I think that's a nice piece of software I can give back to the artwork community. **Arcollect is free of tracking, clutter, recommendation and any judgement, it just works and respect your privacy.**
 
-This personal project aim to fulfill my needs of artwork collection management and to ease it's creation, browsing and growth that I do in a one click thanks to the web-extension which put a *Save in Arcollect* button on artwork pages. Metadata like the source, account, tags and the rating are also saved. I made Arcollect for my needs, but it's something nice to share like artworks you will save.
+Arcollect design is minimalist and completely hides the interface when you stare at an artwork. It's up to you to bring life in Arcollect with the artworks you will save. On the internet you see well integrated *Save in Arcollect* buttons like if it was a built in feature of the website, a single click and if everything go fine the text turns to *Saved* without more disturbance.
 
-It's goal is limited to easily browse and save artworks, it won't help you to discover new artworks or make any recommendations. No one can judge what's good or not better than you.
+Arcollect is written in C++20 with effective and pragmatic code that use a restricted set of high-quality libraries. Your only performance concern is huge artworks that may take long to show and consume large amount of memory, something Arcollect have to enhance currently.
 
-Under the hood, the application is powered with C++20 by the [SDL2](https://www.libsdl.org/), [SQLite3](https://www.sqlite.org/) for metadata storage, [OpenImageIO](https://openimageio.readthedocs.org/) for image loading, [LittleCMS](https://littlecms.com/) for color management, [FreeType2](https://www.freetype.org/) for font rendering, [HarfBuzz](https://harfbuzz.github.io/) for text shaping and many other components listed under `THIRD-PARTY.md`.
-
-This application respect your privacy and will never judge you.
+Arcollect network interactions are carefully designed. Of course, the viewer doesn't access the internet. While browsing, there is zero network activity from Arcollect until you click on the *Save in Arcollect* button. Then the strict minimum of network activity is performed (not even DNS in most cases) with artworks transfer encrypted using strong TLS 1.2 at least and HTTP caching to don't redownload up-to-date artworks and icons you already have.
 
 ## Supported platforms
 Currently these platforms are supported :
@@ -48,25 +46,11 @@ Some KDE integrations also.
 Please, keep things simple and cross-patform, you have C++, a modern SDL and a bunch of dependencies, use them. Platform specific integrations are good while lightweight and simple. As an example, Arcollect is a GNOME search provider not using GNOME libs but FreeDesktop ones.
 
 ## Installation
-Recent Linux distributions and Microsoft Windows with Firefox are supported.
+Only recent Linux distributions and Microsoft Windows with Mozilla Firefox are supported. Checkout releases that contain ready to use binary and source packages, that is highly recommended. Note that the Windows MSI is not signed and Microsoft SmartScreen filter incorrectly flag it as hazardous, you must insist to download the file, then open MSI file properties, check *Unblock* in the bottom and *Ok*. The MSI should now works.
 
-I recommend you to grab a prebuilt package from the [latest release](https://github.com/DevilishSpirits/arcollect/releases/tag/v0.27) and to checkout his [README.md](https://github.com/DevilishSpirits/arcollect/tree/v0.27#readme). You must install/upgrade the webextension in your web-browser to use Arcollect.
-The Windows MSI is not signed and Microsoft SmartScreen filter incorrectly flag it as hazardous, you must insist to download the file, then open MSI file properties, check *Unblock* in the bottom and *Ok*. The MSI should now works.
+If you really want to build Arcollect yourself. Arcollect is built using the [Meson](https://mesonbuild.com/) build-system, you will need the version 0.59.0 at least. Note that I actually use [ArchLinux](https://archlinux.org/) and Arcollect need many bleeding edge compilers and dependencies to build and run. During the configuration process, unmet dependencies are automatically downloaded, built and statically linked in the final executables (excluding very common ones and compilers/tools).
 
-If you want to build the software yourself, grab the source code, install Meson (>0.59.0), dbus on UNIX-like, SDL2, SQLite, FreeType2, Harfbuzz, OpenImageIO, lcms2 and libcurl. CMake might be required to configure some dependencies. Then checkout the [packaging guide](https://github.com/DevilishSpirits/arcollect/tree/master/packaging#readme) for your system or open a shell in source root and then :
-
-```sh
-	# Ensure that you have a working version of Meson
-	pip3 install meson>=0.59.0
-	# Configure the project with release configuration
-	# More configuration may be needed like -Dc_link_args=-static and -Dcpp_link_args=-static
-	meson build -Dbuildtype=release -Db_lto=true -Dstrip=true -Denable_webextension=false
-	# Don't do that but you can install the program in /usr/local prefix
-	# This won't works on Windows target, generate the MSI instead.
-	#ninja install -C build
-```
-
-Note that I actually use [ArchLinux](https://archlinux.org/) and this program might need bleeding edge compilers and dependencies to build and run. Most dependencies are automatically "wrap" by the Meson build-system, a private up-to-date version is downloaded, built and embeded into executables. After installing Meson 0.59.0 at least, things should works out-of-the-box as long as you have a sufficiently recent compiler, for instance Ubuntu 20.04 C++ compilers are too old for Arcollect. I won't complexify the program to support older systems
+Build instructions are available in the [packaging guide](./packaging/README.md).
 
 ### Upgrading
 When upgrading, **keep in sync the webextension and binary programs versions!** Mismatching these is unsupported, it should works to some extents but lack of the latest features and bug fixes.
