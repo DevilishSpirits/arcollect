@@ -132,7 +132,7 @@ static class background_slideshow: public Arcollect::gui::view_slideshow {
 			std::shared_ptr<Arcollect::db::artwork_collection> new_collection = current_background_search->make_shared_collection();
 			Arcollect::gui::update_background(new_collection);
 		}
-		if (viewport.download)
+		if (viewport.artwork && viewport.download)
 			switch (viewport.download->artwork_type) {
 				case ARTWORK_TYPE_IMAGE: {
 					if (viewport.download) {
