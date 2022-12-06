@@ -18,6 +18,7 @@
 #include "font.hpp"
 #include "../db/account.hpp"
 #include <math.h>
+#include "../i18n.hpp"
 
 extern SDL_Window *window;
 
@@ -250,7 +251,7 @@ void Arcollect::gui::view_slideshow::render(Arcollect::gui::modal::render_contex
 	} else {
 		static std::unique_ptr<Arcollect::gui::font::Renderable> no_artwork_text_cache;
 		if (!no_artwork_text_cache)
-			no_artwork_text_cache = std::make_unique<Arcollect::gui::font::Renderable>(Arcollect::gui::font::Elements::build(Arcollect::gui::font::FontSize(1.5),U"There is no artwork to show"sv));
+			no_artwork_text_cache = std::make_unique<Arcollect::gui::font::Renderable>(Arcollect::gui::font::Elements::build(Arcollect::gui::font::FontSize(1.5),i18n_desktop_app.no_artwork_to_show_msg));
 		no_artwork_text_cache->render_tl(rect.x+(rect.w-no_artwork_text_cache->size().x)/2,rect.y+(rect.h-no_artwork_text_cache->size().y)/2);
 	}
 	//render_info_incard();

@@ -54,6 +54,10 @@ msgctxt "edit_searching_artworks"
 msgid "Edit searched artworks…"
 msgstr ""
 
+msgctxt "no_artwork_to_show_msg"
+msgid "There is no artwork to show"
+msgstr ""
+
 msgctxt "rating_selector_label"
 msgid "Rating"
 msgstr ""
