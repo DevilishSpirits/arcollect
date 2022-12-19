@@ -33,16 +33,6 @@
  */
 var saveButton = null;
 
-/** Find an the element with a given data-hook value
- */
-function findElementByDataHook(collection, data_hook)
-{
-	for (let i = 0; i < collection.length; i++)
-		for (let j = 0; j < collection[i].attributes.length; j++)
-			if ((collection[i].attributes.item(j).name == 'data-hook') && (collection[i].attributes.item(j).value == data_hook))
-				return collection[i]
-	return null;
-}
 /** Save the artwork
  */
 function save_artwork()
@@ -58,7 +48,7 @@ function save_artwork()
 	 *
 	 * Artwork is the img under a <div data-hook="art_stage">
 	 */
-	let art_stage = findElementByDataHook(documentDivs,'art_stage');
+	let art_stage = document.querySelector('div[data-hook=art_stage]');
 	let artworkImg = art_stage.getElementsByTagName('img')[0];
 	
 	/** Normalize source URL
@@ -76,7 +66,7 @@ function save_artwork()
 	 *
 	 * Data are stored in "data-*" HTML attributes.
 	 */
-	let deviationMeta = findElementByDataHook(documentDivs,'deviation_meta');
+	let deviationMeta = document.querySelector('div[data-hook=deviation_meta]');
 	let userElement = deviationMeta.getElementsByTagName("a")[0];
 	let userId = userElement.attributes['data-useruuid'].value;
 	let accountJson = [{
@@ -150,7 +140,7 @@ function save_artwork()
  * It is placed right to "Add favourites"
  */
 function make_save_ui() {
-	let fave_button = findElementByDataHook(document.getElementsByTagName("button"),'fave_button');
+	let fave_button = document.querySelector('button[data-hook=fave_button]')
 	// Create the top-level button
 	saveButton = document.createElement("button"); 
 	// Copy styles for aesthetics
