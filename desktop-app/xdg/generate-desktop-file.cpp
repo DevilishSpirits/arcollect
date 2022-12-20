@@ -48,6 +48,8 @@ void generate_desktop_file(std::ostream &out)
 	       "Exec=arcollect\n"
 	       "Terminal=false\n"
 	       "Categories=" << std::getenv("DESKTOP_Categories") << "\n"
-	       "StartupWMClass=" ARCOLLECT_X11_WM_CLASS_STR "\n";
+	       "StartupWMClass=" ARCOLLECT_X11_WM_CLASS_STR "\n"
+	       "X-GNOME-UsesNotifications=false\n"
+	;
 	WRITE_LOCALE_STRING("Comment",summary);
 }
