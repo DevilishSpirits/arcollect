@@ -129,16 +129,13 @@ browser.runtime.onConnect.addListener(function(port) {
 		msg['transaction_id'] = transaction_id
 		transactions[transaction_id] = port.postMessage;
 		
-		new Promise(function(resolve,reject) {
-			// Process trough platform specific post-processor
-			if (msg.platform == 'twitter.com') {
-				// TODO Convert it to Promises
-				msg = twitter_post_process_submit(msg);
-				if (msg != null)
-					resolve(msg);
-				else reject('Twitter specific processing failed');
-			} else resolve(msg);
-		}).then(function(msg) {
+		// Process trough platform specific post-processor
+		switch (msg.platform) {
+			case 'twitter.com':msg = twitter_post_process_submit(msg);break;
+			default:msg = Promise.resolve(msg);break; // Passthrough unchanged
+		}
+		// Common post-processing
+		msg.then(function(msg) {
 			// List domains there
 			let domains = new Set();
 			if (msg.hasOwnProperty('artworks'))

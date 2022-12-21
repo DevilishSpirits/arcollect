@@ -215,9 +215,7 @@ browser.webRequest.onBeforeRequest.addListener(function(details) {
 
 /** Process a content-script request
  * \param json The request of the content-script
- * \return A complete JSON for webext-adder, or null on error.
- *
- * \note On error, the function call reply_to_content_script() itself.
+ * \return A promise with the complete JSON for webext-adder
  */
 function twitter_post_process_submit(json) {
 	let account_ids = new Set();
@@ -235,8 +233,7 @@ function twitter_post_process_submit(json) {
 			const cached_tweet = twitter_tweets_cache[id];
 			if (cached_tweet == null) {
 				console.warn('Tweet',id,'is not in cache');
-				reply_to_content_script({'transaction_id': json.transaction_id, 'success': false, 'reason': browser.i18n.getMessage('webext_tweet_not_in_cache')});
-				return null;
+				return Promise.reject(browser.i18n.getMessage('webext_tweet_not_in_cache'));
 			}
 			// Copy artwork_template
 			Object.assign(json['artworks'][i],cached_tweet.artwork_template);
@@ -265,9 +262,8 @@ function twitter_post_process_submit(json) {
 		const cached_account = twitter_accounts_cache[id];
 		if (cached_account == null) {
 				console.warn('Twitter account',id,'is not in cache');
-				reply_to_content_script({'transaction_id': json.transaction_id, 'success': false, 'reason': browser.i18n.getMessage('webext_twitter_account_not_in_cache')});
-				return null;
+				return Promise.reject(browser.i18n.getMessage('webext_twitter_account_not_in_cache'));
 		} else json.accounts.push(cached_account);
 	}
-	return json;
+	return Promise.resolve(json);
 }
