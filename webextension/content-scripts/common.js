@@ -23,25 +23,25 @@
 
 /** Arcollect internal API
  */
-const Arcollect = {
+class Arcollect {
 	/** Background script connection
 	 *
 	 * At startup, the script automatically connect to the background script
 	 */
-	port: null,
+	static port = null;
 	/** List of running transactions
 	 *
 	 * This list track of transactions to the native webext-adder made by
 	 * arcollect_submit().
 	 */
-	transactions: {},
+	static transactions = {};
 	/** Next transactions
 	 *
 	 * This integer is used to generate unique transactions id to distinguish
 	 * between differents transactions. It is used to generate keys for 
 	 * #Arcollect.transactions.
 	 */
-	next_transaction_id: 0,
+	static next_transaction_id = 0;
 	/** Normalize tag id
 	 * \param tag The image URL
 	 * \return The tag in a normalized form
@@ -49,9 +49,9 @@ const Arcollect = {
 	 * Perform tag normalization, replacing everything that is not a letter or a
 	 * digit or a question/exclamation marks with '-' and force lowercase.
 	 */
-	normalize_tag: function(tag){
+	static normalize_tag(tag){
 		return tag.match(/(\p{L}|\p{N}|\?|!)+/gu).join('-').toLowerCase();
-	},
+	};
 	/** Wordlist of NSFW tags
 	 * 
 	 * This is a list of tags that should be considered as flag for adult content.
@@ -62,30 +62,30 @@ const Arcollect = {
 	 * You might expand this list, but the root of the problem is located in the
 	 * platforms themselves.
 	 */
-	adult_tags: [
+	static adult_tags = [
 		'nsfw',
 		'porn',
 		'sex',
-	],
+	];
 	/** File extension to MIME type dictionary
 	 *
 	 * Only contain supported formats.
 	 */
-	mime_by_ext: {
+	static mime_by_ext = {
 		'gif' : 'image/gif',
 		'jpe' : 'image/jpeg',
 		'jpg' : 'image/jpeg',
 		'jpeg': 'image/jpeg',
 		'png' : 'image/png',
 		'rtf' : 'text/rtf',
-	},
+	};
 	/** Submit new data into the database
 	 *
 	 * \param json_object Objects to send.
 	 * \return A promise
 	 * \see Read webext-adder/README.md for the data format.
 	 */
-	submit: function(json_object){
+	static submit(json_object) {
 		return new Promise(
 			function(resolve, reject) {
 				// Generate a transaction id
@@ -96,11 +96,11 @@ const Arcollect = {
 					'reject': reject,
 				};
 				// Send message
-				console.log('arcollect_submit',json_object)
+				console.log('Arcollect.submit',json_object)
 				Arcollect.port.postMessage(json_object);
 			}
 		);
-	},
+	};
 };
 
 // TODO Wrap this part
