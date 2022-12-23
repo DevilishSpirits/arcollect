@@ -102,13 +102,6 @@ const Arcollect = {
 		'png' : 'image/png',
 		'rtf' : 'text/rtf',
 	},
-	/** File extension to MIME type dictionary
-	 * \return the MIME type or undefined if not supported by Arcollect.
-	 */
-	mime_by_href_ext: function(href){
-		href = href.split('#')[0].split('?')[0].split('.');
-		return arcollect_mime_by_ext[href[href.length-1]];
-	},
 	/** Submit new data into the database
 	 *
 	 * \param json_object Objects to send.
