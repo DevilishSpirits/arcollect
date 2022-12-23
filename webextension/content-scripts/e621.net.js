@@ -69,7 +69,6 @@ function save_artwork()
 	 */
 	let tags = []
 	let accounts = []
-	let art_acc_links = []
 	let art_tag_links = []
 	let tagList = document.getElementById('tag-list').getElementsByClassName('search-tag');
 	for (let i = 0; i < tagList.length; i++) {
@@ -83,11 +82,6 @@ function save_artwork()
 					'name': tagList[i].text,
 					'url': tagList[i].href,
 					'icon': 'https://e621.net/apple-touch-icon.png'
-				});
-				art_acc_links.push({
-					'account': tag_id,
-					'artwork': source,
-					'link': 'account'
 				});
 			} continue; // We handled this tag as an account link
 			case 'category-4': { // Characters
@@ -154,20 +148,21 @@ function save_artwork()
 	}
 	
 	// Build the JSON
+	let artworks = [{
+		'title': title,
+		'desc': description,
+		'source': source,
+		'rating': rating,
+		'postdate': (new Date(document.querySelector('meta[itemprop=uploadDate]').content)).getTime()/1000,
+		'data': imageDownloadLink.children[0].href
+	}];
 	submit_json = {
 		'platform': 'e621.net',
-		'artworks': [{
-			'title': title,
-			'desc': description,
-			'source': source,
-			'rating': rating,
-			'postdate': (new Date(document.querySelector('meta[itemprop=uploadDate]').content)).getTime()/1000,
-			'data': imageDownloadLink.children[0].href
-		}],
+		'artworks': artworks,
 		'accounts': accounts,
 		'tags': tags,
 		'comics': comics,
-		'art_acc_links': art_acc_links,
+		'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accounts}),
 		'art_tag_links': art_tag_links,
 	};
 	

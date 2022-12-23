@@ -89,26 +89,22 @@ function save_KnowYourMeme_meme()
 		"desc": author_section.querySelector('p.role').textContent.trim(),
 		"icon": make_KnowYourMeme_img_cdn_downspec(author_section.querySelector('img').src),
 	}];
-	let art_acc_links = [{
-		"artwork": source,
-		"account": account_id,
-		"link": "account"
-	}];
 	let media_title = document.querySelector("#media-title");
 	// Build the JSON
+	let artworks = [{
+		'title': media_title.textContent.trim().replaceAll('\n',' '),
+		'source': source,
+		// TODO 'rating': rating,
+		'postdate': Date.parse(document.querySelector("#sidebar .row p > abbr.timeago[title]").title.replace('at ','').replace('PM',' PM'))/1000, // TODO Harden this
+		'data': make_KnowYourMeme_img_cdn_downspec(document.querySelector("#photo_wrapper a").href),
+	}];
 	submit_json = {
 		'platform': 'knowyourmeme.com',
-		'artworks': [{
-			'title': media_title.textContent.trim().replaceAll('\n',' '),
-			'source': source,
-			// TODO 'rating': rating,
-			'postdate': Date.parse(document.querySelector("#sidebar .row p > abbr.timeago[title]").title.replace('at ','').replace('PM',' PM'))/1000, // TODO Harden this
-			'data': make_KnowYourMeme_img_cdn_downspec(document.querySelector("#photo_wrapper a").href),
-		}],
+		'artworks': artworks,
 		'accounts': accounts,
 		'tags': tags,
 		// FIXME  'comics': comics, Should I consider the gallery as a comic ?
-		'art_acc_links': art_acc_links,
+		'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accounts}),
 		'art_tag_links': art_tag_links,
 	};
 	// Submit

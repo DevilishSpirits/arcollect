@@ -176,11 +176,6 @@ function save_artwork()
 		'url': accountLink,
 		'icon': avatarImg.src
 	}];
-	let art_acc_links = [{
-		'account': accountId,
-		'artwork': source,
-		'link': 'account'
-	}];
 	
 	/** Extracts tags
 	 *
@@ -276,21 +271,22 @@ function save_artwork()
 	}
 	
 	// Build the JSON
+	let artworks = [{
+		'title': submissionImg.alt,
+		'desc': desc_node.textContent,
+		'source': source,
+		'rating': rating,
+		'mimetype': artworkMIME,
+		'postdate': fa_parse_popup_date(document.querySelector('.submission-id-sub-container .popup_date'))/1000 ,
+		'data': artworkLink
+	}];
 	submit_json = {
 		'platform': 'furaffinity.net',
-		'artworks': [{
-			'title': submissionImg.alt,
-			'desc': desc_node.textContent,
-			'source': source,
-			'rating': rating,
-			'mimetype': artworkMIME,
-			'postdate': fa_parse_popup_date(document.querySelector('.submission-id-sub-container .popup_date'))/1000 ,
-			'data': artworkLink
-		}],
+		'artworks': artworks,
 		'accounts': accountJson,
 		'tags': tags,
 		// TODO 'comics': {'pages': comics},
-		'art_acc_links': art_acc_links,
+		'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accountJson}),
 		'art_tag_links': art_tag_links,
 	};
 	if (artworkMIME.startsWith('text/'))

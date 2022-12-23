@@ -97,11 +97,6 @@ function save_Patreon_postcard(postcard)
 		return artwork;
 	});
 	
-	let art_acc_links = artworks.map((artwork) => {return {
-		"artwork": artwork.source,
-		"account": account_id,
-		"link": "account"
-	}});
 	/* Extract tags
 	 */
 	let tags = []
@@ -122,7 +117,6 @@ function save_Patreon_postcard(postcard)
 		}
 	// Create the comic if needed
 	let comics = [];
-	let com_acc_links = [];
 	let com_tag_links = [];
 	if (artworks.length > 1) {
 		let comic_id = props.id
@@ -133,11 +127,6 @@ function save_Patreon_postcard(postcard)
 			"postdate": defaultPostDate,
 			"pages": Object.fromEntries(artworks.map((artwork,index) => {return [artwork.source,{"relative_to": "main", "page": index+1, "sub": 0}]})),
 		}];
-		com_acc_links = [{
-			"comic": comic_id,
-			"account": account_id,
-			"link": "account"
-		}];
 		com_tag_links = tags.map((tag) => {return {"comic": comic_id, "tag": tag.id}});
 	}
 	// Build the JSON
@@ -147,9 +136,9 @@ function save_Patreon_postcard(postcard)
 		'accounts': accounts,
 		'tags': tags,
 		'comics': comics,
-		'art_acc_links': art_acc_links,
+		'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accounts}),
 		'art_tag_links': art_tag_links,
-		'com_acc_links': com_acc_links,
+		'com_acc_links': Arcollect.simple_com_acc_links(comics,{'account': accounts}),
 		'com_tag_links': com_tag_links,
 	};
 	// Submit

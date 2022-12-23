@@ -101,6 +101,56 @@ class Arcollect {
 			}
 		);
 	};
+	
+	/** Generate a xxx_acc_links from the list and accounts list
+	 * \param xxx array in it's final form
+	 * \param xxx_idname is the name of the *id* field (`"source"` on artworks)
+	 * \param xxx_linkid is the name of the link item id (`"artwork"` on artworks)
+	 * \param accounts dictionary that map link type to an array of accounts
+	 * \return The `xxx_acc_links` array
+	 *
+	 * Template function for most case of simple_xxx_acc_links functions.
+	 * \see Arcollect.simple_art_acc_links that wrap this function for a practical
+	 *      example.
+	 */
+	static simple_xxx_acc_links(xxx,xxx_idname,xxx_linkid,accounts) {
+		// TODO Use a flat()/flatMap() when requiring Firefox 62
+		return [].concat(...([].concat(...(Object.entries(accounts).map(acc_map => acc_map[1].map(account => {return Object.entries({
+				"account": account.id,
+				"link": acc_map[0],
+			});
+		})))).map(link_template => xxx.map(item => Object.fromEntries([[xxx_linkid, item[xxx_idname]],...link_template])))))
+	};
+	/** Generate the art_acc_links from artworks and accounts list
+	 * \param artworks array in it's final form
+	 * \param accounts dictionary that map link type to an array of accounts
+	 * \return The `art_acc_links` array
+	 *
+	 * Convenience function for most case of art_acc_links when it's just linking
+	 * accounts to all artworks.
+	 *
+	 * Here an example usage below with `artwork1`, `artwork2` and a
+	 *          `postingAccount` plus an array of `mentions`.
+	 * \code{.js}
+	 * art_acc_links = Arcollect.simple_art_acc_links([artwork1,artwork2],{
+	 * 	"account": [postingAccount]
+	 * 	"indesc": mentions,
+	 * })
+	 * \endcode
+	 */
+	static simple_art_acc_links = (artworks,accounts) => this.simple_xxx_acc_links(artworks,'source','artwork',accounts);
+	/** Generate the com_acc_links from artworks and comics list
+	 * \param comics array in it's final form
+	 * \param accounts dictionary that map link type to an array of accounts
+	 * \return The `com_acc_links` array
+	 *
+	 * Convenience function for most case of com_acc_links when it's just linking
+	 * accounts to all comics.
+	 *
+	 * \see Arcollect.simple_art_acc_links that is the same function for linking
+	 * artworks to accounts.
+	 */
+	static simple_com_acc_links = (comics,accounts) => this.simple_xxx_acc_links(comics,'id','comic',accounts);
 };
 
 // TODO Wrap this part
