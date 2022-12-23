@@ -64,18 +64,9 @@ function save_KnowYourMeme_meme()
 	 *
 	 * Tags are stored in a simple list.
 	 */
-	let tags = []
-	let art_tag_links = []
-	for (let tag of document.querySelectorAll('#tag_list a')) {
-		let tag_id = tag.attributes['data-tag'].value.arcollect_tag();
-		tags.push({
-			'id': tag_id,
-		})
-		art_tag_links.push({
-			'artwork': source,
-			'tag': tag_id,
-		})
-	}
+	let tags = [...document.querySelectorAll('#tag_list a')].map(tag => {return{
+		'id': tag.attributes['data-tag'].value.arcollect_tag(),
+	}})
 	/* Extract account
 	 *
 	 * We have all the infos of the uploader.
@@ -105,7 +96,7 @@ function save_KnowYourMeme_meme()
 		'tags': tags,
 		// FIXME  'comics': comics, Should I consider the gallery as a comic ?
 		'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accounts}),
-		'art_tag_links': art_tag_links,
+		'art_tag_links': Arcollect.simple_art_tag_links(artworks,tags),
 	};
 	// Submit
 	Arcollect.submit(submit_json).then(function() {

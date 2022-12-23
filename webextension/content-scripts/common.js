@@ -151,6 +151,55 @@ class Arcollect {
 	 * artworks to accounts.
 	 */
 	static simple_com_acc_links = (comics,accounts) => this.simple_xxx_acc_links(comics,'id','comic',accounts);
+	
+	/** Generate a xxx_tag_links from the list and tags list
+	 * \param xxx array in it's final form
+	 * \param xxx_idname is the name of the *id* field (`"source"` on artworks)
+	 * \param xxx_linkid is the name of the link item id (`"artwork"` on artworks)
+	 * \param tags array in it's final form
+	 * \return The `xxx_tag_links` array
+	 *
+	 * Template function for most case of simple_xxx_tag_links functions.
+	 * \see Arcollect.simple_art_tag_links that wrap this function for a practical
+	 *      example.
+	 */
+	static simple_xxx_tag_links(xxx,xxx_idname,xxx_linkid,tags) {
+		// TODO Use a flat()/flatMap() when requiring Firefox 62
+		return [].concat(...(tags.map(tag => {return Object.entries({
+				"tag": tag.id,
+			});
+		})).map(link_template => xxx.map(item => Object.fromEntries([[xxx_linkid, item[xxx_idname]],...link_template]))))
+	};
+	/** Generate the art_tag_links from artworks and tags list
+	 * \param artworks array in it's final form
+	 * \param tags array in it's final form
+	 * \return The `art_tag_links` array
+	 *
+	 * Convenience function for most case of art_tag_links when it's just linking
+	 * tags to all artworks.
+	 *
+	 * Here an example usage below with `artwork1`, `artwork2` and a
+	 *          `postingAccount` plus an array of `mentions`.
+	 * \code{.js}
+	 * art_tag_links = Arcollect.simple_art_tag_links([artwork1,artwork2],{
+	 * 	"account": [postingAccount]
+	 * 	"indesc": mentions,
+	 * })
+	 * \endcode
+	 */
+	static simple_art_tag_links = (artworks,tags) => this.simple_xxx_tag_links(artworks,'source','artwork',tags);
+	/** Generate the com_tag_links from artworks and comics list
+	 * \param comics array in it's final form
+	 * \param tags array in it's final form
+	 * \return The `com_tag_links` array
+	 *
+	 * Convenience function for most case of com_tag_links when it's just linking
+	 * tags to all comics.
+	 *
+	 * \see Arcollect.simple_art_tag_links that is the same function for linking
+	 * artworks to tags.
+	 */
+	static simple_com_tag_links = (comics,tags) => this.simple_xxx_tag_links(comics,'id','comic',tags);
 };
 
 // TODO Wrap this part

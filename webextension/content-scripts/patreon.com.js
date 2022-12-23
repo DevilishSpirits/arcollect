@@ -99,25 +99,11 @@ function save_Patreon_postcard(postcard)
 	
 	/* Extract tags
 	 */
-	let tags = []
-	let art_tag_links = []
-	let postTags = postcard.querySelector('[data-tag="post-tags"]');
-	if (postTags)
-		for (let tag of postTags.querySelectorAll('[data-tag="post-tag"]')) {
-			let tag_id = tag.textContent.arcollect_tag()
-			tags.push({
-				'id': tag_id,
-			})
-			for (let artwork of artworks) {
-				art_tag_links.push({
-					'tag': tag_id,
-					'artwork': artwork.source,
-				})
-			}
-		}
+	let tags = [...postcard.querySelectorAll('[data-tag="post-tags"] [data-tag="post-tag"]')].map(tag => {return{
+		'id': tag.textContent.arcollect_tag(),
+	}})
 	// Create the comic if needed
 	let comics = [];
-	let com_tag_links = [];
 	if (artworks.length > 1) {
 		let comic_id = props.id
 		comics = [{
@@ -127,7 +113,6 @@ function save_Patreon_postcard(postcard)
 			"postdate": defaultPostDate,
 			"pages": Object.fromEntries(artworks.map((artwork,index) => {return [artwork.source,{"relative_to": "main", "page": index+1, "sub": 0}]})),
 		}];
-		com_tag_links = tags.map((tag) => {return {"comic": comic_id, "tag": tag.id}});
 	}
 	// Build the JSON
 	submit_json = {
@@ -137,9 +122,9 @@ function save_Patreon_postcard(postcard)
 		'tags': tags,
 		'comics': comics,
 		'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accounts}),
-		'art_tag_links': art_tag_links,
+		'art_tag_links': Arcollect.simple_art_tag_links(artworks,tags),
 		'com_acc_links': Arcollect.simple_com_acc_links(comics,{'account': accounts}),
-		'com_tag_links': com_tag_links,
+		'com_tag_links': Arcollect.simple_com_tag_links(comics,tags),
 	};
 	// Submit
 	Arcollect.submit(submit_json).then(function() {

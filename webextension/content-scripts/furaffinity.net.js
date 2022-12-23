@@ -184,15 +184,10 @@ function save_artwork()
 	 * Some tags are generated from *Category* and *Species* field.
 	 */
 	let tags = []
-	let art_tag_links = []
 	let tags_rows = document.querySelectorAll('.tags-row a');
 	for (let i = 0; i < tags_rows.length; i++) {
 		tags.push({
 			'id': tags_rows[i].text
-		});
-		art_tag_links.push({
-			'artwork': source,
-			'tag': tags_rows[i].text
 		});
 	}
 	
@@ -207,10 +202,6 @@ function save_artwork()
 			'title': speciesTitle,
 			'kind': "species"
 		});
-		art_tag_links.push({
-			'artwork': source,
-			'tag': speciesTag
-		});
 	}
 	
 	// Extract gender
@@ -220,10 +211,6 @@ function save_artwork()
 		tags.push({
 			'id': genderTag,
 			'title': genderTitle
-		});
-		art_tag_links.push({
-			'artwork': source,
-			'tag': genderTag
 		});
 	}
 	
@@ -287,7 +274,7 @@ function save_artwork()
 		'tags': tags,
 		// TODO 'comics': {'pages': comics},
 		'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accountJson}),
-		'art_tag_links': art_tag_links,
+		'art_tag_links': Arcollect.simple_art_tag_links(artworks,tags),
 	};
 	if (artworkMIME.startsWith('text/'))
 		submit_json['artworks'][0]['thumbnail'] = submissionImg.src;

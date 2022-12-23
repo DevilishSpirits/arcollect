@@ -69,7 +69,6 @@ function save_artwork()
 	 */
 	let tags = []
 	let accounts = []
-	let art_tag_links = []
 	let tagList = document.getElementById('tag-list').getElementsByClassName('search-tag');
 	for (let i = 0; i < tagList.length; i++) {
 		// Check tag
@@ -94,10 +93,6 @@ function save_artwork()
 		tags.push({
 			'id': tag_id,
 			'kind': category
-		});
-		art_tag_links.push({
-			'artwork': source,
-			'tag': tag_id
 		});
 	}
 	
@@ -163,7 +158,7 @@ function save_artwork()
 		'tags': tags,
 		'comics': comics,
 		'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accounts}),
-		'art_tag_links': art_tag_links,
+		'art_tag_links': Arcollect.simple_art_tag_links(artworks,tags),
 	};
 	
 	// Submit
