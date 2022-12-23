@@ -42,29 +42,6 @@ const Arcollect = {
 	 * #Arcollect.transactions.
 	 */
 	next_transaction_id: 0,
-	/** Download an image artwork and encode it to base64
-	 *
-	 * \param url The image URL
-	 * \return A promise with the Base64 string
-	 * \todo Use a data URL
-	 */
-	download_to_base64: function(url){
-		return new Promise(function(resolve, reject) {
-			let xhr = new window.XMLHttpRequest();
-			xhr.open('GET',url,true);
-			xhr.responseType = 'blob';
-			xhr.addEventListener('load', function() {
-				let filereader = new FileReader();
-				filereader.onload = function() {
-					resolve(filereader.result);
-				};
-				filereader.onerror = reject;
-				filereader.readAsDataURL(xhr.response);
-			});
-			xhr.addEventListener('error', reject);
-			xhr.send();
-		});
-	},
 	/** Normalize tag id
 	 * \param tag The image URL
 	 * \return The tag in a normalized form
