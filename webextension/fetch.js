@@ -63,7 +63,7 @@ function fetch_json(resource, init = {})
 	if (!init.hasOwnProperty('headers'))
 		init.headers = {};
 	init.headers['Accept'] = 'application/json';
-	return fetch(resource,init).then(function(response) {
-		return response.json();
-	});
+	// We don't use response.text() and then parse to avoid X-Ray troubles. Since
+	// This object is from the page, not the webextension.
+	return fetch(resource,init).then(response => response.text()).then(JSON.parse);
 }
