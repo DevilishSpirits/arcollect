@@ -4,28 +4,26 @@ import urllib.parse
 class Platform:
 	def __init__(self,webdriver):
 		self.webdriver = webdriver
-	def __call__(self):
+	def __call__(self,artwork):
 		# Note: 'Save in Arcollect' buttons are not visible in WebDriver until shown
 		#        by a mouse move over artworks.
 		
 		# Find the right 'Download' button by hrfe
 		# The 'Save in Arcollect' button is near
-		download_url_substr = urllib.parse.unquote(self.webdriver.GetCurrentURL().split('#')[1].split('&')[0].replace('_','?'))
-		aBtn_elements = self.webdriver.GetElements('css selector','a.btn')
-		print("# Search 'Download' with",download_url_substr,"in href")
-		for aBtn in aBtn_elements:
-			href = urllib.parse.unquote(aBtn.GetProperty('href'))
-			if href.find(download_url_substr) >= 0:
-				print("# Found 'Download' element with href:",href)
-				# Scroll to the rect
-				#self.webdriver.post('actions',{"actions":[{'id': "Hein?!", 'type': 'wheel', 'actions': [{'type': 'scroll', 'origin': 'viewport', 'x': 0, 'y': aBtn.GetRect()}]}]})
-				self.webdriver.post('execute/sync',{'script': 'window.scrollBy(0,'+str(aBtn.GetRect()['y'])+')','args':[]})
-				break
-			else:
-				aBtn = None
-		if aBtn is None:
-			print("# No matching 'Download' element found!")
-			return False
+		download_url_substr = urllib.parse.unquote(artwork['source'].split('#')[1].split('&')[0].replace('_','?'))
+		aBtn = None
+		while aBtn is None:
+			print("# Search 'Download' with",download_url_substr,	"in href")
+			aBtn_elements = self.webdriver.GetElements('css selector','a.btn')
+			for aBtn in aBtn_elements:
+				href = urllib.parse.unquote(aBtn.GetProperty('href'))
+				if href.find(download_url_substr) >= 0:
+					print("# Found 'Download' element with href:",href)
+					# Scroll to the rect
+					#self.webdriver.post('actions',{"actions":[{'id': "Hein?!", 'type': 'wheel', 'actions': [{'type': 'scroll', 'origin': 'viewport', 'x': 0, 'y': aBtn.GetRect()}]}]})
+					self.webdriver.post('execute/sync',{'script': 'window.scrollBy(0,'+str(aBtn.GetRect()['y'])+')','args':[]})
+					break
+			time.sleep(1)
 		
 		Save_in_Arcollect = []
 		while len(Save_in_Arcollect) != 1:

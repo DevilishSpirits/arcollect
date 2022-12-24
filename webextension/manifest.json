@@ -10,7 +10,7 @@
 	},
 	"content_scripts": [{
 		"matches": ["https://www.artstation.com/*"],
-		"js": ["content-scripts/common.js","content-scripts/artstation.com.js"]
+		"js": ["content-scripts/common.js","fetch.js","content-scripts/artstation.com.js"]
 	},{
 		"matches": ["https://www.furaffinity.net/view/*","https://www.furaffinity.net/full/*"],
 		"js": ["content-scripts/common.js","content-scripts/furaffinity.net.js"]
