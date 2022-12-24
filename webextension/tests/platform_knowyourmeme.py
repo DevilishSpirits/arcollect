@@ -3,7 +3,7 @@ import time
 class Platform:
 	def __init__(self,webdriver):
 		self.webdriver = webdriver
-	def __call__(self):
+	def __call__(self,artwork):
 		# Get the 'Save in Arcollect' button
 		Save_in_Arcollect = self.webdriver.GetElement('link text','Save in Arcollect')
 		Save_in_Arcollect.Click()

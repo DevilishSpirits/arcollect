@@ -4,7 +4,7 @@ import urllib.parse
 class Platform:
 	def __init__(self,webdriver):
 		self.webdriver = webdriver
-	def __call__(self):
+	def __call__(self,artwork):
 		# Find the 'Save in Arcollect' button by hrfe
 		button_elements = self.webdriver.GetElements('css selector','button')
 		print("# Search 'Save in Arcollect' button")

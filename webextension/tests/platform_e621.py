@@ -7,7 +7,7 @@ class Platform:
 		print('# Agree that the user is over 18+')
 		self.webdriver.navigateTo('https://www.e621.net/posts') # TODO Check success
 		self.webdriver.GetElement('css selector','button#guest-warning-accept').Click()
-	def __call__(self):
+	def __call__(self,artwork):
 		# Get the 'Save in Arcollect' button
 		Save_in_Arcollect = self.webdriver.GetElement('link text','Save in Arcollect')
 		Save_in_Arcollect.Click()

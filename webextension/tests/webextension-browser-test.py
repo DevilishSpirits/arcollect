@@ -60,7 +60,7 @@ try:
 		test_num += 1
 		if webdriver.navigateTo(artwork['source']).status_code == requests.codes.ok:
 			# Perform interaction
-			if platform():
+			if platform(artwork):
 				print('ok',test_num,'- Saving artwork',artwork['source'])
 			else:
 				print('not ok',test_num,'- Saving artwork',artwork['source'])

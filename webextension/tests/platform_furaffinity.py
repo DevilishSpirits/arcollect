@@ -7,7 +7,7 @@ class Platform:
 		print('# Accepting 🍪️ on FurAffinity')
 		self.webdriver.navigateTo('https://www.furaffinity.net/') # TODO Check success
 		self.webdriver.GetElement('css selector','button.accept').Click()
-	def __call__(self):
+	def __call__(self,artwork):
 		# Get the 'Save in Arcollect' button
 		Save_in_Arcollect = self.webdriver.GetElement('link text','Save in Arcollect')
 		Save_in_Arcollect.Click()

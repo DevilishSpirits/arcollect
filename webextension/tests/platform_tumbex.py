@@ -5,7 +5,7 @@ import urllib.parse
 class Platform:
 	def __init__(self,webdriver):
 		self.webdriver = webdriver
-	def __call__(self):
+	def __call__(self,artwork):
 		# Find and click on the share button
 		shareButton = []
 		while len(shareButton) == 0:
