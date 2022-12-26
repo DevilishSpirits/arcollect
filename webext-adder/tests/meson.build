@@ -11,6 +11,7 @@ online_tests = files(
 online_nsfw_tests = files(
 	'e621.net-nsfw.json',
 	'furaffinity.net-nsfw.json',
+	'pixiv.net-nsfw.json',
 )
 
 tests_env = environment({

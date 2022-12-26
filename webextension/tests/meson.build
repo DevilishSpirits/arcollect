@@ -35,6 +35,7 @@ if geckodriver_prog.found()
 	test('firefox-deviantart',webextension_browser_test_prog, args: ['browser_geckodriver','platform_deviantart',files('../../webext-adder/tests/deviantart.com.json')], env: webext_test_env, protocol: 'tap', timeout: 600, depends: geckodriver_test_deps, suite: test_suite, is_parallel: false)
 	# FIXME Randomly redirect to weird websites test('firefox-tumbex',webextension_browser_test_prog, args: ['browser_geckodriver','platform_tumbex',files('../../webext-adder/tests/tumbex.com.json')], env: webext_test_env, protocol: 'tap', timeout: 600, depends: geckodriver_test_deps, suite: test_suite, is_parallel: false)
 	test('firefox-knowyourmeme',webextension_browser_test_prog, args: ['browser_geckodriver','platform_knowyourmeme',files('../../webext-adder/tests/knowyourmeme.com.json')], env: webext_test_env, protocol: 'tap', timeout: 600, depends: geckodriver_test_deps, suite: test_suite, is_parallel: false)
+	test('firefox-pixiv',webextension_browser_test_prog, args: ['browser_geckodriver','platform_pixiv',files('../../webext-adder/tests/pixiv.net.json')], env: webext_test_env, protocol: 'tap', timeout: 600, depends: geckodriver_test_deps, suite: test_suite, is_parallel: false)
 	
 	if get_option('tests_nsfw')
 		test('firefox-e621',webextension_browser_test_prog, args: ['browser_geckodriver','platform_e621',files('../../webext-adder/tests/e621.net.json')], env: webext_test_env, protocol: 'tap', timeout: 600, depends: geckodriver_test_deps, suite: test_suite, is_parallel: false)
