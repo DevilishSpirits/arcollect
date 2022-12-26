@@ -137,6 +137,7 @@ The defaults are :
 ```json
 	{
 		"data": "https:// or data:<mime>;Base64,..",
+		"integrity": null,
 		"cache_key": "'data' or a JSON null if Base64",
 		"mimetype": "Content-Type header",
 		"ok_codes": [200],
@@ -148,6 +149,11 @@ The defaults are :
 ```
 
 * `data` is the URL/Base64 you want to download
+* `integrity` is the [Subresource Integrity](https://developer.mozilla.org/docs/Web/Security/Subresource_Integrity)
+  fingerprint of the resource.
+  The webext-adder does not support this key yet and ignore it currently.
+  Tests sets have a `data.sha256` key, this one is only meant for Arollect
+  testing and shall not be used outside test units.
 * `cache_key` allows to override the key for matching in database. A use case is
   the DeviantArt CDN which use time limited keys, the `cache_key` strip this
   part. Passing `null` (default if `data` is a data URI) completely disable
