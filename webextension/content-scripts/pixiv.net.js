@@ -143,6 +143,7 @@ function pixiv_save_illust(id) {
 		
 		let postdate = Date.parse(illust.createDate)/1000;
 		let tags = pivix_process_tags(illust.tags);
+		let canonicalSource = illust.extraData.meta.alternateLanguages.ja; // TODO Find a more robust canonical URL
 		let result = {
 			'artworks': [],
 			'art_acc_links': [],
@@ -150,7 +151,7 @@ function pixiv_save_illust(id) {
 			'comics': [{
 				'id': illust.illustId,
 				'title': illust.title,
-				'url': illust.extraData.meta.canonical,
+				'url': canonicalSource,
 				'postdate': postdate,
 				'pages': {},
 			}],
@@ -171,7 +172,7 @@ function pixiv_save_illust(id) {
 			'postdate': postdate,
 		};
 		for (let i = 0; i < illust.pageCount; ++i) {
-			let source = illust.extraData.meta.canonical+'#'+(i+1);
+			let source = canonicalSource+'#'+(i+1);
 			result.artworks.push(Object.assign({
 				'data': PixivCDNDownload(pages[i],'image'),
 				'source': source,
