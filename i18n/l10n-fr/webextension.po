@@ -1,3 +1,7 @@
+msgctxt "webext_access_token_expired_pls_refresh"
+msgid "Token access has expired. Refresh the page and try again."
+msgstr "Le jeton d'accès a expiré. Actualisez la page et réessayez."
+
 msgctxt "webext_non_https_fetch"
 msgid "Something goes wrong with the webextension that attempted to use an API without https:// (%URL%)."
 msgstr "Quelque chose s'est mal passé avec l'extension de navigateur qui a tenté d'utiliser une API sans https:// (%URL%)."

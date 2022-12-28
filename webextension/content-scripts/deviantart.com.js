@@ -42,7 +42,6 @@ function save_artwork()
 	saveButton.innerText = arco_i18n_saving;
 	
 	let documentDivs = document.getElementsByTagName('div');
-	let documentAs = document.getElementsByTagName('a');
 	
 	/** Extract artwork
 	 *
@@ -51,6 +50,29 @@ function save_artwork()
 	let art_stage = document.querySelector('div[data-hook=art_stage]');
 	let artworkImg = art_stage.getElementsByTagName('img')[0];
 	
+	/** Try to extract the best artwork
+	 *
+	 * artworkData is a promise
+	 */
+	// Fallback to the image
+	let artworkData = Promise.resolve(artworkImg.src);
+	
+	// Use the download button if available
+	let download_button = document.querySelector('a[data-hook=download_button]');
+	if (download_button && typeof(download_button.href) == 'string') {
+		// Check the access token timestamp
+		let token_expires = parseInt(new URL(download_button.href).searchParams.get('ts'));
+		// Note: token_expires might be a NaN if ts is missing, in such case the
+		// comparison is false and the flow continue. This is wanted behavior as it
+		// allows the extension to possi0bly works if the platform change.
+		if (token_expires < Date.now()/1000)
+			artworkData = Promise.reject(browser.i18n.getMessage('webext_access_token_expired_pls_refresh'));
+		else artworkData = Promise.resolve({
+				'data': download_button.href,
+				'redirection_count': 1,
+				'cookies': true,
+			});
+	}
 	/** Normalize source URL
 	 *
 	 * DeviantArt ignore the trailing '/' in the url. Remove it if present.
@@ -75,31 +97,24 @@ function save_artwork()
 		'url': userElement.href,
 		'icon': userElement.attributes['data-icon'].value
 	}];
-	let art_acc_links = [{
-		'account': userId,
-		'artwork': source,
-		'link': 'account'
-	}];
 	 
 	/** Extracts tags
 	 *
-	 * Tags are stored in <a> elements under the .tags-row element.
-	 *
-	 * FurAffinity doesn't have tag kind and fancy title
+	 * Tags are stored in <a> elements we filter by the URL. Note that 2 forms of
+	 * URLs are used depending on weather you are logged in or not.
 	 */
-	let tags = []
-	let art_tag_links = []
-	for (let i = 0; i < documentAs.length; i++)
-		if (documentAs[i].href.startsWith('https://www.deviantart.com/tag/')) {
-			let tag_name = documentAs[i].href.slice(31);
-			tags.push({
-				'id': tag_name
-			});
-			art_tag_links.push({
-				'artwork': source,
-				'tag': tag_name
-			});
-		}
+	let tags_url_prefixes = [
+		'https://www.deviantart.com/tag/',
+		'https://www.deviantart.com/search/deviations?q=',
+	];
+	let tags = [...document.getElementsByTagName('a')].map(function(a) {
+		let prefix = tags_url_prefixes.find(prefix => a.href.startsWith(prefix));
+		if (prefix)
+			return {
+				'id': a.href.slice(prefix.length)
+			};
+		else return false;
+	}).filter(tag => tag)
 	
 	/** Extract description
 	 *
@@ -107,25 +122,25 @@ function save_artwork()
 	 */
 	let description = document.getElementsByClassName('legacy-journal')[0].textContent;
 	
-	// Build the JSON
-	submit_json = {
-		'platform': 'deviantart.com',
-		'artworks': [{
+	// Submit
+	artworkData.then(function(download_spec) {
+		let artworks = [{
 			'title': artworkImg.alt,
 			'desc': description,
 			'source': source,
 			// TODO 'rating': rating,
 			'postdate': new Date(deviationMeta.parentElement.getElementsByTagName('time')[0].dateTime).getTime(),
-			'data': artworkImg.src
-		}],
-		'accounts': accountJson,
-		'tags': tags,
-		'art_acc_links': art_acc_links,
-		'art_tag_links': art_tag_links,
-	};
-	
-	// Submit
-	Arcollect.submit(submit_json).then(function() {
+			'data': download_spec,
+		}];
+		return {
+			'platform': 'deviantart.com',
+			'artworks': artworks,
+			'accounts': accountJson,
+			'tags': tags,
+			'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accountJson}),
+			'art_tag_links': Arcollect.simple_art_tag_links(artworks,tags),
+		};
+	}).then(Arcollect.submit).then(function() {
 		saveButton.innerText = arco_i18n_saved;
 	}).catch(function(reason) {
 		saveButton.onclick = save_artwork;
