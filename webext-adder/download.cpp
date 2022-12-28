@@ -59,6 +59,7 @@ void Arcollect::WebextAdder::Download::parse(char*& iter, char* const end, Arcol
 				cache_key,
 				mimetype,
 				ok_codes,
+				redirection_count,
 				headers,
 			};
 			static const ForEachObjectSwitch<DownloadSpec> downloadspec_switch{
@@ -66,6 +67,7 @@ void Arcollect::WebextAdder::Download::parse(char*& iter, char* const end, Arcol
 				{"cache_key",DownloadSpec::cache_key},
 				{"mimetype" ,DownloadSpec::mimetype},
 				{"ok_codes" ,DownloadSpec::ok_codes},
+				{"redirection_count" ,DownloadSpec::redirection_count},
 				{"headers"  ,DownloadSpec::headers},
 			};
 			for (auto entry: downloadspec_switch(iter,end))
@@ -86,6 +88,9 @@ void Arcollect::WebextAdder::Download::parse(char*& iter, char* const end, Arcol
 						ok_codes.clear();
 						for (Arcollect::json::ArrHave have: Arcollect::json::Array(iter,end))
 							ok_codes.push_back(json_read_int(have,"<download_spec>:[{\"ok_codes\":[ item",iter,end));
+					} break;
+					case DownloadSpec::redirection_count: {
+						redirection_count = json_read_int(entry.have,"<download_spec>:[{\"redirection_count\"",iter,end);
 					} break;
 					case DownloadSpec::headers: {
 						if (entry.have != Arcollect::json::ObjHave::OBJECT)
@@ -262,6 +267,8 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 			curl_easy_setopt(easyhandle,CURLOPT_SSLVERSION,CURL_SSLVERSION_TLSv1_2); 
 			curl_easy_setopt(easyhandle,CURLOPT_SSL_VERIFYPEER,true); // Should be already on by default
 			curl_easy_setopt(easyhandle,CURLOPT_SSL_VERIFYHOST,2); // Should be already on by default
+			curl_easy_setopt(easyhandle,CURLOPT_FOLLOWLOCATION,(long)redirection_count > 0);
+			curl_easy_setopt(easyhandle,CURLOPT_MAXREDIRS,redirection_count);
 			curl_easy_setopt(easyhandle,CURLOPT_HTTPHEADER,http_headers.list);
 			if (!cache_miss) {
 				curl_easy_setopt(easyhandle,CURLOPT_TIMECONDITION,CURL_TIMECOND_IFMODSINCE); 

@@ -141,6 +141,7 @@ The defaults are :
 		"cache_key": "'data' or a JSON null if Base64",
 		"mimetype": "Content-Type header",
 		"ok_codes": [200],
+		"redirection_count": 0,
 		"headers": {
 			"Referer": "The page source",
 			"User-Agent": "Arcollect/<version> curl/<version>"
@@ -163,6 +164,8 @@ The defaults are :
   header.
 * `ok_codes` is an array of code we consider a success. FurAffinity does return
   a 404 with a valid GIF if an account use the default avatar.
+* `redirection_count` is the number of redirections allowed. Negative values are
+  undefined and currently may either generates an error or behave as zero.
 * `headers` is a dictionary of custom headers to set, you can unset default
   Arcollect and curl headers with a `null` value (a JSON `null`, not a `"null"`
   aka a string with "null" inside).

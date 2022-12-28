@@ -125,6 +125,11 @@ namespace Arcollect {
 				 *       #CURLE_WRITE_ERROR or just a 304.
 				 */
 				std::vector<long> ok_codes{200};
+				/** Number of allowed redirection
+				 *
+				 * By default none is allowed.
+				 */
+				long redirection_count = 0;
 				/** List of custom HTTP headers
 				 */
 				curl::slist http_headers;
