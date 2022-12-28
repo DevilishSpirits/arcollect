@@ -34,6 +34,7 @@ The webextension require some permissions to works:
 * [Exchange messages with programs other than Firefox](https://support.mozilla.org/en-US/kb/permission-request-messages-firefox-extensions#w_exchange-messages-with-programs-other-than-firefox) (`nativeMessaging`) -- This external program is the `webext-adder` that insert artworks into your collection.
 * [Access browser activity during navigation](https://support.mozilla.org/en-US/kb/permission-request-messages-firefox-extensions#w_access-browser-activity-during-navigation) (`webRequestBlocking`) -- To listen for Twitter API activity.
 * The `dns` authorization -- To use browser DNS resolver and cache and transmit entries to the `webext-adder`.
+* The `cookies` authorization -- To transmit required cookies to the `webext-adder` on platforms where that is needed.
 
 ## Contributing
 I am open to contributions but keep in mind that this is a personal project, not a community driven thing. Arcollect mostly have what I use and can do with time, but it is built with extensibility and platform agnostism in mind.

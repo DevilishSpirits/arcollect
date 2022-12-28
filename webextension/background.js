@@ -114,6 +114,19 @@ function extract_hostname(spec,domains) {
 		domains.add(spec.hostname);
 }
 
+async function processDownloadSpec(parent,fieldName) {
+	spec = parent[fieldName];
+	// Only process non trivial specs
+	if (typeof(spec) == 'object') {
+		// Process cookies
+		if (spec.cookies === true)
+			spec.headers = Object.assign({
+				'Cookie': await browser.cookies.getAll({'url':spec.data}).then(cookies => cookies.map(cookie => cookie.name+'='+cookie.value).join('; ')),
+			},spec.headers);
+			delete spec.cookies; // Avoid different behavior if used with a future webext-adder (btw don't do that it's weird)
+	}
+}
+
 // Setup content-scripts calls
 browser.runtime.onConnect.addListener(function(port) {
 	console.log(`Content-script connection from ${port.sender.url}`);
@@ -135,37 +148,25 @@ browser.runtime.onConnect.addListener(function(port) {
 			default:msg = Promise.resolve(msg);break; // Passthrough unchanged
 		}
 		// Common post-processing
-		msg.then(function(msg) {
-			// List domains there
+		msg.then(async function(msg) {
+			// Process download specifications
 			let domains = new Set();
 			if (msg.hasOwnProperty('artworks'))
-				msg.artworks.forEach(function(artwork) {
+				await Promise.all(msg.artworks.map(async function(artwork) {
 					extract_hostname(artwork.data,domains);
 					extract_hostname(artwork.thumbnail,domains);
-				});
+					await processDownloadSpec(artwork,'data');
+					await processDownloadSpec(artwork,'thumbnail');
+				}));
 			if (msg.hasOwnProperty('accounts'))
-				msg.accounts.forEach(function(account) {
+				await Promise.all(msg.accounts.map(async function(account) {
 					extract_hostname(account.icon,domains);
-				});
-			// Generate DNS promises
-			msg.dns_prefill = [];
-			let res_promises = [Promise.resolve(msg)]; 
-			for (const domain of domains) {
-				msg.dns_prefill.push(domain);
-				res_promises.push(browser.dns.resolve(domain));
-			}
-			return Promise.allSettled(res_promises);
-		}).then(function(res) {
-			[msg, ...promises] = res;
-			msg = msg.value;
-			let domains = msg.dns_prefill;
-			msg.dns_prefill = {};
-			domains.forEach(function(domain,index) {
-				let promise = promises[index];
-				if ((promise.status == 'fulfilled')&&(promise.value.addresses.length > 0)) {
-					msg.dns_prefill[domain] = promise.value.addresses
-				}
-			});
+					await processDownloadSpec(account,'icon');
+				}));
+			// Resolve domains and generate msg.dns_prefill
+			msg.dns_prefill = [...domains];
+			let res_promises = await Promise.allSettled(msg.dns_prefill.map(domain => browser.dns.resolve(domain)));
+			msg.dns_prefill = Object.fromEntries(res_promises.map((promise,index) => [msg.dns_prefill[index],promise]).filter(pair => (pair[1].status == 'fulfilled')&&(pair[1].value.addresses.length > 0)).map(pair => [pair[0],pair[1].value.addresses]))
 			return msg;
 		// Final filter before sending
 		}).then(function(msg){
