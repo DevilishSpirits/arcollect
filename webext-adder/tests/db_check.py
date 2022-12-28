@@ -128,6 +128,10 @@ def check_db(test_num, db, test_set):
 		test_num += 1
 		tag_db = db.execute('SELECT tag_title, tag_kind FROM tags WHERE tag_platid = ? AND tag_platform = ?;',(tag['id'],platform)).fetchone()
 		
+		if tag_db is None:
+			print('not ok',test_num,'- Checking tag',tag['id'],'#','Not in the database')
+			continue
+		
 		expected_values = (
 			('tag_title'   ,tag.setdefault('title',None)),
 			('tag_kind'    ,tag.setdefault('kind',None)),
