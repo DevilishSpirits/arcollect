@@ -25,7 +25,7 @@ SDL::Renderer *renderer;
 int main(int argc, char *argv[])
 {
 	bool test_success;
-	std::cout << "1..1" << std::endl;
+	std::cout << "TAP version 13\n1..1" << std::endl;
 	std::cout << "# Using configuration file at " << Arcollect::path::xdg_config_home/"arcollect.ini" << std::endl;
 	
 	// Check if reset to default works

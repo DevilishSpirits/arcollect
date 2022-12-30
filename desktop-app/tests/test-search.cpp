@@ -100,7 +100,7 @@ static constexpr std::string_view search_exprs[] = {
 int main(int argc, char *argv[])
 {
 	Arcollect::database = Arcollect::db::test_open();
-	std::cout << "1.." << (
+	std::cout << "TAP version 13\n1.." << (
 		test_num_per_test_artworks_search_expression * (sizeof(search_exprs)/sizeof(search_exprs[0]))
 	) << std::endl;
 	for (const std::string_view& search: search_exprs)

@@ -29,7 +29,7 @@ static constexpr auto md5_n = sizeof(md5s)/sizeof(md5s)[0];
 
 int main(void)
 {
-	std::cout << "1.." << md5_n << std::endl;
+	std::cout << "TAP version 13\n1.." << md5_n << std::endl;
 	unsigned int i = 0;
 	for (const std::pair<std::string_view,std::string_view> &md5: md5s) {
 		if (MD5_CTX::DIGEST::from_string(md5.first) != MD5_CTX::hash(md5.second))

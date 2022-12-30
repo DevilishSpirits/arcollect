@@ -3,7 +3,7 @@ import json
 from subprocess import Popen,PIPE
 import sys
 test_wtf_json_parser = sys.argv[1]
-print('1..'+str(len(sys.argv)-2))
+print('TAP version 13\n1..'+str(len(sys.argv)-2))
 test_num = 1
 for filename in sys.argv[2:]:
 	data = open(filename,'r', encoding="utf-8").read()

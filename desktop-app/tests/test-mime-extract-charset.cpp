@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	constexpr auto test_count = sizeof(expected_success)/sizeof(test_pair);
 	int test_num = 1;
 	int result_code = 0;
-	std::cout << "1.." << test_count << std::endl;
+	std::cout << "TAP version 13\n1.." << test_count << std::endl;
 	for (const auto& test: expected_success) {
 		std::string_view result_charset_name;
 		Charset result_charset = Arcollect::art_reader::mime_extract_charset(test.test,result_charset_name);

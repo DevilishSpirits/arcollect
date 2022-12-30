@@ -34,7 +34,6 @@ os.environ['ARCOLLECT_TEST_DATA_HOME']+\
 '/'+browser_name[8:]+'_'+platform_name[9:]+'_'+test_set_name)
 shutil.rmtree(os.environ['XDG_DATA_HOME'],ignore_errors=True)
 os.makedirs(os.environ['XDG_DATA_HOME'],exist_ok=True)
-print("# XDG_DATA_HOME set to",os.environ['XDG_DATA_HOME'])
 
 ## Tables on which to perform line count checks
 # 
@@ -47,7 +46,7 @@ test_count  = browser_module.Browser.test_num() # Browser() init
 test_count += len(db_check.db_line_count_checks)    # Line count checks
 test_count += len(test_set['artworks'])         # Browser interaction
 test_count += db_check.test_count(test_set)     # DB checks
-print('1..'+str(test_count))
+print('TAP version 13\n1..'+str(test_count))
 
 try:
 	browser   = browser_module.Browser()

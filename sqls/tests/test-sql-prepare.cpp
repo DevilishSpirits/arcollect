@@ -28,7 +28,7 @@ static const std::pair<std::string_view,std::string_view> test_sqls[] = {
 
 int main(void)
 {
-	std::cout << "1.." << (sizeof(test_sqls)/sizeof(test_sqls[0])) << std::endl;
+	std::cout << "TAP version 13\n1.." << (sizeof(test_sqls)/sizeof(test_sqls[0])) << std::endl;
 	std::unique_ptr<SQLite3::sqlite3> database = Arcollect::db::test_open();
 	int test_num = 1;
 	for (const auto& test_unit: test_sqls) {

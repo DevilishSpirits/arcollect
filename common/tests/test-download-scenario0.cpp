@@ -61,7 +61,7 @@ struct Entry {
 
 int main(void)
 {
-	std::cout << "1..9" << std::endl;
+	std::cout << "TAP version 13\n1..9" << std::endl;
 	std::unique_ptr<SQLite3::sqlite3> database = Arcollect::db::test_open();
 	Transaction cache(database);
 	// 1. Add initial set
