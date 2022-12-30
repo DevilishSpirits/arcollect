@@ -159,7 +159,7 @@ jobs:
       - name: Install Meson
         run: pip install meson ninja
       - name: Configure project
-        run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,robin-map,roboto,sdl2,harfbuzz,sqlite3,boost -Denable_webextension=false -Dcpp_link_args=-static -Dc_link_args=-static -Dbuildtype=release -Dstrip=true # FIXME LTO doesn't works, why?
+        run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,robin-map,roboto,sdl2,harfbuzz,sqlite3,boost,zlib -Denable_webextension=false -Dcpp_link_args=-static -Dc_link_args=-static -Dbuildtype=release -Dstrip=true # FIXME LTO doesn't works, why?
       - name: Build project
         run: ninja -C build
       - name: Generate MSI
