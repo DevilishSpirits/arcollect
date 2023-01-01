@@ -34,17 +34,17 @@ libOpenImageIO_srcs = [
 	'imagebufalgo.cpp',
 	'imagebufalgo_pixelmath.cpp',
 	'imagebufalgo_channels.cpp',
-	'imagebufalgo_compare.cpp',
+	#'imagebufalgo_compare.cpp', Not used in Arcollect
 	'imagebufalgo_copy.cpp',
-	'imagebufalgo_deep.cpp',
+	#'imagebufalgo_deep.cpp', Not used in Arcollect
 	'imagebufalgo_draw.cpp',
 	'imagebufalgo_addsub.cpp',
 	'imagebufalgo_muldiv.cpp',
-	'imagebufalgo_mad.cpp',
+	#'imagebufalgo_mad.cpp', Not used in Arcollect
 	'imagebufalgo_orient.cpp',
 	'imagebufalgo_xform.cpp',
-	'imagebufalgo_yee.cpp',
-	'imagebufalgo_opencv.cpp',
+	#'imagebufalgo_yee.cpp', Not used in Arcollect
+	#'imagebufalgo_opencv.cpp', Not used in Arcollect
 	'deepdata.cpp',
 	'exif.cpp',
 	'exif-canon.cpp',
@@ -56,27 +56,27 @@ libOpenImageIO_srcs = [
 	'imageoutput.cpp',
 	'iptc.cpp',
 	'xmp.cpp',
-	'color_ocio.cpp',
-	'maketexture.cpp',
+	#'color_ocio.cpp', Not used in Arcollect
+	#'maketexture.cpp', Not used in Arcollect
 	'bluenoise.cpp',
-	'../libutil/argparse.cpp',
-	'../libutil/benchmark.cpp',
-	'../libutil/errorhandler.cpp', 
+	#'../libutil/argparse.cpp', Not used in Arcollect
+	#'../libutil/benchmark.cpp', Not used in Arcollect
+	#'../libutil/errorhandler.cpp', Not used in Arcollect
 	'../libutil/filesystem.cpp', 
-	'../libutil/farmhash.cpp', 
+	#'../libutil/farmhash.cpp', Not used in Arcollect
 	'../libutil/filter.cpp', 
 	'../libutil/fmath.cpp',
-	'../libutil/hashes.cpp', 
+	#'../libutil/hashes.cpp', Not used in Arcollect
 	'../libutil/paramlist.cpp', 
 	'../libutil/plugin.cpp', 
-	'../libutil/SHA1.cpp', 
+	#'../libutil/SHA1.cpp', Not used in Arcollect
 	'../libutil/strutil.cpp', 
 	'../libutil/sysutil.cpp', 
 	'../libutil/thread.cpp', 
 	'../libutil/timer.cpp', 
 	'../libutil/typedesc.cpp', 
 	'../libutil/ustring.cpp', 
-	'../libutil/xxhash.cpp', 
+	#'../libutil/xxhash.cpp', Not used in Arcollect
 	'../libtexture/texturesys.cpp', 
 	'../libtexture/texture3d.cpp', 
 	'../libtexture/environment.cpp', 
@@ -84,9 +84,9 @@ libOpenImageIO_srcs = [
 	'../libtexture/imagecache.cpp',
 	#${libOpenImageIO_srcs},
 	#${libOpenImageIO_hdrs},
-	'../include/OpenImageIO/detail/pugixml/pugiconfig.hpp',
-	'../include/OpenImageIO/detail/pugixml/pugixml.hpp',
-	'../include/OpenImageIO/detail/pugixml/pugixml.cpp',
+	#'../include/OpenImageIO/detail/pugixml/pugiconfig.hpp', Not used in Arcollect
+	#'../include/OpenImageIO/detail/pugixml/pugixml.hpp', Not used in Arcollect
+	#'../include/OpenImageIO/detail/pugixml/pugixml.cpp', Not used in Arcollect
 	imageio_pvt_h,
 	'../include/OpenImageIO/argparse.h',
 	'../include/OpenImageIO/array_view.h',
