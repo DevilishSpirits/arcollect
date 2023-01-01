@@ -37,6 +37,7 @@ if host_machine.system() == 'windows'
 	})
 	dep_curl += cc.find_library('advapi32')
 	dep_curl += cc.find_library('crypt32')
+	dep_curl += cc.find_library('Bcrypt')
 elif host_machine.system() == 'darwin'
 	subproj_opts.add_cmake_defines({
 		'CURL_USE_SECTRANSP': true,
