@@ -10,7 +10,7 @@
 			"data": "https://64.media.tumblr.com/173bd892312d94f82c86aa32dbec7181/tumblr_noicq38pfM1rhapdoo1_1280.png",
 			"headers": {
 				"Accept": "image/*",
-				"Referer": null,
+				"Referer": "https://64.media.tumblr.com/173bd892312d94f82c86aa32dbec7181/tumblr_noicq38pfM1rhapdoo1_1280.png",
 				"If-None-Match": null,
 				"If-Modified-Since": null
 			}
@@ -25,7 +25,7 @@
 			"data": "https://64.media.tumblr.com/avatar_a9c7e9eff65c_96.pnj",
 			"headers": {
 				"Accept": "image/*",
-				"Referer": null,
+				"Referer": "https://64.media.tumblr.com/173bd892312d94f82c86aa32dbec7181/tumblr_noicq38pfM1rhapdoo1_1280.png",
 				"If-None-Match": null,
 				"If-Modified-Since": null
 			}

@@ -26,8 +26,9 @@
  *
  * Tumblr's CDN is weird. It have the tendancy to return an HTML page instead of
  * the source image if not told do so with the [`Accept` header](https://developer.mozilla.org/docs/Web/HTTP/Headers/Accept).
+ * It also detect foreign incoming traffic using the [`Referer`](https://developer.mozilla.org/docs/Web/HTTP/Headers/Referer)/).
  * Also [`If-Modified-Since`](https://developer.mozilla.org/docs/Web/HTTP/Headers/If-Modified-Since)/)/[`If-None-Match`](https://developer.mozilla.org/docs/Web/HTTP/Headers/If-None-Match)/)
- * cache checking headers are forbidden (why?!), like setting a [`Referer`](https://developer.mozilla.org/docs/Web/HTTP/Headers/Referer)/).
+ * cache checking headers are forbidden (why?!), like setting a .
  *
  * This function take care of that mess.
  */
@@ -41,8 +42,8 @@ function tumblr_make_image_download(link)
 			// Remove caching headers
 			'If-Modified-Since': null,
 			'If-None-Match': null,
-			// Unset the referer
-			'Referer': null,
+			// Report traffic from the pseudo HTML page
+			'Referer': link,
 		},
 	};
 }
