@@ -79,6 +79,18 @@ class Arcollect {
 		'png' : 'image/png',
 		'rtf' : 'text/rtf',
 	};
+	/** Detect the page Referrer-Policy
+	 * \return The Referrer-Policy for the webext-adder or null if none is found
+	 * \todo We can't get the Referrer-Policy defined in HTTP headers
+	 */
+	static detectReferrerPolicy() {
+		// Look for <meta name="referrer"/>
+		let meta_node = document.querySelector('meta[name="referrer"]');
+		if (meta_node && meta_node.content)
+			return meta_node.content;
+		// Nothing found, bail out a null;
+		return null;
+	}
 	/** Submit new data into the database
 	 *
 	 * \param json_object Objects to send.
@@ -88,6 +100,13 @@ class Arcollect {
 	static submit(json_object) {
 		return new Promise(
 			function(resolve, reject) {
+				// Set the Referrer-Policy
+				if (!json_object.hasOwnProperty('referrer_policy')) {
+					// Look for <meta name="referrer"/>
+					let referrer_policy = Arcollect.detectReferrerPolicy();
+					if (referrer_policy)
+						json_object['referrer_policy'] = referrer_policy;
+				}
 				// Generate a transaction id
 				let transaction_id = (Arcollect.next_transaction_id++).toString();
 				json_object['transaction_id'] = transaction_id;

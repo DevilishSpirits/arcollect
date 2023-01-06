@@ -659,6 +659,7 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 	enum class Root {
 		transaction_id,
 		platform,
+		referrer_policy,
 		dns_prefill,
 		artworks,
 		accounts,
@@ -672,6 +673,7 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 	static const ForEachObjectSwitch<Root> root_switch{
 		{"transaction_id",Root::transaction_id},
 		{"platform"      ,Root::platform},
+		{"referrer_policy",Root::referrer_policy},
 		{"dns_prefill"   ,Root::dns_prefill},
 		{"artworks"      ,Root::artworks},
 		{"accounts"      ,Root::accounts},
@@ -691,6 +693,11 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 				json_read_string(entry.have,platform,"\"platform\"",iter,end);
 				if (Arcollect::debug.webext_adder)
 					std::cerr << "\tPlatform: " << platform << std::endl;
+			} break;
+			case Root::referrer_policy: {
+				std::string_view referrer_policy_string;
+				json_read_string(entry.have,referrer_policy_string,"\"referrer_policy\"",iter,end);
+				network_session.referrer_policy = Arcollect::WebextAdder::parse_referrer_policy(referrer_policy_string);
 			} break;
 			case Root::dns_prefill: {
 				if (entry.have != Arcollect::json::ObjHave::OBJECT)

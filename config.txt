@@ -15,7 +15,7 @@ ARCOLLECT_DBUS_PATH: /
 # Version requirements
 ARCOLLECT_VERREQ_sdl2                :>=2.0.18
 ARCOLLECT_VERREQ_boost               :>=1.66     # Keep in sync with OIIO needs!
-ARCOLLECT_VERREQ_libcurl             :>=7.60
+ARCOLLECT_VERREQ_libcurl             :>=7.80
 ARCOLLECT_VERREQ_OpenImageIO         :>=2.4.3
 ARCOLLECT_VERREQ_sqlite3             :>=3.35.0
 ARCOLLECT_WEBEXT_GECKO_MIN_VERSION   :60.0

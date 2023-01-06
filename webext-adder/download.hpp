@@ -30,6 +30,73 @@ namespace Arcollect {
 		 */
 		extern const std::string user_agent;
 		
+		/** Referrer policy enum
+		 *
+		 * Enumeration of referrer policies.
+		 * \note Arcollect is https:// only and hence skip some policies.
+		 */
+		enum ReferrerPolicy {
+			/** Do not send a referrer at all
+			 *
+			 * Used by:
+			 * - `no-referrer`
+			 */
+			REFERRER_NEVER,
+			/** Send the origin only
+			 *
+			 * Used by:
+			 * - `origin`
+			 * - `strict-origin` since we never downgrade
+			 */
+			REFERRER_ORIGIN_ONLY,
+			/** Origin only when cross-origin
+			 *
+			 * Used by:
+			 * - `origin-when-cross-origin`
+			 * - `strict-origin-when-cross-origin` since we never downgrade
+			 */
+			REFERRER_ORIGIN_WHEN_CROSS_ORIGIN,
+			/** Origin only on the same domain
+			 *
+			 * Used by:
+			 * - `same-origin`
+			 */
+			REFERRER_SAME_ORIGIN,
+			/** Full referrer
+			 *
+			 * Used by:
+			 * - `unsafe-url`
+			 * - `no-referrer-when-downgrade` since we never downgrade
+			 */
+			REFERRER_ALWAYS,
+			/** Use the default referrer policy in the NetworkSession object
+			 *
+			 * Value for Arcollect::webext_adder::Download to use the
+			 * Arcollect::webext_adder::NetworkSession value
+			 */
+			REFERRER_UNSPECIFIED,
+			/** Default referrer policy
+			 *
+			 * The default referrer policy is `strict-origin-when-cross-origin`.
+			 * \warning Keep this being the last! The code is it's numeric code to
+			 *          check for unknown referrers.
+			 */
+			REFERRER_DEFAULT = REFERRER_ORIGIN_WHEN_CROSS_ORIGIN
+		};
+		/** Parse a Referrer-Policy
+		 * \param policy string to parse.
+		 * \return The parsed policy or REFERRER_UNSPECIFIED if unknown.
+		 */
+		ReferrerPolicy parse_referrer_policy(std::string_view policy);
+		
+		/** Apply a Referrer-Policy
+		 * \param referrer in complete form
+		 * \param target URL to generate the referrer to
+		 * \param policy string to parse.
+		 * \return The referrer
+		 */
+		std::string apply_referrer_policy(const curl::url &referrer, const curl::url &target, ReferrerPolicy policy);
+		
 		/** Persistent network session
 		 *
 		 * This structure survive across downloads for enhanced performances.
@@ -52,6 +119,11 @@ namespace Arcollect {
 			/** Application submitted premade DNS resolution
 			 */
 			curl::slist dns_prefill;
+			/** Page referrer policy
+			 *
+			 * The referrer policy used by the page and as default by requests.
+			 */
+			ReferrerPolicy referrer_policy = REFERRER_DEFAULT;
 			/** curl error buffer handle
 			 *
 			 * For internal use by Download::perform() and
@@ -75,6 +147,11 @@ namespace Arcollect {
 				 * after perform().
 				 */
 				std::string_view mimetype;
+				/** Referrer policy
+				 *
+				 * The referrer policy used for this request.
+				 */
+				ReferrerPolicy referrer_policy = REFERRER_UNSPECIFIED;
 				/** Attached network session
 				 */
 				NetworkSession &session;

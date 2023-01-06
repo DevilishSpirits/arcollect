@@ -62,4 +62,22 @@ namespace curl {
 			curl_slist_free_all(list);
 		}
 	};
+	class url {
+		protected:
+			CURLU *handle;
+		public:
+			using Part = CURLUPart;
+			inline url(void) : handle(curl_url()) {}
+			inline url(const url& other) : handle(curl_url_dup(other.handle)) {}
+			url(url&&) = delete; // TODO Move constructor
+			inline ~url(void) {
+				curl_url_cleanup(handle);
+			}
+			inline CURLUcode set(Part part, const char *content, unsigned int flags = 0) {
+				return curl_url_set(handle,part,content,flags);
+			}
+			inline CURLUcode get(Part what, char *&part, unsigned int flags = 0) const {
+				return curl_url_get(handle,what,&part,flags);
+			}
+	};
 }

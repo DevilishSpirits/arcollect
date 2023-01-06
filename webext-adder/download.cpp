@@ -34,6 +34,69 @@ const std::string Arcollect::WebextAdder::user_agent = "Arcollect/" ARCOLLECT_VE
 
 extern std::unique_ptr<SQLite3::sqlite3> db;
 
+Arcollect::WebextAdder::ReferrerPolicy Arcollect::WebextAdder::parse_referrer_policy(std::string_view policy) {
+	static constexpr std::string_view separators = ", ";
+	for (std::string_view::size_type sep_pos = 0; sep_pos != policy.npos; sep_pos = policy.find_first_not_of(separators,sep_pos)) {
+		std::string_view candidate = policy.substr(sep_pos,policy.find_first_of(separators,sep_pos));
+		if ((candidate == "no-referrer"))
+			return REFERRER_NEVER;
+		else if ((candidate == "origin")||(candidate == "strict-origin"))
+			return REFERRER_ORIGIN_ONLY;
+		else if ((candidate == "origin-when-cross-origin")||(candidate == "strict-origin-when-cross-origin"))
+			return REFERRER_ORIGIN_WHEN_CROSS_ORIGIN;
+		else if ((candidate == "same-origin"))
+			return REFERRER_SAME_ORIGIN;
+		else if ((candidate == "unsafe-url")||(candidate == "no-referrer-when-downgrade"))
+			return REFERRER_ALWAYS;
+	}
+	return REFERRER_UNSPECIFIED;
+}
+
+std::string Arcollect::WebextAdder::apply_referrer_policy(const curl::url &referrer, const curl::url &target, ReferrerPolicy policy)
+{
+	// Apply the default policy if none is specified
+	if (policy >= REFERRER_UNSPECIFIED)
+		policy = REFERRER_DEFAULT;
+	// Check for same-origin like policies
+	if ((policy == REFERRER_ORIGIN_WHEN_CROSS_ORIGIN)||(policy == REFERRER_SAME_ORIGIN)) {
+		char* referrer_host = NULL;
+		char* target_host = NULL;
+		if (referrer.get(CURLUPART_HOST,referrer_host))
+			referrer_host = NULL;
+		if (target.get(CURLUPART_HOST,target_host))
+			target_host = NULL;
+		bool is_same_origin = (!referrer_host || !target_host) ? false : std::strcmp(referrer_host,target_host) == 0;
+		if (is_same_origin)
+			policy = REFERRER_ALWAYS;
+		else switch (policy) {
+			case REFERRER_ORIGIN_WHEN_CROSS_ORIGIN:policy = REFERRER_ORIGIN_ONLY;break;
+			case REFERRER_SAME_ORIGIN:policy = REFERRER_NEVER;break;
+			default:break;
+		}
+	}
+	// Return an empty string if no referrer shall be sent
+	if (policy == REFERRER_NEVER)
+		return std::string();
+	// Generate the referrer
+	curl::url result(referrer);
+	result.set(CURLUPART_FRAGMENT,NULL);
+	
+	switch (policy) {
+		case REFERRER_ORIGIN_ONLY: {
+			result.set(CURLUPART_PATH,NULL);
+			result.set(CURLUPART_QUERY,NULL);
+		} // fallthrough;
+		case REFERRER_ALWAYS: {
+			char* res_string = NULL;
+			result.get(CURLUPART_URL,res_string);
+			if (res_string)
+				return res_string;
+			else return std::string();
+		} // fallthrough;
+			default:return std::string();
+	}
+}
+
 Arcollect::WebextAdder::NetworkSession::NetworkSession(Arcollect::db::downloads::Transaction &cache)
 :
 	easyhandle(curl_easy_init()),
@@ -60,6 +123,7 @@ void Arcollect::WebextAdder::Download::parse(char*& iter, char* const end, Arcol
 				mimetype,
 				ok_codes,
 				redirection_count,
+				referrer_policy,
 				headers,
 			};
 			static const ForEachObjectSwitch<DownloadSpec> downloadspec_switch{
@@ -68,6 +132,7 @@ void Arcollect::WebextAdder::Download::parse(char*& iter, char* const end, Arcol
 				{"mimetype" ,DownloadSpec::mimetype},
 				{"ok_codes" ,DownloadSpec::ok_codes},
 				{"redirection_count" ,DownloadSpec::redirection_count},
+				{"referrer_policy" ,DownloadSpec::referrer_policy},
 				{"headers"  ,DownloadSpec::headers},
 			};
 			for (auto entry: downloadspec_switch(iter,end))
@@ -91,6 +156,11 @@ void Arcollect::WebextAdder::Download::parse(char*& iter, char* const end, Arcol
 					} break;
 					case DownloadSpec::redirection_count: {
 						redirection_count = json_read_int(entry.have,"<download_spec>:[{\"redirection_count\"",iter,end);
+					} break;
+					case DownloadSpec::referrer_policy: {
+						std::string_view referrer_policy_string;
+						json_read_string(entry.have,referrer_policy_string,"<download_spec>:[{\"referrer_policy\"",iter,end);
+						referrer_policy = parse_referrer_policy(referrer_policy_string);
 					} break;
 					case DownloadSpec::headers: {
 						if (entry.have != Arcollect::json::ObjHave::OBJECT)
@@ -251,6 +321,13 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 		case URI_HTTPS: {
 			if (ok_codes.empty())
 				throw std::runtime_error("<download_spec>:[{\"ok_codes\": must not be '[]' (empty array)!");
+			curl::url referrer_url, target_url;
+			CURLUcode curlu = referrer_url.set(CURLUPART_URL,referer.data());
+			if (curlu)
+				throw std::runtime_error(std::string("Invalid URL in \"source\" ").append(referer).append(": ").append(curl_url_strerror(curlu)));
+			curlu = target_url.set(CURLUPART_URL,data_string.data());
+			if (curlu)
+				throw std::runtime_error(std::string("Invalid download URL ").append(data_string).append(": ").append(curl_url_strerror(curlu)));
 			// Configure CURL
 			CURL *const easyhandle = session.easyhandle;
 			curl_easy_reset(easyhandle);
@@ -258,7 +335,7 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 			curl_easy_setopt(easyhandle,CURLOPT_WRITEFUNCTION,curl_first_write_callback_wrapper);
 			curl_easy_setopt(easyhandle,CURLOPT_WRITEDATA,this);
 			curl_easy_setopt(easyhandle,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS);
-			curl_easy_setopt(easyhandle,CURLOPT_REFERER,referer.data());
+			curl_easy_setopt(easyhandle,CURLOPT_REFERER,apply_referrer_policy(referrer_url,target_url,referrer_policy == REFERRER_UNSPECIFIED ? session.referrer_policy : referrer_policy).c_str());
 			curl_easy_setopt(easyhandle,CURLOPT_USERAGENT,Arcollect::WebextAdder::user_agent.c_str());
 			curl_easy_setopt(easyhandle,CURLOPT_ERRORBUFFER,session.curl_errorbuffer);
 			curl_easy_setopt(easyhandle,CURLOPT_LOW_SPEED_LIMIT,1L); // Abort if less than 1bytes/s
