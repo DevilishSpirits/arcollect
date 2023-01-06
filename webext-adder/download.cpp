@@ -334,7 +334,12 @@ sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::pa
 			curl_easy_setopt(easyhandle,CURLOPT_URL,data_string.data());
 			curl_easy_setopt(easyhandle,CURLOPT_WRITEFUNCTION,curl_first_write_callback_wrapper);
 			curl_easy_setopt(easyhandle,CURLOPT_WRITEDATA,this);
+			#ifdef CURLOPT_PROTOCOLS
 			curl_easy_setopt(easyhandle,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS);
+			#endif
+			#ifdef CURLOPT_PROTOCOLS_STR
+			curl_easy_setopt(easyhandle,CURLOPT_PROTOCOLS_STR,"HTTPS");
+			#endif
 			curl_easy_setopt(easyhandle,CURLOPT_REFERER,apply_referrer_policy(referrer_url,target_url,referrer_policy == REFERRER_UNSPECIFIED ? session.referrer_policy : referrer_policy).c_str());
 			curl_easy_setopt(easyhandle,CURLOPT_USERAGENT,Arcollect::WebextAdder::user_agent.c_str());
 			curl_easy_setopt(easyhandle,CURLOPT_ERRORBUFFER,session.curl_errorbuffer);
