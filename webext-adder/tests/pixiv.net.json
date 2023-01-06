@@ -1,12 +1,8 @@
 {
 	"platform": "pixiv.net",
+	"referrer_policy": "strict-origin-when-cross-origin",
 	"artworks": [{
-		"data": {
-			"data": "https://i.pximg.net/img-original/img/2022/05/22/18/51/27/98526952_p0.jpg",
-			"headers": {
-				"Referer": "https://www.pixiv.net/"
-			}
-		},
+		"data": "https://i.pximg.net/img-original/img/2022/05/22/18/51/27/98526952_p0.jpg",
 		"data.sha256": "74910df8ad89dedd57c1ff427179fcbd042e31022212546ff52608e8d48ff9c0",
 		"pageno": 268435456,
 		"source": "https://www.pixiv.net/artworks/98526952#1",
@@ -15,12 +11,7 @@
 		"rating": 0,
 		"postdate": 1653213060
 	},{
-		"data": {
-			"data": "https://i.pximg.net/img-original/img/2022/05/22/18/51/27/98526952_p1.jpg",
-			"headers": {
-				"Referer": "https://www.pixiv.net/"
-			}
-		},
+		"data": "https://i.pximg.net/img-original/img/2022/05/22/18/51/27/98526952_p1.jpg",
 		"data.sha256": "d626852e87ccffe5061dd00d8ecbaf6ffe050e35f76083ba4529ae77b043a093",
 		"pageno": 536870912,
 		"source": "https://www.pixiv.net/artworks/98526952#2",
@@ -29,12 +20,7 @@
 		"rating": 0,
 		"postdate": 1653213060
 	},{
-		"data": {
-			"data": "https://i.pximg.net/img-original/img/2022/05/22/18/51/27/98526952_p2.jpg",
-			"headers": {
-				"Referer": "https://www.pixiv.net/"
-			}
-		},
+		"data": "https://i.pximg.net/img-original/img/2022/05/22/18/51/27/98526952_p2.jpg",
 		"data.sha256": "2ab10cb05ab13031f397f598c3d57e12621974aa91875f80fe87095b4ba8d4cf",
 		"pageno": 805306368,
 		"source": "https://www.pixiv.net/artworks/98526952#3",
@@ -43,12 +29,7 @@
 		"rating": 0,
 		"postdate": 1653213060
 	},{
-		"data": {
-			"data": "https://i.pximg.net/img-original/img/2022/05/22/18/51/27/98526952_p3.jpg",
-			"headers": {
-				"Referer": "https://www.pixiv.net/"
-			}
-		},
+		"data": "https://i.pximg.net/img-original/img/2022/05/22/18/51/27/98526952_p3.jpg",
 		"data.sha256": "d0134408bedf8ff6bdc35ee8f6c225cb06aff4db249658d38915c8fcae024615",
 		"pageno": 1073741824,
 		"source": "https://www.pixiv.net/artworks/98526952#4",

@@ -139,7 +139,7 @@ if enable_native_progs
 		endif
 	endif
 	# Query dependencies
-	dep_curl = dependency('libcurl', required: true, default_options: [
+	dep_curl = dependency('libcurl', version: config_h.get('ARCOLLECT_VERREQ_libcurl'), required: true, default_options: [
 		'cmake_module_path='+cmake_module_path
 	])
 	

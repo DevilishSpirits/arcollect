@@ -1,12 +1,8 @@
 {
 	"platform": "pixiv.net",
+	"referrer_policy": "strict-origin-when-cross-origin",
 	"artworks": [{
-		"data": {
-			"data": "https://i.pximg.net/img-original/img/2022/04/25/19/08/58/97875112_p0.png",
-			"headers": {
-				"Referer": "https://www.pixiv.net/"
-			}
-		},
+		"data": "https://i.pximg.net/img-original/img/2022/04/25/19/08/58/97875112_p0.png",
 		"data.sha256": "9a7a18bea16bbfa03c0148b77ea4858fc8a8473a7a602b386b3e679876febfac",
 		"source": "https://www.pixiv.net/artworks/97875112#1",
 		"pageno": 268435456,
@@ -15,12 +11,7 @@
 		"rating": 18,
 		"postdate": 1650881280
 	},{
-		"data": {
-			"data": "https://i.pximg.net/img-original/img/2022/04/25/19/08/58/97875112_p1.png",
-			"headers": {
-				"Referer": "https://www.pixiv.net/"
-			}
-		},
+		"data": "https://i.pximg.net/img-original/img/2022/04/25/19/08/58/97875112_p1.png",
 		"data.sha256": "8d6477c2cb5ce040fc2787eccf672610f53c5b13decba6c31782da33494ac174",
 		"source": "https://www.pixiv.net/artworks/97875112#2",
 		"pageno": 536870912,
@@ -89,11 +80,6 @@
 		"name": "おピンク土鍋",
 		"url": "https://www.pixiv.net/users/60533322",
 		"desc": "Twitter絵の倉庫※not全部\r\n\r\n主にモンハンのリオレウスを描いております。\r\n竜人化もさせてるので苦手な方は注意。\r\n\r\n\r\n\r\n【転載、複製、及び自作発言を禁止します】\r\nAny use or reproduction of these illustrations is prohibited.",
-		"icon": {
-			"data": "https://i.pximg.net/user-profile/img/2021/07/19/05/40/07/21062747_87196d14fcf0c542b9b7a91b22dd65a0_170.jpg",
-			"headers": {
-				"Referer": "https://www.pixiv.net/"
-			}
-		}
+		"icon": "https://i.pximg.net/user-profile/img/2021/07/19/05/40/07/21062747_87196d14fcf0c542b9b7a91b22dd65a0_170.jpg"
 	}]
 }

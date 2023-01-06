@@ -29,7 +29,6 @@
  * It also expose the following variables for you :
  * - The `source` of the current artwork to use.
  * - A handy fetch_pixiv() API wrapper that promise the body of API calls.
- * - PixivCDNDownload() that put security headers required for Pixiv.
  */
 let pixiv_lang = document.querySelector('html').lang;
 
@@ -49,19 +48,6 @@ function fetch_pixiv(url) {
 	});
 }
 
-/** Make a Pixiv download specification that hit the CDN
- *
- * I set the `Referer` to `https://www.pixiv.net/` to match Pixiv behavior.
- */
-function PixivCDNDownload(url, SecFetchDest) {
-	return {
-		'data': url,
-		'headers': {
-			'Referer': 'https://www.pixiv.net/',
-		},
-	};
-}
-
 function makePixivAccount(id) {
 	return fetch_pixiv('https://www.pixiv.net/ajax/user/'+id+'?full=1').then(function(json) {
 		return {
@@ -69,7 +55,7 @@ function makePixivAccount(id) {
 			'name': json.name,
 			'url': 'https://www.pixiv.net/users/'+json.userId,
 			'desc': json.comment,
-			'icon': PixivCDNDownload(json.imageBig,'image'),
+			'icon': json.imageBig,
 		}
 	});
 };
@@ -145,6 +131,7 @@ function pixiv_save_illust(id) {
 		let tags = pivix_process_tags(illust.tags);
 		let canonicalSource = illust.extraData.meta.alternateLanguages.ja; // TODO Find a more robust canonical URL
 		let result = {
+			'referrer_policy': 'strict-origin-when-cross-origin',
 			'artworks': [],
 			'art_acc_links': [],
 			'art_tag_links': [],
@@ -174,7 +161,7 @@ function pixiv_save_illust(id) {
 		for (let i = 0; i < illust.pageCount; ++i) {
 			let source = canonicalSource+'#'+(i+1);
 			result.artworks.push(Object.assign({
-				'data': PixivCDNDownload(pages[i],'image'),
+				'data': pages[i],
 				'source': source,
 			},artwork_skel));
 			result.art_acc_links.push({
