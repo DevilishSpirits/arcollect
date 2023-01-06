@@ -15,7 +15,8 @@ if (host_machine.system() == 'windows')
 	webext_adder_deps += cpp.find_library('ws2_32')
 endif
 
-webext_adder_exe = executable('arcollect-webext-adder', webext_adder_srcs, dependencies: webext_adder_deps, install: true, install_dir: get_option('libexecdir'))
+webext_adder_dep = declare_dependency(link_with: static_library('arcollect-webext-adder', webext_adder_srcs, dependencies: webext_adder_deps, install: false), dependencies: webext_adder_deps)
+webext_adder_exe = executable('arcollect-webext-adder', 'main.cpp', dependencies: webext_adder_dep, install: true, install_dir: get_option('libexecdir'))
 
 # Application manifest for Firefox
 webext_conf = configuration_data()
