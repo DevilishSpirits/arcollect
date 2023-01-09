@@ -195,8 +195,8 @@ jobs:
       - name: Add the Flathub repo
         run: sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
       - name: Install Flatpak runtime and SDK
-        run: sudo flatpak install -y flathub org.freedesktop.Platform//21.08 org.freedesktop.Sdk//21.08
-      - name: Make Flatpak work directory
+        run: XDG_VER="$(grep -F 'ARCOLLECT_FLATPAK_XDG_RUNTIME_VERSION' config.txt | cut -f 2 -d':')" && sudo flatpak install -y flathub "org.freedesktop.Platform//$XDG_VER" "org.freedesktop.Sdk//$XDG_VER" # Dynamically read the required version
+      - name: Make Flatpak work directory	
         run: mkdir "$GH_FLATPAK_WORKSPACE" "$GH_FLATPAK_WORKSPACE/build-dir"
       - name: Generate the Flatpak manifest
         run: sh generate-flatpak.sh local > "$GH_FLATPAK_WORKSPACE/manifest.yml"
