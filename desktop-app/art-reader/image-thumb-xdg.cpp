@@ -30,6 +30,7 @@
 #include <config.h>
 #include <arcollect-paths.hpp>
 #include <md5.hpp>
+#include <zlib.h>
 #if WITH_XDG
 #include <sys/stat.h>
 #endif
@@ -174,6 +175,7 @@ void Arcollect::art_reader::write_thumbnail(const std::filesystem::path &path, S
 			std::to_string(oiio_version%100);
 	}();
 	spec.attribute("Software",software_string);
+	spec.attribute("png:compressionLevel",Z_BEST_COMPRESSION); 
 	spec.format = OIIO::TypeDesc::UINT8;
 	// Generate the output thumbnail surface
 	SDL::Rect thumb_out{0,0,surface.w,surface.h};
