@@ -47,6 +47,5 @@ elif host_machine.system() == 'darwin'
 endif
 subproj_opts.set_install(false)
 subproj_curl = cmake.subproject('libcurl-cmake', options: subproj_opts)
-dep_curl_cmake = subproj_curl.dependency('libcurl')
-curl_version = cc.get_define('LIBCURL_VERSION', dependencies: dep_curl_cmake.partial_dependency(includes: true)	, prefix: '#include <curl/curl.h>').strip('"')
-meson.override_dependency('libcurl',declare_dependency(dependencies: [dep_curl_cmake,dep_curl,dependency('zlib'),dependency('libbrotlidec')], version: curl_version))
+curl_version = cc.get_define('LIBCURL_VERSION', include_directories: subproj_curl.include_directories('libcurl'), prefix: '#include <curl/curl.h>').strip('"')
+meson.override_dependency('libcurl',declare_dependency(dependencies: [subproj_curl.dependency('libcurl'),dep_curl,dependency('zlib'),dependency('libbrotlidec')], version: curl_version))
