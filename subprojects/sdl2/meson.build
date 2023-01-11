@@ -1,5 +1,5 @@
 # Thin wrapper around the CMake project
-project('sdl2', 'c', version: '2.0.23')
+project('sdl2', 'c')
 
 cc = meson.get_compiler('c')
 cmake = import('cmake')
@@ -35,5 +35,10 @@ subproj_opts.set_install(false)
 subproj_sdl2 = cmake.subproject('sdl2-cmake', options: subproj_opts)
 dep_sdl2 += subproj_sdl2.dependency('SDL2main').as_link_whole()
 dep_sdl2_cmake = subproj_sdl2.dependency('SDL2-static')
-sdl2_dep = declare_dependency(dependencies: [dep_sdl2_cmake,dep_sdl2], version: meson.project_version())
+sdl2_inc = subproj_sdl2.include_directories('SDL2-static')
+sdl2_ver = []
+foreach define: ['SDL_MAJOR_VERSION','SDL_MINOR_VERSION','SDL_PATCHLEVEL']
+	sdl2_ver += cc.get_define(define, prefix: '#include <include/SDL_version.h>', include_directories: sdl2_inc)
+endforeach
+sdl2_dep = declare_dependency(dependencies: [dep_sdl2_cmake,dep_sdl2], version: '.'.join(sdl2_ver))
 meson.override_dependency('sdl2',sdl2_dep)
