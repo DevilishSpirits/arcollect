@@ -149,7 +149,7 @@ function save_artwork()
 		'source': source,
 		'rating': rating,
 		'postdate': (new Date(document.querySelector('meta[itemprop=uploadDate]').content)).getTime()/1000,
-		'data': imageDownloadLink.children[0].href
+		'data': imageDownloadLink.children[0]
 	}];
 	submit_json = {
 		'platform': 'e621.net',

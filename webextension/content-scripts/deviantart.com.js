@@ -55,7 +55,7 @@ function save_artwork()
 	 * artworkData is a promise
 	 */
 	// Fallback to the image
-	let artworkData = Promise.resolve(artworkImg.src);
+	let artworkData = Promise.resolve(artworkImg);
 	
 	// Use the download button if available
 	let download_button = document.querySelector('a[data-hook=download_button]');
@@ -67,11 +67,10 @@ function save_artwork()
 		// allows the extension to possi0bly works if the platform change.
 		if (token_expires < Date.now()/1000)
 			artworkData = Promise.reject(browser.i18n.getMessage('webext_access_token_expired_pls_refresh'));
-		else artworkData = Promise.resolve({
-				'data': download_button.href,
+		else artworkData = Promise.resolve(Arcollect.makeDownloadSpec(download_button,{
 				'redirection_count': 1,
 				'cookies': true,
-			});
+			}));
 	}
 	/** Normalize source URL
 	 *

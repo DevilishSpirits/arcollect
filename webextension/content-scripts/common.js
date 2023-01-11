@@ -114,6 +114,19 @@ class Arcollect {
 					'resolve': resolve,
 					'reject': reject,
 				};
+				// Perform makeDownloadSpec() on download specifications
+				if (json_object.artworks)
+					json_object.artworks.forEach(function(artwork) {
+						if (artwork.data)
+							artwork.data = Arcollect.makeDownloadSpec(artwork.data);
+						if (artwork.thumbnail)
+							artwork.thumbnail = Arcollect.makeDownloadSpec(artwork.thumbnail);
+					});
+				if (json_object.accounts)
+					json_object.accounts.forEach(function(account) {
+						if (account.icon)
+							account.icon = Arcollect.makeDownloadSpec(account.icon);
+					});
 				// Send message
 				console.log('Arcollect.submit',json_object)
 				Arcollect.port.postMessage(json_object);
@@ -121,6 +134,55 @@ class Arcollect {
 		);
 	};
 	
+	/** Generate a download specification from something
+	 * \param input thing to make a download spec from
+	 * \param settings optional dictionary that will be merged with the result
+	 * \return A download specification for the input.
+	 *
+	 * This function is a convenience function to make a download specification
+	 * from various objects, generating a full fledged specification that will
+	 * closely mimic the browser behavior when possible. Possible inputs are:
+	 * - *Strings* that might returned as is or in a object with settings applied.
+	 * - *JSON object* that are returned with settings applied
+	 * - *URL objects* that are converted to strings
+	 * - *<a> elements*
+	 * - *<img> elements* where the src attribute is extracted
+	 *
+	 * This function understand the "referrerPolicy" and "rel" attributes.
+	 */
+	static makeDownloadSpec(input,settings) {
+		
+		// Check if there's a specific Referrer-Policy
+		if (input.referrerPolicy && input.referrerPolicy != '')
+			settings = Object.assign({"referrer_policy": input.referrerPolicy},settings);
+		if (input.rel && input.rel.split(' ').includes('noreferrer'))
+			settings = Object.assign({"referrer_policy": 'no-referrer'},settings);
+		
+		// Extract the link from the input
+		if (input instanceof URL)
+			// new URL - Extract the "href" property
+			input = input.href;
+		else if (input instanceof HTMLAnchorElement)
+			// <a> - Extract the "href" attribute
+			input = input.href;
+		else if (input instanceof HTMLImageElement)
+			// <img> - Extract the "src" attribute
+			input = input.src;
+		else if (input instanceof Element)
+			// Throw when we don't support an Element
+			throw "<"+input.tagName.toLowerCase()+"> elements are not supported.";
+		else if (input instanceof Node)
+			// Throw when we don't support a node
+			throw input.nodeName.toLowerCase()+" nodes are not supported.";
+		
+		// Return the input with extra data
+		if (typeof(input) == 'string') {
+			if (settings == undefined)
+				// A string with no settings -> passthrough the string
+				return input;
+			else return Object.assign({'data':input},settings);
+		} else return Object.assign(input,settings);
+	};
 	/** Generate a xxx_acc_links from the list and accounts list
 	 * \param xxx array in it's final form
 	 * \param xxx_idname is the name of the *id* field (`"source"` on artworks)

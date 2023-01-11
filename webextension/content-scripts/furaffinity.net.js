@@ -140,7 +140,7 @@ for (i = 0; i < downloadButtons.length; i++)
 			artworkMIME = 'text/plain; charset=utf-8'; 
 		else artworkMIME = Arcollect.mime_by_ext[ext];
 		if (artworkMIME != undefined) {
-			artworkLink = downloadButtons[i].href;
+			artworkLink = downloadButtons[i];
 			break;
 		}
 	}
@@ -174,7 +174,7 @@ function save_artwork()
 		'id': accountId,
 		'name': accountName,
 		'url': accountLink,
-		'icon': avatarImg.src
+		'icon': avatarImg
 	}];
 	
 	/** Extracts tags
@@ -277,7 +277,7 @@ function save_artwork()
 		'art_tag_links': Arcollect.simple_art_tag_links(artworks,tags),
 	};
 	if (artworkMIME.startsWith('text/'))
-		submit_json['artworks'][0]['thumbnail'] = submissionImg.src;
+		submit_json['artworks'][0]['thumbnail'] = submissionImg;
 	
 	// Submit
 	Arcollect.submit(submit_json).then(function() {
