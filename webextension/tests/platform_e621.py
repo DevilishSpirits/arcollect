@@ -5,7 +5,7 @@ class Platform:
 		self.webdriver = webdriver
 		# Click on the  to use cookies 🍪️
 		print('# Agree that the user is over 18+')
-		self.webdriver.navigateTo('https://www.e621.net/posts') # TODO Check success
+		self.webdriver.navigateTo('https://www.e621.net/posts?tags=rating%3Asafe+status%3Aactive') # TODO Check success
 		self.webdriver.GetElement('css selector','button#guest-warning-accept').Click()
 	def __call__(self,artwork):
 		# Get the 'Save in Arcollect' button
