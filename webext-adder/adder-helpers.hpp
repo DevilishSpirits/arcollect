@@ -127,13 +127,6 @@ s	 */
 	optional_type &read_json_ref(Arcollect::json::ObjHave have, const char* errmsg, char*& iter, char* const end) {
 		return operator[](JSONRefReader<KeyT,DBCache>::read_ref(have,errmsg,iter,end));
 	}
-	
-	/** Dummy optional_type
-	 * \return An invalid dummy
-	 */
-	static optional_type& dummy() {
-		return *((optional_type*)NULL);
-	}
 };
 template <>
 struct default_SQLBinder<platform_id> {
@@ -169,3 +162,10 @@ void parse_links(const std::string &array_name, Arcollect::json::ObjHave entry_h
 		vector.emplace_back(iter,end,std::forward<Args>(args)...);
 	};
 }
+
+template <typename T, typename cacheT>
+struct basic_cached: public T {
+	cacheT &cache;
+	template <typename DBCacheT>
+	basic_cached(T&& base, DBCacheT& db_cache) : T(std::move(base)), cache(db_cache[this->cache_id()]) {};
+};

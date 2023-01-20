@@ -92,10 +92,9 @@ struct new_artwork {
 	sqlite_int64     art_rating = 0;
 	std::string_view art_license;
 	sqlite_int64     art_postdate = 0;
-	ArtworksDBCache::optional_type& cache;
 	
 	new_artwork(char*& iter, char* const end, Arcollect::WebextAdder::NetworkSession &network_session)
-	: art_dwnid(network_session,artworks_target_dir), art_thumbnail(network_session,artworks_target_dir), cache(ArtworksDBCache::dummy())
+	: art_dwnid(network_session,artworks_target_dir), art_thumbnail(network_session,artworks_target_dir)
 	{
 		enum class Artworks {
 			title,
@@ -150,17 +149,9 @@ struct new_artwork {
 		if (art_dwnid.empty())
 			throw std::runtime_error("\"artworks\" objects must have \"data\".");
 	}
-	new_artwork(new_artwork&& other, ArtworksDBCache &db_cache) :
-		art_dwnid(std::move(other.art_dwnid)),
-		art_thumbnail(std::move(other.art_thumbnail)),
-		art_title(std::move(other.art_title)),
-		art_desc(std::move(other.art_desc)),
-		art_source(std::move(other.art_source)),
-		art_rating(std::move(other.art_rating)),
-		art_license(std::move(other.art_license)),
-		art_postdate(std::move(other.art_postdate)),
-		cache(db_cache[other.art_source])
-		{}
+	std::string_view& cache_id(void) {
+		return art_source;
+	}
 };
 
 struct db_account {
@@ -179,9 +170,8 @@ struct new_account {
 	std::string_view acc_url;
 	std::string_view acc_moneyurl;
 	sqlite_int64 acc_createdate = 0;
-	AccountsDBCache::optional_type& cache;
 	
-	new_account(char*& iter, char* const end, Arcollect::WebextAdder::NetworkSession &network_session) : acc_icon(network_session,acc_icon_target_dir), cache(AccountsDBCache::dummy()) {
+	new_account(char*& iter, char* const end, Arcollect::WebextAdder::NetworkSession &network_session) : acc_icon(network_session,acc_icon_target_dir) {
 		enum class Accounts {
 			id,
 			name,
@@ -236,17 +226,9 @@ struct new_account {
 		if (acc_icon.empty())
 			throw std::runtime_error("\"accounts\" objects must have an \"icon\".");
 	}
-	new_account(new_account&& other, AccountsDBCache &db_cache) :
-		acc_platid(std::move(other.acc_platid)),
-		acc_icon(std::move(other.acc_icon)),
-		acc_name(std::move(other.acc_name)),
-		acc_title(std::move(other.acc_title)),
-		acc_desc(std::move(other.acc_desc)),
-		acc_url(std::move(other.acc_url)),
-		acc_moneyurl(std::move(other.acc_moneyurl)),
-		acc_createdate(std::move(other.acc_createdate)),
-		cache(db_cache[other.acc_platid])
-		{}
+	platform_id& cache_id(void) {
+		return acc_platid;
+	}
 };
 
 struct db_tag {
@@ -261,9 +243,8 @@ struct new_tag {
 	std::string_view tag_title;
 	std::string_view tag_kind;
 	sqlite3_int64 tag_createdate = 0;
-	TagsDBCache::optional_type& cache;
 	
-	new_tag(char*& iter, char* const end) : cache(TagsDBCache::dummy()) {
+	new_tag(char*& iter, char* const end) {
 		enum class Tags {
 			id,
 			title,
@@ -294,12 +275,9 @@ struct new_tag {
 		if (tag_platid.empty())
 			throw std::runtime_error("\"tags\" objects must have an \"id\".");
 	}
-	new_tag(new_tag&& other, TagsDBCache &db_cache) :
-		tag_platid(std::move(other.tag_platid)),
-		tag_title(std::move(other.tag_title)),
-		tag_kind(std::move(other.tag_kind)),
-		cache(db_cache[other.tag_platid])
-		{}
+	platform_id& cache_id(void) {
+		return tag_platid;
+	}
 };
 
 struct new_comic;
@@ -642,9 +620,9 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 	AccountsDBCache db_accounts;
 	TagsDBCache     db_tags;
 	ComicsDBCache   db_comics;
-	std::vector<new_artwork> new_artworks;
-	std::vector<new_account> new_accounts;
-	std::vector<new_tag>     new_tags;
+	std::vector<basic_cached<new_artwork,ArtworksDBCache::optional_type>> new_artworks;
+	std::vector<basic_cached<new_account,AccountsDBCache::optional_type>> new_accounts;
+	std::vector<basic_cached<new_tag,TagsDBCache::optional_type>>         new_tags;
 	std::vector<new_comic>   new_comics;
 	std::vector<new_art_acc_link> new_art_acc_links;
 	std::vector<new_art_tag_link> new_art_tag_links;
