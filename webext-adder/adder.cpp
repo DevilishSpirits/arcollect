@@ -50,6 +50,8 @@
 using namespace std::literals::string_view_literals;
 #include "adder-helpers.hpp"
 extern std::unique_ptr<SQLite3::sqlite3> db;
+static const std::filesystem::path artworks_target_dir("artworks");
+static const std::filesystem::path acc_icon_target_dir("account-avatars");
 
 struct db_comic {
 	sqlite_int64 com_arcoid;
@@ -93,7 +95,7 @@ struct new_artwork {
 	ArtworksDBCache::optional_type& cache;
 	
 	new_artwork(char*& iter, char* const end, Arcollect::WebextAdder::NetworkSession &network_session)
-	: art_dwnid(network_session), art_thumbnail(network_session), cache(ArtworksDBCache::dummy())
+	: art_dwnid(network_session,artworks_target_dir), art_thumbnail(network_session,artworks_target_dir), cache(ArtworksDBCache::dummy())
 	{
 		enum class Artworks {
 			title,
@@ -179,7 +181,7 @@ struct new_account {
 	sqlite_int64 acc_createdate = 0;
 	AccountsDBCache::optional_type& cache;
 	
-	new_account(char*& iter, char* const end, Arcollect::WebextAdder::NetworkSession &network_session) : acc_icon(network_session), cache(AccountsDBCache::dummy()) {
+	new_account(char*& iter, char* const end, Arcollect::WebextAdder::NetworkSession &network_session) : acc_icon(network_session,acc_icon_target_dir), cache(AccountsDBCache::dummy()) {
 		enum class Accounts {
 			id,
 			name,
@@ -973,9 +975,9 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 		filename += artwork.art_dwnid.base_filename();
 		sqlite_int64 dwnid = (art_flag0 & 1)
 			? artwork.cache->art_dwnid // Artwork data frozen -> do not change
-			: artwork.art_dwnid.perform("artworks",filename,artwork.art_source);
+			: artwork.art_dwnid.perform(filename,artwork.art_source);
 		filename += ".thumbnail";
-		sqlite_int64 thumbnail = artwork.art_thumbnail.empty() ? dwnid : artwork.art_thumbnail.perform("artworks",filename,artwork.art_source);
+		sqlite_int64 thumbnail = artwork.art_thumbnail.empty() ? dwnid : artwork.art_thumbnail.perform(filename,artwork.art_source);
 		// Perform SQL
 		if (artwork.cache) {
 			update_stmt->bind(1,artwork.cache->art_artid);
@@ -1066,7 +1068,7 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 		std::string filename(platform);
 		filename += "_";
 		filename += account.acc_name;
-		sqlite_int64 icon = account.acc_icon.perform("account-avatars",filename,account.acc_url);
+		sqlite_int64 icon = account.acc_icon.perform(filename,account.acc_url);
 		// Perform SQL
 		if (account.cache) {
 			// Update

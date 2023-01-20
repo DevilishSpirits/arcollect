@@ -295,7 +295,7 @@ size_t Arcollect::WebextAdder::Download::curl_first_write_callback(char *ptr, si
 	curl_easy_setopt(easyhandle,CURLOPT_WRITEDATA,file);
 	return fwrite(ptr,size,nmemb,file);
 }
-sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::filesystem::path& target_dir, const std::string_view& target, const std::string_view &referer)
+sqlite_int64 Arcollect::WebextAdder::Download::perform(const std::string_view& target, const std::string_view &referer)
 {
 	using Arcollect::db::downloads::DownloadInfo;
 	if (Arcollect::debug.webext_adder)

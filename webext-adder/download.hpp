@@ -224,6 +224,11 @@ namespace Arcollect {
 					URI_BASE64,
 				} uri_type;
 			public:
+				/** Target directory
+				 *
+				 * The directory where the resource should be downloaded
+				 */
+				const std::filesystem::path& target_dir;
 				/** Query the base filename
 				 * \return In short the part after the last '/' and before the '?' or
 				 *         nothing if base64.
@@ -241,7 +246,6 @@ namespace Arcollect {
 					return data_string.empty();
 				}
 				/** Attempt to download a resource
-				 * \param target_dir  Target directory (MUST BE hardcoded)
 				 * \param target      Target filename (will be sanitized)
 				 * \param referer     Referer to use.
 				 * \param cache       Cache transaction to use.
@@ -249,8 +253,12 @@ namespace Arcollect {
 				 * \warning `referer` must be NUL-terminated!
 				 *          The code ensure that with json_read_string_nul_terminate().
 				 */
-				sqlite_int64 perform(const std::filesystem::path& target_dir, const std::string_view& target, const std::string_view &referer);
-				Download(NetworkSession &session) : session(session) {}
+				sqlite_int64 perform(const std::string_view& target, const std::string_view &referer);
+				/** Create a download
+				 * \param session of the current transaction
+				 * \param target_dir to save the artwork to (MUST BE hardcoded to a static reference)
+				 */
+				Download(NetworkSession &session, const std::filesystem::path& target_dir) : session(session), target_dir(target_dir) {}
 		};
 	}
 }
