@@ -55,6 +55,7 @@ When adding artwork, send the plain artwork with this kind of JSON :
 		"title": "DrawAuthor make drawings",
 		"url": "https://example.net/user/4213/",
 		"desc": "I draw artworks.",
+		"banner": "<... download specification ...>",
 		"icon": "<... download specification ...>"
 	}],
 	"tags": [{
@@ -116,6 +117,7 @@ The `account` array contain users you might wants to add with some properties :
 * `name` is the username on the platform. Often something not very pretty with a limited charset. For example on Twitter `"@DevilishSpirits"`.
 * `title` is the pretty username, if different from the `name` title. For example on Twitter `"D-Spirits"`.
 * `url` is the account URL.
+* `banner` describe how to download an optional account banner. (Supported in a future release)
 * `icon` describe how to download the account avatar, most times the `https://` CDN link just works.
 * `desc` is the account description.
 * `createdate` is the UNIX timestamp of when the account has been created (optional).
