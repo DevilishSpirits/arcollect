@@ -42,6 +42,15 @@ class Arcollect {
 	 * #Arcollect.transactions.
 	 */
 	static next_transaction_id = 0;
+	/** Convert hexadecimal data to Base64
+	 * \param data in hexadecimal encoding
+	 * \return data in Base64 encoding
+	 *
+	 * This is a utility function mostly useful for SRI.
+	 */
+	static h2a(data) {
+		return btoa(String.fromCharCode(...Uint8Array.from(data.matchAll('..'),hex => parseInt(hex,16))));
+	}
 	/** Normalize tag id
 	 * \param tag The image URL
 	 * \return The tag in a normalized form

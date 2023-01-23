@@ -127,6 +127,11 @@ function e621_MakeWebextAdderPayload()
 		comics = [];
 	}
 	
+	// Extract the subresource integrity for the URL (but ensure that format match)
+	let data = imageDownloadLink.children[0];
+	let cdn_pathname = new URL(data.href).pathname;
+	if (/^\/data\/[0-9a-f]{2}\/[0-9a-f]{2}\/[0-9a-f]{32}\.[^/]+$/.test(cdn_pathname) && (cdn_pathname.slice(6,8) == cdn_pathname.slice(12,14)) && (cdn_pathname.slice(9,11) == cdn_pathname.slice(14,16)))
+		data = Arcollect.makeDownloadSpec(data,{'integrity': 'md5-'+Arcollect.h2a(cdn_pathname.slice(12,44))});
 	// Build the JSON
 	let artworks = [{
 		'title': title,
@@ -134,7 +139,7 @@ function e621_MakeWebextAdderPayload()
 		'source': source,
 		'rating': rating,
 		'postdate': document.querySelector('meta[itemprop=uploadDate]').content,
-		'data': imageDownloadLink.children[0]
+		'data': data,
 	}];
 	return {
 		'platform': 'e621.net',
