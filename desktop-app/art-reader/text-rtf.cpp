@@ -41,7 +41,6 @@ struct ControlWord {
 		const char* start = iter;
 		for (;(iter != end) && is_valid_command_char(*iter); ++iter);
 		command = std::string_view(start,std::distance(start,iter));
-		start = iter;
 		// Read the numeric value if so
 		if (((*iter >= '0')&(*iter <= '9')) || (*iter == '-')) {
 			std::from_chars_result parse_result = std::from_chars(iter,end,param.emplace());
