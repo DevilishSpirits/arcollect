@@ -189,6 +189,7 @@ void Arcollect::art_reader::write_thumbnail(const std::filesystem::path &path, S
 		thumb_out.h  = max_thumbnail_size;
 	}
 	std::unique_ptr<SDL::Surface> thumbnail_surf(reinterpret_cast<SDL::Surface*>(SDL_CreateRGBSurfaceWithFormat(0,thumb_out.w,thumb_out.h,surf_format->BitsPerPixel,surf_format->format)));
+	SDL_SetSurfaceBlendMode(&surface,SDL::BLENDMODE_NONE);
 	// Make thumbnails
 	for (const auto& dir: dirs_sizes) {
 		// Check the thumbnail size
