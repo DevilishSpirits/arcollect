@@ -61,7 +61,6 @@ SDL::Surface* Arcollect::art_reader::load_surface(OIIO::ImageInput &image)
 {
 	const OIIO::ImageSpec &spec = image.spec();
 	image.seek_subimage(0,0); // Just in case weird stuff happen
-	image.threads(1);
 	int pixel_format;
 	switch (spec.nchannels) {
 		case 4:pixel_format = SDL_PIXELFORMAT_ABGR8888;break;

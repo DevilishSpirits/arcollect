@@ -21,6 +21,7 @@
 #include "../db/artwork-loader.hpp"
 #include "../db/db.hpp"
 #include "../sdl2-hpp/SDL.hpp"
+#include <OpenImageIO/imageio.h> // Enable some stuff
 #undef main // This cause name clash
 #include "animation.hpp"
 #include "font.hpp"
@@ -80,6 +81,8 @@ int Arcollect::gui::init(void)
 		std::cerr << "Failed to create window: " << SDL::GetError() << std::endl;
 		return 1;
 	}
+	// Configure OpenImageIO
+	OIIO::attribute("threads",1); // Disable OIIO threading system
 	// Init font system
 	Arcollect::gui::font::init();
 	// Load system language
