@@ -8,19 +8,12 @@ cpp = meson.get_compiler('cpp')
 add_project_arguments('-DOIIO_STATIC_DEFINE', language: 'cpp')
 
 compile_args_priv = [
+	'-DUSE_STD_FILESYSTEM',
 ]
 
 boost_modules = [
 	'thread',
 ]
-
-# Check for std::filesystem
-has_std_filsystem = cpp.has_type('std::filesystem::path', prefix: '#include <filesystem>')
-if has_std_filsystem
-	compile_args_priv += '-DUSE_STD_FILESYSTEM'
-else
-	boost_modules += 'filesystem'
-endif
 
 dep_fmt   = dependency('fmt')
 dep_imath = dependency('Imath')
@@ -28,8 +21,6 @@ dep_imath_version = dep_imath.version().split('.')
 dep_tiff  = dependency('libtiff-4')
 dep_robin_map = dependency('robin-map')
 dep_boost = dependency('boost', version: '>=1.53', modules: boost_modules, default_options: [
-	'BOOST_FILESYSTEM_NO_DEPRECATED=true',
-	'BOOST_FILESYSTEM_DISABLE_BCRYPT=true',
 ])
 dep_zlib  = dependency('zlib')
 oiio_deps = [

@@ -1,17 +1,7 @@
 option('boost_with', type : 'array', choices : [
 	'atomic',
-	'filesystem',
 	'thread',
-], value : ['filesystem','thread'])
-
-# boost::filesystem
-option('BOOST_FILESYSTEM_NO_DEPRECATED', type: 'boolean', value: false, description: 'Disable deprecated functionality of Boost.Filesystem')
-option('BOOST_FILESYSTEM_DISABLE_SENDFILE', type: 'boolean', value: false, description: 'Disable usage of sendfile API in Boost.Filesystem')
-option('BOOST_FILESYSTEM_DISABLE_COPY_FILE_RANGE', type: 'boolean', value: false, description: 'Disable usage of copy_file_range API in Boost.Filesystem')
-option('BOOST_FILESYSTEM_DISABLE_STATX', type: 'boolean', value: false, description: 'Disable usage of statx API in Boost.Filesystem')
-option('BOOST_FILESYSTEM_DISABLE_GETRANDOM', type: 'boolean', value: false, description: 'Disable usage of getrandom API in Boost.Filesystem')
-option('BOOST_FILESYSTEM_DISABLE_ARC4RANDOM', type: 'boolean', value: false, description: 'Disable usage of arc4random API in Boost.Filesystem')
-option('BOOST_FILESYSTEM_DISABLE_BCRYPT', type: 'boolean', value: false, description: 'Disable usage of BCrypt API in Boost.Filesystem')
+], value : ['thread'])
 
 # boost::thread
 option('BOOST_THREAD_THREADAPI', type: 'combo', choices : ['auto', 'pthread', 'win32'], value: 'auto', description: 'Boost.Thread threading API (pthread or win32)')

@@ -6,10 +6,6 @@ boost_pub_args = [
 # Enable modules
 boost_with = get_option('boost_with')
 
-if ('filesystem' in boost_with) and 'atomic' not in boost_with
-	boost_with += 'atomic'
-endif
-
 boost_inc = include_directories('.')
 boost_libs = []
 foreach module: boost_with
