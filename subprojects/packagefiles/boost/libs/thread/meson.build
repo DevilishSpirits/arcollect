@@ -31,7 +31,6 @@ if threadapi == 'auto'
 endif
 
 BOOST_THREAD_SOURCES = files(
-	'src/future.cpp',
 )
 if threadapi == 'win32'
 	BOOST_THREAD_SOURCES += files(
