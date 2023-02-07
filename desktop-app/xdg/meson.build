@@ -15,6 +15,7 @@ deskapp_srcs += files(
 	'dbus.cpp',
 	'freedesktop-application.cpp',
 	'gnome-shell-search-provider.cpp',
+	'org.freedesktop.LowMemoryMonitor.cpp',
 )
 deskapp_deps += [
 	dep_dbus,

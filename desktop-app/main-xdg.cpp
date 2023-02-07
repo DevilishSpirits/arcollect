@@ -40,6 +40,10 @@
 
 static Uint32 last_dbus_activity = SDL_GetTicks();
 
+void Arcollect::dbus::exit_if_idle(void)
+{
+	last_dbus_activity = -10000;
+}
 // WARNING! Each sigio_watch_list has a matching sigio_watch_pollfd at same index
 static std::vector<DBusWatch*>    sigio_watch_list;
 static std::vector<struct pollfd> sigio_watch_pollfd;
@@ -156,6 +160,16 @@ int main(int argc, char *argv[])
 	conn.set_exit_on_disconnect(false);
 	conn.bus_request_name(ARCOLLECT_DBUS_NAME_STR,DBUS_NAME_FLAG_ALLOW_REPLACEMENT|DBUS_NAME_FLAG_REPLACE_EXISTING);
 	dbus_connection_register_fallback(conn,"/",&Arcollect::dbus::root_handler_vtable,NULL);
+	conn.add_match("type='signal',interface='org.freedesktop.portal.MemoryMonitor',sender='org.freedesktop.portal.Desktop',member='LowMemoryWarning'",NULL);
+	conn.add_filter(Arcollect::dbus::handle_LowMemoryWarning);
+	
+	DBus::Connection sys_conn(DBus::BUS_SYSTEM);
+	dbus_connection_set_watch_functions(sys_conn,dbus_add_watch,dbus_remove_watch,dbus_watch_toggled,NULL,NULL);
+	dbus_connection_set_timeout_functions(sys_conn,dbus_add_timeout,dbus_remove_timeout,NULL,NULL,NULL);
+	dbus_connection_set_wakeup_main_function(sys_conn,dbus_wakeup_main,NULL,NULL);
+	sys_conn.set_exit_on_disconnect(false);
+	sys_conn.add_match("type='signal',interface='org.freedesktop.LowMemoryMonitor',member='LowMemoryWarning'",NULL);
+	sys_conn.add_filter(Arcollect::dbus::handle_LowMemoryWarning);
 	// Run GUI main-loop
 	if ((argc < 2)|| std::strcmp(argv[1],"--dbus-service"))
 		Arcollect::gui::start(argc,argv);
@@ -204,16 +218,14 @@ int main(int argc, char *argv[])
 				// Make SIGINT stop Arcollect even if the D-Bus timeout is not elapsed.
 				// Because I don't want to smash Ctrl+C too long please :sob:
 				if (!Arcollect::gui::enabled)
-					last_dbus_activity = -10000;
+					Arcollect::dbus::exit_if_idle();
 			} break;
 			default: {
 				perror("poll() on D-Bus files failed");
 			} break;
 		}
-		while (dbus_connection_get_dispatch_status(conn) == DBUS_DISPATCH_DATA_REMAINS) {
-			conn.dispatch();
+		while ((conn.dispatch() == DBUS_DISPATCH_DATA_REMAINS)||(sys_conn.dispatch() == DBUS_DISPATCH_DATA_REMAINS))
 			last_dbus_activity = SDL_GetTicks();
-		}
 	}
 	return 0;
 }

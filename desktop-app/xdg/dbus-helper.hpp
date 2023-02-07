@@ -44,6 +44,14 @@ namespace DBus {
 			inline dbus_bool_t dispatch(void) {
 				return dbus_connection_dispatch(*this);
 			}
+			
+			void add_match(const char *rule, DBusError *error = NULL) {
+				return dbus_bus_add_match(*this,rule,error);
+			}
+			
+			dbus_bool_t add_filter(DBusHandleMessageFunction function, void* user_data = NULL, DBusFreeFunction free_data_function = NULL) {
+				return dbus_connection_add_filter(*this,function,user_data,free_data_function);
+			}
 	};
 	
 	struct append_iterator: public DBusMessageIter {

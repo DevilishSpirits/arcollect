@@ -27,5 +27,10 @@ namespace Arcollect {
 		DBusHandlerResult freedesktop_application_intf(DBus::Connection &conn, DBusMessage *message);
 		DBusHandlerResult gnome_shell_search_provider_intf(DBus::Connection &conn, DBusMessage *message);
 		extern std::unique_ptr<SQLite3::stmt> gnome_shell_search_provider_result_metas_stmt;
+		
+		/** Ask the D-Bus main-loop to exit if idle
+		 */
+		void exit_if_idle(void);
+		DBusHandlerResult handle_LowMemoryWarning(DBusConnection *conn, DBusMessage *message, void*);
 	}
 }
