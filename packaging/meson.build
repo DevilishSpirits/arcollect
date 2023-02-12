@@ -164,26 +164,37 @@ copying_rtf = custom_target('COPYING.rtf',
 )
 
 if candle_prog.found() and light_prog.found() and enable_native_progs
+	# WiX configuration
+	wix_config = custom_target('wix-config',
+		input: [
+			config_h_file,
+			# Match these input to keys a few lines below -↓
+			arcollect_exe,
+			webext_appmanifest_firefox_windows,
+			webext_adder_exe,
+			copying_rtf,
+		],
+		output: 'config.wxi',
+		command: [find_program('generate-wix-config.py', required: true, native: true),
+			','.join([
+				# Just there --------------------------------↑
+				'built_arcollect_exe',
+				'built_mozilla_manifest',
+				'built_webext_adder_exe',
+				'copying_rtf_path',
+			]),'@INPUT@'
+		],
+		capture: true, build_by_default: false,
+	)
 	# WiX depends
 	wix_deps = [
 		destdir_target,
-		arcollect_exe,
-		copying_rtf,
-		webext_adder_exe,
+		wix_config,
 	]
 	wix_dep_files = files(
 	)+[
 		webext_appmanifest_firefox_windows,
 	]
-	# Configuration
-	wix_conf = configuration_data()
-	wix_conf.merge_from(config_h)
-	arcollect_exe_basename    = arcollect_exe.full_path().split('/')[-1].split('\\')[-1]
-	webext_adder_exe_basename = webext_adder_exe.full_path().split('/')[-1].split('\\')[-1]
-	wix_conf.set('built_arcollect_exe',destdir_prefix/get_option('bindir')/arcollect_exe_basename)
-	wix_conf.set('built_webext_adder_exe',destdir_prefix/get_option('libexecdir')/webext_adder_exe_basename)
-	wix_conf.set('built_mozilla_manifest',webext_appmanifest_firefox_windows_full_path) # webext_appmanifest_firefox_windows
-	wix_conf.set('copying_rtf_path',copying_rtf.full_path())
 	
 	# Auto-configuration
 	if host_machine.cpu_family() == 'x86'
@@ -199,10 +210,8 @@ if candle_prog.found() and light_prog.found() and enable_native_progs
 	
 	wix_args = [
 		'-pedantic',
+		'-dconfig_wxi="'+wix_config.full_path()+'"',
 	]
-	foreach key: wix_conf.keys()
-		wix_args += ['-d'+key+'='+wix_conf.get(key)]
-	endforeach
 	
 	candle_args = wix_args+[
 		'-arch',candle_arch,
@@ -210,7 +219,7 @@ if candle_prog.found() and light_prog.found() and enable_native_progs
 		'@INPUT@'
 	]
 	
-	candle = generator(candle_prog, arguments: candle_args, output: ['@BASENAME@.wixobj'])
+	candle = generator(candle_prog, arguments: candle_args, output: ['@BASENAME@.wixobj'], depends: wix_deps)
 	
 	light_args = wix_args+[
 		'-sval', # Needed under Wine

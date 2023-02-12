@@ -86,7 +86,7 @@ foreach key: config_h.keys()
 	summary(key,config_h.get(key), section: 'config.h')
 endforeach
 
-configure_file(output: 'config.h', configuration: config_h)
+config_h_file = configure_file(output: 'config.h', configuration: config_h)
 config_h_inc = include_directories('.')
 
 # Dependencies

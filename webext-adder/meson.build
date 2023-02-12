@@ -36,7 +36,6 @@ webext_conf_windows.merge_from(config_h)
 webext_conf_windows.set('ARCOLLECT_WEBEXT_ADDER_PATH','arcollect-webext-adder.exe')
 
 webext_appmanifest_firefox_windows = configure_file(input: 'appmanifest-firefox.json.in', output: 'appmanifest-firefox-windows.json', configuration: webext_conf_windows)
-webext_appmanifest_firefox_windows_full_path = meson.current_build_dir()/'appmanifest-firefox-windows.json'
 
 if host_machine.system() == 'windows'
 	webext_appmanifest_firefox_installdir = ''
