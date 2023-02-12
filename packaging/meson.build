@@ -188,16 +188,12 @@ if candle_prog.found() and light_prog.found() and enable_native_progs
 	# Auto-configuration
 	if host_machine.cpu_family() == 'x86'
 		candle_arch = 'x86'
-		wix_conf.set('WIX_PFiles','ProgramFilesFolder')
 	elif host_machine.cpu_family() == 'x86_64'
 		candle_arch = 'x64'
-		wix_conf.set('WIX_PFiles','ProgramFiles64Folder')
 	elif host_machine.cpu_family() == 'ia64'
 		candle_arch = 'ia64'
-		wix_conf.set('WIX_PFiles','ProgramFiles64Folder')
 	else # Likely won't works outside x86 and ia64
 		candle_arch = host_machine.cpu_family()
-		wix_conf.set('WIX_PFiles','ProgramFilesFolder')
 		warning('Unknow CPU family '+candle_arch+'. MSI creation should fail')
 	endif
 	
