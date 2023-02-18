@@ -1,0 +1,40 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Arcollect\n"
+"MIME-Version: 1.0\n"
+"Language: en_US\n"
+"Content-Type: text/plain; charset=us-ascii\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+msgctxt "ArcollectDowngradeErrorMessage"
+msgid "A more recent version of Arcollect is already installed. Beware that your collection might not be usable, or break, with the version of Arcollect you are trying to install"
+msgstr ""
+
+msgctxt "ArcollectWebextDescription"
+msgid "In order to save artworks, you need to install a webextension in your browser. To do so, go on the <a href=\"https://github.com/DevilishSpirits/arcollect/releases/tag/v$(ARCOLLECT_VERSION)\">download page</a> and select the correct webextenion :\n - For Mozilla Firefox, click on the .xpi file.\n - Other browsers are currently not supported."
+msgstr ""
+
+msgctxt "ArcollectWebextInstallFirefox"
+msgid "Install for Firefox"
+msgstr ""
+
+msgctxt "ArcollectWebextTitle"
+msgid "Install the webextension"
+msgstr ""
+
+msgctxt "ArcollectFeature_desktop_app_Title"
+msgid "Desktop viewer"
+msgstr ""
+
+msgctxt "ArcollectFeature_desktop_app_Desc"
+msgid "The GUI application that allows you to browse into your collection."
+msgstr ""
+
+msgctxt "ArcollectFeature_webext_adder_Title"
+msgid "Webextension adder"
+msgstr ""
+
+msgctxt "ArcollectFeature_webext_adder_Desc"
+msgid "Native messaging host program and configuration that allows browser with the webextension to save artworks."
+msgstr ""

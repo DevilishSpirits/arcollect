@@ -153,8 +153,7 @@ if apt_prog.found() and dpkg_architecture_prog.found() and tar_prog.found() and 
 endif
 
 # Windows
-candle_prog = find_program('candle', required: false, version: '>=3')
-light_prog = find_program('light', required: false)
+wix_prog = find_program('wix', required: false, version: '>='+config_h.get('ARCOLLECT_WIX_MIN_VERSION'))
 
 copying_rtf = custom_target('COPYING.rtf',
 	input: '../COPYING',
@@ -163,29 +162,29 @@ copying_rtf = custom_target('COPYING.rtf',
 	capture: true, feed: true
 )
 
-if candle_prog.found() and light_prog.found() and enable_native_progs
-	# WiX configuration
-	wix_config = custom_target('wix-config',
-		input: [
-			config_h_file,
-			# Match these input to keys a few lines below -↓
-			arcollect_exe,
-			webext_appmanifest_firefox_windows,
-			webext_adder_exe,
-			copying_rtf,
-		],
-		output: 'config.wxi',
-		command: [find_program('generate-wix-config.py', required: true, native: true),
-			','.join([
-				# Just there --------------------------------↑
-				'built_arcollect_exe',
-				'built_mozilla_manifest',
-				'built_webext_adder_exe',
-				'copying_rtf_path',
-			]),'@INPUT@'
-		],
-		capture: true, build_by_default: false,
-	)
+wix_config = custom_target('wix-config',
+	input: [
+		config_h_file,
+		# Match these input to keys a few lines below -↓
+		arcollect_exe,
+		webext_appmanifest_firefox_windows,
+		webext_adder_exe,
+		copying_rtf,
+	],
+	output: 'config.wxi',
+	command: [find_program('generate-wix-config.py', required: true, native: true),
+		','.join([
+			# Just there --------------------------------↑
+			'built_arcollect_exe',
+			'built_mozilla_manifest',
+			'built_webext_adder_exe',
+			'copying_rtf_path',
+		]),'@INPUT@'
+	],
+	capture: true, build_by_default: false,
+)
+
+if wix_prog.found() and enable_native_progs
 	# WiX depends
 	wix_deps = [
 		destdir_target,
@@ -193,7 +192,6 @@ if candle_prog.found() and light_prog.found() and enable_native_progs
 	]
 	wix_dep_files = files(
 	)+[
-		webext_appmanifest_firefox_windows,
 	]
 	
 	# Auto-configuration
@@ -201,34 +199,42 @@ if candle_prog.found() and light_prog.found() and enable_native_progs
 		candle_arch = 'x86'
 	elif host_machine.cpu_family() == 'x86_64'
 		candle_arch = 'x64'
-	elif host_machine.cpu_family() == 'ia64'
-		candle_arch = 'ia64'
-	else # Likely won't works outside x86 and ia64
+	elif host_machine.cpu_family() == 'aarch64'
+		candle_arch = 'arm64'
+	else
 		candle_arch = host_machine.cpu_family()
 		warning('Unknow CPU family '+candle_arch+'. MSI creation should fail')
 	endif
 	
 	wix_args = [
-		'-pedantic',
-		'-dconfig_wxi="'+wix_config.full_path()+'"',
-	]
-	
-	candle_args = wix_args+[
+		wix_prog,
+		'build',
 		'-arch',candle_arch,
-		'-out','@OUTPUT@',
-		'@INPUT@'
+		'-defaultcompressionlevel','high',
+		'-ext','WixToolset.UI.wixext',
+		'-cabcache','@PRIVATE_DIR@',
+		'-intermediatefolder', '@PRIVATE_DIR@',
+		'-out','@OUTPUT0@',
+		'-pdb','@OUTPUT1@',
+		'-pdbtype','full',
+		'-d','config_wxi="'+wix_config.full_path()+'"',
+		'-loc','@INPUT1@',
+		'@INPUT0@',
 	]
 	
-	candle = generator(candle_prog, arguments: candle_args, output: ['@BASENAME@.wixobj'], depends: wix_deps)
+	base_msi = custom_target('arcollect-en_US.msi', command: [wix_args], input: ['arcollect.wxs',msi_wlxs['C']], output: ['arcollect-en_US.msi','arcollect-en_US.msi.wixpdb'], depends: wix_deps, depend_files: wix_dep_files)
 	
-	light_args = wix_args+[
-		'-sval', # Needed under Wine
-		'-ext', 'WixUIExtension',
-		'-out','@OUTPUT@',
-		'@INPUT@'
-	]
 	msi_targets = [
-		custom_target('arcollect.msi', command: [light_prog, light_args], input: candle.process('arcollect.wxs'), output: 'arcollect.msi', depends: wix_deps, depend_files: wix_dep_files),
+		base_msi,
 	]
+	foreach culture: msi_wlx_cultures
+		lang_msi = custom_target('arcollect-'+culture+'.msi',
+			command: [wix_args,'-culture',culture],
+			input: ['arcollect.wxs',msi_wlxs[culture]],
+			output: ['arcollect-'+culture+'.msi','arcollect-'+culture+'.msi.wixpdb'],
+			depends: wix_deps, depend_files: wix_dep_files,
+		)
+		msi_targets += [lang_msi]
+	endforeach
 	alias_target('all-msi',msi_targets)
 endif

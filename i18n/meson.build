@@ -50,6 +50,11 @@ if enable_native_progs
 	}
 endif
 
+# MSI Installer supported languages
+msi_wlx_cultures = [
+	'fr-FR',
+]
+
 i18n_incs = include_directories('.')
 i18n_deps = {}
 polib_env = environment()
@@ -59,6 +64,15 @@ endif
 # Process i18n_configuration and generate the hpp files and dependencies
 po_hpp_gen = find_program('po-hpp-gen.py', native: true)
 po_cpp_gen = find_program('po-cpp-gen.py', native: true)
+po_wxl_gen = find_program('po-wxl-gen.py', native: true)
+
+msi_wlxs = {
+	'C': custom_target('i18n-msi-installer-C', input: files('l10n-C' / 'msi-installer.po'), output: 'msi-installer-C.wxl', command: [po_wxl_gen,'msgid','@INPUT@','@OUTPUT@'], env: polib_env),
+}
+foreach culture: msi_wlx_cultures
+	lang = culture.replace('-','_')
+	msi_wlxs += {culture: custom_target('i18n-msi-installer-'+lang, input: files('l10n-'+lang / 'msi-installer.po'), output: 'msi-installer-'+lang+'.wxl', command: [po_wxl_gen,'msgstr','@INPUT@','@OUTPUT@'], env: polib_env)}
+endforeach
 foreach module, config: i18n_configuration
 	a_i18n_module = 'arcollect-i18n-'+module
 	locales = config['locales']

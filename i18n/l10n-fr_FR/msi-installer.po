@@ -1,0 +1,40 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Arcollect\n"
+"MIME-Version: 1.0\n"
+"Language: fr_FR\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgctxt "ArcollectDowngradeErrorMessage"
+msgid "A more recent version of Arcollect is already installed. Beware that your collection might not be usable, or break, with the version of Arcollect you are trying to install"
+msgstr "Une version plus récente d'Arcollect est déjà installée. Attention, en installant cette version d'Arcollect votre collection ne sera peut-être pas utilisable, voir deviendra corrompue !"
+
+msgctxt "ArcollectWebextDescription"
+msgid "In order to save artworks, you need to install a webextension in your browser. To do so, go on the <a href=\"https://github.com/DevilishSpirits/arcollect/releases/tag/v$(ARCOLLECT_VERSION)\">download page</a> and select the correct webextenion :\n - For Mozilla Firefox, click on the .xpi file.\n - Other browsers are currently not supported."
+msgstr "Afin d'enregister les uvres d'art, vous devez installer l'extension de navigateur. Pour ce faire visitez la <a href=\"https://github.com/DevilishSpirits/arcollect/releases/tag/v$(ARCOLLECT_VERSION)\">page des téléchargements</a> et sélectionner la bonne extension :\n - Pour Mozilla Firefox, cliquer sur le fichier en .xpi.\n - Les autres navigateurs ne sont pas supportés."
+
+msgctxt "ArcollectWebextInstallFirefox"
+msgid "Install for Firefox"
+msgstr "Installer pour Firefox"
+
+msgctxt "ArcollectWebextTitle"
+msgid "Install the webextension"
+msgstr "Installation de la webextension"
+
+msgctxt "ArcollectFeature_desktop_app_Title"
+msgid "Viewer application"
+msgstr "Visualisateur"
+
+msgctxt "ArcollectFeature_desktop_app_Desc"
+msgid "The GUI application that allows you to browse into your collection."
+msgstr "L'application graphique qui vous permet de naviguer dans votre collection."
+
+msgctxt "ArcollectFeature_webext_adder_Title"
+msgid "Webextension adder"
+msgstr "Webextension adder"
+
+msgctxt "ArcollectFeature_webext_adder_Desc"
+msgid "Native messaging host program and configuration that allows browser with the webextension to save artworks."
+msgstr "Contient le programme \"native messaging host\" et les fichiers de configuration nécessaires au navigateur avec l'extension associée pour enregister des uvres d'art."

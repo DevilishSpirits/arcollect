@@ -1,55 +1,72 @@
 <?xml version='1.0' encoding='us-ascii'?>
-<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-	<?include $(var.config_wxi) ?>
-	<Product Name='Arcollect' Id='7D81775F-86C7-4D14-AEC0-86416A69ABDE' UpgradeCode='$(var.ARCOLLECT_MSI_UPGRADECODE)' Language='1033' Codepage='20127' Version='$(var.ARCOLLECT_VERSION)' Manufacturer='DevilishSpirits'>
-		<Package Id='*' Keywords='Installer' Description="Arcollect $(var.ARCOLLECT_VERSION) Installer" Comments='$(var.ARCOLLECT_SUMMARY)' Manufacturer='DevilishSpirits' InstallerVersion='310' Languages='1033' Compressed='yes' SummaryCodepage='20127' />
-		<Media Id='1' Cabinet='Main.cab' EmbedCab='yes' />
-		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
-		<Directory Id='TARGETDIR' Name='SourceDir'>
-			<Directory Id='ProgramFiles6432Folder' Name='PFiles'>
-				<Directory Id='INSTALLDIR' Name='Arcollect'>
-					<Component Id='MainProgram' Guid='7D81775F-83F1-4F22-985B-FDB3C8ABD471'>
-						<File Id='ArcollectEXE' Name='arcollect.exe' DiskId='1' Source='$(var.built_arcollect_exe)' KeyPath='yes'>
-							<Shortcut Id="startmenu" Directory="ProgramMenuDir" Name="Arcollect" WorkingDirectory='INSTALLDIR' Icon="arcollect.exe" IconIndex="0" Advertise="yes" />
-							<Shortcut Id="desktop" Directory="DesktopFolder" Name="Arcollect" WorkingDirectory='INSTALLDIR' Icon="arcollect.exe" IconIndex="0" Advertise="yes" />
-						</File>
-						<File Id='WebextAdderEXE' Name='arcollect-webext-adder.exe' DiskId='1' Source='$(var.built_webext_adder_exe)' />
-					</Component>
-					<Component Id='NativeMessagingHosts' Guid='441491DA-5A6B-4C01-8A8D-DF3E7E2F4123'>
-						<File Id='NativeMessagingFirefox' Name='native-message-firefox.json' DiskId='1' Source='$(var.built_mozilla_manifest)' KeyPath='yes'/>
-						<RegistryKey Root="HKLM" Key="SOFTWARE\Mozilla\NativeMessagingHosts\arcollect_webext_adder">
-							<RegistryValue Type="string" Value="[INSTALLDIR]native-message-firefox.json"/>
-						</RegistryKey>
-					</Component>
-				</Directory>
-			</Directory>
-			<Directory Id="ProgramMenuFolder" Name="Programs">
-				<Directory Id="ProgramMenuDir" Name="Arcollect">
-					<Component Id="ProgramMenuDir" Guid="7D81775F-7E98-44CE-B049-C477CC0A2B00">
-						<RemoveFolder Id='ProgramMenuDir' On='uninstall' />
-						<RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
-					</Component>
-				</Directory>
-			</Directory>
-			<Directory Id="DesktopFolder" Name="Desktop" />
-		</Directory>
-		<Feature Id='Complete' Title='Arcollect $(var.ARCOLLECT_VERSION)' Description='The complete package.' Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
-			<Feature Id='Arcollect' Title='Program' Description='The main executable.' Level='1'>
-				<ComponentRef Id='MainProgram' />
-				<ComponentRef Id='NativeMessagingHosts' />
-				<ComponentRef Id='ProgramMenuDir' />
-			</Feature>
-		</Feature>
-		<UIRef Id="WixUI_InstallDir" />
-		<UIRef Id="WixUI_ErrorProgressText" />
-		<WixVariable Id="WixUILicenseRtf" Value="$(var.copying_rtf_path)" />
-		<Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="IMPORTANT!!! You can't save artworks without the associated web-extension. Go on
-http://github.com/DevilishSpirits/arcollect/releases/tag/v$(var.ARCOLLECT_VERSION) and click on your browser extension :
- - For Firefox, click on the .xpi file
- - Other browsers are not supported
-
-Then checkout artworks you love and save them !" />
+<?include $(config_wxi) ?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" RequiredVersion="$(ARCOLLECT_WIX_MIN_VERSION)" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+	<Package Name="Arcollect" Manufacturer="DevilishSpirits" UpgradeCode="$(ARCOLLECT_MSI_UPGRADECODE)" Scope="perMachine" Version="$(ARCOLLECT_VERSION)">
+		<!-- Install folder -->
+		<StandardDirectory Id="ProgramFiles6432Folder">
+			<Directory Id="TargetDir" Name="Arcollect"/>
+		</StandardDirectory>
 		
-		<Icon Id="arcollect.exe" SourceFile="$(var.built_arcollect_exe)" />
-	</Product>
+		<SoftwareTag InstallDirectory="TargetDir" Regid="d-spirits.me"/>
+		<MajorUpgrade Schedule="afterInstallInitialize" IgnoreLanguage="yes" AllowSameVersionUpgrades="yes" DowngradeErrorMessage="!(loc.ArcollectDowngradeErrorMessage)"/>
+		
+		<!-- Features -->
+		<Feature Id="desktop_app" Title="ArcollectFeature_desktop_app_Title" Description="ArcollectFeature_desktop_app_Desc">
+			<Component Guid="7D81775F-83F1-4F22-985B-FDB3C8ABD471" Directory="TargetDir">
+				<File Name="arcollect.exe" Source="$(built_arcollect_exe)" KeyPath="yes">
+					<Shortcut Directory="ProgramMenuFolder" Name="Arcollect" Icon="arcollect.exe" IconIndex="0" Advertise="yes" />
+					<Shortcut Directory="DesktopFolder" Name="Arcollect" Icon="arcollect.exe" IconIndex="0" Advertise="yes" />
+				</File>
+			</Component>
+		</Feature>
+		
+		<Feature Id="webext_adder" Title="ArcollectFeature_webext_adder_Title" Description="ArcollectFeature_webext_adder_Desc">
+			<Component Id="NativeMessagingHost" Directory="TargetDir">
+				<File Name='arcollect-webext-adder.exe' Source='$(built_webext_adder_exe)' KeyPath="yes"/>
+			</Component>
+			<Component Id="NativeMessagingFirefox" Guid='441491DA-5A6B-4C01-8A8D-DF3E7E2F4123' Directory="TargetDir">
+				<File Name='native-message-firefox.json' Source='$(built_mozilla_manifest)' KeyPath="yes"/>
+				<RegistryKey Root="HKLM" Key="SOFTWARE\Mozilla\NativeMessagingHosts\arcollect_webext_adder">
+					<RegistryValue Type="string" Value="[TargetDir]native-message-firefox.json"/>
+				</RegistryKey>
+			</Component>
+		</Feature>
+		
+		<!-- Webextension (optionnal) -->
+		<?ifdef ARCOLLECT_WEBEXT_ZIP_PATH ?>
+		<Feature Id="webextension_firefox" Level="0">
+			<Component Directory="TargetDir">
+				<File Id="WebextensionFirefoxXPI" Name='arcollect-$(ARCOLLECT_VERSION).xpi' Source='$(ARCOLLECT_WEBEXT_ZIP_PATH)' KeyPath="yes"/>
+			</Component>
+		</Feature>
+		<CustomAction Id="InstallWebextensionFirefox" FileRef="WebextensionFirefoxXPI" ExeCommand="" Impersonate="yes" Return="asyncNoWait"/>
+		<?endif?>
+		
+		<Icon Id="arcollect.exe" SourceFile="$(built_arcollect_exe)" />
+		<!-- UI stuff -->
+		<UI>
+			<Dialog Id="ArcoWebextDialog" Width="370" Height="270" Title="!(loc.ArcollectWebextTitle)">
+				<Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Cancel="yes" Text="!(loc.WixUINext)" />
+				<Control Type="PushButton" X="304" Y="243" Width="56" Height="17" Disabled="yes" Text="!(loc.WixUICancel)" />
+				<Control Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no" Text="!(loc.ExitDialogBitmap)" />
+				<Control Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="!(loc.WixUIBack)" />
+				<Control Type="Line" X="0" Y="234" Width="370" Height="0" />
+				<Control Type="Hyperlink" X="135" Y="70" Width="220" Height="50" Transparent="yes" Text="!(loc.ArcollectWebextDescription)" />
+				<Control Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes" Text="!(loc.ArcollectWebextTitle)" />
+				<?ifdef ARCOLLECT_WEBEXT_ZIP_PATH ?>
+				<Control Type="PushButton" X="135" Y="200" Width="100" Height="17" Text="Install for Firefox">
+					<Publish Event='DoAction' Value='InstallWebextensionFirefox'/>
+				</Control>
+				<?endif?>
+			</Dialog>
+			<Publish Dialog="ArcoWebextDialog" Control="Next" Event="EndDialog" Value="Return" Order="999" />
+		</UI>
+		
+		<InstallUISequence>
+			<Show Dialog="ArcoWebextDialog" After="ExecuteAction" Condition="NOT Installed" />
+		</InstallUISequence>
+		
+		<ui:WixUI Id="WixUI_Minimal"/>
+		<WixVariable Id="WixUILicenseRtf" Value="$(copying_rtf_path)" />
+	</Package>
 </Wix>
