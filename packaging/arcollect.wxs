@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='us-ascii'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
 	<?include $(var.config_wxi) ?>
-	<Product Name='Arcollect' Id='7D81775F-86C7-4D14-AEC0-86416A69ABDE' UpgradeCode='7D81775F-7349-453F-94F6-BCB5110BA4FD' Language='1033' Codepage='20127' Version='$(var.ARCOLLECT_VERSION)' Manufacturer='DevilishSpirits'>
+	<Product Name='Arcollect' Id='7D81775F-86C7-4D14-AEC0-86416A69ABDE' UpgradeCode='$(var.ARCOLLECT_MSI_UPGRADECODE)' Language='1033' Codepage='20127' Version='$(var.ARCOLLECT_VERSION)' Manufacturer='DevilishSpirits'>
 		<Package Id='*' Keywords='Installer' Description="Arcollect $(var.ARCOLLECT_VERSION) Installer" Comments='$(var.ARCOLLECT_SUMMARY)' Manufacturer='DevilishSpirits' InstallerVersion='310' Languages='1033' Compressed='yes' SummaryCodepage='20127' />
 		<Media Id='1' Cabinet='Main.cab' EmbedCab='yes' />
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />

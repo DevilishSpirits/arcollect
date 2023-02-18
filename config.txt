@@ -7,6 +7,7 @@ ARCOLLECT_WEBSITE          : https://github.com/DevilishSpirits/arcollect
 ARCOLLECT_SUMMARY          : Your personal visual artwork library
 ARCOLLECT_MOZILLA_WEBEXT_ID: arcollect@d-spirits.me
 ARCOLLECT_X11_WM_CLASS     : arcollect-desktop-app
+ARCOLLECT_MSI_UPGRADECODE  : 7D81775F-7349-453F-94F6-BCB5110BA4FD
 
 # D-Bus stuff
 ARCOLLECT_DBUS_NAME: me.d_spirits.arcollect
