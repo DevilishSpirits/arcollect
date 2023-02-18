@@ -1,0 +1,6 @@
+[wrap-file]
+directory = polib-1.1.1
+source_url = https://pypi.io/packages/source/p/polib/polib-1.1.1.tar.gz
+source_filename = polib-1.1.1.tar.gz
+source_hash = e02c355ae5e054912e3b0d16febc56510eff7e49d60bf22aecb463bd2f2a2dfa
+patch_directory = polib
