@@ -161,6 +161,10 @@ jobs:
         run: pip install meson ninja
       - name: Configure project
         run: meson build --force-fallback-for=freetype2,fmt,bzip2,giflib,libpng,Imath,inih,lcms2,libcurl,libjpeg,libtiff,OpenImageIO,robin-map,roboto,sdl2,harfbuzz,sqlite3,boost,zlib -Denable_webextension=false -Dcpp_link_args=-static -Dc_link_args=-static -Dbuildtype=release -Dstrip=true # FIXME LTO doesn't works, why?
+      - name: Build desktop-app
+        run: ninja -C build desktop-app/libdesktop-app-staticlib.a
+      - name: Build webext-adder
+        run: ninja -C build webext-adder/libarcollect-webext-adder.a
       - name: Build project
         run: ninja -C build
       - name: Generate MSI
