@@ -63,8 +63,6 @@ jobs:
         uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
         with:
           name: windows-2019-x64-package
-      - name: Rename Windows x64 MSI
-        run: mv arcollect.msi arcollect-${{ github.ref_name }}-x64.msi
       - name: Draft release body # TODO Also autogenerate title
         run: git log --format=%B -n 1 | tail -n +3 | cut -f 2- > release.body
         shell: bash

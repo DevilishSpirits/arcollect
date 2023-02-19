@@ -169,11 +169,15 @@ jobs:
         run: ninja -C build
       - name: Generate MSI
         run: ninja -C build packaging/arcollect.msi
+      - name: Rename MSI
+        run: Get-ChildItem | Where {$_.Name -Match '.msi$'} | Rename-Item -NewName {$_.name -replace '.msi','-${{ github.ref_name }}-x64.msi' } 
+        shell: pwsh
+        working-directory: build/packaging
       - name: Upload MSI artifact
         uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
         with:
           name: windows-2019-x64-package
-          path: build/packaging/arcollect.msi
+          path: build/packaging/*.msi
       - name: Test project
         run: ninja -C build test
       - name: Install MSI
