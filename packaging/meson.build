@@ -227,5 +227,8 @@ if candle_prog.found() and light_prog.found() and enable_native_progs
 		'-out','@OUTPUT@',
 		'@INPUT@'
 	]
-	custom_target('arcollect.msi', command: [light_prog, light_args], input: candle.process('arcollect.wxs'), output: 'arcollect.msi', depends: wix_deps, depend_files: wix_dep_files)
+	msi_targets = [
+		custom_target('arcollect.msi', command: [light_prog, light_args], input: candle.process('arcollect.wxs'), output: 'arcollect.msi', depends: wix_deps, depend_files: wix_dep_files),
+	]
+	alias_target('all-msi',msi_targets)
 endif

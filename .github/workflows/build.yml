@@ -168,7 +168,7 @@ jobs:
       - name: Build project
         run: ninja -C build
       - name: Generate MSI
-        run: ninja -C build packaging/arcollect.msi
+        run: ninja -C build all-msi
       - name: Rename MSI
         run: Get-ChildItem | Where {$_.Name -Match '.msi$'} | Rename-Item -NewName {$_.name -replace '.msi','-${{ github.ref_name }}-x64.msi' } 
         shell: pwsh
