@@ -176,8 +176,6 @@ namespace Arcollect {
 				template <typename T>
 				std::optional<std::reference_wrapper<T>> query_data(void) {
 					if ((rating_taint_level <= Arcollect::config::current_rating)&&queue_for_load()) {
-						last_rendered.splice(last_rendered.begin(),last_rendered,last_rendered_iterator);
-						last_render_timestamp = SDL_GetTicks();
 						return std::get<T>(data);
 					} else return std::nullopt;
 				}
