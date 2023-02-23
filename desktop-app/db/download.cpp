@@ -95,7 +95,8 @@ std::shared_ptr<Arcollect::db::download> &Arcollect::db::download::query(sqlite_
 bool Arcollect::db::download::queue_for_load(void)
 {
 	// Refresh last_render timestamps
-	last_render_timestamp = SDL_GetTicks();
+	last_render_timestamp = Arcollect::frame_time;
+	last_render_frame_number = Arcollect::frame_number;
 	// Bring to the front of  last_rendered list
 	if (load_state == LOADED) {
 		last_rendered.splice(last_rendered.begin(),last_rendered,last_rendered_iterator);

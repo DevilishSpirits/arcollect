@@ -27,6 +27,7 @@
 #include "font.hpp"
 #include "modal.hpp"
 #include "slideshow.hpp"
+#include "time.hpp"
 #include "window-borders.hpp"
 #include <arcollect-debug.hpp>
 #include <arcollect-sqls.hpp>
@@ -49,8 +50,8 @@ bool Arcollect::gui::enabled = false;
 
 // animation.hpp variables
 bool   Arcollect::gui::animation_running;
-Uint32 Arcollect::gui::time_now;
-Uint32 Arcollect::gui::time_framedelta;
+Arcollect::time_point Arcollect::frame_time;
+unsigned int Arcollect::frame_number = 0;
 
 int Arcollect::gui::init(void)
 {
@@ -124,16 +125,16 @@ void Arcollect::gui::start(int argc, char** argv)
 		}
 	}
 	
-	Arcollect::gui::time_now = SDL_GetTicks();
+	Arcollect::frame_time = Arcollect::frame_clock::now();
 	Arcollect::gui::enabled = true;
 	window_screen_index =  SDL_GetWindowDisplayIndex(window);
 }
-static Uint32 loop_end_ticks;
+static Arcollect::time_point loop_end_ticks;
 bool Arcollect::gui::main(void)
 {
 	SDL::Event e;
 	const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
-	Uint32 loop_start_ticks = SDL_GetTicks();
+	Arcollect::time_point loop_start_ticks = Arcollect::frame_clock::now();
 	// Wait for event
 	bool saved_animation_running = Arcollect::gui::animation_running;
 	Arcollect::gui::animation_running = false;
@@ -142,9 +143,9 @@ bool Arcollect::gui::main(void)
 	if ((SDL_GetModState()&(KMOD_CTRL|KMOD_SHIFT)) && keyboard_state[SDL_GetScancodeFromKey(SDLK_x)])
 		Arcollect::set_filter_rating(Arcollect::config::RATING_NONE);
 	// Update timing informations
-	Uint32 new_ticks = SDL_GetTicks();
-	Arcollect::gui::time_framedelta = Arcollect::gui::time_now-new_ticks;
-	Arcollect::gui::time_now = new_ticks;
+	Arcollect::time_point new_ticks = Arcollect::frame_clock::now();
+	Arcollect::frame_time = new_ticks;
+	Arcollect::frame_number++;
 	// Compute render context
 	Arcollect::gui::modal::render_context render_ctx{*renderer};
 	renderer->GetOutputSize(render_ctx.window_size);
@@ -153,7 +154,7 @@ bool Arcollect::gui::main(void)
 	render_ctx.target.h = render_ctx.window_size.y;
 	render_ctx.titlebar_target.h = Arcollect::gui::window_borders::title_height;
 	// Handle event
-	Uint32 event_start_ticks = SDL_GetTicks();
+	Arcollect::time_point event_start_ticks = Arcollect::frame_clock::now();
 	while (has_event) {
 		if (Arcollect::gui::window_borders::event(e)) {
 			// Propagate event to modals
@@ -197,7 +198,7 @@ bool Arcollect::gui::main(void)
 		Arcollect::art_reader::set_screen_icc_profile(window);
 		window_screen_index = current_window_screen_index;
 	}
-	Uint32 render_start_ticks = SDL_GetTicks();
+	Arcollect::time_point render_start_ticks = Arcollect::frame_clock::now();
 	// Render frame
 	renderer->SetDrawColor(0,0,0,0);
 	renderer->Clear();
@@ -210,7 +211,7 @@ bool Arcollect::gui::main(void)
 		Arcollect::gui::modal_get(iter).render(render_ctx);
 	}
 	Arcollect::gui::window_borders::render(render_ctx);
-	Uint32 loader_start_ticks = SDL_GetTicks();
+	Arcollect::time_point loader_start_ticks = Arcollect::frame_clock::now();
 	decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending_count;
 	static decltype(Arcollect::db::artwork_loader::done) main_done;
 	// Try to load requested artworks into VRAM
@@ -218,7 +219,7 @@ bool Arcollect::gui::main(void)
 		auto node = main_done.extract(artwork);
 		if (node) {
 			node.value()->load_stage_two(*renderer);
-			if (SDL_GetTicks()-render_start_ticks > 40)
+			if (Arcollect::frame_clock::now()-render_start_ticks > std::chrono::milliseconds(40))
 				break;
 		}
 	}
@@ -249,18 +250,18 @@ bool Arcollect::gui::main(void)
 			decltype(main_done)::node_type art = main_done.extract(main_done.begin());
 			art.value()->load_stage_two(*renderer);
 			// Ensure nice framerate 
-		} while ((SDL_GetTicks()-render_start_ticks < 50) && main_done.size());
+		} while ((Arcollect::frame_clock::now()-render_start_ticks < std::chrono::milliseconds(50)) && main_done.size());
 	}
-	// Unload artworks if exceeding image_memory_limit
-	while (Arcollect::db::artwork_loader::image_memory_usage>>20 > static_cast<std::size_t>(Arcollect::config::image_memory_limit)) {
+	// Unload artworks not seen recently
+	while (!Arcollect::db::download::last_rendered.empty()) {
 		Arcollect::db::download& artwork = *--Arcollect::db::download::last_rendered.end();
-		if (SDL_GetTicks() - artwork.last_render_timestamp > 1000)
+		if (!artwork.keep_loaded())
 			artwork.unload();
 		else break;
 	}
 	// Redraws debugging
 	if (Arcollect::debug.redraws) {
-		Uint32 final_ticks = SDL_GetTicks();
+		Arcollect::time_point final_ticks = Arcollect::frame_clock::now();
 		static constexpr SDL::Color   idle_color = 0xFFFFFFff; // White
 		static constexpr SDL::Color  event_color = 0xFFFF00ff; // Yellow
 		static constexpr SDL::Color render_color = 0x00FFFFff; // Cyan
@@ -268,15 +269,16 @@ bool Arcollect::gui::main(void)
 		static constexpr SDL::Color  other_color = 0x0000FFff; // Blue
 		static constexpr SDL::Color  total_color = 0xFFFFFFff; // White
 		struct debug_sample {
-			Uint32   idle;
-			Uint32  event;
-			Uint32 render;
-			Uint32 loader;
-			Uint32  other;
-			Uint32  frame;
+			using duration = Arcollect::frame_clock::duration;
+			duration   idle;
+			duration  event;
+			duration render;
+			duration loader;
+			duration  other;
+			duration  frame;
 			decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending;
 			
-			debug_sample(Uint32 loop_start_ticks, Uint32 event_start_ticks, Uint32 render_start_ticks, Uint32 loader_start_ticks, Uint32 final_ticks, Uint32 loop_end_ticks, decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending) : 
+			constexpr debug_sample(Arcollect::time_point loop_start_ticks, Arcollect::time_point event_start_ticks, Arcollect::time_point render_start_ticks, Arcollect::time_point loader_start_ticks, Arcollect::time_point final_ticks, Arcollect::time_point loop_end_ticks, decltype(Arcollect::db::artwork_loader::pending_main)::size_type load_pending) : 
 				idle  (event_start_ticks  -   loop_start_ticks),
 				event (render_start_ticks -  event_start_ticks),
 				render(loader_start_ticks - render_start_ticks),
@@ -287,6 +289,9 @@ bool Arcollect::gui::main(void)
 			{
 			}
 			debug_sample(void) = default;
+			constexpr static debug_sample zero(void) {
+				return debug_sample(Arcollect::time_point::min(),Arcollect::time_point::min(),Arcollect::time_point::min(),Arcollect::time_point::min(),Arcollect::time_point::min(),Arcollect::time_point::min(),0);
+			}
 			
 			debug_sample max(const debug_sample &right) {
 				debug_sample result;
@@ -299,7 +304,8 @@ bool Arcollect::gui::main(void)
 				result.load_pending = std::max(load_pending,right.load_pending);
 				return result;
 			}
-			void draw_histo_section(SDL::Point &origin, int var, const SDL::Color &color) {
+			void draw_histo_section(SDL::Point &origin, duration time, const SDL::Color &color) const {
+				int var = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(time).count());
 				renderer->SetDrawColor(color);
 				renderer->DrawLine(origin,{origin.x,origin.y-var});
 				origin.y -= var;
@@ -311,7 +317,8 @@ bool Arcollect::gui::main(void)
 				draw_histo_section(origin,other ,other_color);
 			}
 			
-			static inline void draw_time_bar(SDL::Rect &time_bar, int var, const SDL::Color &color) {
+			static inline void draw_time_bar(SDL::Rect &time_bar, duration time, const SDL::Color &color) {
+				int var = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(time).count());
 				time_bar.w  = var;
 				renderer->SetDrawColor(color.r,color.g,color.b,color.a);
 				renderer->FillRect(time_bar);
@@ -323,35 +330,40 @@ bool Arcollect::gui::main(void)
 				draw_time_bar(time_bar,loader,loader_color);
 				draw_time_bar(time_bar,other ,other_color);
 			}
+			static std::string duration_to_string(duration time) {
+				return std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(time).count()).append("ms");
+			}
 			void print(Arcollect::gui::font::Elements &elements) {
-				elements <<   idle_color << U"	Idle  : "sv << std::to_string(idle  ) << U"ms\n"sv
-				         <<  event_color << U"	Event : "sv << std::to_string(event ) << U"ms\n"sv
-				         << render_color << U"	Render: "sv << std::to_string(render) << U"ms\n"sv
-				         << loader_color << U"	Loader: "sv << std::to_string(loader) << U"ms "sv << std::to_string(load_pending) << U" artworks pending\n"sv
-				         <<  other_color << U"	Other : "sv << std::to_string(other ) << U"ms "sv
+				constexpr float fps_numerator = static_cast<float>(decltype(frame)::period::den)/static_cast<float>(decltype(frame)::period::num);
+				elements <<   idle_color << U"	Idle  : "sv << duration_to_string(idle  ) << U"\n"sv
+				         <<  event_color << U"	Event : "sv << duration_to_string(event ) << U"\n"sv
+				         << render_color << U"	Render: "sv << duration_to_string(render) << U"\n"sv
+				         << loader_color << U"	Loader: "sv << duration_to_string(loader) << U" "sv << std::to_string(load_pending) << U" artworks pending\n"sv
+				         <<  other_color << U"	Other : "sv << duration_to_string(other ) << U" "sv
 				         #ifdef WITH_XDG
 				         	" (D-Bus)\n"
 				         #else
 				         	"\n"
 				         	#endif
-				         <<  total_color << U"	Total = "sv << std::to_string(frame ) << U"ms/"sv << std::to_string(1000.f/frame) << U"FPS\n"sv
+				         <<  total_color << U"	Total = "sv << duration_to_string(frame ) << U"/"sv << std::to_string(fps_numerator/frame.count()) << U"FPS\n"sv
 				;
 			}
 		};
 		debug_sample frame_sample(loop_start_ticks,event_start_ticks,render_start_ticks,loader_start_ticks,final_ticks,loop_end_ticks,load_pending_count);
 		
-		static Uint32 last_second_tick = 0;
+		static unsigned int last_second_tick = 0;
 		static debug_sample last_second_samples[600];
 		const auto last_second_samples_n = sizeof(last_second_samples)/sizeof(last_second_samples[0]);
 		static int last_second_sample_i = 0;
-		if (last_second_tick != final_ticks/10) {
-			last_second_tick    = final_ticks/10;
+		unsigned int final_ticks_int = static_cast<unsigned int>(std::chrono::time_point_cast<std::chrono::milliseconds>(final_ticks).time_since_epoch().count()/10);
+		if (last_second_tick != final_ticks_int) {
+			last_second_tick    = final_ticks_int;
 			last_second_sample_i++;
 			last_second_sample_i %= last_second_samples_n;
-			last_second_samples[last_second_sample_i] = debug_sample(0,0,0,0,0,0,0);
+			last_second_samples[last_second_sample_i] = debug_sample::zero();
 		}
 		last_second_samples[last_second_sample_i] = last_second_samples[last_second_sample_i].max(frame_sample);
-		debug_sample maximums = debug_sample(0,0,0,0,0,0,0);
+		debug_sample maximums = debug_sample::zero();
 		for (const debug_sample &sample: last_second_samples)
 			maximums = maximums.max(sample);
 		
@@ -366,7 +378,7 @@ bool Arcollect::gui::main(void)
 		// Generate debug window text
 		Arcollect::gui::font::Elements stats_elements;
 		//stats_elements.initial_height() = 14;
-		stats_elements << U"Tick: "sv << std::to_string(final_ticks) << U"\nFrame stats:\n"sv;
+		stats_elements << U"Frame number: "sv << std::to_string(Arcollect::frame_number) << U"\nTick: "sv << std::to_string(final_ticks.time_since_epoch().count()) << U"\nFrame stats:\n"sv;
 		frame_sample.print(stats_elements);
 		stats_elements << U"Maximums (last 3 seconds):\n"sv;
 		maximums.print(stats_elements);
@@ -383,7 +395,7 @@ bool Arcollect::gui::main(void)
 		// Render time bar
 		frame_sample.draw_time_bar({0,0,0,4}); // Draw frame time
 		maximums.draw_time_bar({0,11,0,1});    // Draw last 3 seconds max
-		maximums = debug_sample(0,0,0,0,0,0,0);
+		maximums = debug_sample::zero();
 		for (int i = 0; i < 1; i++)
 			maximums = maximums.max(last_second_samples[(i+last_second_sample_i)%last_second_samples_n]);
 		maximums.draw_time_bar({0,5,0,1});    // Draw last 0.1 second max
@@ -400,7 +412,7 @@ bool Arcollect::gui::main(void)
 		renderer->SetDrawColor(255,255,0,192);
 		renderer->DrawLine(1000.f/30,0,1000.f/30,7);
 	}
-	loop_end_ticks = SDL_GetTicks();
+	loop_end_ticks = Arcollect::frame_clock::now();
 	renderer->Present();
 	return true;
 }

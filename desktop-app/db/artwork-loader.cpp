@@ -49,10 +49,8 @@ void Arcollect::db::artwork_loader::thread_func(volatile bool &stop)
 			artwork->load_state = artwork->LOADING_STAGE1;
 		}
 		// Check if the artwork is worth to load
-		if (
-		 (SDL_GetTicks()-artwork->last_render_timestamp <= 1000) // The artwork was requested since the last second
-		 ||((image_memory_usage+artwork->image_memory())>>20 < static_cast<std::size_t>(Arcollect::config::image_memory_limit)) // The artwork fit in "VRAM"
-		 ) artwork->load_stage_one();
+		if (artwork->keep_loaded())
+			artwork->load_stage_one();
 		else artwork->load_state = artwork->UNLOADED;
 		// Queue the artwork for load
 		if (artwork->load_state == artwork->LOAD_PENDING_STAGE2) {

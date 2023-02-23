@@ -18,6 +18,7 @@
 #include <sqlite3.hpp>
 #include "../gui/font.hpp"
 #include "../config.hpp"
+#include "../time.hpp"
 #include <arcollect-db-downloads.hpp>
 #include <cstddef>
 #include <filesystem>
@@ -268,12 +269,25 @@ namespace Arcollect {
 				 * The front contain the most recently rendered download
 				 */
 				static std::list<std::reference_wrapper<download>> last_rendered;
+				/** Frame number until this download is loaded
+				 *
+				 * Used by the resource manager.
+				 */
+				unsigned int last_render_frame_number;
+				
 				/** Timestamp of last render attempt
 				 *
 				 * It's used to don't load artworks which have not been requested to
 				 * load since a while but are still queued for render.
 				 */
-				Uint32 last_render_timestamp = 0;
+				Arcollect::time_point last_render_timestamp;
+				
+				/** Check wether we should keep this image loaded
+				 *
+				 */
+				bool keep_loaded(void) const {
+					return (Arcollect::frame_number < last_render_frame_number + 3)||(frame_time - last_render_timestamp <= std::chrono::seconds(1));
+				}
 				
 				/** Nuke a download
 				 * \param art_id The download identifier

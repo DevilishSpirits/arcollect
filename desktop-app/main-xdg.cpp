@@ -36,13 +36,15 @@
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <chrono>
 #include <vector>
 
-static Uint32 last_dbus_activity = SDL_GetTicks();
+using dbus_clock = std::chrono::steady_clock;
+static dbus_clock::time_point last_dbus_activity = dbus_clock::now();
 
 void Arcollect::dbus::exit_if_idle(void)
 {
-	last_dbus_activity = -10000;
+	last_dbus_activity = decltype(last_dbus_activity)() - std::chrono::seconds(10);
 }
 // WARNING! Each sigio_watch_list has a matching sigio_watch_pollfd at same index
 static std::vector<DBusWatch*>    sigio_watch_list;
@@ -117,11 +119,11 @@ static void dbus_remove_watch(DBusWatch *watch, void *data)
 	} else std::cerr << "In dbus_remove_watch(watch=" << watch << "), the watch was not found." << std::endl;
 }
 
-static std::unordered_map<DBusTimeout*,Uint32> timeout_watch_list;
+static std::unordered_map<DBusTimeout*,std::chrono::steady_clock::time_point> timeout_watch_list;
 static dbus_bool_t dbus_add_timeout(DBusTimeout *timeout, void *data)
 {
 	// Add timeout
-	timeout_watch_list.emplace(timeout,SDL_GetTicks());
+	timeout_watch_list.emplace(timeout,dbus_clock::now());
 	return true;
 }
 static void dbus_remove_timeout(DBusTimeout *timeout, void *data)
@@ -173,14 +175,14 @@ int main(int argc, char *argv[])
 	// Run GUI main-loop
 	if ((argc < 2)|| std::strcmp(argv[1],"--dbus-service"))
 		Arcollect::gui::start(argc,argv);
-	while ((((SDL_GetTicks()-last_dbus_activity) < 10000)) || Arcollect::gui::enabled) {
+	while ((((dbus_clock::now()-last_dbus_activity) < std::chrono::seconds(10))) || Arcollect::gui::enabled) {
 		// Process timeouts
-		Uint32 timeout_timestamp = SDL_GetTicks();
-		int next_timeout = 10000-(SDL_GetTicks()-last_dbus_activity); // D-Bus service timeout
+		dbus_clock::time_point timeout_timestamp = dbus_clock::now();
+		auto next_timeout = std::chrono::seconds(10)-(timeout_timestamp-last_dbus_activity); // D-Bus service timeout
 		for (auto &timeout: timeout_watch_list)
 			if (dbus_timeout_get_enabled(timeout.first)) {
-				auto interval = dbus_timeout_get_interval(timeout.first);
-				int remaining = timeout_timestamp-timeout.second;
+				auto interval = std::chrono::milliseconds(dbus_timeout_get_interval(timeout.first));
+				auto remaining = timeout_timestamp-timeout.second;
 				if (remaining >= interval) {
 					dbus_timeout_handle(timeout.first);
 					timeout.second = timeout_timestamp;
@@ -194,10 +196,10 @@ int main(int argc, char *argv[])
 				Arcollect::gui::stop();
 		}
 		// Poll D-Bus file descriptors
-		if (Arcollect::gui::enabled || (next_timeout < 0))
-			next_timeout = 0;
+		if (Arcollect::gui::enabled || (next_timeout < next_timeout.zero()))
+			next_timeout = next_timeout.zero();
 		
-		if (poll(sigio_watch_pollfd.data(),sigio_watch_pollfd.size(),next_timeout) >= 0) {
+		if (poll(sigio_watch_pollfd.data(),sigio_watch_pollfd.size(),std::chrono::duration_cast<std::chrono::milliseconds>(next_timeout).count()) >= 0) {
 			for (decltype(sigio_watch_pollfd)::size_type i = 0; i < sigio_watch_pollfd.size(); i++)
 				if (dbus_watch_get_enabled(sigio_watch_list[i])) {
 					struct pollfd &watch_pollfd = sigio_watch_pollfd[i];
@@ -210,8 +212,10 @@ int main(int argc, char *argv[])
 						flags |= DBUS_WATCH_ERROR;
 					if (watch_pollfd.revents & POLLHUP)
 						flags |= DBUS_WATCH_HANGUP;
-					if (flags)
+					if (flags) {
 						dbus_watch_handle(sigio_watch_list[i],flags);
+						last_dbus_activity = dbus_clock::now();
+					}
 				} else sigio_watch_pollfd[i].events = 0; // Disable the watch
 		} else switch (errno) {
 			case EINTR: {
@@ -225,7 +229,7 @@ int main(int argc, char *argv[])
 			} break;
 		}
 		while ((conn.dispatch() == DBUS_DISPATCH_DATA_REMAINS)||(sys_conn.dispatch() == DBUS_DISPATCH_DATA_REMAINS))
-			last_dbus_activity = SDL_GetTicks();
+			last_dbus_activity = dbus_clock::now();
 	}
 	return 0;
 }

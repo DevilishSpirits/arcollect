@@ -21,7 +21,6 @@
 
 Arcollect::config::Param<int> Arcollect::config::start_window_mode(Arcollect::config::STARTWINDOW_MAXIMIZED);
 Arcollect::config::Param<int> Arcollect::config::current_rating(Arcollect::config::RATING_ADULT); // FIXME Adult default is not a sane default for everyone
-Arcollect::config::Param<int> Arcollect::config::image_memory_limit(2048);
 Arcollect::config::Param<int> Arcollect::config::littlecms_intent(INTENT_PERCEPTUAL);
 Arcollect::config::Param<int> Arcollect::config::littlecms_flags(cmsFLAGS_HIGHRESPRECALC|cmsFLAGS_BLACKPOINTCOMPENSATION);
 Arcollect::config::Param<int> Arcollect::config::writing_font_size(18);
@@ -33,7 +32,6 @@ void Arcollect::config::read_config(void)
 	// TODO if (reader.ParseError() < 0)
 	start_window_mode.value = reader.GetInteger("arcollect","start_window_mode",start_window_mode.default_value);
 	current_rating.value = reader.GetInteger("arcollect","current_rating",current_rating.default_value);
-	image_memory_limit.value = reader.GetInteger("arcollect","image_memory_limit",image_memory_limit.default_value);
 	littlecms_flags.value = reader.GetInteger("arcollect","littlecms_flags",littlecms_flags.default_value);
 	littlecms_intent.value = reader.GetInteger("arcollect","littlecms_intent",littlecms_intent.default_value);
 	writing_font_size.value = reader.GetInteger("arcollect","writing_font_size",writing_font_size.default_value);
@@ -62,12 +60,6 @@ void Arcollect::config::write_config(void)
 	          "; " << RATING_ADULT  << ": Adult content\n"
 	          "; This option is set when you change current rating\n"
 	          "current_rating=" << current_rating << "\n"
-	          "\n"
-	          "; image_memory_limit - The maximum amount of memory used by images in MiB\n"
-	          "; This is a kind of VRAM limit. Arcollect will unload artworks when the size of loaded pixels exceed this value.\n"
-	          "; The consumed memory is estimated by computing the size needed to store artworks in a uncompressed form.\n"
-	          "; Default is " << image_memory_limit.default_value << " (" << image_memory_limit.default_value/1024 << " GiB)\n"
-	          "image_memory_limit=" << image_memory_limit << "\n"
 	          "\n"
 	          "; littlecms_intent - Color management rendering intent\n"
 	          "; This define the ICC rendering intent passed to cmsCreateTransform() call. Get known about color management to get the meaning of this param.\n"

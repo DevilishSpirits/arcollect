@@ -61,8 +61,7 @@ void Arcollect::gui::view_vgrid::flush_layout(void)
 	
 	do_scroll(0);
 	// Inhibate scroll
-	scroll_position.val_origin = scroll_position.val_target;
-	scroll_position.time_end = 0;
+	scroll_position.skip_transition();
 	
 	// Invalidate cached caption
 	caption_cache_artwork.reset();

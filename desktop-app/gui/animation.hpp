@@ -16,10 +16,9 @@
  */
 #pragma once
 #include "../sdl2-hpp/SDL.hpp"
+#include "time.hpp"
 namespace Arcollect {
 	namespace gui {
-		extern Uint32 time_now;
-		extern Uint32 time_framedelta;
 		/** Animation running flag
 		 *
 		 * This boolean is set to true when an animation is running and that we
@@ -31,39 +30,42 @@ namespace Arcollect {
 			 *
 			 * This template implement a scrolling animation. Not fancy but it works.
 			 */
-			template <typename T, Uint32 default_time_delta = 200>
+			template <typename T, unsigned int default_time_delta = 200>
 			struct scrolling {
-				Uint32 time_start = 0;
-				Uint32 time_end   = 0;
+				Arcollect::time_point time_start;
+				Arcollect::time_point time_end;
 				T val_target;
 				T val_origin;
 				operator T(void) {
-					if (time_now >= time_end)
+					if (Arcollect::frame_time >= time_end)
 						// If animation is done, don't do anything
 						return val_target;
 					else {
 						animation_running = true;
-						return val_origin + (val_origin-val_target)*(static_cast<int32_t>(time_start-time_now)/(float)static_cast<int32_t>(time_end-time_start));
+						return val_origin + (val_origin-val_target)*((time_start-Arcollect::frame_time).count()/(float)(time_end-time_start).count());
 					}
 				}
-				void set(const T new_target, const Uint32 time_delta) {
-					if ((val_target == new_target) && (time_end <= time_now + time_delta))
+				void skip_transition(void) {
+					time_end = Arcollect::frame_time;
+				}
+				void set(const T new_target, const std::chrono::milliseconds time_delta) {
+					if ((val_target == new_target) && (time_end <= Arcollect::frame_time + time_delta))
 						return; // Do nothing
 					val_origin = *this;
 					val_target = new_target;
-					time_start = time_now;
-					time_end   = time_now + time_delta;
+					time_start = Arcollect::frame_time;
+					time_end   = Arcollect::frame_time + time_delta;
 					animation_running = true;
 				}
 				inline void operator=(const T new_target) {
-					set(new_target,default_time_delta);
+					set(new_target,std::chrono::milliseconds(default_time_delta));
 				}
 				inline T operator+=(const T delta_target) {
-					set(val_target+delta_target,default_time_delta);
+					set(val_target+delta_target,std::chrono::milliseconds(default_time_delta));
 					return val_target;
 				}
 				inline T operator-=(const T delta_target) {
-					set(val_target-delta_target,default_time_delta);
+					set(val_target-delta_target,std::chrono::milliseconds(default_time_delta));
 					return val_target;
 				}
 				scrolling(void) = default;
