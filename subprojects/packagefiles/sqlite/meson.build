@@ -6,6 +6,11 @@ cc = meson.get_compiler('c')
 dl_dep = cc.find_library('dl', required : false)
 m_dep = cc.find_library('m', required: false)
 
+sqlite_allocator = '-DSQLITE_SYSTEM_MALLOC'
+if cc.has_function('HeapCreate', prefix: '#include <Windows.h>')
+	sqlite_allocator = '-DSQLITE_WIN32_MALLOC'
+endif
+
 sqlite_args = [
 	'-DSQLITE_DEFAULT_FILE_PERMISSIONS=0600',
 	'-DSQLITE_DEFAULT_MEMSTATUS=0',
@@ -44,6 +49,7 @@ sqlite_args = [
 	'-DSQLITE_OMIT_UTF16',
 	'-DSQLITE_USE_ALLOCA',
 	'-DSQLITE_THREADSAFE=0',
+	sqlite_allocator,
 ]
 
 sqlite_have_funcs = [
