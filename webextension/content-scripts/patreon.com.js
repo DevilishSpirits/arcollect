@@ -146,7 +146,7 @@ function make_Patreon_save_ui(postcard) {
 	if (postcard.arcollect)
 		return;
 	// Instrospect React
-	let props = postcard.wrappedJSObject[Object.getOwnPropertyNames(postcard.wrappedJSObject).find(x => x.startsWith("__reactInternalInstance"))].return.stateNode.props;
+	let props = postcard.wrappedJSObject[Object.getOwnPropertyNames(postcard.wrappedJSObject).find(x => x.startsWith("__reactFiber"))].return.stateNode.props;
 	if (!(props.postType in Patreon_dataByPostTypeGenerator)) {
 		console.warn("Discarding ",postcard," because post type '"+props.postType+"' is unsupported");
 		return; // Post type is not supported right-now
