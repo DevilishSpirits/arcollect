@@ -31,7 +31,7 @@ function tumbex_cache_account_article(article)
 		'name' : data['name'],
 		'title': data['title'],
 		'icon' : tumblr_make_image_download(data['avatar']),
-		'url'  : 'https://www.tumbex.com/'+data['name']+'.tumblr/posts',
+		'url'  : 'https://www.tumblr.com/'+data['name'],
 		'desc' : article.getElementsByClassName('blog-brick-body')[0].contentText, // The API returns HTML, don't parse it and read the DOM instead.
 		'tumblr.nsfw': data['nsfw'],
 	};
@@ -75,7 +75,7 @@ function tumbex_save_article(article)
 	if (data['slug'] == null)
 		// Replace a null slug by an empty string
 		data['slug'] = '';
-	let source = 'https://www.tumbex.com/'+data.tumblr+'.tumblr/post/'+data['$id']+'/'+data['slug'];
+	let source = 'https://www.tumblr.com/'+data.tumblr+'/'+data['$id']+'/'+data['slug'];
 	
 	/** Extract tags
 	 *
@@ -165,7 +165,7 @@ function tumbex_save_article(article)
 	
 	// Build the JSON
 	submit_json = {
-		'platform': 'tumbex.com',
+		'platform': 'tumblr.com',
 		'artworks': artworks,
 		'accounts': [account],
 		'tags': tags,
