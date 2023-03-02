@@ -110,12 +110,7 @@ function select_artstation_artwork(matches) {
 /** Save the artwork
  * \param this "Save in Arcollect" button that received click
  */
-function artstation_save_artwork()
-{
-	// Show that we are saving the artwork
-	this.onclick = null;
-	this.text = arco_i18n_saving;
-	
+function ArtStation_MakeWebextAdderPayload() {
 	/** Get download URL
 	 *
 	 * It's simple like that really !
@@ -124,16 +119,7 @@ function artstation_save_artwork()
 	let artworkAPIMatcher = select_artstation_artwork(new URL(artworkLink).pathname.slice(-1)[0]);
 	
 	// Perform processing
-	let saveButtonA = this;
-	fetch_json("https://www.artstation.com/projects/"+window.location.pathname.split('/').slice(-1)[0]+".json"
-	).then(artworkAPIMatcher).then(process_artstation_artwork_api).then(Arcollect.submit).then(function() {
-		saveButtonA.text = arco_i18n_saved;
-	}).catch(function(reason) {
-		saveButtonA.onclick = save_artwork;
-		saveButtonA.text = arco_i18n_save_retry;
-		console.log(arco_i18n_save_fail+' '+reason);
-		alert(arco_i18n_save_fail+' '+reason);
-	});
+	return fetch_json("https://www.artstation.com/projects/"+window.location.pathname.split('/').slice(-1)[0]+".json").then(artworkAPIMatcher).then(process_artstation_artwork_api);
 }
 
 /** Make the "Save in Arcollect" button
@@ -146,7 +132,7 @@ function artstation_make_save_ui(assetActions) {
 		// Copy parents attributes for the style
 		[...assetActions.attributes].forEach(attr => saveButtonA.setAttribute(attr.name,attr.value))
 		saveButtonA.className = "btn";
-		saveButtonA.onclick = artstation_save_artwork.bind(saveButtonA);
+		new Arcollect.SaveControlHelper(saveButtonA,ArtStation_MakeWebextAdderPayload.bind(saveButtonA));
 		assetActions.saveButtonA = saveButtonA;
 		assetActions.insertBefore(saveButtonA,assetActions.firstElementChild);
 	}

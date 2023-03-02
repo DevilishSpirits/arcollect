@@ -21,12 +21,6 @@
  * informations such as the creation date.
  */
 
-/** Save button <a> element array
- *
- * Elements are changed by save_xkcd() to reflect saving progression.
- */
-const saveButtonsA = [];
-
 /** Handle the JSON of the xkcd API
  * \param json object from xkcd API
  * \return A ready to submit JSON for the webext-adder
@@ -49,7 +43,8 @@ function handle_xkcd_0json(json) {
 	}
 }
 
-/** Save the artwork
+/** Generate the webext-adder payload
+ * \return A Promise with the JSON to pass to Arcollect.submit().
  *
  * We shot into the xkcd API that contains more datas, especially when the
  * artwork has been posted.
@@ -61,44 +56,19 @@ function handle_xkcd_0json(json) {
  * displayed and Arcollect would betray the user due to the kind of bug that
  * would typically be illustrated by a nice xkcd artwork.
  */
-function save_xkcd()
-{
-	// Show that we are saving the artwork
-	for (const saveButtonA of saveButtonsA) {
-		saveButtonA.onclick = null;
-		saveButtonA.text = arco_i18n_saving;
-		saveButtonA.className = "large red button gallery-button";
-		saveButtonA.style = 'cursor:progress;';
-	}
-	// Perform fetching
-	fetch_json(new URL('info.0.json',document.querySelector('meta[property="og:url"]').content)).then(handle_xkcd_0json).then(Arcollect.submit).then(function() {
-		for (const saveButtonA of saveButtonsA) {
-			saveButtonA.text = arco_i18n_saved;
-			saveButtonA.style = 'cursor:default;';
-		}
-	}).catch(function(reason) {
-		for (const saveButtonA of saveButtonsA) {
-			saveButtonA.onclick = save_xkcd;
-			saveButtonA.text = arco_i18n_save_retry;
-			saveButtonA.style = 'cursor:pointer;';
-			console.error(arco_i18n_save_fail+' '+reason);
-			alert(arco_i18n_save_fail+' '+reason);
-		}
-	});
+function XKCD_MakeWebextAdderPayload() {
+	return fetch_json(new URL('info.0.json',document.querySelector('meta[property="og:url"]').content)).then(handle_xkcd_0json);
 }
 
 // Insert "Save in Arcollect" buttons
-for (const comicNav of document.getElementsByClassName('comicNav')) {
+new Arcollect.SaveControlHelper([...document.getElementsByClassName('comicNav')].map((comicNav) => {
 	// Locate the "Random" button
 	let middleLi = comicNav.children.item(comicNav.childElementCount/2);
 	// Create the <a>Save in Arcollect</a>
 	let saveButton = document.createElement('a');
-	saveButton.text = arco_i18n_save;
-	saveButton.style = 'cursor:pointer;';
-	saveButton.onclick = save_xkcd;
-	saveButtonsA.push(saveButton);
 	// Create and insert the enclosing <li>
 	let newLi = document.createElement('li');
 	newLi.appendChild(saveButton);
 	middleLi.after(' ',newLi);
-}
+	return saveButton;
+}),XKCD_MakeWebextAdderPayload);

@@ -24,12 +24,6 @@
  * \todo Shortcut like and Protip like on e621 overkill integration :3.
  */
 
-/** Save button <a> element
- *
- * It is changed by save_KnowYourMeme_meme() to reflect saving progression
- */
-var saveButtonA = null;
-
 /** Make a download spec for an image on the KnowYourMeme's CDN
  *
  * This function ask for the original image and return the URL as a string.
@@ -42,16 +36,9 @@ function make_KnowYourMeme_img_cdn_downspec(url) {
 	return url.join('/');
 }
 
-/** Save the artwork
- */
-function save_KnowYourMeme_meme()
+
+function KnowYourMeme_MakeWebextAdderPayload()
 {
-	// Show that we are saving the artwork
-	saveButtonA.onclick = null;
-	saveButtonA.text = arco_i18n_saving;
-	saveButtonA.className = "large red button gallery-button";
-	saveButtonA.style = 'cursor:progress;';
-	
 	/** Normalize source URL
 	 *
 	 * KnowYourMeme ignore the trailing '/' in the url. Remove it if present.
@@ -89,7 +76,7 @@ function save_KnowYourMeme_meme()
 		'postdate': Date.parse(document.querySelector("#sidebar .row p > abbr.timeago[title]").title.replace('at ','').replace('PM',' PM'))/1000, // TODO Harden this
 		'data': make_KnowYourMeme_img_cdn_downspec(document.querySelector("#photo_wrapper a").href),
 	}];
-	submit_json = {
+	return {
 		'platform': 'knowyourmeme.com',
 		'artworks': artworks,
 		'accounts': accounts,
@@ -98,30 +85,17 @@ function save_KnowYourMeme_meme()
 		'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accounts}),
 		'art_tag_links': Arcollect.simple_art_tag_links(artworks,tags),
 	};
-	// Submit
-	Arcollect.submit(submit_json).then(function() {
-		saveButtonA.text = arco_i18n_saved;
-		saveButtonA.className = 'large green button gallery-button';
-		saveButtonA.style = 'cursor:default;';
-	}).catch(function(reason) {
-		saveButtonA.onclick = save_KnowYourMeme_meme;
-		saveButtonA.text = arco_i18n_save_retry;
-		saveButtonA.className = 'large red button gallery-button';
-		saveButtonA.style = 'cursor:pointer;';
-		console.error(arco_i18n_save_fail+' '+reason);
-		alert(arco_i18n_save_fail+' '+reason);
-	});
 }
 
 /** Make the "Save in Arcollect" button
  */
 function make_KnowYourMeme_save_ui() {
 	let media_arrow_middle = document.querySelector("#media_arrows .middle");
-	saveButtonA = document.createElement("a");
-	saveButtonA.text = arco_i18n_save;
+	let saveButtonA = document.createElement("a");
 	saveButtonA.className = "large red button gallery-button";
-	saveButtonA.style = 'cursor:pointer;';
-	saveButtonA.onclick = save_KnowYourMeme_meme;
+	new Arcollect.SaveControlHelper(saveButtonA,KnowYourMeme_MakeWebextAdderPayload,{
+		'onSaveSuccess': async () => saveButtonA.className = "large green button gallery-button",
+	});
 	media_arrow_middle.appendChild(document.createTextNode(" ")); // We put a space to preserve the aesthetic
 	media_arrow_middle.appendChild(saveButtonA);
 }

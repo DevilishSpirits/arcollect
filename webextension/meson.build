@@ -20,6 +20,7 @@ webext_srcs = [
 ]
 webext_content_scripts = [
 	'common.js',
+	'SaveControlHelper.js',
 	'artstation.com.js',
 	'deviantart.com.js',
 	'e621.net.js',

@@ -144,15 +144,8 @@ for (i = 0; i < downloadButtons.length; i++)
 			break;
 		}
 	}
-/** Save the artwork
- */
-function save_artwork()
-{
-	// Show that we are saving the artwork
-	save_buttondiv.onclick = null;
-	save_buttondiv.text = arco_i18n_saving;
-	save_buttondiv.style = 'cursor:progress;'
-	
+
+function FurAffinity_MakeWebextAdderPayload() {
 	let highlights = document.getElementsByClassName('highlight');
 	let source = normalize_fa_url(window.location.href);
 	let comics = [];
@@ -279,17 +272,7 @@ function save_artwork()
 	if (artworkMIME.startsWith('text/'))
 		submit_json['artworks'][0]['thumbnail'] = submissionImg;
 	
-	// Submit
-	Arcollect.submit(submit_json).then(function() {
-		save_buttondiv.text = arco_i18n_saved;
-		save_buttondiv.style = 'cursor:default;'
-	}).catch(function(reason) {
-		save_buttondiv.onclick = save_artwork;
-		save_buttondiv.text = arco_i18n_save_retry;
-		save_buttondiv.style = ''
-		console.error(arco_i18n_save_fail+' '+reason);
-		alert(arco_i18n_save_fail+' '+reason);
-	});
+	return submit_json;
 }
 
 /** Make the "Save in Arcollect" button
@@ -300,9 +283,9 @@ function make_save_ui() {
 		button_nav = button_nav[0];
 		// Create our button
 		save_buttondiv = document.createElement("a");
-		save_buttondiv.text = arco_i18n_save;
 		save_buttondiv.className = "button standard mobile-fix";
-		save_buttondiv.onclick = save_artwork;
+		// Configure our button
+		new Arcollect.SaveControlHelper(save_buttondiv,FurAffinity_MakeWebextAdderPayload);
 		// Append our button in the <div>
 		button_nav.append(save_buttondiv);
 	} else console.log('Arcollect error ! Found '+button_nav.length+' element(s) with class "aligncenter auto_link hideonfull1 favorite-nav".');

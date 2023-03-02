@@ -27,20 +27,8 @@
  *       it's more like "Adult" or "Mature".
  */
 
-/** Save button <div> element
- *
- * It is changed by save_artwork() to reflect saving progression
- */
-var saveButton = null;
-
-/** Save the artwork
- */
-function save_artwork()
+function DeviantArt_MakeWebextAdderPayload()
 {
-	// Show that we are saving the artwork
-	saveButton.onclick = null;
-	saveButton.innerText = arco_i18n_saving;
-	
 	let documentDivs = document.getElementsByTagName('div');
 	
 	/** Extract artwork
@@ -122,7 +110,7 @@ function save_artwork()
 	let description = document.getElementsByClassName('legacy-journal')[0].textContent;
 	
 	// Submit
-	artworkData.then(function(download_spec) {
+	return artworkData.then(function(download_spec) {
 		let artworks = [{
 			'title': artworkImg.alt,
 			'desc': description,
@@ -139,13 +127,6 @@ function save_artwork()
 			'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accountJson}),
 			'art_tag_links': Arcollect.simple_art_tag_links(artworks,tags),
 		};
-	}).then(Arcollect.submit).then(function() {
-		saveButton.innerText = arco_i18n_saved;
-	}).catch(function(reason) {
-		saveButton.onclick = save_artwork;
-		saveButton.innerText = arco_i18n_save_retry;
-		console.log(arco_i18n_save_fail+' '+reason);
-		alert(arco_i18n_save_fail+' '+reason);
 	});
 }
 
@@ -156,11 +137,10 @@ function save_artwork()
 function make_save_ui() {
 	let fave_button = document.querySelector('button[data-hook=fave_button]')
 	// Create the top-level button
-	saveButton = document.createElement("button"); 
+	let saveButton = document.createElement("button"); 
 	// Copy styles for aesthetics
 	saveButton.className = fave_button.className;
-	saveButton.innerText = arco_i18n_save;
-	saveButton.onclick   = save_artwork
+	new Arcollect.SaveControlHelper(saveButton,DeviantArt_MakeWebextAdderPayload);
 	// Prepend the button
 	fave_button.parentNode.insertBefore(saveButton,fave_button);
 }

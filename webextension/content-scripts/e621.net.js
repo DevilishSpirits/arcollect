@@ -32,23 +32,8 @@ var Danbooru = window.wrappedJSObject.Danbooru;
  */
 var imageDownloadLink = document.getElementById('image-download-link');
 
-/** Save button <div> element
- *
- * It is changed by save_artwork() to reflect saving progression
- */
-var saveButtonA = null;
-
-/** Save the artwork
- */
-function save_artwork()
+function e621_MakeWebextAdderPayload()
 {
-	// Show that we are saving the artwork
-	saveButtonA.onclick = null;
-	saveButtonA.text = arco_i18n_saving;
-	saveButtonA.className = "button btn-warn";
-	saveButtonA.style = 'cursor:progress;';
-	Danbooru.notice(arco_i18n_saving);
-	
 	/** Normalize source URL
 	 *
 	 * e621 ignore the trailing '/' in the url. Remove it if present.
@@ -151,7 +136,7 @@ function save_artwork()
 		'postdate': (new Date(document.querySelector('meta[itemprop=uploadDate]').content)).getTime()/1000,
 		'data': imageDownloadLink.children[0]
 	}];
-	submit_json = {
+	return {
 		'platform': 'e621.net',
 		'artworks': artworks,
 		'accounts': accounts,
@@ -160,31 +145,25 @@ function save_artwork()
 		'art_acc_links': Arcollect.simple_art_acc_links(artworks,{'account': accounts}),
 		'art_tag_links': Arcollect.simple_art_tag_links(artworks,tags),
 	};
-	
-	// Submit
-	Arcollect.submit(submit_json).then(function() {
-		saveButtonA.text = arco_i18n_saved;
-		saveButtonA.className = 'button btn-success';
-		saveButtonA.style = 'cursor:default;';
-		Danbooru.notice(arco_i18n_saved);
-	}).catch(function(reason) {
-		saveButtonA.onclick = save_artwork;
-		saveButtonA.text = arco_i18n_save_retry;
-		saveButtonA.className = 'button btn-danger';
-		saveButtonA.style = 'cursor:pointer;';
-		console.log(arco_i18n_save_fail+' '+reason);
-		alert(arco_i18n_save_fail+' '+reason);
-	});
 }
 
 /** Make the "Save in Arcollect" button
  */
 function make_save_ui() {
-	saveButtonA = document.createElement("a");
+	let saveButtonA = document.createElement("a");
 	saveButtonA.text = arco_i18n_save;
 	saveButtonA.className = "button btn-warn";
-	saveButtonA.style = 'cursor:pointer;';
-	saveButtonA.onclick = save_artwork;
+	new Arcollect.SaveControlHelper(saveButtonA,e621_MakeWebextAdderPayload,{
+		'onSaveBegin': () => {
+			saveButtonA.className = 'button btn-warn';
+			Danbooru.notice(browser.i18n.getMessage('webext_saving_in_arcollect'));
+		},
+		'onSaveSuccess': () => {
+			saveButtonA.className = 'button btn-success';
+			Danbooru.notice(browser.i18n.getMessage('webext_saved_in_arcollect'));
+		},
+		'onSaveFailure': async () => saveButtonA.className = 'button btn-danger',
+	});
 	
 	let saveButtondiv = document.createElement("div");
 	saveButtondiv.appendChild(saveButtonA);

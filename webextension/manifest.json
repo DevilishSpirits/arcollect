@@ -10,25 +10,25 @@
 	},
 	"content_scripts": [{
 		"matches": ["https://www.artstation.com/*"],
-		"js": ["content-scripts/common.js","fetch.js","content-scripts/artstation.com.js"]
+		"js": ["content-scripts/common.js","content-scripts/SaveControlHelper.js","fetch.js","content-scripts/artstation.com.js"]
 	},{
 		"matches": ["https://www.furaffinity.net/view/*","https://www.furaffinity.net/full/*"],
-		"js": ["content-scripts/common.js","content-scripts/furaffinity.net.js"]
+		"js": ["content-scripts/common.js","content-scripts/SaveControlHelper.js","content-scripts/furaffinity.net.js"]
 	},{
 		"matches": ["https://e621.net/posts/*","https://e926.net/posts/*"],
-		"js": ["content-scripts/common.js","content-scripts/e621.net.js"]
+		"js": ["content-scripts/common.js","content-scripts/SaveControlHelper.js","content-scripts/e621.net.js"]
 	},{
 		"matches": ["https://e621.net/static/keyboard_shortcuts","https://e926.net/static/keyboard_shortcuts"],
 		"js": ["content-scripts/common.js","content-scripts/e621.net-keyboard_shortcuts.js"]
 	},{
 		"matches": ["https://www.deviantart.com/*/art/*"],
-		"js": ["content-scripts/common.js","content-scripts/deviantart.com.js"]
+		"js": ["content-scripts/common.js","content-scripts/SaveControlHelper.js","content-scripts/deviantart.com.js"]
 	},{
 		"matches": ["https://knowyourmeme.com/photos/*"],
-		"js": ["content-scripts/common.js","content-scripts/knowyourmeme.com.js"]
+		"js": ["content-scripts/common.js","content-scripts/SaveControlHelper.js","content-scripts/knowyourmeme.com.js"]
 	},{
 		"matches": ["https://*.patreon.com/posts/*"],
-		"js": ["content-scripts/common.js","content-scripts/patreon.com.js"]
+		"js": ["content-scripts/common.js","content-scripts/SaveControlHelper.js","content-scripts/patreon.com.js"]
 	},{
 		"matches": ["https://www.pixiv.net/*"],
 		"js": ["content-scripts/common.js","fetch.js","content-scripts/pixiv.net.js"]
@@ -40,7 +40,7 @@
 		"js": ["content-scripts/common.js","content-scripts/twitter.com.js"]
 	},{
 		"matches": ["https://xkcd.com/*"],
-		"js": ["content-scripts/common.js","fetch.js","content-scripts/xkcd.com.js"]
+		"js": ["content-scripts/common.js","content-scripts/SaveControlHelper.js","fetch.js","content-scripts/xkcd.com.js"]
 	}],
 	"permissions": [
 		"https://www.deviantart.com/*",

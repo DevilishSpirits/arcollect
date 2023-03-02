@@ -49,16 +49,13 @@ const Patreon_dataByPostTypeGenerator = {
 	}}])},
 };
 
-/** Save the artwork
+/** Generate the webext-adder payload for a .postcard element
+ * \param this postcard element
+ * \return A Promise with the JSON to pass to Arcollect.submit().
  */
-function save_Patreon_postcard(postcard)
+function Patreon_MakeWebextAdderPayload_postcard(props)
 {
-	let props = postcard.arcollect;
-	let saveInArcollectBtn = props.saveInArcollectBtn;
-	// Show that we are saving the artwork
-	saveInArcollectBtn.onclick = null;
-	saveInArcollectBtn.textContent = arco_i18n_saving;
-	saveInArcollectBtn.style = 'margin-right:1rem;cursor:progress;';
+	let postcard = this;
 	
 	/* Extract account
 	 *
@@ -115,7 +112,7 @@ function save_Patreon_postcard(postcard)
 		}];
 	}
 	// Build the JSON
-	submit_json = {
+	return {
 		'platform': 'patreon.com',
 		'artworks': artworks,
 		'accounts': accounts,
@@ -126,17 +123,6 @@ function save_Patreon_postcard(postcard)
 		'com_acc_links': Arcollect.simple_com_acc_links(comics,{'account': accounts}),
 		'com_tag_links': Arcollect.simple_com_tag_links(comics,tags),
 	};
-	// Submit
-	Arcollect.submit(submit_json).then(function() {
-		saveInArcollectBtn.textContent = arco_i18n_saved;
-		saveInArcollectBtn.style = 'margin-right:1rem;cursor:default;';
-	}).catch(function(reason) {
-		saveInArcollectBtn.onclick = save_Patreon_postcard.bind(saveInArcollectBtn,postcard);
-		saveInArcollectBtn.textContent = arco_i18n_save_retry;
-		saveInArcollectBtn.style = 'margin-right:1rem;cursor:pointer;';
-		console.error(arco_i18n_save_fail+' '+reason);
-		alert(arco_i18n_save_fail+' '+reason);
-	});
 }
 
 /** Make the "Save in Arcollect" button
@@ -156,14 +142,12 @@ function make_Patreon_save_ui(postcard) {
 	// Duplicate the "like" button
 	let likeButton = postDetails.querySelector('button[data-tag="like-count-engagement"]');
 	let saveInArcollectBtn = likeButton.cloneNode();
-	saveInArcollectBtn.textContent = arco_i18n_save;
 	saveInArcollectBtn.style = 'margin-right:1rem;';
-	saveInArcollectBtn.onclick = save_Patreon_postcard.bind(saveInArcollectBtn,postcard);
+	new Arcollect.SaveControlHelper(saveInArcollectBtn,Patreon_MakeWebextAdderPayload_postcard.bind(postcard,props));
 	let likeButtonContainer = likeButton.parentElement.parentElement;
 	likeButtonContainer.insertBefore(saveInArcollectBtn,likeButtonContainer.firstChild);
 	// save properties in the postcard
 	postcard.arcollect = props;
-	postcard.arcollect.saveInArcollectBtn = saveInArcollectBtn;
 }
 
 function make_Patreon_all_save_ui() {
