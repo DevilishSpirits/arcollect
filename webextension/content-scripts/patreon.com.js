@@ -77,7 +77,7 @@ function Patreon_MakeWebextAdderPayload_postcard(props)
 	let defaultDesc = postcard.querySelector('[data-tag="post-content-collapse"],[data-tag="post-content"]').textContent;
 	let defaultSource = postcard.querySelector('[data-tag="post-published-at"]').href
 	let defaultRating = (props.isNsfw === false) ? 0 : 18; // Seen as "undefined" on NSFW Patreons, so use extra safety there
-	let defaultPostDate = Date.parse(props.publishedAt)/1000;
+	let defaultPostDate = props.publishedAt;
 	/* Generate artworks
 	 */
 	let artworks = Patreon_dataByPostTypeGenerator[props.postType](postcard).map((artwork,index) => {

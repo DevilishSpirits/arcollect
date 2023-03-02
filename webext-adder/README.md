@@ -21,6 +21,7 @@ You will need to generate the JSON described in the Query format section but the
 * The `"referrer_policy"` if unset is pulled from `<meta>`s if available.
 * Download specifications allows a `"cookies": true,` field in order to auto-generate the `Cookie` header. This is a temporary workaround for DeviantArt.
 * Download specifications accept many HTML elements (`<img>`, `<a>`, ...). **That is the recommended way to extract a link from HTML elements.**
+* All UNIX timestamp car be `Date()` objects or strings that will be `Date.parse()`. That is convenience and you don't have to remind yourself to divide timestamps by 1000.
 
 ## Query format
 Here is an example showing all possible cases (unless I forgot something 🤔️) of a query to add something in the database.

@@ -73,7 +73,7 @@ function KnowYourMeme_MakeWebextAdderPayload()
 		'title': media_title.textContent.trim().replaceAll('\n',' '),
 		'source': source,
 		// TODO 'rating': rating,
-		'postdate': Date.parse(document.querySelector("#sidebar .row p > abbr.timeago[title]").title.replace('at ','').replace('PM',' PM'))/1000, // TODO Harden this
+		'postdate': document.querySelector("#sidebar .row p > abbr.timeago[title]").title.replace('at ','').replace('PM',' PM'), // TODO Harden this
 		'data': make_KnowYourMeme_img_cdn_downspec(document.querySelector("#photo_wrapper a").href),
 	}];
 	return {

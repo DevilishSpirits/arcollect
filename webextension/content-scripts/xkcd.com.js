@@ -35,7 +35,7 @@ function handle_xkcd_0json(json) {
 			'description': json.alt,
 			'source': 'https://xkcd.com/'+json.num+'/',
 			'rating': 0, // xkcd is for all public
-			'postdate': (new Date(json.year,json.month-1,json.day))/1000,
+			'postdate': new Date(json.year,json.month-1,json.day),
 			'data': json.img,
 			'license': 'CC-BY-NC-2.5',
 		}],

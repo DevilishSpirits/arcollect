@@ -65,12 +65,6 @@ function process_artstation_artwork_api(json) {
 	 */
 	let desc = (new DOMParser()).parseFromString(json.description_html || json.description,'text/html').firstChild.textContent;
 	
-	/** Extract postdate
-	 *
-	 * A simple text timestamp
-	 */
-	let postdate = Math.round(Date.parse(json.created_at)/1000) ;
-	
 	/** Extract artworks
 	 *
 	 * The API provide an assets array that we filter and map.
@@ -80,7 +74,7 @@ function process_artstation_artwork_api(json) {
 		"desc": desc,
 		"source": json.permalink+new URL(asset.image_url).pathname.slice(-1)[0],
 		"rating": rating,
-		"postdate": postdate,
+		"postdate": json.created_at,
 		"data": ((asset.width >= 3840)||(asset.height >= 3840)) ? asset.image_url.replace('/large/','/4k/') : asset.image_url, // FIXME Might be defective when a side is exactly 3840px long but I am lacking of test material for now
 	}})
 	

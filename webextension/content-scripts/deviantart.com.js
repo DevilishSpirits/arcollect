@@ -116,7 +116,7 @@ function DeviantArt_MakeWebextAdderPayload()
 			'desc': description,
 			'source': source,
 			// TODO 'rating': rating,
-			'postdate': new Date(deviationMeta.parentElement.getElementsByTagName('time')[0].dateTime).getTime(),
+			'postdate': deviationMeta.parentElement.getElementsByTagName('time')[0].dateTime,
 			'data': download_spec,
 		}];
 		return {

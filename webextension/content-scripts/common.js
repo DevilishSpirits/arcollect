@@ -114,18 +114,32 @@ class Arcollect {
 					'resolve': resolve,
 					'reject': reject,
 				};
-				// Perform makeDownloadSpec() on download specifications
+				// Perform convenience post-processings
 				if (json_object.artworks)
 					json_object.artworks.forEach(function(artwork) {
 						if (artwork.data)
 							artwork.data = Arcollect.makeDownloadSpec(artwork.data);
 						if (artwork.thumbnail)
 							artwork.thumbnail = Arcollect.makeDownloadSpec(artwork.thumbnail);
+						if (artwork.postdate)
+							artwork.postdate = Arcollect.parseTimestamp(artwork.postdate);
 					});
 				if (json_object.accounts)
 					json_object.accounts.forEach(function(account) {
 						if (account.icon)
 							account.icon = Arcollect.makeDownloadSpec(account.icon);
+						if (account.createdate)
+							account.createdate = Arcollect.parseTimestamp(account.createdate);
+					});
+				if (json_object.tags)
+					json_object.tags.forEach(function(tag) {
+						if (tag.createdate)
+							tag.createdate = Arcollect.parseTimestamp(tag.createdate);
+					});
+				if (json_object.comics)
+					json_object.comics.forEach(function(comic) {
+						if (comic.postdate)
+							comic.postdate = Arcollect.parseTimestamp(comic.postdate);
 					});
 				// Send message
 				console.log('Arcollect.submit',json_object)
@@ -183,6 +197,20 @@ class Arcollect {
 			else return Object.assign({'data':input},settings);
 		} else return Object.assign(input,settings);
 	};
+	/** Parse a timestamp for the webext-adder
+	 * \param input to parse
+	 * \param UNIX timestamp (in seconds unlike in JS)
+	 */
+	static parseTimestamp(input) {
+		// Integer are passed through (but not decimals)
+		if (typeof(input) == 'number')
+			return Math.round(input);
+		else if (input instanceof Date)
+			return Math.round(input.getTime()/1000);
+		else if (typeof(input) == 'string')
+			return Math.round(Date.parse(input)/1000);
+		else throw "Unrecognized timestamp.";
+	}
 	/** Generate a xxx_acc_links from the list and accounts list
 	 * \param xxx array in it's final form
 	 * \param xxx_idname is the name of the *id* field (`"source"` on artworks)

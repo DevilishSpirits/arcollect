@@ -133,7 +133,7 @@ function e621_MakeWebextAdderPayload()
 		'desc': description,
 		'source': source,
 		'rating': rating,
-		'postdate': (new Date(document.querySelector('meta[itemprop=uploadDate]').content)).getTime()/1000,
+		'postdate': document.querySelector('meta[itemprop=uploadDate]').content,
 		'data': imageDownloadLink.children[0]
 	}];
 	return {
