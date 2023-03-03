@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download arcollect-webextension.zip artifact
-        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: build-wrapped_webextension.zip
       - name: Unzip arcollect-webextension.zip
@@ -27,7 +27,7 @@ jobs:
           WEB_EXT_API_KEY: ${{ secrets.AMO_WEB_EXT_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.AMO_WEB_EXT_API_SECRET }}
       - name: Upload web-ext artifacts
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: web-ext-artifacts
           path: web-ext-artifacts
@@ -37,37 +37,37 @@ jobs:
     needs: [build, sign-amo]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - name: Generate PKGBUILD for GitHub releases
         run: sh generate-PKGBUILD.sh release-ci > ../PKGBUILD
         working-directory: packaging
       - name: Download AMO signed webextension
-        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: web-ext-artifacts
           path: web-ext-artifacts
       - name: Download ArchLinux (x86_64) package
-        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: archlinux-x86_64-package
           path: archlinux-x86_64-package
       - name: Download Ubuntu 22.04 (amd64) package
-        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: ubuntu-22_04-amd64-package
       - name: Download Ubuntu 20.04 (amd64) package
-        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: ubuntu-20_04-amd64-package
       - name: Download Windows x64 MSI
-        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: windows-2019-x64-package
       - name: Draft release body # TODO Also autogenerate title
         run: git log --format=%B -n 1 | tail -n +3 | cut -f 2- > release.body
         shell: bash
       - name: Release on GitHub
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         with:
           draft: true
           body_path: release.body
