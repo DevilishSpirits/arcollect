@@ -79,6 +79,10 @@ static const std::pair<int,std::filesystem::path> dirs_sizes[] = {
 	{512,"x-large"},
 	{1024,"xx-large"},
 };
+static const std::pair<int,std::filesystem::path> write_dirs_sizes[] = {
+	{256,"large"},
+	{1024,"xx-large"},
+};
 static constexpr auto dirs_sizes_n = sizeof(dirs_sizes)/sizeof(dirs_sizes[0]);
 static const auto min_thumbnail_size = dirs_sizes[0].first;
 static const auto max_thumbnail_size = dirs_sizes[dirs_sizes_n-1].first;
@@ -191,9 +195,9 @@ void Arcollect::art_reader::write_thumbnail(const std::filesystem::path &path, S
 	std::unique_ptr<SDL::Surface> thumbnail_surf(reinterpret_cast<SDL::Surface*>(SDL_CreateRGBSurfaceWithFormat(0,thumb_out.w,thumb_out.h,surf_format->BitsPerPixel,surf_format->format)));
 	SDL_SetSurfaceBlendMode(&surface,SDL::BLENDMODE_NONE);
 	// Make thumbnails
-	for (const auto& dir: dirs_sizes) {
+	for (const auto& dir: write_dirs_sizes) {
 		// Check the thumbnail size
-		if (dir.first >= largest_surf_edge)
+		if (dir.first >= largest_surf_edge/2)
 			break;
 		// Generate metadata
 		const auto div_ratio = max_thumbnail_size/dir.first;
