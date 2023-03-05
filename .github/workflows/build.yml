@@ -228,17 +228,17 @@ jobs:
     runs-on: [ubuntu-latest]
     steps:
       - name: Download build-wrapped_webextension.zip
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: build-wrapped_webextension.zip
           path: build-wrapped_webextension
       - name: Download build-ubuntu-22_04_webextension.zip
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: build-ubuntu-22_04_webextension.zip
           path: build-ubuntu-22_04_webextension
       - name: Download build-ubuntu-20_04_webextension.zip
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: build-ubuntu-20_04_webextension.zip
           path: build-ubuntu-20_04_webextension
