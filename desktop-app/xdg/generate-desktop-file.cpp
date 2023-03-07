@@ -16,16 +16,18 @@
  */
 #include "generate-xdg-files.hpp"
 
-static void write_locale_string(std::ostream &out, const std::string_view& key, const std::string_view& (*gettext)(const Arcollect::i18n::common&))
+template <typename mapT>
+static void write_locale_string(std::ostream &out, const std::string_view& key, const mapT& locales, const std::string_view& po_name)
 {
-	out << key << "=" << gettext(default_locale) << "\n";
+	static const typename mapT::mapped_type default_locale;
+	out << key << "=" << default_locale.get_po_string(po_name) << "\n";
 	for (const auto &translation: locales) {
 		// Check if the translatino is worth including
-		const std::string_view& value = gettext(translation.second);
+		const std::string_view& value = translation.second.get_po_string(po_name);
 		if (translation.first.country) {
 			auto iter = locales.find(Arcollect::i18n::Lang(translation.first.lang));
 			if ((iter != locales.end())
-				&&(value == gettext(iter->second))
+				&&(value == translation.second.get_po_string(po_name))
 			) continue;
 		}
 		
@@ -35,8 +37,6 @@ static void write_locale_string(std::ostream &out, const std::string_view& key, 
 		out << "]=" << value << "\n";
 	}
 }
-
-#define WRITE_LOCALE_STRING(key,field) write_locale_string(out,key,[](const Arcollect::i18n::common& locale) -> const std::string_view& { return locale.field; });
 
 void generate_desktop_file(std::ostream &out)
 {
@@ -51,5 +51,5 @@ void generate_desktop_file(std::ostream &out)
 	       "StartupWMClass=" ARCOLLECT_X11_WM_CLASS_STR "\n"
 	       "X-GNOME-UsesNotifications=false\n"
 	;
-	WRITE_LOCALE_STRING("Comment",summary);
+	write_locale_string(out,"Comment",locales,"summary");
 }

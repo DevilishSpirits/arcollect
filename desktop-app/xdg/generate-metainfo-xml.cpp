@@ -18,16 +18,18 @@
 #include <chrono>
 #include <iomanip>
 
-static void write_locale_element(std::ostream &out, const std::string_view& indent, const std::string_view& key, const std::string_view& (*gettext)(const Arcollect::i18n::common&))
+template <typename mapT>
+static void write_locale_element(std::ostream &out, const std::string_view& indent, const std::string_view& key, const mapT& locales, const std::string_view& po_name)
 {
-	out << indent << '<' << key << '>' << gettext(default_locale) << "</" << key << ">\n";
+	static const typename mapT::mapped_type default_locale;
+	out << indent << '<' << key << '>' << default_locale.get_po_string(po_name) << "</" << key << ">\n";
 	for (const auto &translation: locales) {
 		// Check if the translatino is worth including
-		const std::string_view& value = gettext(translation.second);
+		const std::string_view& value = translation.second.get_po_string(po_name);
 		if (translation.first.country) {
 			auto iter = locales.find(Arcollect::i18n::Lang(translation.first.lang));
 			if ((iter != locales.end())
-				&&(value == gettext(iter->second))
+				&&(value == iter->second.get_po_string(po_name))
 			) continue;
 		}
 		// Include translation
@@ -38,8 +40,6 @@ static void write_locale_element(std::ostream &out, const std::string_view& inde
 	}
 }
 
-#define WRITE_LOCALE_ELEMENT(indent,key,field) write_locale_element(out,indent,key,[](const Arcollect::i18n::common& locale) -> const std::string_view& { return locale.field; });
-
 void generate_metainfo_xml(std::ostream &out)
 {
 	// Generate release date
@@ -49,7 +49,7 @@ void generate_metainfo_xml(std::ostream &out)
 	       "<component type=\"desktop-application\">\n"
 	       "	<id>" ARCOLLECT_DBUS_NAME_STR "</id>\n"
 	       "	<name>Arcollect</name>\n";
-	    WRITE_LOCALE_ELEMENT("\t","summary",summary)
+	    write_locale_element(out,"\t","summary",locales,"summary");
 	out << "	<metadata_license>CC-BY-SA-4.0</metadata_license>\n"
 	       "	<project_license>GPL-3.0-or-later</project_license>\n"
 	       "	<categories>\n"

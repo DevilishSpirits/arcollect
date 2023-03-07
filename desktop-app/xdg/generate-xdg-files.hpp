@@ -20,7 +20,6 @@
 #include <unordered_map>
 #include <ostream>
 
-extern const Arcollect::i18n::common default_locale;
 extern std::unordered_map<Arcollect::i18n::Lang,const Arcollect::i18n::common> locales;
 
 void generate_desktop_file(std::ostream &out);

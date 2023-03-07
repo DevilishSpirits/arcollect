@@ -17,7 +17,6 @@
 #include "generate-xdg-files.hpp"
 #include <fstream>
 
-const Arcollect::i18n::common default_locale;
 std::unordered_map<Arcollect::i18n::Lang,const Arcollect::i18n::common> locales;
 typedef void(*file_generator)(std::ostream&);
 int main(int argc, char** argv)
