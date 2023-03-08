@@ -159,8 +159,30 @@ if enable_native_progs
 	])
 	
 	dep_lcms2  = dependency('lcms2')
-	dep_freetype   = dependency('freetype2')
-	dep_harfbuzz   = dependency('harfbuzz')
+	dep_freetype   = dependency('freetype2', default_options: [
+		'brotli=enabled',
+		'bzip2=enabled',
+		'harfbuzz=disabled',
+		'png=enabled',
+		'tests=disabled',
+		'zlib=enabled',
+	])
+	dep_harfbuzz   = dependency('harfbuzz', default_options: [
+		'benchmark=disabled',
+		'cairo=disabled',
+		'chafa=disabled',
+		'coretext=disabled',
+		'directwrite=disabled',
+		'docs=disabled',
+		'experimental_api=false',
+		'gdi=disabled',
+		'glib=disabled',
+		'gobject=disabled',
+		'graphite2=disabled',
+		'icu=disabled',
+		'introspection=disabled',
+		'tests=disabled',
+	])
 	dep_sqlite3 = dependency('sqlite3', version: config_h.get('ARCOLLECT_VERREQ_sqlite3'))
 	dep_inih = dependency('INIReader', fallback: ['inih', 'INIReader_dep'], default_options: [
 		'with_INIReader=true',
