@@ -45,7 +45,13 @@ deps = [
   dependency('threads'),
 ]
 
-cargs = ['-DHasTHREADS=1']
+global_cargs = [
+	'-DCMS_NO_REGISTER_KEYWORD'
+]
+cargs = [
+	global_cargs,
+	'-DHasTHREADS=1',
+]
 
 # Check for threadsafe variants of gmtime
 if cc.has_function('gmtime_r', prefix: '#include <time.h>')
@@ -65,5 +71,6 @@ liblcms2_lib = static_library('lcms2', lcms2_srcs,
 lcms2_dep = declare_dependency(
   link_with : liblcms2_lib,
   version: version,
+  compile_args: global_cargs,
   include_directories : inc_dirs
 )
