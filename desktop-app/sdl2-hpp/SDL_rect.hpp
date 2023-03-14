@@ -32,9 +32,6 @@ namespace SDL {
 		constexpr bool operator==(const SDL_Point& other) const {
 			return (x == other.x)&&(y == other.y);
 		}
-		constexpr bool operator!=(const SDL_Point& other) const {
-			return (x != other.x)||(y != other.y);
-		}
 	};
 	struct FPoint {
 		float x;
@@ -54,9 +51,6 @@ namespace SDL {
 		}
 		inline bool operator==(const SDL::Rect& right) const {
 			return SDL_RectEquals((const SDL_Rect*)this,(const SDL_Rect*)&right) == SDL_TRUE;
-		}
-		inline bool operator!=(const SDL::Rect& right) const {
-			return SDL_RectEquals((const SDL_Rect*)this,(const SDL_Rect*)&right) == SDL_FALSE;
 		}
 		inline bool HasIntersection(const SDL::Rect &with) const {
 			return SDL_HasIntersection((const SDL_Rect*)this,(const SDL_Rect*)&with) == SDL_TRUE;
