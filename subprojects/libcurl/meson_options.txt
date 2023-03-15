@@ -1,1 +1,1 @@
-option('cmake_module_path', type: 'string')
+option('cmake_overrides_path', type: 'string')

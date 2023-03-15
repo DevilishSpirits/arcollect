@@ -27,8 +27,10 @@ subproj_opts.add_cmake_defines({
 	'ENABLE_UNIX_SOCKETS': false,
 	'HTTP_ONLY': true,
 	'SSL_ENABLED': true,
-	'ARCOLLECT_CMAKE_MODULE_PATH': get_option('cmake_module_path'),
-	'CMAKE_MODULE_PATH': get_option('cmake_module_path')
+	
+	'CMAKE_FIND_PACKAGE_PREFER_CONFIG': true,
+	'ZLIB_ROOT': get_option('cmake_overrides_path'),
+	'Brotli_ROOT': get_option('cmake_overrides_path'),
 })
 dep_curl = []
 if host_machine.system() == 'windows'

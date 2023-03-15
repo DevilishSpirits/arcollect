@@ -1,4 +1,0 @@
-message(NOTICE "Using Arcollect injected FindBrotli.cmake")
-set(BROTLI_INCLUDE_DIRS "@BROTLI_INCLUDE_DIR@")
-set(BROTLI_LIBRARIES "@BROTLICOMMON_LIBRARY@" "@BROTLIDEC_LIBRARY@")
-set(BROTLI_FOUND true)

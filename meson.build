@@ -90,7 +90,7 @@ config_h_file = configure_file(output: 'config.h', configuration: config_h)
 config_h_inc = include_directories('.')
 
 # Dependencies
-subdir('cmake-modules')
+subdir('cmake')
 if enable_native_progs
 	# Query C++ features
 	cpp_required_features = {
@@ -140,7 +140,7 @@ if enable_native_progs
 	endif
 	# Query dependencies
 	dep_curl = dependency('libcurl', version: config_h.get('ARCOLLECT_VERREQ_libcurl'), required: true, default_options: [
-		'cmake_module_path='+cmake_module_path
+		'cmake_overrides_path='+cmake_overrides_path
 	])
 	
 	dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))

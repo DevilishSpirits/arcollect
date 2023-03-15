@@ -1,0 +1,5 @@
+if (NOT BROTLI_FOUND)
+	message(NOTICE "Using Arcollect injected BrotliConfig.cmake")
+	set(BROTLI_INCLUDE_DIRS "@BROTLI_INCLUDE_DIR@")
+	set(BROTLI_LIBRARIES "@BROTLICOMMON_LIBRARY@" "@BROTLIDEC_LIBRARY@")
+endif()
