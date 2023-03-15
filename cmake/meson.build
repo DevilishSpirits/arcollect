@@ -37,4 +37,15 @@ if cmake.found()
 		configure_file(input: 'BrotliConfig.cmake', output: 'BrotliConfig.cmake', configuration: brotli_conf)
 		cmake_overrides_defines += {'Brotli_ROOT':cmake_overrides_path}
 	endif
+	
+	dep_fmt = dependency('fmt')
+	if dep_fmt.type_name() == 'internal'
+		proj_fmt = subproject('fmt')
+		fmt_conf = {
+			'FMT_INCLUDE_DIR': proj_fmt.get_variable('fmt_incdir').replace('\\','\\\\'),
+			'FMT_VERSION_STRING': dep_fmt.version(),
+		}
+		configure_file(input: 'fmtConfig.cmake', output: 'fmtConfig.cmake', configuration: fmt_conf)
+		cmake_overrides_defines += {'fmt_ROOT':cmake_overrides_path}
+	endif
 endif

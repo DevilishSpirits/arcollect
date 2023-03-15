@@ -1,0 +1,6 @@
+if (NOT FMT_FOUND)
+	message(NOTICE "Using Arcollect injected fmtConfig.cmake")
+	set(FMT_INCLUDE_DIR "@FMT_INCLUDE_DIR@")
+	set(FMT_INCLUDES "${FMT_INCLUDE_DIR}")
+	set(FMT_VERSION_STRING "@FMT_VERSION_STRING@")
+endif()

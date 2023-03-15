@@ -23,4 +23,5 @@ fmt_verminor = fmt_ver/100
 fmt_ver = fmt_ver - fmt_verminor*100
 fmt_ver = fmt_vermajor.to_string()+'.'+fmt_verminor.to_string()+'.'+fmt_ver.to_string()
 
+fmt_incdir = meson.current_source_dir()/'include'
 fmt_dep = declare_dependency(link_with: fmt, include_directories: incdirs, version: fmt_ver)
