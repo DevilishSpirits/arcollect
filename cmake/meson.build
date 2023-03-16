@@ -72,6 +72,19 @@ if cmake.found()
 		cmake_overrides_defines += {'fmt_ROOT':cmake_overrides_path}
 	endif
 	
+	dep_jpeg = dependency('libjpeg')
+	if dep_jpeg.type_name() == 'internal'
+		proj_jpeg = subproject('libjpeg')
+		jpeg_conf = {
+			'JPEG_INCLUDE_DIR': proj_jpeg.get_variable('jpeg_incdir').replace('\\','\\\\'),
+			'JPEG_INCLUDE_DIR2': proj_jpeg.get_variable('jpeg_incdir2').replace('\\','\\\\'),
+			'JPEG_LIBRARY': proj_jpeg.get_variable('jpeg').full_path().replace('\\','\\\\'),
+			'JPEG_VERSION_STRING': dep_jpeg.version(),
+		}
+		configure_file(input: 'JPEGConfig.cmake', output: 'JPEGConfig.cmake', configuration: jpeg_conf+{'JPEG_PREFIX': 'JPEG'})
+		cmake_overrides_defines += {'JPEG_ROOT':cmake_overrides_path}
+	endif
+	
 	dep_tiff = dependency('libtiff-4')
 	if dep_tiff.type_name() == 'internal'
 		proj_tiff = subproject('libtiff')

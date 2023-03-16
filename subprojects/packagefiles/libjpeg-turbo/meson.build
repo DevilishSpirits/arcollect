@@ -157,6 +157,8 @@ jpeg = static_library('jpeg', sources,
   build_by_default: false,
 )
 
+jpeg_incdir = meson.current_source_dir()
+jpeg_incdir2 = meson.current_build_dir()
 jpeg_dep = declare_dependency(
   include_directories: include_directories('.'),
   link_with: jpeg
