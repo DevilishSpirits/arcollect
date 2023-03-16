@@ -71,4 +71,17 @@ if cmake.found()
 		configure_file(input: 'fmtConfig.cmake', output: 'fmtConfig.cmake', configuration: fmt_conf)
 		cmake_overrides_defines += {'fmt_ROOT':cmake_overrides_path}
 	endif
+	
+	dep_tiff = dependency('libtiff-4')
+	if dep_tiff.type_name() == 'internal'
+		proj_tiff = subproject('libtiff')
+		tiff_conf = {
+			'TIFF_INCLUDE_DIR': proj_tiff.get_variable('libtiff4_incdir').replace('\\','\\\\'),
+			'TIFF_INCLUDE_DIR2': proj_tiff.get_variable('libtiff4_incdir2').replace('\\','\\\\'),
+			'TIFF_LIBRARY': proj_tiff.get_variable('tiff4_lib').full_path().replace('\\','\\\\'),
+			'TIFF_VERSION_STRING': dep_tiff.version(),
+		}
+		configure_file(input: 'TIFFConfig.cmake', output: 'TIFFConfig.cmake', configuration: tiff_conf)
+		cmake_overrides_defines += {'TIFF_ROOT':cmake_overrides_path}
+	endif
 endif
