@@ -145,17 +145,9 @@ if enable_native_progs
 	
 	dep_sdl2 = dependency('sdl2', version: config_h.get('ARCOLLECT_VERREQ_sdl2'))
 	
-	dep_oiio = dependency('OpenImageIO', version: config_h.get('ARCOLLECT_VERREQ_OpenImageIO'), fallback: ['oiio', 'dep_oiio'], default_options: [
-		'enable_bmp=enabled',
-		'enable_cineon=enabled',
-		'enable_dds=enabled',
-		'enable_dpx=auto', # TODO OpenEXR wrap
-		'enable_gif=enabled',
-		'enable_jpeg=enabled',
-		'enable_jpeg2000=disabled', # FIXME It's broken
-		'enable_png=enabled',
-		'enable_psd=enabled',
-		'enable_tiff=enabled',
+	dep_oiio = dependency('OpenImageIO', version: config_h.get('ARCOLLECT_VERREQ_OpenImageIO'), default_options: [
+		'cmake_overrides_path='+cmake_overrides_path,
+		'use_jpegturbo='+(dep_jpeg.type_name() == 'internal' ? 'false' : 'true'),
 	])
 	
 	dep_lcms2  = dependency('lcms2')

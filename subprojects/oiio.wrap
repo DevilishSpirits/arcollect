@@ -1,9 +1,5 @@
 [wrap-file]
-directory = oiio-2.4.4.2
-source_url = https://github.com/OpenImageIO/oiio/archive/refs/tags/v2.4.4.2.tar.gz
-source_filename = oiio-2.4.4.2.tar.gz
-source_hash = 1ae437e1178f53a972d8b42147d7571c5463652a638b36526f25d5719becbb55
-patch_directory = oiio
-
-[provide]
-OpenImageIO = dep_oiio
+directory = oiio-2.4.9.0
+source_url = https://github.com/OpenImageIO/oiio/archive/refs/tags/v2.4.9.0.tar.gz
+source_filename = oiio-2.4.9.0.tar.gz
+source_hash = d04c12575d63d13ed64fc037ea37da616224736213d785de9f50337f6eb5a9ed

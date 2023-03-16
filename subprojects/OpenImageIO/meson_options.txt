@@ -1,0 +1,2 @@
+option('cmake_overrides_path', type: 'string')
+option('use_jpegturbo', type: 'boolean')
