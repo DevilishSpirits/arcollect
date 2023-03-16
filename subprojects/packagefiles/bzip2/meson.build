@@ -24,4 +24,5 @@ srcs = [
 	'bzlib.c',
 ]
 bzip2 = static_library('bzip2', srcs, include_directories: incdirs, build_by_default: false)
+bzip2_incdir = meson.current_source_dir()
 bzip2_dep = declare_dependency(link_with: bzip2, include_directories: incdirs)

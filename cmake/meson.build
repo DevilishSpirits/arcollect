@@ -49,6 +49,18 @@ if cmake.found()
 		cmake_overrides_defines += {'Brotli_ROOT':cmake_overrides_path}
 	endif
 	
+	dep_bzip2 = dependency('bzip2')
+	if dep_bzip2.type_name() == 'internal'
+		proj_bzip2 = subproject('bzip2')
+		brotli_conf = {
+			'BZIP2_INCLUDE_DIR': proj_bzip2.get_variable('bzip2_incdir').replace('\\','\\\\'),
+			'BZIP2_LIBRARY': proj_bzip2.get_variable('bzip2').full_path().replace('\\','\\\\'),
+			'BZIP2_VERSION_STRING': dep_bzip2.version(),
+		}
+		configure_file(input: 'BZip2Config.cmake', output: 'BZip2Config.cmake', configuration: brotli_conf)
+		cmake_overrides_defines += {'Bzip2_ROOT':cmake_overrides_path}
+	endif
+	
 	dep_Imath = dependency('Imath')
 	if dep_Imath.type_name() == 'internal'
 		proj_Imath = subproject('Imath')
