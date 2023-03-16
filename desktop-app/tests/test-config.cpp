@@ -19,9 +19,6 @@
 	foreach_int_param(instructions); \
 }
 
-extern SDL::Renderer *renderer;
-SDL::Renderer *renderer;
-
 int main(int argc, char *argv[])
 {
 	bool test_success;
