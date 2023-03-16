@@ -25,6 +25,17 @@ if cmake.found()
 		cmake_overrides_defines += {'ZLIB_ROOT':cmake_overrides_path}
 	endif
 	
+	dep_boost = dependency('boost')
+	if dep_boost.type_name() == 'internal'
+		proj_boost = subproject('boost')
+		boost_conf = {
+			'BOOST_INCLUDE_DIR': proj_boost.get_variable('boost_incdir').replace('\\','\\\\'),
+			'BOOST_VERSION_STRING': dep_boost.version(),
+		}
+		configure_file(input: 'BoostConfig.cmake', output: 'BoostConfig.cmake', configuration: boost_conf)
+		cmake_overrides_defines += {'Boost_ROOT':cmake_overrides_path}
+	endif
+	
 	dep_brotli = dependency('libbrotlicommon')
 	if dep_brotli.type_name() == 'internal'
 		proj_brotli = subproject('brotli')

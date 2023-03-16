@@ -1,0 +1,6 @@
+if (NOT BOOST_FOUND)
+	message(NOTICE "Using Arcollect injected BoostConfig.cmake")
+	set(Boost_INCLUDE_DIRS "@BOOST_INCLUDE_DIR@")
+	set(Boost_LIBRARIES "")
+	set(Boost_VERSION_STRING "@BOOST_VERSION_STRING@")
+endif()

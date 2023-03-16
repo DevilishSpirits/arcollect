@@ -13,4 +13,5 @@ foreach module: boost_with
 endforeach
 
 boost_ver = cpp.get_define('BOOST_LIB_VERSION', include_directories: boost_inc, prefix: '#include <boost/version.hpp>').strip('"').replace('_','.')
+boost_incdir = meson.current_source_dir()
 boost_dep = declare_dependency(link_whole: boost_libs, include_directories: boost_inc, compile_args: boost_pub_args, version: boost_ver)
