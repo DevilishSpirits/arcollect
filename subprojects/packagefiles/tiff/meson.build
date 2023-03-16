@@ -149,6 +149,5 @@ cdata.set('LZW_SUPPORT', 1)
 
 subdir('libtiff')
 
-libtiff4_dep = declare_dependency(include_directories: 'libtiff',
-  link_with: tiff4_lib)
-
+libtiff4_version = cc.get_define('TIFFLIB_VERSION_STR', prefix: '#include <tiffvers.h>',include_directories: include_directories('libtiff')).split('\\')[0].split(' ')[-1]
+libtiff4_dep = declare_dependency(include_directories: 'libtiff', link_with: tiff4_lib, version: libtiff4_version)
