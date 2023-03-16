@@ -49,6 +49,18 @@ if cmake.found()
 		cmake_overrides_defines += {'Brotli_ROOT':cmake_overrides_path}
 	endif
 	
+	dep_Imath = dependency('Imath')
+	if dep_Imath.type_name() == 'internal'
+		proj_Imath = subproject('Imath')
+		Imath_conf = {
+			'ILMBASE_LIBRARIES': proj_Imath.get_variable('Imath').full_path().replace('\\','\\\\'),
+			'IMATH_INCLUDES': proj_Imath.get_variable('Imath_incdir').replace('\\','\\\\'),
+			'IMATH_VERSION_STRING': dep_Imath.version(),
+		}
+		configure_file(input: 'OpenEXRConfig.cmake', output: 'OpenEXRConfig.cmake', configuration: Imath_conf)
+		cmake_overrides_defines += {'OpenEXR_ROOT':cmake_overrides_path}
+	endif
+	
 	dep_fmt = dependency('fmt')
 	if dep_fmt.type_name() == 'internal'
 		proj_fmt = subproject('fmt')

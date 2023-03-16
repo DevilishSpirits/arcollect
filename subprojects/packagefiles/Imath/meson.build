@@ -68,3 +68,4 @@ ImathConfig_h = configure_file(input: 'config/ImathConfig.h.in', output: 'ImathC
 
 subdir('src/Imath')
 Imath_dep = declare_dependency(link_with: Imath, include_directories: [include_directories('src'),include_directories('.')], version: version)
+Imath_incdir = meson.current_source_dir()/'src'
