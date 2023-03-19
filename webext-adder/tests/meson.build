@@ -139,5 +139,10 @@ test_wtf_json_parser_exe = executable('test_wtf_json_parser', 'test_wtf_json_par
 test_wtf_json_parser_py = files('test_wtf_json_parser.py')
 test('wtf-json-parser',test_wtf_json_parser_py, args: [test_wtf_json_parser_exe,offline_tests,online_tests,online_nsfw_tests,nst_json_test_suite], protocol: 'tap')
 
+
+test_payloads_exe = find_program('test_payloads.py',native: true)
+test_payloads_payload = custom_target('webext-adder-test_payloads-payload', command: [test_payloads_exe,'generate','@OUTPUT@'], output:'test_payloads-payload', build_by_default: false, install: false)
+test('webext-adder-payloads',test_payloads_exe, args: ['run_test',test_payloads_payload,meson.current_build_dir()/'test_payloads-payload-datahome'], env: tests_env, depends: webext_adder_exe, protocol: 'tap')
+
 test_referrer_policy_exe = executable('test_referrer_policy', 'test_referrer_policy.cpp', dependencies: webext_adder_dep, build_by_default: false)
 test('test-referrer-policy',test_referrer_policy_exe, env: {'ARCOLLECT_DATA_HOME': meson.current_build_dir()/'test-referrer-policy-data-home'}, protocol: 'tap')
