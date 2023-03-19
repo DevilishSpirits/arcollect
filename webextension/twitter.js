@@ -211,7 +211,7 @@ browser.webRequest.onBeforeRequest.addListener(function(details) {
 	// Filter the request
 	if ((details.method == 'GET'))
 		twitter_intercept_api_call(details.requestId);
-},{urls:["https://api.twitter.com/*"], types: ["xmlhttprequest"]}, ["blocking"]);
+},{urls:["https://api.twitter.com/*","https://mobile.twitter.com/i/api/*","https://twitter.com/i/api/*"], types: ["xmlhttprequest"]}, ["blocking"]);
 
 /** Process a content-script request
  * \param json The request of the content-script
