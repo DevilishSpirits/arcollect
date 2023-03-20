@@ -81,7 +81,7 @@ function DeviantArt_MakeWebextAdderPayload()
 	let accountJson = [{
 		'id': userId,
 		'name': userElement.attributes['data-username'].value,
-		'url': userElement.href,
+		'url': userElement.href.split('/').slice(0,4).join('/'),
 		'icon': userElement.attributes['data-icon'].value
 	}];
 	 
