@@ -81,7 +81,7 @@ if __name__ == '__main__':
 				for test in steps:
 					res = webext_adder.read1()
 					if res['success'] != test['test.success']:
-						print('not ',endl='')
+						print('not ',end='')
 					if res['success']:
 						reason = 'Success'
 					else:
