@@ -561,7 +561,7 @@ struct new_xxx_acc_link {
 					default:throw std::runtime_error("Failed to insert " + std::string(ParamClass::linked_field) + "/account link: " + std::string(db->errmsg()));
 				}
 				insert_stmt->reset();
-			}
+			} else throw std::runtime_error("Failed to insert " + std::string(ParamClass::linked_field) + "/account link: the " + std::string(ParamClass::linked_field) + " or account does not exists");
 		new_xxx_acc_links.clear();
 	}
 	/** Check if the link is sane
@@ -633,7 +633,7 @@ struct new_xxx_tag_link {
 					default:throw std::runtime_error("Failed to insert " + std::string(ParamClass::linked_field) + "/tag link: " + std::string(db->errmsg()));
 				}
 				insert_stmt->reset();
-			}
+			} else throw std::runtime_error("Failed to insert " + std::string(ParamClass::linked_field) + "/tag link: the " + std::string(ParamClass::linked_field) + " or tag does not exists");
 		new_xxx_tag_links.clear();
 	}
 	/** Check if the link is sane

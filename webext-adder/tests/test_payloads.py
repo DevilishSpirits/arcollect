@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # Usage: test_payloads.py generate payload-output
 # Usage: test_payloads.py run_test payload-input ARCOLLECT_DATA_HOME # /!\ WILL NUKE THE ARCOLLECT_DATA_HOME!!!
+
+dummy_data = 'data:text/plain;base64,QXJjb2xsZWN0'
+
 test_set = {
 	# Example test
 	'Example': [{ # 
@@ -49,6 +52,47 @@ test_set = {
 		'ws',
 		'wss',
 	])),
+	# Ensure we fails when an a_b_links map to an non existent item
+	'Fails on linking to non existent entry': [{
+		'test.name': 'Init db',
+		'test.success': True,
+		'accounts': [{'id': "acc1",'url':'https://example.com','icon':dummy_data}],
+		'artworks': [{'source': "art1",'data':dummy_data}],
+		'comics': [{'id': "com1",'title':'Comic'}],
+		'tagss': [{'id': "tag1",}],
+	},{
+		'test.name': 'art_acc_links test bad art',
+		'test.success': False,
+		'art_acc_links':[{"artwork": "art bad","account": 'acc1'}],
+	},{
+		'test.name': 'art_acc_links test bad acc',
+		'test.success': False,
+		'art_acc_links':[{"artwork": "art1","account": 'acc bad'}],
+	},{
+		'test.name': 'art_tag_links test bad art',
+		'test.success': False,
+		'art_tag_links':[{"artwork": "art bad","tag": 'tag1'}],
+	},{
+		'test.name': 'art_tag_links test bad tag',
+		'test.success': False,
+		'art_tag_links':[{"artwork": "art1","tag": 'acc bad'}],
+	},{
+		'test.name': 'com_acc_links test bad art',
+		'test.success': False,
+		'com_acc_links':[{"comic": "art bad","account": 'acc1'}],
+	},{
+		'test.name': 'com_acc_links test bad acc',
+		'test.success': False,
+		'com_acc_links':[{"comic": "com1","account": 'acc bad'}],
+	},{
+		'test.name': 'com_tag_links test bad art',
+		'test.success': False,
+		'com_tag_links':[{"comic": "art bad","tag": 'tag1'}],
+	},{
+		'test.name': 'com_tag_links test bad tag',
+		'test.success': False,
+		'com_tag_links':[{"comic": "com1","tag": 'acc bad'}],
+	}],
 }
 
 sorted_test_set = sorted(test_set.items())
