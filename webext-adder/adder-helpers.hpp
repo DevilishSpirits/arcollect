@@ -22,6 +22,9 @@
  */
 template <typename KeyT>
 struct default_SQLBinder {
+	static int bind(SQLite3::stmt &stmt, const KeyT& key) {
+		return stmt.bind(1,key);
+	}
 	static int bind(SQLite3::stmt &stmt, const KeyT& key, const std::string_view& platform) {
 		return stmt.bind(1,key);
 	}

@@ -55,6 +55,9 @@ static const std::filesystem::path acc_icon_target_dir("account-avatars");
 
 struct db_comic {
 	sqlite_int64 com_arcoid;
+	const sqlite_int64 &cache_id() const {
+		return com_arcoid;
+	}
 	db_comic(SQLite3::sqlite3 &db, SQLite3::stmt &stmt) :
 		com_arcoid(stmt.column_int64(0))
 	{}
@@ -66,6 +69,9 @@ using ComicsDBCache = DBCache<platform_id,db_comic>;
 
 struct db_artwork {
 	sqlite_int64 art_artid;
+	const sqlite_int64 &cache_id() const {
+		return art_artid;
+	}
 	sqlite_int64 art_flag0;
 	sqlite_int64 art_partof;
 	sqlite_int64 art_dwnid;
@@ -532,6 +538,32 @@ struct new_xxx_acc_link {
 		if (!acc_arcoid)
 			throw std::runtime_error("\""+std::string(ParamClass::arr_name)+"\" objects must have a \"tag\".");
 	}
+	template <typename containerT>
+	static void insert_into_db(containerT& new_xxx_acc_links, std::unique_ptr<SQLite3::stmt> &insert_stmt) {
+		if (Arcollect::debug.webext_adder)
+			std::cerr << "\tInserting " << new_xxx_acc_links.size() << " " << ParamClass::linked_field << "/account links..." << std::endl;
+		for (const new_xxx_acc_link& xxx_acc_link : new_xxx_acc_links)
+			if (xxx_acc_link) {
+				const auto& xxx_id  = (*xxx_acc_link.xxx_id)->cache_id();
+				default_SQLBinder<decltype(xxx_id)>().bind(*insert_stmt,xxx_id);
+				insert_stmt->bind(2,(*xxx_acc_link.acc_arcoid)->acc_arcoid);
+				insert_stmt->bind(3,xxx_acc_link.artacc_link);
+				switch (insert_stmt->step()) {
+					case SQLITE_ROW: {
+					} break;
+					case SQLITE_DONE: {
+					} break;
+						case SQLITE_CONSTRAINT: {
+							if (db->extended_errcode() == SQLITE_CONSTRAINT_PRIMARYKEY)
+								// Link already exists, it's fine
+								break;
+						} // falltrough;
+					default:throw std::runtime_error("Failed to insert " + std::string(ParamClass::linked_field) + "/account link: " + std::string(db->errmsg()));
+				}
+				insert_stmt->reset();
+			}
+		new_xxx_acc_links.clear();
+	}
 	/** Check if the link is sane
 	 * \return true if the link is sane
 	 *
@@ -578,6 +610,31 @@ struct new_xxx_tag_link {
 			std::runtime_error("\""+std::string(ParamClass::arr_name)+"\" objects must have a \""+std::string(ParamClass::linked_field)+"\".");
 		if (!tag_arcoid)
 			std::runtime_error("\""+std::string(ParamClass::arr_name)+"\" objects must have a \"tag\".");
+	}
+	template <typename containerT>
+	static void insert_into_db(containerT& new_xxx_tag_links, std::unique_ptr<SQLite3::stmt> &insert_stmt) {
+		if (Arcollect::debug.webext_adder)
+			std::cerr << "\tInserting " << new_xxx_tag_links.size() << " " << ParamClass::linked_field << "/tag links..." << std::endl;
+		for (const new_xxx_tag_link& xxx_tag_link : new_xxx_tag_links)
+			if (xxx_tag_link) {
+				const auto& xxx_id  = (*xxx_tag_link.xxx_id)->cache_id();
+				default_SQLBinder<decltype(xxx_id)>().bind(*insert_stmt,xxx_id);
+				insert_stmt->bind(2,(*xxx_tag_link.tag_arcoid)->tag_arcoid);
+				switch (insert_stmt->step()) {
+					case SQLITE_ROW: {
+					} break;
+					case SQLITE_DONE: {
+					} break;
+						case SQLITE_CONSTRAINT: {
+							if (db->extended_errcode() == SQLITE_CONSTRAINT_PRIMARYKEY)
+								// Link already exists, it's fine
+								break;
+						} // falltrough;
+					default:throw std::runtime_error("Failed to insert " + std::string(ParamClass::linked_field) + "/tag link: " + std::string(db->errmsg()));
+				}
+				insert_stmt->reset();
+			}
+		new_xxx_tag_links.clear();
 	}
 	/** Check if the link is sane
 	 * \return true if the link is sane
@@ -1151,112 +1208,22 @@ static std::optional<std::string> do_add(char* iter, char* const end, std::strin
 	// INSERT INTO art_acc_links
 	if (db->prepare(Arcollect::db::sql::adder_insert_art_acc_link,insert_stmt))
 		return "Failed to prepare adder_insert_art_acc_link: " + std::string(db->errmsg());
-	if (Arcollect::debug.webext_adder)
-		std::cerr << "\tInserting " << new_art_acc_links.size() << " artwork/account links..." << std::endl;
-	for (const auto&  art_acc_link: new_art_acc_links)
-		if (art_acc_link) {
-			const sqlite3_int64 art_artid  = (*art_acc_link.xxx_id)->art_artid;
-			const sqlite3_int64 acc_arcoid = (*art_acc_link.acc_arcoid)->acc_arcoid;
-			insert_stmt->bind(1,art_artid);
-			insert_stmt->bind(2,acc_arcoid);
-			insert_stmt->bind(3,art_acc_link.artacc_link);
-			switch (insert_stmt->step()) {
-				case SQLITE_DONE: {
-				} break;
-				case SQLITE_CONSTRAINT: {
-					if (db->extended_errcode() == SQLITE_CONSTRAINT_PRIMARYKEY)
-						// Link already exists, it's fine
-						break;
-				} // falltrough;
-				default: {
-				} return "Failed to insert artwork/account link: " + std::string(db->errmsg());
-			}
-			insert_stmt->reset();
-		}
-	new_art_acc_links.clear();
+	decltype(new_art_acc_links)::value_type::insert_into_db(new_art_acc_links,insert_stmt);
 	
 	// INSERT INTO art_tag_links
 	if (db->prepare(Arcollect::db::sql::adder_insert_art_tag_link,insert_stmt))
 		return "Failed to prepare adder_insert_art_tag_link: " + std::string(db->errmsg());
-	if (Arcollect::debug.webext_adder)
-		std::cerr << "\tInserting " << new_art_tag_links.size() << " artwork/tag links..." << std::endl;
-	for (const auto& art_tag_link : new_art_tag_links)
-		if (art_tag_link) {
-			const sqlite3_int64 art_artid  = (*art_tag_link.xxx_id)->art_artid;
-			const sqlite3_int64 tag_arcoid = (*art_tag_link.tag_arcoid)->tag_arcoid;
-			insert_stmt->bind(1,art_artid);
-			insert_stmt->bind(2,tag_arcoid);
-			switch (insert_stmt->step()) {
-				case SQLITE_ROW: {
-				} break;
-				case SQLITE_DONE: {
-				} break;
-					case SQLITE_CONSTRAINT: {
-						if (db->extended_errcode() == SQLITE_CONSTRAINT_PRIMARYKEY)
-							// Link already exists, it's fine
-							break;
-					} // falltrough;
-				default: {
-				} return "Failed to insert artwork/tag link: " + std::string(db->errmsg());
-			}
-			insert_stmt->reset();
-		}
-	new_art_tag_links.clear();
+	decltype(new_art_tag_links)::value_type::insert_into_db(new_art_tag_links,insert_stmt);
 	
 	// INSERT INTO com_acc_links
 	if (db->prepare(Arcollect::db::sql::adder_insert_com_acc_link,insert_stmt))
 		return "Failed to prepare adder_insert_com_acc_link: " + std::string(db->errmsg());
-	if (Arcollect::debug.webext_adder)
-		std::cerr << "\tInserting " << new_com_acc_links.size() << " comic/account links..." << std::endl;
-	for (const auto& com_acc_link : new_com_acc_links)
-		if (com_acc_link) {
-			const sqlite3_int64 com_arcoid = (*com_acc_link.xxx_id)->com_arcoid;
-			const sqlite3_int64 acc_arcoid = (*com_acc_link.acc_arcoid)->acc_arcoid;
-			insert_stmt->bind(1,com_arcoid);
-			insert_stmt->bind(2,acc_arcoid);
-			insert_stmt->bind(3,com_acc_link.artacc_link);
-			switch (insert_stmt->step()) {
-				case SQLITE_DONE: {
-				} break;
-				case SQLITE_CONSTRAINT: {
-					if (db->extended_errcode() == SQLITE_CONSTRAINT_PRIMARYKEY)
-						// Link already exists, it's fine
-						break;
-				} // falltrough;
-				default: {
-				} return "Failed to insert comic/account link: " + std::string(db->errmsg());
-			}
-			insert_stmt->reset();
-		}
-	new_com_acc_links.clear();
+	decltype(new_com_acc_links)::value_type::insert_into_db(new_com_acc_links,insert_stmt);
 	
 	// INSERT INTO com_tag_links
 	if (db->prepare(Arcollect::db::sql::adder_insert_com_tag_link,insert_stmt))
 		return "Failed to prepare adder_insert_com_tag_link: " + std::string(db->errmsg());
-	if (Arcollect::debug.webext_adder)
-		std::cerr << "\tInserting " << new_com_tag_links.size() << " comic/tag links..." << std::endl;
-	for (const auto& com_tag_link : new_com_tag_links)
-		if (com_tag_link) {
-			const sqlite3_int64 com_arcoid = (*com_tag_link.xxx_id)->com_arcoid;
-			const sqlite3_int64 tag_arcoid = (*com_tag_link.tag_arcoid)->tag_arcoid;
-			insert_stmt->bind(1,com_arcoid);
-			insert_stmt->bind(2,tag_arcoid);
-			switch (insert_stmt->step()) {
-				case SQLITE_ROW: {
-				} break;
-				case SQLITE_DONE: {
-				} break;
-				case SQLITE_CONSTRAINT: {
-					if (db->extended_errcode() == SQLITE_CONSTRAINT_PRIMARYKEY)
-						// Link already exists, it's fine
-						break;
-				} // falltrough;
-				default: {
-				} return "Failed to insert comic/tag link: " + std::string(db->errmsg());
-			}
-			insert_stmt->reset();
-		}
-	new_com_tag_links.clear();
+	decltype(new_com_tag_links)::value_type::insert_into_db(new_com_tag_links,insert_stmt);
 	
 	// INSERT INTO acc_icons
 	if (db->prepare(Arcollect::db::sql::adder_insert_acc_icon,insert_stmt))
