@@ -1,8 +1,8 @@
 [wrap-file]
-directory = Imath-3.1.6
-source_url = https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v3.1.6.tar.gz
-source_filename = Imath-3.1.6.tar.gz
-source_hash = ea5592230f5ab917bea3ceab266cf38eb4aa4a523078d46eac0f5a89c52304db
+directory = Imath-3.1.7
+source_url = https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v3.1.7.tar.gz
+source_filename = Imath-3.1.7.tar.gz
+source_hash = bff1fa140f4af0e7f02c6cb78d41b9a7d5508e6bcdfda3a583e35460eb6d4b47
 patch_directory = Imath
 
 [provide]

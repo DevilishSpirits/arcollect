@@ -38,9 +38,18 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-project('Imath', 'cpp', 'c', version: '3.1.3')
+project('Imath', 'cpp', 'c')
 
-Imath_VERSION = meson.project_version().split('.')
+# Extract version from CMakeLists.txt
+foreach line: import('fs').read('CMakeLists.txt').split('\n')
+	line = line.strip().to_lower()
+	if line.strip().to_lower().startswith('project(')
+		version = line.split(' version ')[1].split(' ')[0]
+		break
+	endif
+endforeach
+
+Imath_VERSION = version.split('.')
 
 config_data = configuration_data()
 config_data.set10('IMATH_HAVE_LARGE_STACK',get_option('enable_large_stack'))
@@ -48,14 +57,14 @@ config_data.set10('IMATH_ENABLE_API_VISIBILITY',get_option('use_default_visibili
 config_data.set('IMATH_INTERNAL_NAMESPACE','Imath_'+Imath_VERSION[0]+'_'+Imath_VERSION[1])
 config_data.set10('IMATH_NAMESPACE_CUSTOM',false)
 config_data.set('IMATH_NAMESPACE','Imath')
-config_data.set('IMATH_VERSION',meson.project_version())
+config_data.set('IMATH_VERSION',version)
 config_data.set('IMATH_PACKAGE_NAME',meson.project_name())
 config_data.set('Imath_VERSION_MAJOR',Imath_VERSION[0])
 config_data.set('Imath_VERSION_MINOR',Imath_VERSION[1])
 config_data.set('Imath_VERSION_PATCH',Imath_VERSION[2])
 config_data.set('IMATH_VERSION_RELEASE_TYPE','')
-config_data.set('IMATH_LIB_VERSION',meson.project_version())
+config_data.set('IMATH_LIB_VERSION',version)
 ImathConfig_h = configure_file(input: 'config/ImathConfig.h.in', output: 'ImathConfig.h', format: 'cmake@', configuration: config_data)
 
 subdir('src/Imath')
-Imath_dep = declare_dependency(link_with: Imath, include_directories: [include_directories('src'),include_directories('.')])
+Imath_dep = declare_dependency(link_with: Imath, include_directories: [include_directories('src'),include_directories('.')], version: version)
