@@ -19,7 +19,7 @@ dep_fmt   = dependency('fmt')
 dep_imath = dependency('Imath')
 dep_imath_version = dep_imath.version().split('.')
 dep_tiff  = dependency('libtiff-4')
-dep_robin_map = dependency('robin-map')
+dep_robin_map = dependency('tsl-robin-map', modules :'tsl::robin_map')
 dep_boost = dependency('boost', version: '>=1.53', modules: boost_modules, default_options: [
 ])
 dep_zlib  = dependency('zlib')

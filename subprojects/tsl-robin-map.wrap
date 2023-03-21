@@ -6,4 +6,4 @@ source_hash = b2ffdb623727cea852a66bddcb7fa6d938538a82b40e48294bb581fe086ef005
 patch_directory = robin-map
 
 [provide]
-robin-map = robin_map_dep
+tsl-robin-map = robin_map_dep
