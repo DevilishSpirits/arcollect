@@ -43,18 +43,25 @@ hb_base_sources = files(
   'hb-dispatch.hh',
   'hb-draw.cc',
   'hb-draw.hh',
+  'hb-paint.cc',
+  'hb-paint.hh',
+  'hb-paint-extents.cc',
+  'hb-paint-extents.hh',
   'hb-face.cc',
   'hb-face.hh',
+  'hb-face-builder.cc',
   'hb-fallback-shape.cc',
   'hb-font.cc',
   'hb-font.hh',
   'hb-iter.hh',
   'hb-kern.hh',
+  'hb-limits.hh',
   'hb-machinery.hh',
   'hb-map.cc',
   'hb-map.hh',
   'hb-meta.hh',
   'hb-ms-feature-ranges.hh',
+  'hb-multimap.hh',
   'hb-mutex.hh',
   'hb-null.hh',
   'hb-number.cc',
@@ -69,11 +76,6 @@ hb_base_sources = files(
   'hb-ot-cff2-table.cc',
   'hb-ot-cff2-table.hh',
   'hb-ot-cmap-table.hh',
-  'hb-ot-color-cbdt-table.hh',
-  'hb-ot-color-colr-table.hh',
-  'hb-ot-color-cpal-table.hh',
-  'hb-ot-color-sbix-table.hh',
-  'hb-ot-color-svg-table.hh',
   'hb-ot-color.cc',
   'hb-ot-face-table-list.hh',
   'hb-ot-face.cc',
@@ -91,6 +93,13 @@ hb_base_sources = files(
   'hb-ot-layout-gdef-table.hh',
   'hb-ot-layout-gpos-table.hh',
   'hb-ot-layout-gsub-table.hh',
+  'hb-outline.hh',
+  'hb-outline.cc',
+  'OT/Color/CBDT/CBDT.hh',
+  'OT/Color/COLR/COLR.hh',
+  'OT/Color/CPAL/CPAL.hh',
+  'OT/Color/sbix/sbix.hh',
+  'OT/Color/svg/svg.hh',
   'OT/glyf/glyf.hh',
   'OT/glyf/glyf-helpers.hh',
   'OT/glyf/loca.hh',
@@ -105,6 +114,7 @@ hb_base_sources = files(
   'OT/Layout/Common/CoverageFormat1.hh',
   'OT/Layout/Common/CoverageFormat2.hh',
   'OT/Layout/Common/RangeRecord.hh',
+  'OT/Layout/GDEF/GDEF.hh',
   'OT/Layout/GPOS/AnchorFormat1.hh',
   'OT/Layout/GPOS/AnchorFormat2.hh',
   'OT/Layout/GPOS/AnchorFormat3.hh',
@@ -159,6 +169,7 @@ hb_base_sources = files(
   'OT/Layout/GSUB/SingleSubst.hh',
   'OT/Layout/GSUB/SubstLookup.hh',
   'OT/Layout/GSUB/SubstLookupSubTable.hh',
+  'OT/name/name.hh',
   'hb-ot-layout-gsubgpos.hh',
   'hb-ot-layout-jstf-table.hh',
   'hb-ot-layout.cc',
@@ -214,6 +225,7 @@ hb_base_sources = files(
   'hb-ot-tag.cc',
   'hb-ot-var-avar-table.hh',
   'hb-ot-var-common.hh',
+  'hb-ot-var-cvar-table.hh',
   'hb-ot-var-fvar-table.hh',
   'hb-ot-var-gvar-table.hh',
   'hb-ot-var-hvar-table.hh',
@@ -248,7 +260,8 @@ hb_base_sources = files(
 
 hb_base_ragel_generated_sources = files(
   'hb-buffer-deserialize-json.hh',
-  'hb-buffer-deserialize-text.hh',
+  'hb-buffer-deserialize-text-glyphs.hh',
+  'hb-buffer-deserialize-text-unicode.hh',
   'hb-number-parser.hh',
   'hb-ot-shaper-indic-machine.hh',
   'hb-ot-shaper-khmer-machine.hh',
@@ -257,7 +270,8 @@ hb_base_ragel_generated_sources = files(
 )
 hb_base_ragel_sources = [
   'hb-buffer-deserialize-json.rl',
-  'hb-buffer-deserialize-text.rl',
+  'hb-buffer-deserialize-text-glyphs.rl',
+  'hb-buffer-deserialize-text-unicode.rl',
   'hb-number-parser.rl',
   'hb-ot-shaper-indic-machine.rl',
   'hb-ot-shaper-khmer-machine.rl',
@@ -274,6 +288,7 @@ hb_base_headers = files(
   'hb-cplusplus.hh',
   'hb-deprecated.h',
   'hb-draw.h',
+  'hb-paint.h',
   'hb-face.h',
   'hb-font.h',
   'hb-map.h',
@@ -299,7 +314,7 @@ hb_base_headers += hb_version_h
 
 # Optional Sources and Headers with external deps
 
-hb_ft_sources = files('hb-ft.cc')
+hb_ft_sources = files('hb-ft.cc', 'hb-ft-colr.hh')
 hb_ft_headers = files('hb-ft.h')
 
 hb_graphite2_sources = files('hb-graphite2.cc')
@@ -345,6 +360,16 @@ else
     )
   endforeach
 endif
+
+custom_target('harfbuzz.cc',
+  build_by_default: false,
+  output: 'harfbuzz.cc',
+  input: hb_base_sources + hb_ft_sources +
+         hb_graphite2_sources + hb_uniscribe_sources + hb_gdi_sources +
+         hb_directwrite_sources + hb_coretext_sources,
+  command: [find_program('gen-harfbuzzcc.py'),
+            '@OUTPUT@', meson.current_source_dir(), '@INPUT@'],
+)
 
 incsrc = include_directories('.')
 
@@ -393,7 +418,6 @@ endif
 
 have_icu = conf.get('HAVE_ICU', 0) == 1
 have_icu_builtin = conf.get('HAVE_ICU_BUILTIN', 0) == 1
-
 if have_icu and have_icu_builtin
   hb_sources += hb_icu_sources
   hb_headers += hb_icu_headers
@@ -401,19 +425,6 @@ if have_icu and have_icu_builtin
 endif
 
 # harfbuzz
-gen_def = find_program('gen-def.py')
-
-harfbuzz_def_command_args = [gen_def, '@OUTPUT@', '@INPUT@']
-if get_option('experimental_api')
-  harfbuzz_def_command_args += '--experimental-api'
-endif
-
-harfbuzz_def = custom_target('harfbuzz.def',
-    command: harfbuzz_def_command_args,
-    input: hb_headers,
-    output: 'harfbuzz.def')
-defs_list = [harfbuzz_def]
-
 version = '0.@0@.0'.format(hb_version_int)
 
 extra_hb_cpp_args = []
@@ -445,7 +456,6 @@ libharfbuzz = library('harfbuzz', hb_sources,
   install: false,
   darwin_versions: darwin_versions,
   link_language: libharfbuzz_link_language,
-  build_by_default: false,
 )
 
 libharfbuzz_dep = declare_dependency(
@@ -455,12 +465,6 @@ libharfbuzz_dep = declare_dependency(
 
 libharfbuzz_icu_dep = null_dep
 if have_icu and not have_icu_builtin
-  harfbuzz_icu_def = custom_target('harfbuzz-icu.def',
-    command: [gen_def, '@OUTPUT@', '@INPUT@'],
-    input: [hb_icu_headers],
-    output: 'harfbuzz-icu.def')
-  defs_list += [harfbuzz_icu_def]
-
   libharfbuzz_icu = library('harfbuzz-icu', [hb_icu_sources, hb_icu_headers],
     include_directories: incconfig,
     dependencies: icu_dep,
@@ -470,7 +474,6 @@ if have_icu and not have_icu_builtin
     version: version,
     install: false,
     darwin_versions: darwin_versions,
-    build_by_default: false,
     # ICU links to stdc++ anyway so the default linker is good
     # link_language: 'c',
   )
@@ -479,4 +482,5 @@ if have_icu and not have_icu_builtin
     link_with: libharfbuzz_icu,
     include_directories: incsrc,
     dependencies: icu_dep)
+  meson.override_dependency('harfbuzz-icu', libharfbuzz_icu_dep)
 endif
