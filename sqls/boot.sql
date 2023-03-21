@@ -19,3 +19,8 @@
  * It perform some pragmas.
  */
 PRAGMA foreign_keys = ON; /* Enforce foreign keys */
+PRAGMA journal_mode  = WAL; /* WAL is more recent */
+PRAGMA secure_delete = ON; /* Increase privacy */
+/* Ensure maximum durability */
+PRAGMA fullfsync     = ON;
+PRAGMA synchronous   = EXTRA;
