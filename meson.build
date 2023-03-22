@@ -14,6 +14,10 @@ project('arcollect', 'cpp',
 
 cpp = meson.get_compiler('cpp')
 
+add_project_arguments(
+	'-DNOMINMAX', # Prevent Windows.h to define min/max macros
+	language: 'cpp'
+)
 fs = import('fs')
 
 # Options
