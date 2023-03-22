@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Usage: test_payloads.py generate payload-output
 # Usage: test_payloads.py run_test payload-input ARCOLLECT_DATA_HOME # /!\ WILL NUKE THE ARCOLLECT_DATA_HOME!!!
 
