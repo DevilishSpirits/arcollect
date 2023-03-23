@@ -62,36 +62,14 @@
 	(a) = (((a) << (s)) | (((a) & 0xffffffff) >> (32 - (s)))); \
 	(a) += (b);
 
-/*
- * SET reads 4 input bytes in little-endian byte order and stores them in a
- * properly aligned word in host byte order.
- *
- * The check for little-endian architectures that tolerate unaligned memory
- * accesses is just an optimization.  Nothing will break if it fails to detect
- * a suitable architecture.
- *
- * Unfortunately, this optimization may be a C strict aliasing rules violation
- * if the caller's data buffer has effective type that cannot be aliased by
- * std::uint_fast32_t.  In practice, this problem may occur if these MD5 routines are
- * inlined into a calling function, or with future and dangerously advanced
- * link-time optimizations.  For the time being, keeping these MD5 routines in
- * their own translation unit avoids the problem.
- */
-#if defined(__i386__) || defined(__x86_64__) || defined(__vax__)
 #define SET(n) \
-	(*(std::uint_fast32_t *)&ptr[(n) * 4])
-#define GET(n) \
-	SET(n)
-#else
-#define SET(n) \
-	(block[(n)] = \
+	(ctx.block[(n)] = \
 	(std::uint_fast32_t)ptr[(n) * 4] | \
 	((std::uint_fast32_t)ptr[(n) * 4 + 1] << 8) | \
 	((std::uint_fast32_t)ptr[(n) * 4 + 2] << 16) | \
 	((std::uint_fast32_t)ptr[(n) * 4 + 3] << 24))
 #define GET(n) \
-	(block[(n)])
-#endif
+	(ctx.block[(n)])
 
 /*
  * This processes one or more 64-byte data blocks, but does NOT update the bit
@@ -99,11 +77,9 @@
  */
 static const void *body(MD5_CTX &ctx, const void *data, std::size_t size)
 {
-	const unsigned char *ptr;
+	const unsigned char *ptr = static_cast<const unsigned char*>(data);
 	std::uint_fast32_t a, b, c, d;
 	std::uint_fast32_t saved_a, saved_b, saved_c, saved_d;
-
-	ptr = (const unsigned char *)data;
 
 	a = ctx.a;
 	b = ctx.b;
