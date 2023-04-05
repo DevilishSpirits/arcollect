@@ -10,6 +10,7 @@ jobs:
     uses: ./.github/workflows/build.yml
   sign-amo:
     # Sign the webextenson
+    name: Signing on AMO (Firefox)
     needs: [build]
     runs-on: ubuntu-latest
     steps:
@@ -33,6 +34,7 @@ jobs:
           path: web-ext-artifacts
   release:
     # Create a new draft release
+    name: Perform GitHub release
     runs-on: ubuntu-latest
     needs: [build, sign-amo]
     steps:
