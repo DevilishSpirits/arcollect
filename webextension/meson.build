@@ -48,7 +48,7 @@ endforeach
 webextension_target = custom_target('arcollect.zip', output : 'arcollect.zip', command : webext_zip_cmds, depend_files: webext_zip_depend_files, depends: webext_zip_depends, build_by_default: true)
 
 # Test with web-ext lint
-prog_web_ext = find_program('web-ext', required: false)
+prog_web_ext = find_program('web-ext', required: false, version: '<7.5')
 prog_unzip   = find_program('unzip', required: false)
 if prog_web_ext.found() and prog_unzip.found()
 	test('web-ext-lint', files('web-ext-lint.sh'), args: [webextension_target, meson.project_build_root(), prog_unzip.full_path(), prog_web_ext.full_path()], suite: ['webextension'])
