@@ -115,7 +115,7 @@ static void write_sql_file(const char* sql_file_path, const std::string_view &va
 						will_wasblank = true;
 					} break;
 					default: {
-						bool will_needblank = (sql_file[i] >= 0x80) // Non ASCII character
+						bool will_needblank = (static_cast<unsigned char>(sql_file[i]) >= 0x80) // Non ASCII character
 							||((sql_file[i] >= 'a')&&(sql_file[i] <= 'z')) // [a-z]
 							||((sql_file[i] >= 'A')&&(sql_file[i] <= 'Z')) // [A-Z]
 							||((sql_file[i] >= '0')&&(sql_file[i] <= '9')) // [0-9]
