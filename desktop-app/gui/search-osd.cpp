@@ -80,7 +80,7 @@ bool Arcollect::gui::search_osd::event(SDL::Event &e, Arcollect::gui::modal::ren
 				case SDL_SCANCODE_RETURN: {
 					if (autocompletion_menu.focused_cell) {
 						Arcollect::gui::menu_account_item &cell = static_cast<Arcollect::gui::menu_account_item&>(*autocompletion_menu.focused_cell);
-						cell.onclick(cell.object,Arcollect::gui::menu_item::render_context(render_ctx.renderer));
+						cell.onclick(cell.object,Arcollect::gui::menu_item::render_context({render_ctx.renderer}));
 					} else pop();
 				} break;
 				default: {
