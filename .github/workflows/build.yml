@@ -53,6 +53,37 @@ jobs:
         with:
           name: build-wrapped_webextension.zip
           path: build/webextension/arcollect.zip
+  build-clang:
+    name: ArchLinux (Clang)
+    runs-on: [archlinux]
+    env:
+      CC: clang
+      CXX: clang++
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+      - name: Configure project
+        run: arch-meson build -Duse_system_polib=true
+      - name: Build project
+        run: meson compile -C build
+      - name: Test project
+        run: meson test -C build --print-errorlogs
+      - name: Install project
+        run: meson install -C build
+        env:
+          DESTDIR: "archive-out"
+      - name: Archiving the "installed project"
+        run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
+      - name: Uploading DESTDIR artifact
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        with:
+          name: build-clang_DESTDIR.tar
+          path: archive-out.tar
+      - name: Uploading arcollect-webextension.zip artifact
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        with:
+          name: build-clang_webextension.zip
+          path: build/webextension/arcollect.zip
   build-ubuntu-22_04-amd64:
     name: Ubuntu 22.04 (amd64)
     runs-on: [ubuntu-22.04]
@@ -224,7 +255,7 @@ jobs:
           name: flatpak-workspace
           path: ${{ env.GH_FLATPAK_WORKSPACE }}
   check-webextensions-same:
-    needs: [build-wrapped, build-ubuntu-22_04-amd64, build-ubuntu-20_04-amd64]
+    needs: [build-wrapped, build-clang, build-ubuntu-22_04-amd64, build-ubuntu-20_04-amd64]
     runs-on: [ubuntu-latest]
     steps:
       - name: Download build-wrapped_webextension.zip
@@ -232,6 +263,11 @@ jobs:
         with:
           name: build-wrapped_webextension.zip
           path: build-wrapped_webextension
+      - name: Download build-clang_webextension.zip
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        with:
+          name: build-clang_webextension.zip
+          path: build-clang_webextension
       - name: Download build-ubuntu-22_04_webextension.zip
         uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
@@ -243,16 +279,21 @@ jobs:
           name: build-ubuntu-20_04_webextension.zip
           path: build-ubuntu-20_04_webextension
       - name: Make unpack dirs
-        run: mkdir build-wrapped build-ubuntu-22_04 build-ubuntu-20_04
+        run: mkdir build-wrapped build-clang build-ubuntu-22_04 build-ubuntu-20_04
       - name: Unpack build-wrapped_webextension.zip
         run: unzip ../build-wrapped_webextension/arcollect.zip
         working-directory: build-wrapped
+      - name: Unpack build-clang_webextension.zip
+        run: unzip ../build-clang_webextension/arcollect.zip
+        working-directory: build-clang
       - name: Unpack build-ubuntu-22_04_webextension.zip
         run: unzip ../build-ubuntu-22_04_webextension/arcollect.zip
         working-directory: build-ubuntu-22_04
       - name: Unpack build-ubuntu-20_04_webextension.zip
         run: unzip ../build-ubuntu-20_04_webextension/arcollect.zip
         working-directory: build-ubuntu-20_04
+      - name: Compare build-wrapped and build-clang results
+        run: diff -ry build-wrapped build-clang
       - name: Compare build-wrapped and build-ubuntu-22_04 results
         run: diff -ry build-wrapped build-ubuntu-22_04
       - name: Compare build-wrapped and build-ubuntu-20_04 results
