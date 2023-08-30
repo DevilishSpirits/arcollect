@@ -19,6 +19,7 @@
  *
  * This escaper escape `"`, `\` and ASCII control-chars.
  */
+#include <cstdint>
 #include <string>
 #include <string_view>
 #pragma once
