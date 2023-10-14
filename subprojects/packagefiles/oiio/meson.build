@@ -1,4 +1,4 @@
-project('OpenImageIO', 'cpp', 'c', version: '2.4.4.2')
+project('OpenImageIO', 'cpp', 'c', version: '2.5.4.0')
 ## Copyright 2008-present Contributors to the OpenImageIO project.
 ## SPDX-License-Identifier: BSD-3-Clause
 ## https://github.com/OpenImageIO/oiio/blob/master/LICENSE.md
@@ -8,6 +8,8 @@ cpp = meson.get_compiler('cpp')
 add_project_arguments('-DOIIO_STATIC_DEFINE', language: 'cpp')
 
 compile_args_priv = [
+	'-DOIIO_DOES_NOT_NEED_THIS', # But it needs this to build dependencies
+	'-DOIIO_INTERNAL',
 	'-DUSE_STD_FILESYSTEM',
 ]
 

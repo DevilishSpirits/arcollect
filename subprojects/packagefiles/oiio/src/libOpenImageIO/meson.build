@@ -16,15 +16,6 @@ imageio_pvt_h = configure_file(input: 'imageio_pvt.h.in', output: 'imageio_pvt.h
 #    endif ()
 #endif()
 
-## Make the build complete for newer ffmpeg versions (3.1.1+) that have
-## marked m_format_context->streams[i]->codec as deprecated.
-## FIXME -- at some point, come back and figure out how to fix for real
-## before the field disappears entirely.
-#if (NOT MSVC)
-#    set_source_files_properties (../ffmpeg.imageio/ffmpeginput.cpp
-#                             PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
-#endif()
-
 #if (CMAKE_COMPILER_IS_GNUCC AND ${GCC_VERSION} VERSION_GREATER_EQUAL 9.0)
 #    set_source_files_properties (../libutil/SHA1.cpp
 #                                 PROPERTIES COMPILE_FLAGS -Wno-stringop-truncation)
@@ -44,11 +35,13 @@ libOpenImageIO_srcs = [
 	'imagebufalgo_orient.cpp',
 	'imagebufalgo_xform.cpp',
 	#'imagebufalgo_yee.cpp', Not used in Arcollect
-	#'imagebufalgo_opencv.cpp', Not used in Arcollect
+	'imagebufalgo_opencv.cpp',
+	'color_ocio.cpp',
 	'deepdata.cpp',
 	'exif.cpp',
 	'exif-canon.cpp',
 	'formatspec.cpp',
+	'icc.cpp',
 	'imagebuf.cpp',
 	'imageinput.cpp',
 	'imageio.cpp',
