@@ -56,7 +56,7 @@ if appstream_util_prog.found()
 endif
 appstreamcli_prog = find_program('appstreamcli', required: false, native: true)
 if appstreamcli_prog.found()
-	test('appstreamcli-metainfo-file-validate', appstreamcli_prog, args: ['validate','--nonet',appstream_file.full_path()])
+	test('appstreamcli-metainfo-file-validate', appstreamcli_prog, args: ['validate','--no-net',appstream_file.full_path()])
 endif
 
 main_cpp = 'main-xdg.cpp'
