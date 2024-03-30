@@ -9,12 +9,20 @@ packages_conf.set('MESON_SOURCE_ROOT', meson.project_source_root())
 
 sh_prog = find_program('sh', required: false, native: true)
 
+# Strip targets
+if get_option('strip')
+	strip_exe = find_program('strip', native: true, disabler: true)
+	install_arcollect_exe = custom_target('arcollect_exe_stripped', command: [strip_exe,'-o','@OUTPUT0@','@INPUT0@'], input: arcollect_exe, output: 'arcollect.strip.exe')
+else
+	install_arcollect_exe = arcollect_exe
+endif
+
 # DESTDIR target
 # This special target run `meson compile` to a DESTDIR
 destdir_depends = []
 destdir_depend_files = []
 if enable_native_progs
-	destdir_depends += [webext_adder_exe,arcollect_exe]
+	destdir_depends += [webext_adder_exe,install_arcollect_exe]
 	destdir_depend_files += [webext_appmanifest_firefox]
 endif
 destdir_target = custom_target('destdir',
@@ -166,7 +174,7 @@ wix_config = custom_target('wix-config',
 	input: [
 		config_h_file,
 		# Match these input to keys a few lines below -↓
-		arcollect_exe,
+		install_arcollect_exe,
 		webext_appmanifest_firefox_windows,
 		webext_adder_exe,
 		copying_rtf,
@@ -187,7 +195,6 @@ wix_config = custom_target('wix-config',
 if wix_prog.found() and enable_native_progs
 	# WiX depends
 	wix_deps = [
-		destdir_target,
 		wix_config,
 	]
 	wix_dep_files = files(
