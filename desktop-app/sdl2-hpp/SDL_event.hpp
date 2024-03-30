@@ -155,7 +155,6 @@ typedef enum
 	typedef SDL_SensorEvent SensorEvent;
 	#endif
 	typedef SDL_QuitEvent QuitEvent;
-	typedef SDL_OSEvent OSEvent;
 	typedef SDL_SysWMmsg SysWMmsg;
 	typedef SDL_SysWMEvent SysWMEvent;
 	typedef SDL_DropEvent DropEvent;
