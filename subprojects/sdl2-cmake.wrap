@@ -1,5 +1,5 @@
 [wrap-file]
-directory = SDL2-2.28.4
-source_url = https://github.com/libsdl-org/SDL/releases/download/release-2.28.4/SDL2-2.28.4.tar.gz
-source_filename = SDL2-2.28.4.tar.gz
-source_hash = 888b8c39f36ae2035d023d1b14ab0191eb1d26403c3cf4d4d5ede30e66a4942c
+directory = SDL2-2.30.4
+source_url = https://github.com/libsdl-org/SDL/releases/download/release-2.30.4/SDL2-2.30.4.tar.gz
+source_filename = SDL2-2.30.4.tar.gz
+source_hash = 59c89d0ed40d4efb23b7318aa29fe7039dbbc098334b14f17f1e7e561da31a26
