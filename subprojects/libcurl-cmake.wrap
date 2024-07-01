@@ -1,5 +1,5 @@
 [wrap-file]
-directory = curl-8.4.0
-source_url = https://curl.se/download/curl-8.4.0.tar.gz
-source_filename = curl-8.4.0.tar.gz
-source_hash = 816e41809c043ff285e8c0f06a75a1fa250211bbfb2dc0a037eeef39f1a9e427
+directory = curl-8.8.0
+source_url = https://curl.se/download/curl-8.8.0.tar.gz
+source_filename = curl-8.8.0.tar.gz
+source_hash = 77c0e1cd35ab5b45b659645a93b46d660224d0024f1185e8a95cdb27ae3d787d
