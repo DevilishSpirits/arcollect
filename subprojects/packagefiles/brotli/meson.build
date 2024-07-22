@@ -61,6 +61,7 @@ libbrotli_common = library(
   'c/common/context.c',
   'c/common/dictionary.c',
   'c/common/platform.c',
+  'c/common/shared_dictionary.c',
   'c/common/transform.c',
   c_args : c_args,
   include_directories : inc,
