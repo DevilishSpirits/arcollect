@@ -1,8 +1,8 @@
 [wrap-file]
-directory = freetype-2.12.1
-source_url = https://download.savannah.gnu.org/releases/freetype/freetype-2.12.1.tar.gz
-source_filename = freetype-2.12.1.tar.gz
-source_hash = efe71fd4b8246f1b0b1b9bfca13cfff1c9ad85930340c27df469733bbb620938
+directory = freetype-2.13.2
+source_url = https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz
+source_filename = freetype-2.13.2.tar.gz
+source_hash = 1ac27e16c134a7f2ccea177faba19801131116fd682efc1f5737037c5db224b5
 patch_directory = freetype
 
 [provide]
