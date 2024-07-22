@@ -1,4 +1,4 @@
-project('OpenImageIO', 'cpp', 'c', version: '2.5.4.0')
+project('OpenImageIO', 'cpp', 'c', version: '2.5.13.1')
 ## Copyright 2008-present Contributors to the OpenImageIO project.
 ## SPDX-License-Identifier: BSD-3-Clause
 ## https://github.com/OpenImageIO/oiio/blob/master/LICENSE.md
