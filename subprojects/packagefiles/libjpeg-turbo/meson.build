@@ -1,19 +1,21 @@
-project('libjpeg-turbo', 'c', version : '2.1.4', license : 'bsd-like')
+project('libjpeg-turbo', 'c',
+  version : '3.1.0',
+  license : 'bsd-like',
+  meson_version : '>= 0.64.0',
+)
 
 python = import('python').find_installation()
 
 cc = meson.get_compiler('c')
 host_system = host_machine.system()
+host_cpu = host_machine.cpu_family()
 
 cdata = configuration_data()
 cdata.set('CMAKE_PROJECT_NAME', meson.project_name())
 cdata.set('VERSION', meson.project_version())
-cdata.set('COPYRIGHT_YEAR', '1991-2022')
+cdata.set('COPYRIGHT_YEAR', '1991-2024')
 
 jpeg_lib_version = 80
-so_major = jpeg_lib_version / 10
-so_age = 2
-so_minor = 2
 
 version_arr = meson.project_version().split('.')
 version_major = version_arr[0]
@@ -36,11 +38,8 @@ endif
 cdata.set('JPEG_LIB_VERSION', jpeg_lib_version)
 cdata.set('LIBJPEG_TURBO_VERSION_NUMBER', version_major + version_minor + version_revision)
 
-cdata.set('BITS_IN_JSAMPLE', '8')
-
 cdata.set('C_ARITH_CODING_SUPPORTED', true)
 cdata.set('D_ARITH_CODING_SUPPORTED', true)
-cdata.set('MEM_SRCDST_SUPPORTED', true)
 
 check_headers = ['local.h', 'stddef.h', 'stdlib.h', 'sys/types.h']
 if cc.get_id() == 'msvc'
@@ -63,24 +62,23 @@ cdata.set('SIZE_T', size_t)
 cdata.set('HAVE_UNSIGNED_CHAR', cc.sizeof('unsigned char') != -1)
 cdata.set('HAVE_UNSIGNED_SHORT', cc.sizeof('unsigned short') != -1)
 if size_t == unsigned_long
-  code = 'int main(int argc, char **argv) { unsigned long a = argc;  return __builtin_ctzl(a); }'
-  cdata.set('HAVE_BUILTIN_CTZL', cc.compiles(code))
+  cdata.set('HAVE_BUILTIN_CTZL', cc.has_function('__builtin_ctzl'))
 endif
 
 code = 'int main(void) { typedef struct undefined_structure *undef_struct_ptr;  undef_struct_ptr ptr = 0;  return ptr != 0; }'
-cdata.set('INCOMPLETE_TYPES_BROKEN', not cc.compiles(code))
+cdata.set('INCOMPLETE_TYPES_BROKEN', not cc.links(code))
 
 if meson.can_run_host_binaries()
   code = '''
       #include <stdio.h>
       #include <stdlib.h>
-      int is_shifting_signed (long arg) {
+      static int is_shifting_signed (long arg) {
         long res = arg >> 4;
         if (res == -0x7F7E80CL)
           return 1; /* right shift is signed */
         /* see if unsigned-shift hack will fix it. */
         /* we can't just test exact value since it depends on width of long... */
-        res |= (~0L) << (32-4);
+        res |= 0xFFFFFFFFL << (32-4);
         if (res == -0x7F7E80CL)
           return 0; /* right shift is unsigned */
         printf(\"Right shift isn't acting as I expect it to.\\\\n\");
@@ -105,6 +103,13 @@ else
   cdata.set('THREAD_LOCAL', '__thread')
 endif
 
+cdata.set(
+  'HIDDEN',
+  cc.has_function_attribute('visibility:hidden')
+  ? '__attribute__((visibility("hidden")))'
+  : '',
+)
+
 if get_option('force_inline')
   if cc.get_id() == 'msvc'
     cdata.set('INLINE', '__forceinline')
@@ -119,47 +124,9 @@ if host_system == 'windows'
   add_project_arguments('-DDLLDEFINE', language: 'c')
 endif
 
-# TODO: Add simd support
-cdata.set('WITH_SIMD', false)
-simd = static_library('simd', 'jsimd_none.c', build_by_default: false)
+incdir = include_directories('src')
 
-jconfig_h_in = host_system == 'windows' ? 'win/jconfig.h.in' : 'jconfig.h.in'
-jconfig_h = configure_file(input: jconfig_h_in,
-  output: 'jconfig.h',
-  format: 'cmake@',
-  configuration: cdata)
+subdir('simd')
+cdata.set('WITH_SIMD', have_simd)
 
-configure_file(input: 'jconfigint.h.in',
-  output: 'jconfigint.h',
-  format: 'cmake@',
-  configuration: cdata)
-  
-configure_file(input: 'jversion.h.in',
-  output: 'jversion.h',
-  format: 'cmake@',
-  configuration: cdata)
-
-
-sources = [
-  'jcapimin.c', 'jcapistd.c', 'jccoefct.c', 'jccolor.c', 'jcdctmgr.c', 'jchuff.c',
-  'jcicc.c', 'jcinit.c', 'jcmainct.c', 'jcmarker.c', 'jcmaster.c', 'jcomapi.c', 'jcparam.c',
-  'jcphuff.c', 'jcprepct.c', 'jcsample.c', 'jctrans.c', 'jdapimin.c', 'jdapistd.c', 'jdatadst.c',
-  'jdatasrc.c', 'jdcoefct.c', 'jdcolor.c', 'jddctmgr.c', 'jdhuff.c', 'jdicc.c', 'jdinput.c',
-  'jdmainct.c', 'jdmarker.c', 'jdmaster.c', 'jdmerge.c', 'jdphuff.c', 'jdpostct.c', 'jdsample.c',
-  'jdtrans.c', 'jerror.c', 'jfdctflt.c', 'jfdctfst.c', 'jfdctint.c', 'jidctflt.c', 'jidctfst.c',
-  'jidctint.c', 'jidctred.c', 'jquant1.c', 'jquant2.c', 'jutils.c', 'jmemmgr.c', 'jmemnobs.c',
-  'jaricom.c', 'jcarith.c', 'jdarith.c',
-]
-
-jpeg = static_library('jpeg', sources,
-  link_with: simd,
-  install: false,
-  build_by_default: false,
-)
-
-jpeg_dep = declare_dependency(
-  include_directories: include_directories('.'),
-  link_with: jpeg
-)
-
-meson.override_dependency('libjpeg', jpeg_dep)
+subdir('src')

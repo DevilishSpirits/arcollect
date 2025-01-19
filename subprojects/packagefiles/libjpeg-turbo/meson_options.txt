@@ -1,1 +1,3 @@
-option('force_inline', type: 'boolean', value: true)
+option('force_inline', type: 'boolean')
+option('simd', type: 'feature')
+option('neon-intrinsics', type: 'feature')
