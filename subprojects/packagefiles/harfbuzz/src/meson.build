@@ -1,3 +1,5 @@
+fs = import('fs')
+
 hb_version_h = configure_file(
                command: [find_program('gen-hb-version.py'), meson.project_version(), '@OUTPUT@', '@INPUT@'],
                input: 'hb-version.h.in',
@@ -43,6 +45,7 @@ hb_base_sources = files(
   'hb-dispatch.hh',
   'hb-draw.cc',
   'hb-draw.hh',
+  'hb-geometry.hh',
   'hb-paint.cc',
   'hb-paint.hh',
   'hb-paint-extents.cc',
@@ -170,6 +173,9 @@ hb_base_sources = files(
   'OT/Layout/GSUB/SubstLookup.hh',
   'OT/Layout/GSUB/SubstLookupSubTable.hh',
   'OT/name/name.hh',
+  'OT/Var/VARC/coord-setter.hh',
+  'OT/Var/VARC/VARC.cc',
+  'OT/Var/VARC/VARC.hh',
   'hb-ot-layout-gsubgpos.hh',
   'hb-ot-layout-jstf-table.hh',
   'hb-ot-layout.cc',
@@ -230,6 +236,7 @@ hb_base_sources = files(
   'hb-ot-var-gvar-table.hh',
   'hb-ot-var-hvar-table.hh',
   'hb-ot-var-mvar-table.hh',
+  'hb-ot-var-varc-table.hh',
   'hb-ot-var.cc',
   'hb-ot-vorg-table.hh',
   'hb-pool.hh',
@@ -320,9 +327,22 @@ hb_ft_headers = files('hb-ft.h')
 hb_graphite2_sources = files('hb-graphite2.cc')
 hb_graphite2_headers = files('hb-graphite2.h')
 
+hb_wasm_sources = files(
+  'hb-wasm-api.cc',
+  'hb-wasm-api.hh',
+  'hb-wasm-api-blob.hh',
+  'hb-wasm-api-buffer.hh',
+  'hb-wasm-api-common.hh',
+  'hb-wasm-api-face.hh',
+  'hb-wasm-api-font.hh',
+  'hb-wasm-api-shape.hh',
+  'hb-wasm-shape.cc',
+)
+hb_wasm_headers = files()
+
 # System-dependent sources and headers
 
-hb_coretext_sources = files('hb-coretext.cc')
+hb_coretext_sources = files('hb-coretext-shape.cc', 'hb-coretext-font.cc')
 hb_coretext_headers = files('hb-coretext.h')
 
 hb_directwrite_sources = files('hb-directwrite.cc')
@@ -337,6 +357,54 @@ hb_uniscribe_headers = files('hb-uniscribe.h')
 # Sources for libharfbuzz-gobject and libharfbuzz-icu
 hb_icu_sources = files('hb-icu.cc')
 hb_icu_headers = files('hb-icu.h')
+
+# Sources for libharfbuzz-subset
+hb_subset_sources = files(
+  'hb-number.cc',
+  'hb-number.hh',
+  'hb-ot-cff1-table.cc',
+  'hb-ot-cff2-table.cc',
+  'hb-static.cc',
+  'hb-subset-accelerator.hh',
+  'hb-subset-cff-common.cc',
+  'hb-subset-cff-common.hh',
+  'hb-subset-cff1.cc',
+  'hb-subset-cff2.cc',
+  'hb-subset-input.cc',
+  'hb-subset-input.hh',
+  'hb-subset-instancer-iup.hh',
+  'hb-subset-instancer-iup.cc',
+  'hb-subset-instancer-solver.hh',
+  'hb-subset-instancer-solver.cc',
+  'hb-subset-plan.cc',
+  'hb-subset-plan.hh',
+  'hb-subset-plan-member-list.hh',
+  'hb-subset-serialize.cc',
+  'graph/gsubgpos-context.cc',
+  'graph/gsubgpos-context.hh',
+  'graph/gsubgpos-graph.hh',
+  'graph/pairpos-graph.hh',
+  'graph/markbasepos-graph.hh',
+  'graph/coverage-graph.hh',
+  'graph/classdef-graph.hh',
+  'graph/split-helpers.hh',
+  'hb-subset.cc',
+  'hb-subset.hh',
+)
+
+hb_subset_headers = files(
+  'hb-subset.h',
+  'hb-subset-serialize.h'
+)
+
+hb_gobject_sources = files(
+  'hb-gobject-structs.cc'
+)
+
+hb_gobject_headers = files(
+  'hb-gobject.h',
+  'hb-gobject-structs.h',
+)
 
 ragel = find_program('ragel', version: '6.10', required: false)
 has_ragel = ragel.found()
@@ -353,7 +421,7 @@ else
   foreach rl : hb_base_ragel_sources
     hh = rl.split('.')[0] + '.hh'
     custom_target('@0@'.format(hh),
-      build_by_default: false,
+      build_by_default: true,
       input: rl,
       output: hh,
       command: [ragel_helper, ragel, '@OUTPUT@', meson.current_source_dir(), '@INPUT@'],
@@ -362,11 +430,11 @@ else
 endif
 
 custom_target('harfbuzz.cc',
-  build_by_default: false,
+  build_by_default: true,
   output: 'harfbuzz.cc',
   input: hb_base_sources + hb_ft_sources +
          hb_graphite2_sources + hb_uniscribe_sources + hb_gdi_sources +
-         hb_directwrite_sources + hb_coretext_sources,
+         hb_directwrite_sources + hb_coretext_sources + hb_wasm_sources,
   command: [find_program('gen-harfbuzzcc.py'),
             '@OUTPUT@', meson.current_source_dir(), '@INPUT@'],
 )
@@ -378,13 +446,24 @@ hb_headers = hb_base_headers
 
 harfbuzz_deps = [thread_dep, m_dep] + harfbuzz_extra_deps
 
-libharfbuzz_link_language = 'c'
+if get_option('with_libstdcxx')
+  chosen_linker = 'cpp'
+else
+  # Use a C linker, not C++; Don't link to libstdc++
+  chosen_linker = 'c'
+endif
+libharfbuzz_link_language = chosen_linker
 
 if conf.get('HAVE_FREETYPE', 0) == 1
   hb_sources += hb_ft_sources
   hb_headers += hb_ft_headers
   harfbuzz_deps += [freetype_dep]
 endif
+
+# We set those here to not include the sources below that are of no use to
+# GObject Introspection
+gir_sources = hb_sources + hb_gobject_sources
+gir_headers = hb_headers + hb_gobject_headers
 
 if conf.get('HAVE_GDI', 0) == 1
   hb_sources += hb_gdi_sources
@@ -395,7 +474,14 @@ endif
 if conf.get('HAVE_GRAPHITE2', 0) == 1
   hb_sources += hb_graphite2_sources
   hb_headers += hb_graphite2_headers
-  harfbuzz_deps += [graphite2_dep]
+  harfbuzz_deps += [graphite2_dep, graphite_dep]
+endif
+
+if conf.get('HAVE_WASM', 0) == 1
+  hb_sources += hb_wasm_sources
+  hb_headers += hb_wasm_headers
+  harfbuzz_deps += wasm_dep
+  #harfbuzz_deps += llvm_dep
 endif
 
 if conf.get('HAVE_UNISCRIBE', 0) == 1
@@ -424,11 +510,61 @@ if have_icu and have_icu_builtin
   harfbuzz_deps += [icu_dep]
 endif
 
+features = [
+  'CAIRO',
+  'CORETEXT',
+  'DIRECTWRITE',
+  'FREETYPE',
+  'GDI',
+  'GLIB',
+  'GOBJECT',
+  'GRAPHITE',
+  'ICU',
+  'UNISCRIBE',
+  'WASM',
+]
+
+hb_enabled_features = configuration_data()
+hb_supported_features = configuration_data()
+foreach feature : features
+  key = 'HB_HAS_@0@'.format(feature)
+  hb_enabled_features.set(key, conf.get('HAVE_@0@'.format(feature), false))
+  hb_supported_features.set(key, 1)
+endforeach
+
+# The enabled features. This file is installed.
+hb_features_h = configure_file(input: 'hb-features.h.in',
+                               output: 'hb-features.h',
+                               configuration: hb_enabled_features,
+                               install: false)
+
+# This file is generated to convince gtk-doc to generate documentation for all
+# HB_HAS_* macros, whether they are enabled for the current build or not.
+# This file should not be installed.
+hb_supported_features_h = configure_file(input: 'hb-features.h.in',
+                               output: 'hb-supported-features.h',
+                               configuration: hb_supported_features,
+                               install: false)
+
+
+# Base and default-included sources and headers
+gen_def = find_program('gen-def.py')
+gen_def_cmd = [gen_def, '@OUTPUT@', '@INPUT@']
+if get_option('experimental_api')
+  gen_def_cmd += '--experimental-api'
+endif
+
 # harfbuzz
+harfbuzz_def = custom_target('harfbuzz.def',
+    command: gen_def_cmd,
+    input: hb_headers,
+    output: 'harfbuzz.def')
+defs_list = [harfbuzz_def]
+
 version = '0.@0@.0'.format(hb_version_int)
 
 extra_hb_cpp_args = []
-if cpp.get_argument_syntax() == 'msvc'
+if cpp.get_define('_MSC_FULL_VER') != ''
   if get_option('default_library') != 'static'
     extra_hb_cpp_args += '-DHB_DLL_EXPORT'
   endif
@@ -462,9 +598,23 @@ libharfbuzz_dep = declare_dependency(
   link_with: libharfbuzz,
   include_directories: incsrc,
   dependencies: harfbuzz_deps)
+meson.override_dependency('harfbuzz', libharfbuzz_dep)
+
+# harfbuzz-subset
+harfbuzz_subset_def = custom_target('harfbuzz-subset.def',
+    command: gen_def_cmd,
+    input: hb_subset_headers,
+    output: 'harfbuzz-subset.def')
+defs_list += [harfbuzz_subset_def]
 
 libharfbuzz_icu_dep = null_dep
 if have_icu and not have_icu_builtin
+  harfbuzz_icu_def = custom_target('harfbuzz-icu.def',
+    command: gen_def_cmd,
+    input: [hb_icu_headers],
+    output: 'harfbuzz-icu.def')
+  defs_list += [harfbuzz_icu_def]
+
   libharfbuzz_icu = library('harfbuzz-icu', [hb_icu_sources, hb_icu_headers],
     include_directories: incconfig,
     dependencies: icu_dep,
@@ -475,7 +625,7 @@ if have_icu and not have_icu_builtin
     install: false,
     darwin_versions: darwin_versions,
     # ICU links to stdc++ anyway so the default linker is good
-    # link_language: 'c',
+    # link_language: chosen_linker,
   )
 
   libharfbuzz_icu_dep = declare_dependency(

@@ -1,6 +1,20 @@
 project('harfbuzz', 'c', 'cpp',
-  version: '7.1.0',
+  meson_version: '>= 0.55.0',
+  version: '10.2.0',
+  default_options: [
+    'cpp_eh=none',          # Just to support msvc, we are passing -fno-exceptions also anyway
+    # 'cpp_rtti=false',     # Do NOT enable, wraps inherit it and ICU needs RTTI
+    'cpp_std=c++11',
+    'wrap_mode=nofallback', # Use --wrap-mode=default to revert, https://github.com/harfbuzz/harfbuzz/pull/2548
+  ],
 )
+
+chafa_min_version = '>= 1.6.0'
+icu_min_version = '>= 49.0'
+graphite2_min_version = '>= 1.2.0'
+
+freetype_min_version_actual = '>= 2.4.2'
+freetype_min_version = '>= 12.0.6'    # Corresponds to `freetype_min_version_actual`
 
 hb_version_arr = meson.project_version().split('.')
 hb_version_major = hb_version_arr[0].to_int()
@@ -15,6 +29,18 @@ pkgmod = import('pkgconfig')
 cpp = meson.get_compiler('cpp')
 null_dep = dependency('', required: false)
 
+# Only perform these checks if cpp_std is c++11 as setting -std directly
+# produces a warning from meson.
+if get_option('cpp_std') == 'c++11'
+  # Enforce C++14 requirement for MSVC STL
+  if cpp.get_id() == 'clang' and cpp.get_define('_MSC_FULL_VER') != ''
+    add_project_arguments('-std=c++14', language: 'cpp')
+  elif cpp.get_id() == 'clang-cl'
+    # Clang-cl produces a warning when using -std=c++14, but not when using /std:c++14
+    add_project_arguments('/std:c++14', language : 'cpp')
+  endif
+endif
+
 if cpp.get_argument_syntax() == 'msvc'
   # Ignore several spurious warnings for things HarfBuzz does very commonly.
   # If a warning is completely useless and spammy, use '/wdXXXX' to suppress it
@@ -22,6 +48,7 @@ if cpp.get_argument_syntax() == 'msvc'
   # NOTE: Only add warnings here if you are sure they're spurious
   msvc_args = [
     '/wd4244', # lossy type conversion (e.g. double -> int)
+    '/bigobj', # hb-subset.cc -- compile error C1128: number of sections exceeded object file format limit
     cpp.get_supported_arguments(['/utf-8']), # set the input encoding to utf-8
   ]
   add_project_arguments(msvc_args, language: ['c', 'cpp'])
@@ -60,14 +87,15 @@ check_headers = [
 ]
 
 check_funcs = [
-  ['atexit'],
-  ['mprotect'],
-  ['sysconf'],
-  ['getpagesize'],
-  ['mmap'],
-  ['isatty'],
-  ['uselocale'],
-  ['newlocale'],
+  ['atexit', {'prefix': '#include <stdlib.h>'}],
+  ['mprotect', {'prefix': '#include <sys/mman.h>'}],
+  ['sysconf', {'prefix': '#include <unistd.h>'}],
+  ['getpagesize', {'prefix': '#include <unistd.h>'}],
+  ['mmap', {'prefix': '#include <sys/mman.h>'}],
+  ['isatty', {'prefix': '#include <unistd.h>'}],
+  ['uselocale', {'prefix': '#include <locale.h>'}],
+  ['newlocale', {'prefix': '#include <locale.h>'}],
+  ['sincosf', {'prefix': '#define _GNU_SOURCE\n#include <math.h>'}],
 ]
 
 m_dep = cpp.find_library('m', required: false)
@@ -103,14 +131,17 @@ else
   endif
 endif
 
-graphite2_dep = dependency('graphite2', required: get_option('graphite2'))
-graphite_dep = dependency('graphite2', required: get_option('graphite'))
+graphite2_dep = dependency('graphite2', version: graphite2_min_version, required: get_option('graphite2'))
+graphite_dep = dependency('graphite2', version: graphite2_min_version, required: get_option('graphite'))
+wasm_dep = cpp.find_library('iwasm', required: get_option('wasm'))
+# How to check whether iwasm was built, and hence requires, LLVM?
+#llvm_dep = cpp.find_library('LLVM-15', required: get_option('wasm'))
 
 # pkg-config: icu-uc, cmake: ICU but with components
 icu_dep = dependency('icu-uc', 'ICU',
+                          version: icu_min_version,
                           components: 'uc',
                           required: get_option('icu'),
-                          default_options: ['harfbuzz=disabled'],
                           allow_fallback: true)
 
 if icu_dep.found() and icu_dep.type_name() == 'pkgconfig'
@@ -121,6 +152,10 @@ if icu_dep.found() and icu_dep.type_name() == 'pkgconfig'
 endif
 
 cairo_dep = null_dep
+cairo_ft_dep = null_dep
+
+chafa_dep = dependency('chafa', version: chafa_min_version, required: get_option('chafa'))
+
 conf = configuration_data()
 incconfig = include_directories('.')
 
@@ -131,6 +166,11 @@ warn_cflags = [
 ]
 
 cpp_args = cpp.get_supported_arguments(warn_cflags)
+
+if wasm_dep.found()
+  conf.set('HAVE_WASM', 1)
+  conf.set('HB_WASM_MODULE_DIR', '"'+get_option('prefix')+'/'+get_option('libdir')+'/harfbuzz/wasm"')
+endif
 
 if graphite2_dep.found()
   conf.set('HAVE_GRAPHITE2', 1)
@@ -188,6 +228,15 @@ if host_machine.system() == 'windows' and not get_option('gdi').disabled()
   endif
 endif
 
+# DirectWrite (Windows)
+if host_machine.system() == 'windows' and not get_option('directwrite').disabled()
+  if get_option('directwrite').enabled() and not cpp.has_header('dwrite_1.h')
+    error('DirectWrite was enabled explicitly, but required header is missing.')
+  endif
+
+  conf.set('HAVE_DIRECTWRITE', 1)
+endif
+
 # CoreText (macOS)
 coretext_deps = []
 if host_machine.system() == 'darwin' and not get_option('coretext').disabled()
@@ -237,11 +286,12 @@ foreach check : check_funcs
   opts = check.get(1, {})
   link_withs = opts.get('link_with', [])
   check_deps = opts.get('deps', [])
+  check_prefix = opts.get('prefix', '')
   extra_deps = []
   found = true
 
   # First try without linking
-  found = cpp.has_function(name, dependencies: check_deps)
+  found = cpp.has_function(name, prefix: check_prefix, dependencies: check_deps)
 
   if not found and link_withs.length() > 0
     found = true
@@ -256,7 +306,7 @@ foreach check : check_funcs
     endforeach
 
     if found
-      found = cpp.has_function(name, dependencies: check_deps + extra_deps)
+      found = cpp.has_function(name, prefix: check_prefix, dependencies: check_deps + extra_deps)
     endif
   endif
 
@@ -278,15 +328,21 @@ build_summary = {
   'Font callbacks (the more the merrier)':
     {'FreeType': conf.get('HAVE_FREETYPE', 0) == 1,
     },
+  'Dependencies used for command-line utilities':
+    {'Cairo': conf.get('HAVE_CAIRO', 0) == 1,
+     'Chafa': conf.get('HAVE_CHAFA', 0) == 1,
+    },
   'Additional shapers':
     {'Graphite2': conf.get('HAVE_GRAPHITE2', 0) == 1,
+     'WebAssembly (experimental)': conf.get('HAVE_WASM', 0) == 1,
     },
   'Platform shapers (not normally needed)':
     {'CoreText': conf.get('HAVE_CORETEXT', 0) == 1,
-     'DirectWrite': conf.get('HAVE_DIRECTWRITE', 0) == 1,
+     'DirectWrite (experimental)': conf.get('HAVE_DIRECTWRITE', 0) == 1,
      'GDI/Uniscribe': (conf.get('HAVE_GDI', 0) == 1) and (conf.get('HAVE_UNISCRIBE', 0) == 1),
     },
 }
 foreach section_title, section : build_summary
   summary(section, bool_yn: true, section: section_title)
 endforeach
+
