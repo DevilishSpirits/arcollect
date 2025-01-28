@@ -177,7 +177,7 @@ function FurAffinity_MakeWebextAdderPayload() {
 	 * Some tags are generated from *Category* and *Species* field.
 	 */
 	let tags = []
-	let tags_rows = document.querySelectorAll('.tags-row a');
+	let tags_rows = document.querySelectorAll('.tags-row a:not(.tag-block)');
 	for (let i = 0; i < tags_rows.length; i++) {
 		tags.push({
 			'id': tags_rows[i].text
