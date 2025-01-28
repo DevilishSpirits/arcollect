@@ -104,7 +104,7 @@ function twitter_handle_user(user) {
 			"id": id,
 			"name": user['screen_name'],
 			"title": user['name'],
-			"url": "https://twitter.com/"+user['screen_name'],
+			"url": "https://x.com/"+user['screen_name'],
 			"icon": icon_url.replace('http://','https://').replace('_normal.','_400x400.')
 		};
 		if (twitter_debug)
@@ -211,7 +211,10 @@ browser.webRequest.onBeforeRequest.addListener(function(details) {
 	// Filter the request
 	if ((details.method == 'GET'))
 		twitter_intercept_api_call(details.requestId);
-},{urls:["https://api.twitter.com/*","https://mobile.twitter.com/i/api/*","https://twitter.com/i/api/*"], types: ["xmlhttprequest"]}, ["blocking"]);
+},{urls:[
+	"https://api.twitter.com/*","https://mobile.twitter.com/i/api/*","https://twitter.com/i/api/*", // Legacy Twitter URLs
+	"https://api.x.com/*","https://mobile.x.com/i/api/*","https://x.com/i/api/*"
+], types: ["xmlhttprequest"]}, ["blocking"]);
 
 /** Process a content-script request
  * \param json The request of the content-script

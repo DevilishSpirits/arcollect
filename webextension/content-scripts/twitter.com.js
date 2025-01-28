@@ -65,7 +65,7 @@ function save_twitter_artwork_by_urls(button, text_button, urls, retry_to_save)
 }
 
 function make_twitter_photo_save_button_clicked(e) {
-	let source = window.location.origin+window.location.pathname;
+	let source = "https://twitter.com"+window.location.pathname
 	save_twitter_artwork_by_urls(this,this.querySelector("[data-testid=app-text-transition-container]"),[source],make_twitter_photo_save_button_clicked);
 	e.stopPropagation();
 }
