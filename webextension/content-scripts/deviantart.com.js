@@ -33,9 +33,10 @@ function DeviantArt_MakeWebextAdderPayload()
 	
 	/** Extract artwork
 	 *
-	 * Artwork is the img under a <div data-hook="art_stage">
+	 * There are many img to distinguish from, the 'data-testid' allow to exclude
+	 * thumbnails in the sidebar and the fetchpriority let filter the rest.
 	 */
-	let art_stage = document.querySelector('div[data-hook=art_stage]');
+	let art_stage = document.querySelector('div[typeof="ImageObject"] img[fetchpriority="high"]:not([data-testid="thumb"])');
 	let artworkImg = art_stage.getElementsByTagName('img')[0];
 	
 	/** Try to extract the best artwork
@@ -46,7 +47,7 @@ function DeviantArt_MakeWebextAdderPayload()
 	let artworkData = Promise.resolve(artworkImg);
 	
 	// Use the download button if available
-	let download_button = document.querySelector('a[data-hook=download_button]');
+	let download_button = document.querySelector('a[data-hook=download_button]'); // FIXME Probably broken
 	if (download_button && typeof(download_button.href) == 'string') {
 		// Check the access token timestamp
 		let token_expires = parseInt(new URL(download_button.href).searchParams.get('ts'));
@@ -88,7 +89,7 @@ function DeviantArt_MakeWebextAdderPayload()
 	/** Extracts tags
 	 *
 	 * Tags are stored in <a> elements we filter by the URL. Note that 2 forms of
-	 * URLs are used depending on weather you are logged in or not.
+	 * URLs are used depending on whether you are logged in or not.
 	 */
 	let tags_url_prefixes = [
 		'https://www.deviantart.com/tag/',
@@ -135,7 +136,7 @@ function DeviantArt_MakeWebextAdderPayload()
  * It is placed right to "Add favourites"
  */
 function make_save_ui() {
-	let fave_button = document.querySelector('button[data-hook=fave_button]')
+	let fave_button = document.querySelector('button[aria-label="Add to Favourites"]')
 	// Create the top-level button
 	let saveButton = document.createElement("button"); 
 	// Copy styles for aesthetics
