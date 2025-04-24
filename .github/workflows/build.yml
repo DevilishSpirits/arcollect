@@ -14,14 +14,14 @@ jobs:
     runs-on: [archlinux]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Generate PKGBUILD
         run: sh generate-PKGBUILD.sh local > ../PKGBUILD
         working-directory: packaging
       - name: Invoke makepkg
         run: makepkg
       - name: Uploading ArchLinux package
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: archlinux-x86_64-package
           path: arcollect-*.pkg.tar.*
@@ -30,7 +30,7 @@ jobs:
     runs-on: [archlinux]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Configure project
         run: arch-meson build --wrap-mode default --force-fallback-for libcurl,sdl2,freetype2,harfbuzz,sqlite3,INIReader,libjpeg,libpng,libtiff-4,zlib
       - name: Build project
@@ -44,12 +44,12 @@ jobs:
       - name: Archiving the "installed project"
         run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
       - name: Uploading DESTDIR artifact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: build-wrapped_DESTDIR.tar
           path: archive-out.tar
       - name: Uploading arcollect-webextension.zip artifact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: build-wrapped_webextension.zip
           path: build/webextension/arcollect.zip
@@ -61,7 +61,7 @@ jobs:
       CXX: clang++
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Configure project
         run: arch-meson build -Duse_system_polib=true
       - name: Build project
@@ -75,12 +75,12 @@ jobs:
       - name: Archiving the "installed project"
         run: tar -cf archive-out.tar -C build archive-out --transform 's/archive-out//g'
       - name: Uploading DESTDIR artifact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: build-clang_DESTDIR.tar
           path: archive-out.tar
       - name: Uploading arcollect-webextension.zip artifact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: build-clang_webextension.zip
           path: build/webextension/arcollect.zip
@@ -89,7 +89,7 @@ jobs:
     runs-on: [ubuntu-22.04]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Update apt cache
         run: sudo apt update
       - name: Install dependencies and tools
@@ -99,7 +99,7 @@ jobs:
       - name: Build project
         run: ninja -C build
       - name: Uploading arcollect-webextension.zip artifact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: build-ubuntu-22_04_webextension.zip
           path: build/webextension/arcollect.zip
@@ -107,7 +107,7 @@ jobs:
         run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
         shell: bash
       - name: Uploading Debian package artifact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ubuntu-22_04-amd64-package
           path: build/packaging
@@ -123,41 +123,36 @@ jobs:
         shell: bash
       - name: Upload build dir
         if: always()
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ubuntu-22_04-amd64-builddir
           path: build
-  build-ubuntu-20_04-amd64:
-    name: Ubuntu 20.04 (amd64)
-    runs-on: [ubuntu-20.04]
-    env:
-      CC: gcc-10
-      CXX: g++-10
+  build-ubuntu-24_04-amd64:
+    name: Ubuntu 24.04 (amd64)
+    runs-on: [ubuntu-24.04]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Update apt cache
         run: sudo apt update
       - name: Install dependencies and tools
-        run: sudo apt install ninja-build gcc-10 g++-10 libsdl2-dev libfreetype-dev libfontconfig-dev libharfbuzz-dev libopenimageio-dev libboost-all-dev libdbus-1-dev liblcms2-dev lintian libbrotli-dev
-      - name: Install Meson
-        uses: ./.github/actions/install-meson
+        run: sudo apt install meson libsdl2-dev libfreetype-dev libfontconfig-dev libharfbuzz-dev libopenimageio-dev libboost-all-dev libcurl4-openssl-dev libdbus-1-dev liblcms2-dev lintian libbrotli-dev
       - name: Setup project
         run: meson build --prefix=/usr -Dstrip=true -Dcpp_link_args='-z now' -Dbuildtype=release -Db_lto=true
       - name: Build project
         run: ninja -C build
       - name: Uploading arcollect-webextension.zip artifact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: build-ubuntu-20_04_webextension.zip
+          name: build-ubuntu-24_04_webextension.zip
           path: build/webextension/arcollect.zip
       - name: Generate Debian package
         run: ninja -C build "packaging/$(grep -oEm 1 "arcollect_[0-9\.]+-1_$(echo -n "$(dpkg-architecture -q DEB_HOST_ARCH)").deb" build/build.ninja)"
         shell: bash
       - name: Uploading Debian package artifact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: ubuntu-20_04-amd64-package
+          name: ubuntu-24_04-amd64-package
           path: build/packaging
       - name: Test project
         run: ninja -C build test
@@ -166,15 +161,14 @@ jobs:
         shell: bash
       - name: Lintian Debian package
         run: lintian --no-tag-display-limit --dont-check-part debian/changelog,debian/copyright -I -E --verbose -- arcollect.deb
-        continue-on-error: true # TODO Find a way to silent the fact that we embed curl
       - name: Install Debian package
         run: sudo dpkg -i arcollect.deb
         shell: bash
       - name: Upload build dir
         if: always()
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: ubuntu-20_04-amd64-builddir
+          name: ubuntu-24_04-amd64-builddir
           path: build
   build-windows-2019-x64:
     name: Windows 2019 (x64)
@@ -183,7 +177,7 @@ jobs:
       PATH: C:\Program Files\PowerShell\7;C:\Users\runneradmin\.dotnet\tools;C:\aliyun-cli;C:\vcpkg;C:\cf-cli;C:\tools\zstd;C:\hostedtoolcache\windows\stack\2.7.1\x64;C:\tools\ghc-9.0.1\bin;C:\Program Files\dotnet;C:\SeleniumWebDrivers\GeckoDriver;C:\Program Files (x86)\sbt\bin;C:\Program Files\Git\bin;C:\Program Files (x86)\pipx_bin;C:\hostedtoolcache\windows\Python\3.12.8\x64\Scripts;C:\hostedtoolcache\windows\Python\3.12.8\x64;C:\npm\prefix;C:\ProgramData\kind;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Microsoft\Web Platform Installer\;C:\Program Files\PowerShell\7\;C:\Program Files\dotnet\;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\nodejs\;C:\Program Files\Microsoft Service Fabric\bin\Fabric\Fabric.Code;C:\Program Files\Microsoft SDKs\Service Fabric\Tools\ServiceFabricLocalClusterManager;C:\Program Files\OpenSSL\bin;C:\Program Files\Git\cmd;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Program Files (x86)\sbt\bin;C:\SeleniumWebDrivers\ChromeDriver\;C:\SeleniumWebDrivers\EdgeDriver\;C:\Program Files\CMake\bin;C:\Users\runneradmin\AppData\Local\Microsoft\WindowsApps;C:\msys64\usr\bin;C:\msys64\mingw64\bin # Remove unused tools, Chocolatey and Strawberry largely outdated GCC from the PATH and use MSYS2 instead
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Install Meson
         run: pip install meson ninja
       - name: Install WiX
@@ -205,7 +199,7 @@ jobs:
         shell: pwsh
         working-directory: build/packaging
       - name: Upload MSI artifact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: windows-2019-x64-package
           path: build/packaging/*.msi
@@ -215,7 +209,7 @@ jobs:
         run: msiexec /i /q build/packaging/arcollect.msi
       - name: Upload build dir
         if: always()
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: windows-2019-builddir
           path: build
@@ -226,7 +220,7 @@ jobs:
       GH_FLATPAK_WORKSPACE: /tmp/flatpak-workspace
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Update apt cache
         run: sudo apt update
       - name: Install Flatpak and Meson
@@ -250,12 +244,12 @@ jobs:
         run: rm -rf "$GH_FLATPAK_WORKSPACE/.flatpak-builder/cache" "$GH_FLATPAK_WORKSPACE/.flatpak-builder/ccache" "$GH_FLATPAK_WORKSPACE/build-dir/var"
       - name: Upload Flatpak workspace
         if: always()
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: flatpak-workspace
           path: ${{ env.GH_FLATPAK_WORKSPACE }}
   check-webextensions-same:
-    needs: [build-wrapped, build-clang, build-ubuntu-22_04-amd64, build-ubuntu-20_04-amd64]
+    needs: [build-wrapped, build-clang, build-ubuntu-22_04-amd64, build-ubuntu-24_04-amd64]
     runs-on: [ubuntu-latest]
     steps:
       - name: Download build-wrapped_webextension.zip
@@ -273,13 +267,13 @@ jobs:
         with:
           name: build-ubuntu-22_04_webextension.zip
           path: build-ubuntu-22_04_webextension
-      - name: Download build-ubuntu-20_04_webextension.zip
+      - name: Download build-ubuntu-24_04_webextension.zip
         uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
-          name: build-ubuntu-20_04_webextension.zip
-          path: build-ubuntu-20_04_webextension
+          name: build-ubuntu-24_04_webextension.zip
+          path: build-ubuntu-24_04_webextension
       - name: Make unpack dirs
-        run: mkdir build-wrapped build-clang build-ubuntu-22_04 build-ubuntu-20_04
+        run: mkdir build-wrapped build-clang build-ubuntu-22_04 build-ubuntu-24_04
       - name: Unpack build-wrapped_webextension.zip
         run: unzip ../build-wrapped_webextension/arcollect.zip
         working-directory: build-wrapped
@@ -289,23 +283,23 @@ jobs:
       - name: Unpack build-ubuntu-22_04_webextension.zip
         run: unzip ../build-ubuntu-22_04_webextension/arcollect.zip
         working-directory: build-ubuntu-22_04
-      - name: Unpack build-ubuntu-20_04_webextension.zip
-        run: unzip ../build-ubuntu-20_04_webextension/arcollect.zip
-        working-directory: build-ubuntu-20_04
+      - name: Unpack build-ubuntu-24_04_webextension.zip
+        run: unzip ../build-ubuntu-24_04_webextension/arcollect.zip
+        working-directory: build-ubuntu-24_04
       - name: Compare build-wrapped and build-clang results
         run: diff -ry build-wrapped build-clang
       - name: Compare build-wrapped and build-ubuntu-22_04 results
         run: diff -ry build-wrapped build-ubuntu-22_04
-      - name: Compare build-wrapped and build-ubuntu-20_04 results
-        run: diff -ry build-wrapped build-ubuntu-20_04
+      - name: Compare build-wrapped and build-ubuntu-24_04 results
+        run: diff -ry build-wrapped build-ubuntu-24_04
   merge-to-master:
     name: Merge 'master-staging' to 'master'
-    needs: [build-archlinux-x86_64, build-wrapped, build-ubuntu-22_04-amd64, build-ubuntu-20_04-amd64, build-windows-2019-x64, build-flatpak, check-webextensions-same]
+    needs: [build-archlinux-x86_64, build-wrapped, build-ubuntu-22_04-amd64, build-ubuntu-24_04-amd64, build-windows-2019-x64, build-flatpak, check-webextensions-same]
     runs-on: [ubuntu-latest]
     if: ${{ (github.event_name == 'push') && (github.ref == 'refs/heads/master-staging') }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
       - name: Checkout to master branch
